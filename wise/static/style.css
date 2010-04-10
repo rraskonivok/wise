@@ -1,0 +1,333 @@
+/*
+Wise
+Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+::selection { background: transparent; }
+::-moz-selection { background: transparent; }
+
+/*
+  Beamer Fly Colorscheme
+  0   0   0 fly text
+   64  64  64   fly added grey
+   #404040
+   
+   128 128 128  fly outer
+   #808080
+
+   153 153 153  fly background
+   #999999
+
+   204 204 204  fly added grey
+   #CCCCCC
+
+   255 255 255  fly header text
+   #FFFFFF
+
+   168 168 168  fly covered bullet
+   #A8A8A8
+
+   130 130 130  fly covered text
+   #828282
+
+   221 144 144  fly added red
+   #DD9090
+
+   188  33  34  fly alert block header text
+   #BC2122
+
+   156 189 134  fly added green
+   #9CBD86
+
+   58  124  14  fly example block header text
+   #3A7C0E
+
+   152 156 215  fly added blue
+   #989CD7
+
+   49   57 174  fly added default blue
+   #3139AE
+*/
+
+body {
+    font-family: Verdana, Arial, sans-serif; font-size:12px;  
+    background-color: #F3F3F3;
+    font-family: Helvetica;
+    margin:0px; padding:0px;
+}
+
+.parenthesis {
+    display: inline-block;
+    /* TODO: There are times when we would like the baseline to
+     * be at the middle and times when we want it to be at the
+     * bottom */
+
+    /*vertical-align: middle;*/
+}
+
+.equation button {
+    float: left;
+    margin-right: 1px;
+}
+
+.num {
+    display: block;
+    text-align: center;
+    border-bottom: 1px solid black;
+}
+
+.den {
+    display: block;
+    text-align: center;
+}
+
+.den * {
+    text-align: center;
+}
+
+.rhs {
+    display: table-cell;
+    vertical-align: middle;
+    height: inherit;
+}
+
+.lhs {
+    display: table-cell;
+    vertical-align: middle;
+    height: inherit;
+}
+
+.term {
+    display: inline-block;
+/*    padding-left: 10px;
+    padding-right: 10px;*/
+    cursor: move;
+}
+
+.infix {
+    display: inline-block;
+}
+
+.operator {
+    display: inline-block;
+}
+
+.exponent {
+    display: inline-block;
+    vertical-align: super;
+}
+
+.base {
+    display: inline-block;
+}
+
+.fraction {
+    height: inherit;
+}
+
+.container {
+    vertical-align: middle;
+    display: inline-block;
+    height: inherit;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.pnths {
+    vertical-align: middle;
+    height: inherit;
+    display: inline-block;
+}
+
+.pnths img {
+    height: inherit;
+}
+
+.ui-sortable-helper {
+    border: 1px solid #9CBD86;
+}
+
+.ui-sortable-placeholder {
+    width: 50px;
+    height: 50px;
+    border: 1px solid #9CBD86;
+}
+
+.helper {
+    padding-left: 25px;
+    padding-right: 25px;
+    background-color: #9CBD86;
+}
+
+.palette td {
+   padding-top: 5px;
+   padding-bottom: 5px;
+   border-bottom: 1px dashed #CCCCCC;
+}
+
+.typeset {
+    margin-top: 0px !important;
+    margin-bottom: 0px !important;
+}
+
+#workspace div {
+    display: inline-block;
+}
+
+.fractionbar {
+   border-bottom: 1px solid black; 
+}
+
+.units {
+    float: left;
+    clear: none;
+}
+
+.ui-selected {
+    border: 1px dashed #cccccc;
+}
+
+#workspace .term[math]:hover {
+    border-bottom: 5px solid #9CBD86;
+}
+
+#workspace .container[math]:hover {
+    border-top: 5px solid #989CD7;
+}
+
+.drag_placeholder {
+    border: 1px dashed #d4a5a5;
+    min-height: 20px;
+    padding-left: 10px;
+    padding-right: 10px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.ui-state-highlight {
+    background-color: red;
+}
+
+.selected {
+    border: 1px dashed #d4a5a5;
+}
+
+.equation.selected td:first-child {
+    padding-left: 50px;
+}
+
+#workspace {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    margin-top: 40px;
+}
+
+#palette {
+    float: right;
+}
+
+#collapser {
+    background-color: black;
+    position: relative;
+    width: 15px;
+    height: 20px;
+    clear: none;
+    float: left;
+}
+
+#vert_collapsable {
+    padding-left: 20px;
+    width: 250px;
+}
+
+.select_first {
+    background-color:red;
+}
+
+.select_second {
+    background-color:blue;
+}
+
+#cmdbuttons {
+    float:right;
+}
+
+#cmdbuttons button {
+    height: 40px;
+    float: left;
+}
+
+#selectionbox {
+    border-left: 2px solid gray;
+    width: 70%;
+    position: absolute;
+    height: 100%;
+}
+
+#modeselection button {
+    width: 100%;
+}
+
+.ui-effects-transfer {
+    border: 1px dashed black;
+}
+
+#tooltip {
+	position: absolute;
+	z-index: 3000;
+	border: 1px solid #111;
+	background-color: #eee;
+	padding: 5px;
+	opacity: 0.85;
+}
+#tooltip h3, #tooltip div { margin: 0; }
+
+#toolbar {
+    width: 100%;
+    position: fixed;
+    bottom: 0px;
+    left:0px;
+}
+
+#handle {
+    float: left;
+}
+
+#controls {
+    float: right;
+}
+
+#selectionlist {
+    list-style-position: inside;
+    list-style-type: none;
+    float: left;
+    height: inherit;
+}
+
+#options {
+    float: left;
+}
+
+#options button {
+    height: inherit;
+}
+
+#debug_menu {
+}
+
+#debug_menu textarea {
+}
