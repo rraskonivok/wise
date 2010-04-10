@@ -39,10 +39,12 @@ MathematicalTransform(internal='PlaceholderSubstitute', first='Placeholder', sec
 
 class PlaceholderSubstitute(Transform):
     def __new__(self,first,second):
-            if type(first) is not Placeholder:
-                return json.dumps({'error': 'Please select Placeholder object for for first selection'})
-            else:
+            if type(first) is Placeholder:
                 return json.dumps({'first': second.get_html()})
+            elif type(second) is Placeholder:
+                return json.dumps({'second': first.get_html()})
+            else:
+                return json.dumps({'error': 'Please select Placeholder object for for first selection'})
 
 #-------------------------------------------------------------
 # Term Substitute : (Equation, Term) --> Term

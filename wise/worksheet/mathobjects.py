@@ -539,9 +539,9 @@ class Term(object):
 #
 #    def doubleclick(self):
 #        '''when the user double clicks on the object'''
-#
-#    def combine(self,other,context):
-#        '''The default combination actions for Terms'''
+
+    def combine(self,other,context):
+        '''The default combination actions for Terms'''
 
         if context == 'Addition':
             if isinstance(other,Term):
@@ -932,6 +932,13 @@ class Numeric(Term):
     def is_one(self):
         return self.number == 1
 
+    def negate(self):
+        #Zero is its own negation
+        if self.is_zero():
+            return self
+        else:
+            return Negate(self)
+
     def combine(self,other,context):
         if context == 'Addition':
             if isinstance(other,Fraction):
@@ -1114,14 +1121,14 @@ operation_html_postfix = '''
 '''
 
 operation_html_prefix = '''
-    <span id="{{id}}" math-meta-class="term" class="{{class}}{{sensitive}} container" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
+    <span id="{{id}}" math-meta-class="term" class="container {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
     <span class="ui-state-disabled operator" math-type="operator" math-meta-class="operator" group="{{id}}">$${{symbol}}$$</span>
 
     {% if parenthesis %}
     <span class="pnths left"><img class='ui-state-disabled' src="/static/ui/lp.svg" /></span>
     {% endif %}
 
-    <span class="parenthesis">
+    <span class="">
     {{operand}}
     </span>
 
@@ -1154,7 +1161,7 @@ operation_html_sandwich = '''
 '''
 
 operation_html_infix = '''
-    <span math-meta-class='term' id="{{id}}" class="{{class}}{{sensitive}} container" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
+    <span math-meta-class='term' id="{{id}}" class="container {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
     {% if parenthesis %}
     <span class="pnths left"><img class='ui-state-disabled' src="/static/ui/lp.svg" /></span>
     {% endif %}
@@ -1227,7 +1234,11 @@ class Operation(Term):
         elif self.ui_style == 'postfix':
             self.html = template.Template(operation_html_postfix)
 
-        c = template.Context({'id': self.id, 'math': self.get_math(), 'type': self.classname(), 'group': self.group, 'operand': self.operand.get_html(), 'symbol': self.symbol, 'parenthesis': self.show_parenthesis})
+        c = template.Context({'id': self.id, 'math':
+            self.get_math(), 'type': self.classname(), 'group':
+            self.group, 'operand': self.operand.get_html(),
+            'symbol': self.symbol, 'parenthesis':
+            self.show_parenthesis, 'class': self.css_class})
         return self.html.render(c)
 
     def get_symbol(self):
@@ -1238,7 +1249,7 @@ class Operation(Term):
 
         if context == 'Addition':
             if isinstance(other,Term):
-                result = self.get_html() + infix_symbol_html(Product.symbol)  +  other.get_html()
+                result = self.get_html() + infix_symbol_html(Addition.symbol)  +  other.get_html()
                 return result
         if context == 'Product':
             if isinstance(other,Term):
@@ -1388,6 +1399,7 @@ class Negate(Operation):
     ui_style = 'prefix'
     symbol = '-'
     show_parenthesis = False
+    css_class = 'negate'
 
     def __init__(self,operand):
         self.ensure_id()

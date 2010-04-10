@@ -171,6 +171,11 @@ function debug_math()
     });
 }
 
+function toggle_spacing()
+{
+    $('.container').css('vertical-align','baseline')
+}
+
 function toggle_units()
 {
     $("body .unit").fadeOut();    
@@ -965,18 +970,6 @@ function get_info(object)
     return { math: a, type: b, id: c }
 }
 
-function request_term(object,id)
-{
-    $.post("term/", { id: id },
-           function(data){
-            nsym = $(object).after(data).next().hide();
-            jsMath.ConvertTeX(); jsMath.Process();
-            nsym.show('fast');
-          },
-        "html");
-    cleanup_ajax_scripts()
-}
-
 function dropin(old,nwr)
 {
     //Drop an element in place of another, preserving group linkings
@@ -1237,6 +1230,8 @@ function save_workspace()
         <button class="ui-widget" onclick="javascript:debug_math()">show_math</button>
         <button class="ui-widget" onclick="javascript:jsMath.ConvertTeX(); jsMath.Process();">refresh_jsmath</button>
         <button class="ui-widget" onclick="javascript:$('#debug_console').text($('.selec</button>ted').attr('math'))">show math for selected</button>
+        <button class="ui-widget"
+            onclick="javascript:toggle_spacing()">toggle spacing</button>
         <button class="ui-widget" onclick="javascript:save_workspace()">save workspace</button>
         <div id="horizslider" style="width: 150px"></div>Horizontal Term Spacing<br/>
         <div id="vertslider" style="width: 150px"></div>Vertical Term Spacing<br/>
