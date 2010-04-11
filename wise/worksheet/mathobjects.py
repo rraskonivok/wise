@@ -835,10 +835,12 @@ class Power(Term):
         return self.html.render(c)
 
     def combine(self,other,context):
+        '''
         if isinstance(other,Power):
             base = self.base
             exponent = Addition(self.exponent,other.exponent)
             return Power(base,exponent).get_html()
+        '''
 
         return self.combine_fallback(other,context)
 
@@ -970,6 +972,10 @@ class Numeric(Term):
                     return self.get_html()
 
         return self.combine_fallback(other,context)
+
+class Constant(Base_Symbol):
+    pass
+
 
 def Zero():
     return Numeric(0)

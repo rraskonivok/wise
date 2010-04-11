@@ -77,6 +77,26 @@ def home(request):
 def palette(request):
     return generate_palette()
 
+@errors
+def sage_parse(request, eq_id):
+    sage = unencode( request.POST.get('sage') )
+    if not sage:
+        sage = unencode( request.GET.get('sage') )
+
+    sage = sage.split('\n')
+    print sage
+    
+    try:
+        evald = mathobjects.sage.sage_eval(sage)
+        parsd = mathobjects.parse_sage_exp(evald)
+    except Exception, e:
+        js = json.dumps({'error': e})
+    if parsd:
+        js = json.dumps({'newline': parsd.get_html()})
+    else:
+        js = json.dumps({'error': 'Could not parse'})
+    return HttpResponse(js)
+
 def eq(request, eq_id):
     eqs = Equation.objects.filter(workspace=eq_id)
     debug_parse_tree = unencode( request.GET.get('tree') )
