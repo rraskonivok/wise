@@ -362,7 +362,7 @@ class make_sortable(object):
     sortable_object = None
     connectWith = None
     cancel = '".ui-state-disabled"'
-    helper = '"clone"'
+    helper = "'clone'"
     tolerance = '"pointer"'
     placeholder = '"helper"'
     #create a bind() method for these to connect to python methods
@@ -387,7 +387,7 @@ class make_sortable(object):
     def get_html(self):
         options = prototype_dict({'placeholder': self.placeholder,
                                   'connectWith': self.connectWith,
-                                  'forceHelperSize': self.forceHelperSize,
+                                  #'forceHelperSize': self.forceHelperSize,
                                   'helper': self.helper,
                                   'tolerance': self.tolerance,
                                   'axis': self.axis,
@@ -395,6 +395,7 @@ class make_sortable(object):
                                   'receive': self.onreceive,
                                   'remove': self.onremove,
                                   'cancel': self.cancel,
+                                  #Rever is cool but buggy
                                   #'revert': 'true',
                                   #'deactivate': self.onupdate,
                                   'forcePlaceholderSize': self.forcePlaceholderSize})
@@ -418,7 +419,9 @@ class make_sortable(object):
 # Objects should only be inherited if they follow the Liskov
 # Substitution Principle i.e. 
 #
-#    Let q(x) be a property provable about objects x of type T. Then q(y) should be true for objects y of type S where S is a subtype of T.
+#    Let q(x) be a property provable about objects x of type T.
+#    Then q(y) should be true for objects y of type S where S is
+#    a subtype of T.
 
 #Pretty much everything inherits from this
 

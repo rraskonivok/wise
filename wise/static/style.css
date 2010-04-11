@@ -175,9 +175,11 @@ body {
 }
 
 .helper {
-    padding-left: 25px;
-    padding-right: 25px;
+    padding-left: 10px;
+    padding-right: 10px;
     background-color: #9CBD86;
+    display: inline-block;
+    vertical-align: middle;
 }
 
 .palette td {

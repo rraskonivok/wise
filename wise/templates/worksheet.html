@@ -969,6 +969,7 @@ function apply_transform(transform)
             if(data.error)
             {
                 error(data.error)
+                clear_selection()
                 return
             }
             
@@ -1263,7 +1264,9 @@ function save_workspace()
         <button class="ui-widget" type="image" onclick="javascript:lookup_identity()" title="Identities"><img src="/static/ui/icons/identity.png"/></button>
         <button class="ui-widget" type="image" title="Equalities"><img src="/static/ui/icons/equal.png"/></button>
         <button class="ui-widget" type="image" title="Theorems"><img src="/static/ui/icons/implies.png"/></button>
-        <button class="ui-widget" onclick="javascript:apply_transform('PlaceholderSubstitute')" title="Transformation">Replace</button>
+        <button class="ui-widget"
+            onclick="javascript:toggle_sageinput()"
+            title="Transformation">Sage</button>
     </div>
 </div>
 

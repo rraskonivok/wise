@@ -90,7 +90,7 @@ def sage_parse(request, eq_id):
         evald = mathobjects.sage.sage_eval(sage)
         parsd = mathobjects.parse_sage_exp(evald)
     except Exception, e:
-        js = json.dumps({'error': e})
+        js = json.dumps({'error': str(e)})
     if parsd:
         js = json.dumps({'newline': parsd.get_html()})
     else:
