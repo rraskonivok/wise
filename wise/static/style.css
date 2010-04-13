@@ -236,7 +236,7 @@ body {
 }
 
 .equation.selected td:first-child {
-    padding-left: 50px;
+    border-left: 5px solid  #d4a5a5;
 }
 
 #workspace {

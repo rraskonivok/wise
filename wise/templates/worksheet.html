@@ -1136,8 +1136,8 @@ function init()
     $('.equation button').parent().buttonset();
     $('#cmdbuttons button').parent().buttonset();
 
-    traverse_lines();
     jsMath.ConvertTeX(); jsMath.Process();
+    traverse_lines();
 }
 
 
@@ -1202,10 +1202,13 @@ function save_workspace()
         ,'json')
 }
 
+$(document).ready(function() {
+    init();
+}) 
 </script>
 
 </head>
-<body onLoad="init();">
+<body >
 
 <div id="debug_menu" style="display:none" title="Debug Menu">
         <form>
@@ -1238,12 +1241,12 @@ function save_workspace()
 
 <div id="palette">
     <div id="collapser" >
-        <span class="ui-icon ui-icon-carat-1-e">
-        </span>
+        <span class="ui-icon ui-icon-carat-1-e"> </span>
     </div>
     <div id="vert_collapsable">
         <div id="math_palette">
         </div>
+    </div>
 </div>
 
 <div id="error_dialog" title="Error" style="display:none">

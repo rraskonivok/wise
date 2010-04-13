@@ -154,8 +154,11 @@ def lookup_transform(request, eq_id):
     #    if first_type in dir('mathobjects') 
 
     #TODO: This is ugly and dangerous
-    first_basetype = eval('mathobjects.' + first_type).base_type
-    second_basetype = eval('mathobjects.' + second_type).base_type
+    if first_type != 'null':
+        first_basetype = eval('mathobjects.' + first_type).base_type
+
+    if second_type != 'null':
+        second_basetype = eval('mathobjects.' + second_type).base_type
 
     options = set(MathematicalTransform.objects.filter(first=first_type,second=second_type,context=context)) | set(MathematicalTransform.objects.filter(first=first_basetype,second=second_basetype,context=context)) | set(MathematicalTransform.objects.filter(first=first_type,second=second_basetype,context=context)) | set(MathematicalTransform.objects.filter(first=first_basetype,second=second_type,context=context)) 
     interface_ui = template.Template(transform_interface)
@@ -467,10 +470,11 @@ def generate_palette():
                     mathobjects.Variable('z').get_html()
                 ]}
 
-    trig = {'name': 'Trigonometry', 'type': 'tabular', 'objects': [
+    trig = {'name': 'Functions', 'type': 'tabular', 'objects': [
                     ('Sine', mathobjects.Sine(Placeholder()).get_html()),
                     ('Cosine', mathobjects.Cosine(Placeholder()).get_html()),
                     ('Tangent', mathobjects.Tangent(Placeholder()).get_html()),
+                    ('Logarithm', mathobjects.Log(Placeholder()).get_html()),
                 ]}
 
     operations = {'name': 'Operations', 'type': 'tabular', 'objects': [
@@ -478,6 +482,7 @@ def generate_palette():
                     ('Product', mathobjects.Product(*[Placeholder(),Placeholder()]).get_html()),
                     ('Fraction', mathobjects.Fraction(Placeholder(),Placeholder()).get_html()),
                     ('Power', mathobjects.Power(Placeholder(),Placeholder()).get_html()),
+                    ('Wedge', mathobjects.Wedge(Placeholder(),Placeholder()).get_html()),
                 ]}
 
     numbers = {'name': 'Numbers', 'type': 'array', 'objects': [

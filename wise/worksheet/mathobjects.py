@@ -67,6 +67,7 @@ def pairs(list):
 #-------------------------------------------------------------
 
 from sage.functions import trig
+from sage.functions import log
 
 def parse_sage_exp(expr):
     print type(expr)
@@ -120,6 +121,11 @@ def parse_sage_exp(expr):
 
         elif operator is trig.tan:
             return apply(Tangent,map(parse_sage_exp,operands))
+
+        #Exponential & Logarithms
+
+        elif operator is log.ln:
+            return apply(Log,map(parse_sage_exp,operands))
 
 
 #-------------------------------------------------------------
@@ -976,9 +982,11 @@ class Numeric(Term):
 
         return self.combine_fallback(other,context)
 
-class Constant(Base_Symbol):
+class Constant(Term):
     pass
 
+class E(Base_Symbol):
+    pass
 
 def Zero():
     return Numeric(0)
@@ -1131,7 +1139,8 @@ operation_html_postfix = '''
 
 operation_html_prefix = '''
     <span id="{{id}}" math-meta-class="term" class="container {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
-    <span class="ui-state-disabled operator" math-type="operator" math-meta-class="operator" group="{{id}}">$${{symbol}}$$</span>
+    <span class="ui-state-disabled operator" math-type="operator"
+    math-meta-class="operator" group="{{id}}" title="{{type}}" >$${{symbol}}$$</span>
 
     {% if parenthesis %}
     <span class="pnths left"><img class='ui-state-disabled' src="/static/ui/lp.svg" /></span>
@@ -1361,6 +1370,20 @@ class Product(Operation):
         #Get Sage objects for each term
        sterms = map(lambda o: o._sage_() , self.terms)
        return reduce(sage.operator.mul, sterms)
+
+class Log(Operation):
+    ui_style = 'prefix'
+    symbol = '\\log'
+    show_parenthesis = True
+
+    def __init__(self,operand):
+        self.ensure_id()
+        self.operand = operand
+        self.operand.group = self.id
+        self.terms = [self.operand]
+
+    def _sage_(self):
+       return sage.log(self.operand._sage_())
 
 class Sine(Operation):
     ui_style = 'prefix'
