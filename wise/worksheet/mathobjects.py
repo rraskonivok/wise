@@ -66,11 +66,16 @@ def pairs(list):
 # Sage Wrapper
 #-------------------------------------------------------------
 
+class NoWrapper(Exception):
+    pass
+
 from sage.functions import trig
 from sage.functions import log
+from sage.symbolic import constants
 
 def parse_sage_exp(expr):
     print type(expr)
+
     if type(expr) is sage.Expression:
         operator = expr.operator()
         operands = expr.operands()
@@ -126,6 +131,12 @@ def parse_sage_exp(expr):
 
         elif operator is log.ln:
             return apply(Log,map(parse_sage_exp,operands))
+
+        elif operator is log.exp and operands == [1]:
+            return E()
+
+    print 'Unable to cast Sage Type to Internal:', expr, type(expr)
+    raise NoWrapper
 
 
 #-------------------------------------------------------------
@@ -667,8 +678,9 @@ class Variable(Base_Symbol):
         self.latex = '$%s$' % symbol
         self.args = str(symbol)
 
-    def get_sympy():
-        return var(self.symbol)
+    def _sage_(self):
+        return sage.var(self.symbol)
+
 
 class RealVariable(Base_Symbol):
     '''It's like above but with the assumption that it's real'''
@@ -982,11 +994,34 @@ class Numeric(Term):
 
         return self.combine_fallback(other,context)
 
-class Constant(Term):
-    pass
+#Constants should be able to be represented by multiple symbols
 
-class E(Base_Symbol):
-    pass
+class Constant(Term):
+    sensitive = True
+    representation = None
+
+    def __init__(self,*symbol):
+        self.ensure_id()
+        self.args = self.representation.symbol
+        self.latex = self.representation.latex
+
+class E(Constant):
+    representation = Base_Symbol('e')
+
+    def _sage_(self):
+        return sage.exp(1)
+
+class Pi(Constant):
+    representation = Base_Symbol('\pi')
+
+    def _sage_(self):
+        return sage.pi
+
+class Khinchin(Constant):
+    representation = Base_Symbol('K_0')
+
+    def _sage_(self):
+        return sage.khinchin
 
 def Zero():
     return Numeric(0)
@@ -1173,8 +1208,7 @@ operation_html_sandwich = '''
     <span class="ui-state-disabled" math-type="parenthesis" math-meta-class="sugar" group="{{id}}">$$)$$</span>
     {% endif %}
 
-    <span class="ui-state-disabled" math-type="operator" math-meta-class="operator" group="{{id}}">$${{symbol2}}$$</span>
-
+    {{tail}}
     </span>
 '''
 
@@ -1245,7 +1279,7 @@ class Operation(Term):
             return self.html.render(c)
         elif self.ui_style == 'sandwich':
             self.html = template.Template(operation_html_sandwich)
-            c = template.Context({'id': self.id, 'math': self.get_math(), 'type': self.classname(), 'group': self.group, 'operand': self.operand.get_html(), 'symbol': self.symbol, 'symbol2': self.symbol2, 'parenthesis': self.show_parenthesis})
+            c = template.Context({'id': self.id, 'math': self.get_math(), 'type': self.classname(), 'group': self.group, 'operand': self.operand.get_html(), 'symbol': self.symbol, 'tail': self.tail.get_html(), 'parenthesis': self.show_parenthesis})
             return self.html.render(c)
         elif self.ui_style == 'prefix':
             self.html = template.Template(operation_html_prefix)
@@ -1488,10 +1522,9 @@ class Laplacian(Operation):
         self.operand.group = self.id
         self.terms = [self.operand]
 
-class Integral(Operation):
-    ui_style = 'sandwich'
-    symbol = '\\int'
-    symbol2 = 'dx'
+class Differential(Operation):
+    ui_style = 'prefix'
+    symbol = 'd'
     show_parenthesis = False
 
     def __init__(self,operand):
@@ -1499,6 +1532,26 @@ class Integral(Operation):
         self.operand = operand
         self.operand.group = self.id
         self.terms = [self.operand]
+
+    def _sage_(self):
+        return sage.var('dx')
+
+class Integral(Operation):
+    ui_style = 'sandwich'
+    symbol = '\\int'
+    show_parenthesis = False
+
+    def __init__(self,operand,differential):
+        self.ensure_id()
+        self.operand = operand
+        self.operand.group = self.id
+        self.differential = differential
+        self.differential.group = self.id
+
+        # The trailing differential dX
+        self.tail = self.differential
+
+        self.terms = [self.operand, self.tail]
 
     def _sage_(self):
         return sage.var('i')

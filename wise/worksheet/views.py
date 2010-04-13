@@ -38,7 +38,7 @@ def errors(f):
         except Exception,e:
             print e
             print traceback.print_exc()
-            return HttpResponse('Fail')
+            return HttpResponse(json.dumps({'error': str(e)}))
     return wrapper
 
 memo = {}
@@ -464,10 +464,17 @@ def generate_palette():
     def Placeholder():
         return mathobjects.Placeholder()
 
+    constants = {'name': 'Constants', 'type': 'array', 'objects': [
+                    mathobjects.E().get_html(),
+                    mathobjects.Pi().get_html(),
+                    mathobjects.Khinchin().get_html(),
+                ]}
+
     variables = {'name': 'Variables', 'type': 'array', 'objects': [
                     mathobjects.Variable('x').get_html(),
                     mathobjects.Variable('y').get_html(),
-                    mathobjects.Variable('z').get_html()
+                    mathobjects.Variable('z').get_html(),
+                    mathobjects.E().get_html()
                 ]}
 
     trig = {'name': 'Functions', 'type': 'tabular', 'objects': [
@@ -493,7 +500,7 @@ def generate_palette():
                     ('Length', mathobjects.Length(Placeholder()).get_html()),
                 ]}
 
-    palette = [trig,variables,operations,numbers,physics]
+    palette = [trig,variables,operations,numbers,physics,constants]
 
     interface_ui = template.Template(palette_template)
     c = template.Context({'palette':palette})

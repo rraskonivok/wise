@@ -160,7 +160,7 @@ class AddNumerics(Transform):
         sumof = Numeric(first.number + second.number)
         return json.dumps({'first': sumof.get_html(), 'second': None})
 
-MathematicalTransform(internal='Integrate', first='LHS', second='RHS', context = 'Equation', prettytext = '$$\int A = \int B$$').save()
+MathematicalTransform(internal='Integrate', first='Equation', second='Variable', context = 'null', prettytext = '$$\int A dB$$').save()
 
 class Integrate(Transform):
     first_type = [ Term ]
@@ -168,12 +168,16 @@ class Integrate(Transform):
     context = Addition
 
     def __new__(self,first,second):
-        first = LHS(Integral(first.lhs))
-        second = RHS(Integral(second.rhs))
+        ldifferential = Differential(second)
+        rdifferential = Differential(second)
+        new_lhs = LHS(Integral(first.lhs.lhs, ldifferential))
+        new_rhs = RHS(Integral(first.rhs.rhs, rdifferential))
 
-        first.lhs.ui_sortable(second.rhs)
-        second.rhs.ui_sortable(first.lhs)
-        return json.dumps({'first': first.get_html(), 'second': second.get_html()})
+        new_lhs.lhs.ui_sortable(new_rhs.rhs)
+        new_rhs.rhs.ui_sortable(new_lhs.lhs)
+
+        new_eq = Equation(new_lhs, new_rhs)
+        return json.dumps({'first': new_eq.get_html()})
 
 MathematicalTransform(internal='Differentiate', first='LHS', second='RHS', context = 'Equation', prettytext = '$$\\frac{d}{d x} A = \\frac{d}{d x} B$$').save()
 
