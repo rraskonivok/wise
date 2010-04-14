@@ -69,6 +69,22 @@ body {
     margin:0px; padding:0px;
 }
 
+#header {
+    width: 100%;
+    height: 15px;
+    position: fixed;
+    z-index: 2;
+    text-align: right;
+}
+
+#header span.left {
+    float: left;
+}
+
+#header span.right {
+    float: right;
+}
+
 .parenthesis {
     display: inline-block;
     /* TODO: There are times when we would like the baseline to
@@ -247,7 +263,9 @@ body {
 }
 
 #palette {
-    float: right;
+    top: 25px;
+    position: fixed;
+    right: 0px;
 }
 
 #collapser {

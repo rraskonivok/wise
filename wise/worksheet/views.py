@@ -85,7 +85,7 @@ def sage_parse(request, eq_id):
 
     sage = sage.split('\n')
     print sage
-    
+
     try:
         evald = mathobjects.sage.sage_eval(sage)
         parsd = mathobjects.parse_sage_exp(evald)
@@ -97,7 +97,9 @@ def sage_parse(request, eq_id):
         js = json.dumps({'error': 'Could not parse'})
     return HttpResponse(js)
 
+@errors
 def eq(request, eq_id):
+    ws = Workspace.objects.get(id=eq_id)
     eqs = Equation.objects.filter(workspace=eq_id)
     debug_parse_tree = unencode( request.GET.get('tree') )
     outputs = []
@@ -124,22 +126,10 @@ def eq(request, eq_id):
     if debug_parse_tree:
         return HttpResponse(outputs)
 
-    return render_to_response('worksheet.html', {'equations':outputs})
+    return render_to_response('worksheet.html', {'title': ws.name, 'equations':outputs})
 
 transform_interface = '''
 {% for option in options %}
-    <button title="{{option.internal}}" onclick="javascript:apply_transform('{{option.internal}}')">{{option.prettytext}}</button>
-{% endfor %}
-
-{% for option in options2 %}
-    <button title="{{option.internal}}" onclick="javascript:apply_transform('{{option.internal}}')">{{option.prettytext}}</button>
-{% endfor %}
-
-{% for option in options3 %}
-    <button title="{{option.internal}}" onclick="javascript:apply_transform('{{option.internal}}')">{{option.prettytext}}</button>
-{% endfor %}
-
-{% for option in options4 %}
     <button title="{{option.internal}}" onclick="javascript:apply_transform('{{option.internal}}')">{{option.prettytext}}</button>
 {% endfor %}
 '''
@@ -149,6 +139,9 @@ def lookup_transform(request, eq_id):
     first_type = unencode( request.POST.get('first') )
     second_type = unencode( request.POST.get('second') )
     context = unencode( request.POST.get('context') )
+
+    if not (first_type and second_type and context):
+        return HttpResponse(json.dumps({'error': 'Insufficent lookup information'}))
 
     #Fix this with:
     #    if first_type in dir('mathobjects') 
@@ -160,8 +153,18 @@ def lookup_transform(request, eq_id):
     if second_type != 'null':
         second_basetype = eval('mathobjects.' + second_type).base_type
 
-    options = set(MathematicalTransform.objects.filter(first=first_type,second=second_type,context=context)) | set(MathematicalTransform.objects.filter(first=first_basetype,second=second_basetype,context=context)) | set(MathematicalTransform.objects.filter(first=first_type,second=second_basetype,context=context)) | set(MathematicalTransform.objects.filter(first=first_basetype,second=second_type,context=context)) 
+
+    #Create sets of the database queries
+    lookup1 = set(MathematicalTransform.objects.filter(first=first_type,second=second_type,context=context))
+    lookup2 = set(MathematicalTransform.objects.filter(first=first_basetype,second=second_basetype,context=context)) 
+    lookup3 = set(MathematicalTransform.objects.filter(first=first_type,second=second_basetype,context=context))
+    lookup4 = set(MathematicalTransform.objects.filter(first=first_basetype,second=second_type,context=context))
+
+    #Take the union of the sets so as to avoid identical operations
+    options = lookup1 | lookup2 | lookup3 | lookup4
+
     interface_ui = template.Template(transform_interface)
+
     c = template.Context({'options':options})
     return HttpResponse(interface_ui.render(c))
 
@@ -490,6 +493,7 @@ def generate_palette():
                     ('Fraction', mathobjects.Fraction(Placeholder(),Placeholder()).get_html()),
                     ('Power', mathobjects.Power(Placeholder(),Placeholder()).get_html()),
                     ('Wedge', mathobjects.Wedge(Placeholder(),Placeholder()).get_html()),
+                    ('Integral', mathobjects.Integral(Placeholder(),mathobjects.Differential(Placeholder())).get_html()),
                 ]}
 
     numbers = {'name': 'Numbers', 'type': 'array', 'objects': [

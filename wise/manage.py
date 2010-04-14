@@ -7,7 +7,7 @@ sys.path.append('/usr/lib/python2.6/site-packages')
 #os.environ['PYTHONHOME'] += ':/usr/lib/python2.6/site-packages'
 
 #Yah, so apparently the sage has to be in the main thread otherwise it goes crazy
-from sage.all import *
+#from sage.all import *
 
 from django.core.management import execute_manager
 try:

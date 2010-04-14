@@ -6,8 +6,8 @@ class Workspace(models.Model):
     #The workspace should have a number of EXPORTABLE equations which are higlighted in yellow, these
     #can be pulled into other workspaces and inserted and quered in lookup_identities via sim hashes
 
-    def __unicode__(self):
-        return self.name
+#    def __unicode__(self):
+#        return self.name
 
 class Equation(models.Model):
     workspace = models.ForeignKey(Workspace,blank=False,null=False)
@@ -15,11 +15,12 @@ class Equation(models.Model):
     followsfrom = models.OneToOneField('self',null=True,blank=True)
     followsby = models.CharField(max_length=200,null=True,blank=True)
 
-    def __unicode__(self):
-        return self.name
+#    def __unicode__(self):
+#        return self.name
 
 #Statements of the form {n is integer} , x >0 ...
 #Charactersitics of the workspace... physical quanities... sig figures
+
 class Assumption(models.Model):
     workspace = models.ForeignKey(Workspace,blank=False,null=False)
 
@@ -32,8 +33,8 @@ class MathematicalObject(models.Model):
     prettyname = models.CharField(max_length=200)
     arguments = models.IntegerField(max_length=3)
 
-    def __unicode__(self):
-        return self.prettyname
+#    def __unicode__(self):
+#        return self.prettyname
 
 class MathematicalTransform(models.Model):
     first = models.CharField(max_length=200)
@@ -42,16 +43,16 @@ class MathematicalTransform(models.Model):
     prettytext = models.CharField(max_length=200)
     internal = models.CharField(max_length=200,primary_key=True)
 
-    def __unicode__(self):
-        return self.prettytext
+#    def __unicode__(self):
+#        return self.prettytext
 
 class MathematicalIdentity(models.Model):
     first = models.CharField(max_length=200)
     prettytext = models.CharField(max_length=200)
     internal = models.CharField(max_length=200,primary_key=True)
 
-    def __unicode__(self):
-        return self.prettytext
+#    def __unicode__(self):
+#        return self.prettytext
 
 #Identites are for SINGLE elements
 

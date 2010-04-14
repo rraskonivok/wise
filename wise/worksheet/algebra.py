@@ -35,7 +35,12 @@ class Transform(object):
 # Placeholder Substitute : (Placeholder, Term) --> Term
 #-------------------------------------------------------------
 
-MathematicalTransform(internal='PlaceholderSubstitute', first='Placeholder', second='Term', context = 'null', prettytext = '$$Substitute$$').save()
+MathematicalTransform(
+        internal='PlaceholderSubstitute',
+        first='Placeholder',
+        second='Term',
+        context = 'null',
+        prettytext = '$$Substitute$$').save()
 
 class PlaceholderSubstitute(Transform):
     def __new__(self,first,second):
@@ -50,7 +55,12 @@ class PlaceholderSubstitute(Transform):
 # Term Substitute : (Equation, Term) --> Term
 #-------------------------------------------------------------
 
-MathematicalTransform(internal='TermSubstitute', first='Equation', second='Term', context = 'null', prettytext = '$$Substitute$$').save()
+MathematicalTransform(
+        internal='TermSubstitute',
+        first='Equation',
+        second='Term',
+        context = 'null',
+        prettytext = '$$Substitute$$').save()
 
 class TermSubstitute(Transform):
 
@@ -67,7 +77,12 @@ class TermSubstitute(Transform):
 # DistributeNegation : (Negate, Addition) --> (Negate , ...)
 #-------------------------------------------------------------
 
-MathematicalTransform(internal='DistributeNegation', first='Negate', second='Addition', context = 'null', prettytext = '$$-(A+B)=-A+-B$$').save()
+MathematicalTransform(
+        internal='DistributeNegation',
+        first='Negate',
+        second='Addition',
+        context = 'null',
+        prettytext = '$$-(A+B)=-A+-B$$').save()
 
 class DistributeNegation(Transform):
 
@@ -82,7 +97,12 @@ class DistributeNegation(Transform):
 # AdditiveGroup : (Term, Term) --> Addition
 #-------------------------------------------------------------
 
-MathematicalTransform(internal='AdditiveGroup', first='Term', second='Term', context = 'Addition', prettytext = '$$x+y=(x+y)$$').save()
+MathematicalTransform(
+        internal='AdditiveGroup',
+        first='Term',
+        second='Term',
+        context = 'Addition',
+        prettytext = '$$x+y=(x+y)$$').save()
 
 class AdditiveGroup(Transform):
 
@@ -97,7 +117,12 @@ class AdditiveGroup(Transform):
 # AdditiveSwap : (Term, Term) --> (Term, Term)
 #-------------------------------------------------------------
 
-MathematicalTransform(internal='AdditiveSwap', first='Term', second='Term', context = 'Addition', prettytext = '$$x+y=y+x$$').save()
+MathematicalTransform(
+        internal='AdditiveSwap',
+        first='Term',
+        second='Term',
+        context = 'Addition',
+        prettytext = '$$x+y=y+x$$').save()
 
 class AdditiveSwap(Transform):
 
@@ -108,7 +133,12 @@ class AdditiveSwap(Transform):
 # MultiplicativeSwap : (Term, Term) --> (Term, Term)
 #-------------------------------------------------------------
 
-MathematicalTransform(internal='MultiplicativeSwap', first='Term', second='Term', context = 'Product', prettytext = '$$x \cdot y=y \cdot x$$').save()
+MathematicalTransform(
+        internal='MultiplicativeSwap',
+        first='Term',
+        second='Term',
+        context = 'Product',
+        prettytext = '$$x \cdot y=y \cdot x$$').save()
 
 class MultiplicativeSwap(Transform):
 
@@ -119,7 +149,12 @@ class MultiplicativeSwap(Transform):
 # MultiplicativeSwap : (LHS, RHS) --> (RHS, LHS)
 #-------------------------------------------------------------
 
-MathematicalTransform(internal='EquationSymmetric', first='LHS', second='RHS', context = 'Equation', prettytext = '$$(A=B) \equiv (B=A)$$').save()
+MathematicalTransform(
+        internal='EquationSymmetric',
+        first='LHS',
+        second='RHS',
+        context = 'Equation',
+        prettytext = '$$(A=B) \equiv (B=A)$$').save()
 
 class EquationSymmetric(Transform):
     first_type = [ Term ]
@@ -129,7 +164,11 @@ class EquationSymmetric(Transform):
     def __new__(self,first,second):
         return json.dumps({'first': second.get_html(), 'second': first.get_html()})
 
-MathematicalTransform(internal='EquationTransitive', first='Equation', second='Equation', context = 'null', prettytext = '$$A=B=C \equiv A=C$$').save()
+MathematicalTransform(internal='EquationTransitive',
+        first='Equation',
+        second='Equation',
+        context = 'null',
+        prettytext = '$$A=B=C \equiv A=C$$').save()
 
 #-------------------------------------------------------------
 # EquationTransitive : (Equation, Equation) --> (Equation)
@@ -149,7 +188,12 @@ class EquationTransitive(Transform):
         else:
             return json.dumps({'error': 'RHS of Equation 1 does not match LHS of Equation 2'})
 
-MathematicalTransform(internal='AddNumerics', first='Numeric', second='Numeric', context = 'Addition', prettytext = '$$x+y$$').save()
+MathematicalTransform(
+        internal='AddNumerics',
+        first='Numeric',
+        second='Numeric',
+        context = 'Addition',
+        prettytext = '$$x+y$$').save()
 
 class AddNumerics(Transform):
     first_type = [ Term ]
@@ -160,7 +204,12 @@ class AddNumerics(Transform):
         sumof = Numeric(first.number + second.number)
         return json.dumps({'first': sumof.get_html(), 'second': None})
 
-MathematicalTransform(internal='Integrate', first='Equation', second='Variable', context = 'null', prettytext = '$$\int A dB$$').save()
+MathematicalTransform(
+        internal='Integrate',
+        first='Equation',
+        second='Variable',
+        context = 'null',
+        prettytext = '$$\int A dB$$').save()
 
 class Integrate(Transform):
     first_type = [ Term ]
@@ -179,7 +228,12 @@ class Integrate(Transform):
         new_eq = Equation(new_lhs, new_rhs)
         return json.dumps({'first': new_eq.get_html()})
 
-MathematicalTransform(internal='Differentiate', first='LHS', second='RHS', context = 'Equation', prettytext = '$$\\frac{d}{d x} A = \\frac{d}{d x} B$$').save()
+MathematicalTransform(
+        internal='Differentiate',
+        first='LHS',
+        second='RHS',
+        context = 'Equation',
+        prettytext = '$$\\frac{d}{d x} A = \\frac{d}{d x} B$$').save()
 
 class Differentiate(Transform):
     first_type = [ Term ]
@@ -212,7 +266,12 @@ class Differentiate(Transform):
 
         return json.dumps({'first': first.get_html(), 'second': second.get_html()})
 
-MathematicalTransform(internal='DifferentiateEq', first='Equation', second='Variable', context = 'null', prettytext = '$$\\frac{d}{d B} A$$').save()
+MathematicalTransform(
+        internal='DifferentiateEq',
+        first='Equation',
+        second='Variable',
+        context = 'null',
+        prettytext = '$$\\frac{d}{d B} A$$').save()
 
 class DifferentiateEq(Transform):
     def __new__(self,first,second):
@@ -245,7 +304,12 @@ class DifferentiateEq(Transform):
 
         return json.dumps({'first': first.get_html()})
 
-MathematicalTransform(internal='LinearDistritubeIntegral', first='Integral', second='Addition', context = 'null', prettytext = '$$\int A+B = \int A + \int B$$').save()
+MathematicalTransform(
+        internal='LinearDistritubeIntegral',
+        first='Integral',
+        second='Addition',
+        context = 'null',
+        prettytext = '$$\int A+B = \int A + \int B$$').save()
 
 class LinearDistritubeIntegral(Transform):
     first_type = [ Term ]
@@ -254,11 +318,17 @@ class LinearDistritubeIntegral(Transform):
 
     def __new__(self,first,second):
         print second.terms
-        split = map(Integral,second.terms)
+        split = [Integral(term,first.differential) for term in second.terms]
+        #split = map(Integral,second.terms)
         distributed = Addition(*split)
         return json.dumps({'first': distributed.get_html()})
 
-MathematicalTransform(internal='LinearCombineIntegral', first='Integral', second='Integral', context = 'Addition', prettytext = '$$\int A + \int B = \int A+B $$').save()
+MathematicalTransform(
+        internal='LinearCombineIntegral',
+        first='Integral',
+        second='Integral',
+        context = 'Addition',
+        prettytext = '$$\int A + \int B = \int A+B $$').save()
 
 class LinearCombineIntegral(Transform):
     first_type = [ Term ]
@@ -269,7 +339,12 @@ class LinearCombineIntegral(Transform):
         combined = Integral(first.operand + second.operand)
         return json.dumps({'first': combined.get_html(), 'remove': 'second'})
 
-MathematicalTransform(internal='LinearDistritubeDiff', first='Diff', second='Addition', context = 'null', prettytext = '$$\\frac{d}{d x} (A + B)  = \\frac{d}{d x} A + \\frac{d}{d x} B $$').save()
+MathematicalTransform(
+        internal='LinearDistritubeDiff',
+        first='Diff',
+        second='Addition',
+        context = 'null',
+        prettytext = '$$\\frac{d}{d x} (A + B) = \\frac{d}{d x} A + \\frac{d}{d x} B $$').save()
 
 class LinearDistritubeDiff(Transform):
     first_type = [ Term ]
@@ -283,7 +358,12 @@ class LinearDistritubeDiff(Transform):
         distributed = Addition(*split)
         return json.dumps({'first': distributed.get_html()})
 
-MathematicalTransform(internal='DiffLeibniz', first='Diff', second='Product', context = 'null', prettytext = '$$\\frac{d}{d x} (A B)  = \\frac{d}{d x} A B + A \\frac{d}{d x} B $$').save()
+MathematicalTransform(
+        internal='DiffLeibniz',
+        first='Diff',
+        second='Product',
+        context = 'null',
+        prettytext = '$$\\frac{d}{d x} (A B)  = \\frac{d}{d x} A B + A \\frac{d}{d x} B $$').save()
 
 class DiffLeibniz(Transform):
     def __new__(self,first,second):
@@ -299,7 +379,12 @@ class DiffLeibniz(Transform):
         newsum = Addition(newterms)
         return json.dumps({'first': newsum.get_html()})
 
-MathematicalTransform(internal='DiffNegate', first='Diff', second='Negate', context = 'null', prettytext = '$$\\frac{d}{d x} -A  = - \\frac{d}{d x} A $$').save()
+MathematicalTransform(
+        internal='DiffNegate',
+        first='Diff',
+        second='Negate',
+        context = 'null',
+        prettytext = '$$\\frac{d}{d x} -A  = - \\frac{d}{d x} A $$').save()
 
 class DiffNegate(Transform):
     def __new__(self,first,second):
@@ -309,7 +394,12 @@ class DiffNegate(Transform):
         propogate = Negate( Diff(second.operand) )
         return json.dumps({'first': propogate.get_html()})
 
-MathematicalTransform(internal='DiffPropogate', first='Diff', second='Term', context = 'null', prettytext = '$$ Propogate $$').save()
+MathematicalTransform(
+        internal='DiffPropogate',
+        first='Diff',
+        second='Term',
+        context = 'null',
+        prettytext = '$$ Propogate $$').save()
 
 class DiffPropogate(Transform):
     def __new__(self,first,second):
@@ -319,7 +409,12 @@ class DiffPropogate(Transform):
         propogate = first.propogate()
         return json.dumps({'first': propogate.get_html()})
 
-MathematicalTransform(internal='DiffMerge', first='Addition', second='Addition', context = 'Addition', prettytext = '$$ Propogate $$').save()
+MathematicalTransform(
+        internal='DiffMerge',
+        first='Addition',
+        second='Addition',
+        context = 'Addition',
+        prettytext = '$$ Propogate $$').save()
 
 class DiffMerge(Transform):
     def __new__(self,first,second):
@@ -331,24 +426,34 @@ class DiffMerge(Transform):
 # Identities
 #-------------------------------------------------------------
 
-
 class Identity(object):
     first_type = None
 
-MathematicalIdentity(internal='LengthTo_ly', first='Length', prettytext = '$$[ly]$$').save()
+MathematicalIdentity(
+        internal='LengthTo_ly',
+        first='Length',
+        prettytext = '$$[ly]$$').save()
 
 class LengthTo_ly(Identity):
     def __new__(self,first):
         first.convert_unit(Unit('ly'))
         return json.dumps({'first': first.get_html()})
 
-MathematicalIdentity(internal='LengthTo_km', first='Length', prettytext = '$$[km]$$').save()
+MathematicalIdentity(
+        internal='LengthTo_km',
+        first='Length',
+        prettytext = '$$[km]$$').save()
+
 class LengthTo_km(Identity):
     def __new__(self,first):
         first.convert_unit(Unit('km'))
         return json.dumps({'first': first.get_html()})
 
-MathematicalIdentity(internal='Momentum_Def1', first='Momentum', prettytext = '$$p=mv$$').save()
+MathematicalIdentity(
+        internal='Momentum_Def1',
+        first='Momentum',
+        prettytext = '$$p=mv$$').save()
+
 class Momentum_Def1(Identity):
     def __new__(self,first):
         first = Product(Mass(Base_Symbol('m')),Velocity(Base_Symbol('v')))

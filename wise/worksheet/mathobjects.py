@@ -364,7 +364,11 @@ class bind():
         '''ui.item, ui.sender, original list '''
         pass
 
-javascript_html = ''' {% autoescape off %} <script language="javascript" type="text/javascript" data-type="ajax">{{javascript}}</script> {% endautoescape %} '''
+javascript_html = '''
+{% autoescape off %}
+<script language="javascript" type="text/javascript" data-type="ajax">{{javascript}}</script>
+{% endautoescape %} 
+'''
 
 class make_sortable(object):
     '''Wrapper to produce the jquery command to make ui elements
@@ -393,7 +397,13 @@ class make_sortable(object):
     dropOnEmpty = '"true"'
     axis = '"false"'
 
-    def __init__(self, sortable_object, ui_connected=None, onremove=None, onrecieve=None, onsort=None, onupdate=None):
+    def __init__(self, sortable_object,
+            ui_connected=None,
+            onremove=None,
+            onrecieve=None,
+            onsort=None,
+            onupdate=None):
+
         self.sortable_object = jquery(sortable_object)
         if ui_connected is None:
             self.connectWith = 'undefined'
@@ -424,8 +434,12 @@ class make_sortable(object):
         # this is solved by running all scripts when the document
         # signals it is. 
 
-        html = '$(document).ready(function(){make_sortable(%s,%s,%s);})' % (self.sortable_object, self.connectWith, str(options))
-        return html
+        args = (self.sortable_object, self.connectWith,
+                str(options))
+
+        html = '$(document).ready(function(){make_sortable(%s,%s,%s);})'
+
+        return html % args
 
 #-------------------------------------------------------------
 # Base Term Class 
@@ -442,9 +456,12 @@ class make_sortable(object):
 
 #Pretty much everything inherits from this
 
-term_html = '''<span id="{{id}}" class="{{class}}{{sensitive}} term" math="{{math}}" math-type="{{type}}" title="{{type}}" math-meta-class="term" group="{{group}}"><span class="noselect" >
+term_html = '''
+<span id="{{id}}" class="{{class}}{{sensitive}} term" math="{{math}}" math-type="{{type}}" title="{{type}}" math-meta-class="term" group="{{group}}">
+<span class="noselect" >
 ${{latex}}$
-</span></span> '''
+</span>
+</span> '''
 
 class Term(object):
 
@@ -463,7 +480,7 @@ class Term(object):
     javascript = SafeUnicode()
     has_sort = False
 
-    #Every class that inherits from Term should inherit this to ensure proper lookups
+    #Classes that inherit from Term should inherit this to ensure proper lookups
     base_type = 'Term'
 
     def __init__(self,*ex):
@@ -489,7 +506,15 @@ class Term(object):
 
     def get_html(self):
         self.ensure_id()
-        c = template.Context({'id': self.id,'class': self.css_class, 'sensitive':self.get_sensitive(), 'latex':self.latex, 'math': self.get_math(), 'type': self.classname(), 'group': self.group })
+        c = template.Context({
+            'id': self.id,
+            'class': self.css_class,
+            'sensitive':self.get_sensitive(),
+            'latex':self.latex,
+            'math': self.get_math(),
+            'type': self.classname(),
+            'group': self.group
+            })
 
         if self.javascript:
             return self.html.render(c) + self.get_javascript()
@@ -507,9 +532,6 @@ class Term(object):
             return '(' + self.classname() + ' ' + self.terms[0].get_math() + ')'
         #Terms with special arguments
         else:
-            if not self.args:
-                self.args = self.sympy
-                print '%s needs sympy -> args' % self.classname()
             return '(' + self.classname() + ' ' + str(self.args) + ')'
 
     #############################################################
@@ -573,7 +595,7 @@ class Term(object):
                 return result
 
     def combine_fallback(self,other,context):
-        '''So we don't know what to do with it so just slap an operator between two terms and leave it as is'''
+        '''Just slap an operator between two terms and leave it as is'''
 
         #Eval the context and fetch its corresponding infix symbol
         if context == 'Addition':
@@ -590,11 +612,12 @@ class Term(object):
                 return result
 
     def ui_id(self):
-        #returns the jquery code to reference to the html tag
+        '''returns the jquery code to reference to the html tag'''
         return '$("body").find("#%s")' % (self.id)
 
     def ui_bind(self):
-        #bind a javscript level event (down,transfer list) to a python side method of the object (i.e. divide, negate)... 
+        #bind a javscript level event (down,transfer list) to a
+        #python side method of the object (i.e. divide, negate)...
         pass
 
     def ui_sortable(self,other=None):
@@ -710,10 +733,12 @@ class Unit(Term):
             return unit
 
     def convert(self,other):
-        '''Try to resolve the constant we need to multiply the constant by to convert
-        one unit into another'''
+        '''Try to resolve the constant we need to multiply the constant by to
+        convert one unit into another'''
+
         dv = self.get_sympy()/other.get_sympy()
-        #Returns a set of units in the resultant division, if the result is dimensionless => units resolve
+        # Returns a set of units in the resultant division, if the
+        # result is dimensionless => units resolve
         atoms = dv.atoms()
         if len(atoms) == 1:
             factor = atoms.pop()
@@ -729,7 +754,9 @@ physical_html = '''
 <span class="parenthesis" title="{{type}}">
 {{quantity}}
 </span>
-<span class="ui-state-disabled unit" group="{{id}}" math-meta-class="unit">$${{unit}}$$</span>
+    <span class="ui-state-disabled unit" group="{{id}}" math-meta-class="unit">
+    $${{unit}}$$
+    </span>
 </span>
 
 '''
@@ -752,14 +779,29 @@ class Physical_Quantity(Base_Symbol):
 
     def get_html(self):
 
-        #So if we have a numeric quantity on the unit don't even bother with (Physical_Quantity (Numeric 3.14)) stuff, just treat the number at atomic
+        # So if we have a numeric quantity on the unit don't even
+        # bother with (Physical_Quantity (Numeric 3.14)) stuff,
+        # just treat the number at atomic
+
         if type(self.quantity) is Numeric:
             quantity_repr = '$$'+ str(self.quantity.number) + '$$'
-        #If we have something more complex (Physical_Quantity (Addition ... )) then have it act as a container
+
+        # If we have something more complex (Physical_Quantity
+        # (Addition ... )) then have it act as a container 
+
         else:
             quantity_repr = self.quantity.get_html()
 
-        c = template.Context({'id': self.id,'class': self.css_class, 'sensitive':self.get_sensitive(), 'quantity':quantity_repr, 'math': self.get_math(), 'type': self.classname(), 'group': self.group, 'unit': self.unit.symbol})
+        c = template.Context({
+            'id': self.id,
+            'class': self.css_class,
+            'sensitive':self.get_sensitive(),
+            'quantity':quantity_repr,
+            'math': self.get_math(),
+            'type': self.classname(),
+            'group': self.group,
+            'unit': self.unit.symbol})
+
         return self.html.render(c)
 
     def combine(self,other,context):
@@ -777,7 +819,7 @@ class Physical_Quantity(Base_Symbol):
         return self.combine_fallback(other,context)
 
     def convert_unit(self,other):
-        '''Scale the quantity by the neccesary factor needed to convert between unit systems
+        '''Scale the quantity by the necessary factor needed to convert between unit systems
 
         a = Numeric(3)
         Length(a,Unit('km')).convert_unit(Unit('m')) # Length('3000',Unit('m'))
@@ -852,7 +894,15 @@ class Power(Term):
         self.exponent.group = self.id
         self.base.css_class = 'exponent'
         self.base.group = self.id
-        c = template.Context({'id': self.id, 'math': self.get_math(), 'group': self.group, 'base': self.base.get_html(), 'type': self.classname(), 'exponent': self.exponent.get_html() })
+
+        c = template.Context({
+            'id': self.id,
+            'math': self.get_math(),
+            'group': self.group,
+            'base': self.base.get_html(),
+            'type': self.classname(),
+            'exponent': self.exponent.get_html() })
+
         return self.html.render(c)
 
     def combine(self,other,context):
@@ -865,22 +915,8 @@ class Power(Term):
 
         return self.combine_fallback(other,context)
 
-'''
-fraction_html = '<li id="{{id}}" class="Fraction" math-meta-class="term" math-type="{{type}}" math="{{ math }}" group="{{group}}" class='fraction'><ul class="fraction">
-<table>
-<tr>
-<td class="fractionbar">{{ num }}</td>
-</tr>
-<tr class="den">
-<td>{{ den }}</td>
-</tr>
-</table>
-</ul>
-</li>
-'
-'''
-
-fraction_html = '''<span id="{{id}}" class="fraction container" math-meta-class="term" math-type="{{type}}" math="{{ math }}" group="{{group}}">
+fraction_html = '''
+<span id="{{id}}" class="fraction container" math-meta-class="term" math-type="{{type}}" math="{{ math }}" group="{{group}}">
 
 <span class="num">
 {{ num }}
@@ -912,10 +948,19 @@ class Fraction(Term):
         self.num.group = self.id
         self.den.group = self.id
 
-        c = template.Context({'id': self.id, 'math': self.get_math(), 'num': self.num.get_html(), 'den': self.den.get_html(), 'group': self.group, 'type': self.classname()})
+        c = template.Context({
+            'id': self.id,
+            'math': self.get_math(),
+            'num': self.num.get_html(),
+            'den': self.den.get_html(),
+            'group': self.group,
+            'type': self.classname()
+            })
+
         return self.html.render(c)
 
     def combine(self,other,context):
+        #TODO: This breaks a heck of a lot
         if isinstance(other,Fraction):
             num = Addition(Product(self.num,other.den),Product(self.den,other.num))
             den = Product(self.den,other.den)
@@ -927,7 +972,12 @@ class Fraction(Term):
 
         return self.combine_fallback(other,context)
 
-numeric_html = '''<span id="{{id}}" title="{{type}}" class="{{class}} {{sensitive}} term" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}"><span class="noselect" >${{latex}}$</span></span>'''
+numeric_html = '''
+<span id="{{id}}" title="{{type}}" class="{{class}} {{sensitive}} term" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
+<span class="noselect" >
+${{latex}}$
+</span>
+</span>'''
 
 class Numeric(Term):
     type = 'numeric'
@@ -946,7 +996,15 @@ class Numeric(Term):
         return sage.Integer(self.number)
 
     def get_html(self):
-        c = template.Context({'id': self.id,'class': self.css_class, 'sensitive':self.get_sensitive(), 'latex':self.latex, 'math': self.get_math(), 'type': self.classname(), 'group': self.group})
+        c = template.Context({
+            'id': self.id,
+            'class': self.css_class,
+            'sensitive':self.get_sensitive(),
+            'latex':self.latex,
+            'math': self.get_math(),
+            'type': self.classname(),
+            'group': self.group})
+
         return self.html.render(c)
 
     def is_zero(self):
@@ -1078,8 +1136,6 @@ class Equation(object):
         self.lhs.group = self.id
         self.math = '(Equation ' + self.lhs.get_math() + ' ' +self.rhs.get_math()  + ')'
 
-        print self._sage_()
-
     def get_math(self):
         return self.math
 
@@ -1096,11 +1152,22 @@ class Equation(object):
 
         if not self.id:
             self.id = uf.gen()
-        c = template.Context({'id': self.id, 'rhs_id': self.rhs.id, 'lhs_id': self.lhs.id, 'math': self.math,  'lhs': self.lhs.get_html(), 'rhs': self.rhs.get_html()})
+
+        c = template.Context({
+            'id': self.id,
+            'rhs_id': self.rhs.id,
+            'lhs_id': self.lhs.id,
+            'math': self.math,
+            'lhs': self.lhs.get_html(),
+            'rhs': self.rhs.get_html()
+            })
+
         return self.html.render(c)
 
     def ensure_id(self):
-        '''Make sure there is a unique id set, if there isn't make one, but never overwrite prexisting one'''
+        '''Make sure there is a unique id set, if there isn't
+        make one, but never overwrite preexisting one'''
+
         if not self.id:
             self.id = uf.gen()
 
@@ -1114,11 +1181,11 @@ class Equation(object):
         return self.get_html()
 
 rhs_html = '''
-        <span id='{{id}}' math-type="RHS" math-meta-class="side" math="{{math}}" group="{{group}}" class="container">
-            {% autoescape off %}
-            {{rhs}}
-            {% endautoescape %}
-        </span>
+<span id='{{id}}' math-type="RHS" math-meta-class="side" math="{{math}}" group="{{group}}" class="container">
+    {% autoescape off %}
+    {{rhs}}
+    {% endautoescape %}
+</span>
 
 '''
 
@@ -1135,16 +1202,23 @@ class RHS(Term):
         return self.rhs._sage_()
 
     def get_html(self):
-        c = template.Context({'id': self.id, 'latex':self.latex, 'math': self.get_math(), 'type': self.classname(), 'group': self.group, 'rhs': self.rhs.get_html()})
+        c = template.Context({
+            'id': self.id,
+            'latex':self.latex,
+            'math': self.get_math(),
+            'type': self.classname(),
+            'group': self.group,
+            'rhs': self.rhs.get_html()
+            })
+
         return self.html.render(c)
 
 lhs_html = '''
-        <span id='{{id}}' math-type="LHS" math-meta-class="side" math="{{math}}" group="{{group}}" class="container" >
-            {% autoescape off %}
-            {{lhs}}
-            {% endautoescape %}
-        </span>
-
+<span id='{{id}}' math-type="LHS" math-meta-class="side" math="{{math}}" group="{{group}}" class="container" >
+    {% autoescape off %}
+    {{lhs}}
+    {% endautoescape %}
+</span>
 '''
 
 class LHS(Term):
@@ -1164,22 +1238,27 @@ class LHS(Term):
         return self.html.render(c)
 
 operation_html_postfix = '''
-    <span id="{{id}}" math-meta-class="term" class="term {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
+<span id="{{id}}" math-meta-class="term" class="term {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
+
     <span class="parenthesis">
     {{operand}}
     </span>
-    <span class="ui-state-disabled" math-type="operator" math-meta-class="operator" group="{{id}}">$${{symbol}}$$</span>
+
+    <span class="ui-state-disabled" math-type="operator" math-meta-class="operator" group="{{id}}">
+    $${{symbol}}$$
     </span>
+</span>
 '''
 
 operation_html_prefix = '''
-    <span id="{{id}}" math-meta-class="term" class="container {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
+<span id="{{id}}" math-meta-class="term" class="container {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
     <span class="ui-state-disabled operator" math-type="operator"
-    math-meta-class="operator" group="{{id}}" title="{{type}}" >$${{symbol}}$$</span>
+        math-meta-class="operator" group="{{id}}" title="{{type}}" >$${{symbol}}$$
+    </span>
 
-    {% if parenthesis %}
+{% if parenthesis %}
     <span class="pnths left"><img class='ui-state-disabled' src="/static/ui/lp.svg" /></span>
-    {% endif %}
+{% endif %}
 
     <span class="">
     {{operand}}
@@ -1189,12 +1268,12 @@ operation_html_prefix = '''
     <span class="pnths right"><img class='ui-state-disabled' src="/static/ui/rp.svg" /></span>
     {% endif %}
 
-    </span>
+</span>
 '''
 
 operation_html_sandwich = '''
-    <span id="{{id}}" math-meta-class="term" class="term {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
-    <span class="ui-state-disabled" math-type="operator" math-meta-class="operator" group="{{id}}">$${{symbol}}$$</span>
+    <span id="{{id}}" math-meta-class="term" class="container {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
+    <span class="ui-state-disabled operator" math-type="operator" math-meta-class="operator" group="{{id}}" title="{{type}}">$${{symbol}}$$</span>
 
     {% if parenthesis %}
     <span class="ui-state-disabled" math-type="parenthesis" math-meta-class="sugar" group="{{id}}">$$($$</span>
@@ -1261,36 +1340,86 @@ class Operation(Term):
         self.ensure_id()
         self.operand = operand
         self.operand.group = self.id
-        #We should define a class so that we can do substitutions later... based on whether or not the terms are commuative ... define a == type
+
+        #We should define a class so that we can do substitutions
+        #later... based on whether or not the terms are commutative
+        # ... define a == type
+
         self.terms = [self.operand]
 
     def action(self,operand):
         return self.get_html()
 
     def propogate(self):
-        #If self.is_linear then default to applying to each term... define scalars
         return self.get_html()
 
     def get_html(self):
+
+        #Infix Formatting
         if self.ui_style == 'infix':
             self.html = template.Template(operation_html_infix)
             objects = [o.get_html() for o in self.terms]
-            c = template.Context({'id': self.id, 'math': self.get_math(), 'type': self.classname(), 'group': self.group, 'operand': objects, 'symbol': self.symbol, 'parenthesis': self.show_parenthesis, 'jscript': self.get_javascript()})
+
+            c = template.Context({
+                'id': self.id,
+                'math': self.get_math(),
+                'type': self.classname(),
+                'group': self.group,
+                'operand': objects,
+                'symbol': self.symbol,
+                'parenthesis': self.show_parenthesis,
+                'jscript': self.get_javascript()
+                })
+
             return self.html.render(c)
+
+        #"Sandwich" Formatting
         elif self.ui_style == 'sandwich':
             self.html = template.Template(operation_html_sandwich)
-            c = template.Context({'id': self.id, 'math': self.get_math(), 'type': self.classname(), 'group': self.group, 'operand': self.operand.get_html(), 'symbol': self.symbol, 'tail': self.tail.get_html(), 'parenthesis': self.show_parenthesis})
+
+            c = template.Context({
+                'id': self.id,
+                'math': self.get_math(),
+                'type': self.classname(),
+                'group': self.group,
+                'operand': self.operand.get_html(),
+                'symbol': self.symbol,
+                'tail': self.tail.get_html(),
+                'parenthesis': self.show_parenthesis
+                })
+
             return self.html.render(c)
+
+        #Prefix Formatting
         elif self.ui_style == 'prefix':
             self.html = template.Template(operation_html_prefix)
+
+            c = template.Context({
+                'id': self.id,
+                'math': self.get_math(),
+                'type': self.classname(),
+                'group': self.group,
+                'operand': self.operand.get_html(),
+                'symbol': self.symbol,
+                'parenthesis': self.show_parenthesis,
+                'class': self.css_class
+                })
+
+        #Postfix Formatting
         elif self.ui_style == 'postfix':
             self.html = template.Template(operation_html_postfix)
 
-        c = template.Context({'id': self.id, 'math':
-            self.get_math(), 'type': self.classname(), 'group':
-            self.group, 'operand': self.operand.get_html(),
-            'symbol': self.symbol, 'parenthesis':
-            self.show_parenthesis, 'class': self.css_class})
+            c = template.Context({
+                'id': self.id,
+                'math': self.get_math(),
+                'type': self.classname(),
+                'group': self.group,
+                'operand': self.operand.get_html(),
+                'symbol': self.symbol,
+                'parenthesis': self.show_parenthesis,
+                'class': self.css_class
+                })
+
         return self.html.render(c)
 
     def get_symbol(self):
@@ -1338,6 +1467,7 @@ class Gradient(Operation):
         self.terms = [self.operand]
 
     def _sage_(self):
+        #TODO
         return sage.var('z')
 
 class Addition(Operation):
@@ -1349,7 +1479,9 @@ class Addition(Operation):
         self.ensure_id()
         self.terms = list(terms)
 
-        #If have nested Additions collapse them ... (Addition (Addition x y ) ) = (Addition x y)
+        #If have nested Additions collapse them Ex: 
+        #(Addition (Addition x y ) ) = (Addition x y)
+
         if len(terms) == 1:
             if type(terms[0]) is Addition:
                 self.terms = terms[0].terms
@@ -1359,7 +1491,6 @@ class Addition(Operation):
 
         self.operand = self.terms
         self.ui_sortable()
-        print self._sage_()
 
     def __add__(self,other):
         if type(other) is Addition:
@@ -1372,7 +1503,8 @@ class Addition(Operation):
            return reduce(sage.operator.add, sterms)
 
     def receive(self,obj,receiver_context,sender_type,sender_context,new_position):
-        #If the an object is dragged between sides of the equation negate the object
+        #If an object is dragged between sides of the equation negate the object
+
         if sender_context == 'LHS' or sender_context == 'RHS':
             obj = obj.negate()
             return obj.get_html()
@@ -1380,7 +1512,9 @@ class Addition(Operation):
             return obj.get_html()
 
     def remove(self,obj,remove_context):
-        #If we drag everything form this side of the equation set it equal to zero
+        '''If we drag everything form this side of the equation
+        zero it out'''
+
         if type(self.terms[0]) is Empty:
             zero = Numeric(0)
             return zero.get_html()
@@ -1483,7 +1617,7 @@ class Negate(Operation):
         if context == 'Addition':
             if isinstance(other,Negate):
                 ''' -A+-B = -(A+B)'''
-                return Negate( Addition(self.operand, other.operand) ).get_html()
+                return Negate(Addition(self.operand, other.operand)).get_html()
 
         return self.combine_fallback(other,context)
 
@@ -1527,14 +1661,18 @@ class Differential(Operation):
     symbol = 'd'
     show_parenthesis = False
 
-    def __init__(self,operand):
+    def __init__(self,variable):
         self.ensure_id()
-        self.operand = operand
+
+        self.variable = variable
+        self.operand = self.variable
+
         self.operand.group = self.id
         self.terms = [self.operand]
 
     def _sage_(self):
-        return sage.var('dx')
+        #TODO: Does sage have a class for infinitesimals?
+        return self.variable._sage_()
 
 class Integral(Operation):
     ui_style = 'sandwich'
@@ -1547,6 +1685,7 @@ class Integral(Operation):
         self.operand.group = self.id
         self.differential = differential
         self.differential.group = self.id
+        self.differential.operand.sensitive = False
 
         # The trailing differential dX
         self.tail = self.differential
@@ -1554,7 +1693,8 @@ class Integral(Operation):
         self.terms = [self.operand, self.tail]
 
     def _sage_(self):
-        return sage.var('i')
+        return sage.integral(self.operand._sage_(),
+                self.differential._sage_())
 
 class Diff(Operation):
     symbol = '\\frac{\partial}{\partial x}'
@@ -1590,10 +1730,12 @@ class Diff(Operation):
 
     def propogate(self):
 
-        #Propogates differentiation by descent
+        #Propagates differentiation by descent
 
         if type(self.operand) is Addition:
-            ''' Linearity of Differentiation: d/dx ( A + B + C ) ---> ( d/dx A + d/dx B + d/dx C) '''
+            # Linearity of Differentiation: 
+            # d/dx ( A + B + C ) ---> ( d/dx A + d/dx B + d/dx C) 
+
             split = map(Diff,self.operand.terms)
             split = map(lambda obj: obj.propogate(), split)
             return Addition(*split)
@@ -1632,7 +1774,7 @@ class Diff(Operation):
             return Zero()
 
         else:
-            #Just leave the operater in since we can't do anything meaningful with it
+            #Just leave the operator in since we can't do anything meaningful with it
             return self
 
 #-------------------------------------------------------------

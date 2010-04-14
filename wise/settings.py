@@ -71,7 +71,7 @@ MIDDLEWARE_CLASSES = (
 ROOT_URLCONF = 'wise.urls'
 
 TEMPLATE_DIRS = (
-'templates'
+    'templates'
 )
 
 INSTALLED_APPS = (
