@@ -410,18 +410,18 @@ function get_nested(first,second)
 
 function are_siblings(first,second)
 {
-    //Convience wrapper for checking if two elements are siblings
+    //Convenience wrapper for checking if two elements are siblings
     return (get_common_context(first,second) != null)
 }
 
 
 function construct_numeric(num)
 {
-    li = $(document.createElement('li')).html('$$'+num+'$$')
-    li.attr('math','(Numeric ' + num + +')')
-    li.attr('math-meta-type','term')
-    li.attr('math-type','Numeric')
-    return(li)
+    term = $(document.createElement('span')).html('$$'+num+'$$')
+    term.attr('math','(Numeric ' + num + +')')
+    term.attr('math-meta-type','term')
+    term.attr('math-type','Numeric')
+    return(term)
 }
 
 function clear_selection()
@@ -441,12 +441,16 @@ function traverse_lines()
     {
         handle_equation($(this));
     });
+
     $('#workspace [title]').tooltip({track:true});
 
     $('[math-meta-class=term]').unbind('click');
     $('[math-meta-class=term]').unbind('click');
 
-    $('*[math-meta-class=term]').click(function(event){select_term(this); event.stopPropagation() });
+    $('*[math-meta-class=term]').click(
+            function(event) {
+                select_term(this); event.stopPropagation() 
+            });
     //$('.pnths').css('height',function(){return $(this).parent().height()+20})
     
     //Let's try something else because jQuery is being funky with nested sortables 
@@ -574,8 +578,8 @@ function receive(ui,receiver,group_id)
     //If we drop an element in make sure we associate it with the group immediately
     obj.attr('group',group_id);
 
-    //If we drag from a jquery draggable then the ui.item doesn't exist here yet... so just remap
-    //all the children with the group... this should be safe (right?)
+    //If we drag from a jquery draggable then the ui.item doesn't exist here yet
+    //so just remap all the children with the group... this should be safe (right?)
     receiver.children('[math]').attr('group',group_id)
 
     //TODO do we need this?
@@ -722,7 +726,8 @@ function check_container(object)
 }
 
 function check_combinations(object){
-    //Check to see if two terms are explicitly dragged next to each other
+    //Check to see if two terms are explicitly dragged next to each other and 
+    //query the server to see if we can combine them into something
 
     if($(object).attr('locked') == 'true')
     {
@@ -737,11 +742,23 @@ function check_combinations(object){
            if(group != "")
            {
                group_type = $('#'+group).attr('math-type');
+
+               // A + B C + D -> A + combine(B,C) + D
                if(cur.attr('math-meta-class')=='term' && next.attr('math-meta-class')=='term')
                {
-                   combine(cur,next,group_type);
-                   jsMath.ConvertTeX(); jsMath.Process();
-                   check_container(object)
+                   //The one exception (i.e. filthy hack) is that
+                   //dragging a negated term next to any other
+                   //doesn't induce the combine command since the
+                   //negation sign on the negated term pretends
+                   //it is sugar, long story short it looks
+                   //prettier
+                   
+                   if(next.attr('math-type') != 'Negate')
+                   {
+                       combine(cur,next,group_type);
+                       jsMath.ConvertTeX(); jsMath.Process();
+                       check_container(object)
+                   }
                }
            }
         });
