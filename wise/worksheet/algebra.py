@@ -305,6 +305,33 @@ class DifferentiateEq(Transform):
         return json.dumps({'first': first.get_html()})
 
 MathematicalTransform(
+        internal='DifferentiateInternal',
+        first='Equation',
+        second='Variable',
+        context = 'null',
+        prettytext = '$$\\frac{d}{d B} A$$').save()
+
+class DifferentiateInternal(Transform):
+    def __new__(self,first,second):
+        try:
+            dlhs = Diff(first.lhs.lhs, second)
+            drhs = Diff(first.rhs.rhs, second)
+
+            first = Equation(LHS(dlhs),RHS(drhs))
+        except ValueError, e:
+            return json.dumps({'error': str(e)})
+
+        '''
+        first = LHS(Diff(first.lhs))
+        second = RHS(Diff(second.rhs))
+
+        first.lhs.ui_sortable(second.rhs)
+        second.rhs.ui_sortable(first.lhs)
+        '''
+
+        return json.dumps({'first': first.get_html()})
+
+MathematicalTransform(
         internal='LinearDistritubeIntegral',
         first='Integral',
         second='Addition',

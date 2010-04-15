@@ -30,7 +30,7 @@ import parser
 import mathobjects
 #http://friggeri.net/blog/2008/12/21/jquery-gestures
 
-#Wraps errors out to server log
+#Wraps errors out to server log and javascript popup
 def errors(f):
     def wrapper(*args,**kwargs):
         try:
@@ -40,8 +40,6 @@ def errors(f):
             print traceback.print_exc()
             return HttpResponse(json.dumps({'error': str(e)}))
     return wrapper
-
-memo = {}
 
 #Memoize single argument function
 def memoize(f):
@@ -86,11 +84,9 @@ def sage_parse(request, eq_id):
     sage = sage.split('\n')
     print sage
 
-    try:
-        evald = mathobjects.sage.sage_eval(sage)
-        parsd = mathobjects.parse_sage_exp(evald)
-    except Exception, e:
-        js = json.dumps({'error': str(e)})
+    evald = mathobjects.sage.sage_eval(sage)
+    parsd = mathobjects.parse_sage_exp(evald)
+
     if parsd:
         js = json.dumps({'newline': parsd.get_html()})
     else:
@@ -477,7 +473,6 @@ def generate_palette():
                     mathobjects.Variable('x').get_html(),
                     mathobjects.Variable('y').get_html(),
                     mathobjects.Variable('z').get_html(),
-                    mathobjects.E().get_html()
                 ]}
 
     trig = {'name': 'Functions', 'type': 'tabular', 'objects': [
@@ -494,6 +489,7 @@ def generate_palette():
                     ('Power', mathobjects.Power(Placeholder(),Placeholder()).get_html()),
                     ('Wedge', mathobjects.Wedge(Placeholder(),Placeholder()).get_html()),
                     ('Integral', mathobjects.Integral(Placeholder(),mathobjects.Differential(Placeholder())).get_html()),
+                    ('Derivative', mathobjects.Diff(Placeholder(),mathobjects.Variable('x')).get_html()),
                 ]}
 
     numbers = {'name': 'Numbers', 'type': 'array', 'objects': [

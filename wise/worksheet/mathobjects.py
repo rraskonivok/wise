@@ -67,11 +67,20 @@ def pairs(list):
 #-------------------------------------------------------------
 
 class NoWrapper(Exception):
-    pass
+    def __init__(self,expr):
+        self.value = 'Unable to cast Sage Type to Internal: %s' % expr
+
+    def __str__(self):
+        return self.value
 
 from sage.functions import trig
 from sage.functions import log
 from sage.symbolic import constants
+
+#Longterm Goal: Recursive descent isn't the fastest way to do
+#this find a better way
+
+#ExpressionIterator may be a way to do this faster
 
 def parse_sage_exp(expr):
     print type(expr)
@@ -83,6 +92,15 @@ def parse_sage_exp(expr):
         #Symbols
         if expr._is_symbol():
             return Variable(str(expr))
+
+        #Rational Numbers
+
+        #There has to be an less ugly way to check if a
+        #number is rational or not
+        if bool(expr.denominator() != 1):
+            num = parse_sage_exp(expr.numerator())
+            den = parse_sage_exp(expr.denominator())
+            return Fraction(num,den)
 
         #Numbers
         if expr._is_numeric():
@@ -135,8 +153,7 @@ def parse_sage_exp(expr):
         elif operator is log.exp and operands == [1]:
             return E()
 
-    print 'Unable to cast Sage Type to Internal:', expr, type(expr)
-    raise NoWrapper
+    raise NoWrapper(expr)
 
 
 #-------------------------------------------------------------
@@ -584,23 +601,26 @@ class Term(object):
 
     def combine(self,other,context):
         '''The default combination actions for Terms'''
-
-        if context == 'Addition':
-            if isinstance(other,Term):
-                result = self.get_html() + infix_symbol_html(Addition.symbol) +  other.get_html()
-                return result
-        if context == 'Product':
-            if isinstance(other,Term):
-                result = self.get_html() + infix_symbol_html(Product.symbol) +  other.get_html()
-                return result
+        return self.combine_fallback(other,context)
 
     def combine_fallback(self,other,context):
         '''Just slap an operator between two terms and leave it as is'''
 
-        #Eval the context and fetch its corresponding infix symbol
         if context == 'Addition':
             if isinstance(other,Term):
-                result = self.get_html() + infix_symbol_html(Addition.symbol) +  other.get_html()
+
+                if type(other) is Negate:
+                    result = self.get_html() + other.get_html()
+
+                elif type(other) is Numeric:
+                    if other.is_zero():
+                        result = self.get_html()
+                    else:
+                        result = self.get_html() + infix_symbol_html(Addition.symbol) +  other.get_html()
+
+                else:
+                    result = self.get_html() + infix_symbol_html(Addition.symbol) +  other.get_html()
+
                 return result
         if context == 'Product':
             if isinstance(other,Term):
@@ -666,7 +686,6 @@ class Empty(Term):
 # Lower Level Elements 
 #-------------------------------------------------------------
 
-
 class Text(Term):
     type = 'text'
     sensitive = True
@@ -674,12 +693,27 @@ class Text(Term):
     def __init__(self,text):
         self.latex = '\\text{' + text + '}'
 
+greek_alphabet = {
+        'alpha': '\\alpha',
+        'beta': '\\beta',
+        'gamma': '\\gamma',
+        'delta': '\\delta',
+        'epsilon': '\\varepsilon',
+        'pi': '\\pi',
+        }
+
+def greek_lookup(s):
+    if s in greek_alphabet:
+        return greek_alphabet[s]
+    else:
+        return s
+
 class Base_Symbol(Term):
     sensitive = True
     def __init__(self,symbol):
-        self.symbol = symbol
-        self.args = str(symbol)
-        self.latex = symbol
+        self.args = symbol
+        self.symbol = greek_lookup(symbol)
+        self.latex = greek_lookup(symbol)
 
     def _sage_(self):
         return sage.var(self.symbol)
@@ -881,6 +915,9 @@ class Power(Term):
         self.base = base
         self.exponent = exponent
         self.terms = [self.base, self.exponent]
+        basetype = type(self.base)
+        if basetype is Fraction or isinstance(self.base, Operation):
+            self.base.show_parenthesis = True
 
     def _sage_(self):
         base = self.base._sage_()
@@ -906,13 +943,6 @@ class Power(Term):
         return self.html.render(c)
 
     def combine(self,other,context):
-        '''
-        if isinstance(other,Power):
-            base = self.base
-            exponent = Addition(self.exponent,other.exponent)
-            return Power(base,exponent).get_html()
-        '''
-
         return self.combine_fallback(other,context)
 
 fraction_html = '''
@@ -938,6 +968,7 @@ class Fraction(Term):
         self.ensure_id()
         self.num = num
         self.den = den
+        self.den.css_class = 'middle'
         self.terms = [num,den]
 
     def _sage_(self):
@@ -961,6 +992,7 @@ class Fraction(Term):
 
     def combine(self,other,context):
         #TODO: This breaks a heck of a lot
+        '''
         if isinstance(other,Fraction):
             num = Addition(Product(self.num,other.den),Product(self.den,other.num))
             den = Product(self.den,other.den)
@@ -969,6 +1001,7 @@ class Fraction(Term):
             num = Addition(self.num,Product(self.den,other))
             den = self.den
             return Fraction(num,den).get_html()
+        '''
 
         return self.combine_fallback(other,context)
 
@@ -1022,19 +1055,11 @@ class Numeric(Term):
 
     def combine(self,other,context):
         if context == 'Addition':
-            if isinstance(other,Fraction):
-                #TODO: self.sympy is deprecated
-                result = sympify(self.sympy) + sympify(other.sympy)
-                result = result.as_numer_denom()
-                num = Numeric(result[0])
-                den = Numeric(result[1])
-                return Fraction(num,den).get_html()
+            if self.is_zero():
+                return other.get_html()
 
             elif isinstance(other,Numeric):
-                if self.is_zero():
-                    return other.get_html()
-                else:
-                    return Numeric(self.number + other.number).get_html()
+                return Numeric(self.number + other.number).get_html()
 
         elif context == 'Product':
             if isinstance(other,Numeric):
@@ -1060,7 +1085,7 @@ class Constant(Term):
 
     def __init__(self,*symbol):
         self.ensure_id()
-        self.args = self.representation.symbol
+        self.args = self.representation.args
         self.latex = self.representation.latex
 
 class E(Constant):
@@ -1070,7 +1095,7 @@ class E(Constant):
         return sage.exp(1)
 
 class Pi(Constant):
-    representation = Base_Symbol('\pi')
+    representation = Base_Symbol('pi')
 
     def _sage_(self):
         return sage.pi
@@ -1368,7 +1393,8 @@ class Operation(Term):
                 'operand': objects,
                 'symbol': self.symbol,
                 'parenthesis': self.show_parenthesis,
-                'jscript': self.get_javascript()
+                'jscript': self.get_javascript(),
+                'class': self.css_class
                 })
 
             return self.html.render(c)
@@ -1424,18 +1450,6 @@ class Operation(Term):
 
     def get_symbol(self):
         return self.symbol
-
-    def combine(self,other,context):
-        '''The default combination actions for Operations'''
-
-        if context == 'Addition':
-            if isinstance(other,Term):
-                result = self.get_html() + infix_symbol_html(Addition.symbol)  +  other.get_html()
-                return result
-        if context == 'Product':
-            if isinstance(other,Term):
-                result = self.get_html() + infix_symbol_html(Product.symbol) + other.get_html()
-                return result
 
     def receive(self,obj,receiver_context,sender_type,sender_context,new_position):
         return obj.get_html()
@@ -1557,6 +1571,7 @@ class Sine(Operation):
     ui_style = 'prefix'
     symbol = '\\sin'
     show_parenthesis = True
+    css_class = 'baseline'
 
     def __init__(self,operand):
         self.ensure_id()
@@ -1686,6 +1701,7 @@ class Integral(Operation):
         self.differential = differential
         self.differential.group = self.id
         self.differential.operand.sensitive = False
+        self.differential.css_class = 'baseline'
 
         # The trailing differential dX
         self.tail = self.differential
@@ -1697,7 +1713,6 @@ class Integral(Operation):
                 self.differential._sage_())
 
 class Diff(Operation):
-    symbol = '\\frac{\partial}{\partial x}'
 
     '''To do standard derivatives
 
@@ -1706,20 +1721,25 @@ class Diff(Operation):
     diff(y*x,x)
     '''
 
-    def __init__(self,operand):
+    ui_style = 'prefix'
+
+    def __init__(self,operand,differential):
         self.ensure_id()
         self.operand = operand
         self.operand.group = self.id
-        self.terms = [self.operand]
+        self.differential = differential
 
-        #self.operand.show_parenthesis = True
+        #self.differential.group = self.id
+        #self.differential.operand.sensitive = False
+        #self.differential.css_class = 'baseline'
 
-        #TODO
-        self.degree = 1
-        self.variable = 'x'
+        self.symbol = '\\frac{\partial}{\partial %s}' % differential.symbol
+
+        self.terms = [self.operand, self.differential]
 
     def _sage_(self):
-        return sage.var('d')
+        return sage.diff(self.operand._sage_(),
+                self.differential._sage_())
 
     def action(self):
         #Take the derivative
