@@ -587,8 +587,14 @@ class Term(object):
 
         if context == 'Addition':
             if isinstance(other,Term):
-                result = self.get_html() + infix_symbol_html(Addition.symbol) +  other.get_html()
+
+                print type(other)
+                if type(other) is Negate:
+                    result = self.get_html() + other.get_html()
+                else:
+                    result = self.get_html() + infix_symbol_html(Addition.symbol) +  other.get_html()
                 return result
+
         if context == 'Product':
             if isinstance(other,Term):
                 result = self.get_html() + infix_symbol_html(Product.symbol) +  other.get_html()
@@ -597,10 +603,14 @@ class Term(object):
     def combine_fallback(self,other,context):
         '''Just slap an operator between two terms and leave it as is'''
 
-        #Eval the context and fetch its corresponding infix symbol
         if context == 'Addition':
             if isinstance(other,Term):
-                result = self.get_html() + infix_symbol_html(Addition.symbol) +  other.get_html()
+
+                if type(other) is Negate:
+                    result = self.get_html() + other.get_html()
+                else:
+                    result = self.get_html() + infix_symbol_html(Addition.symbol) +  other.get_html()
+
                 return result
         if context == 'Product':
             if isinstance(other,Term):
@@ -938,6 +948,7 @@ class Fraction(Term):
         self.ensure_id()
         self.num = num
         self.den = den
+        self.den.css_class = 'middle'
         self.terms = [num,den]
 
     def _sage_(self):
@@ -1368,7 +1379,8 @@ class Operation(Term):
                 'operand': objects,
                 'symbol': self.symbol,
                 'parenthesis': self.show_parenthesis,
-                'jscript': self.get_javascript()
+                'jscript': self.get_javascript(),
+                'class': self.css_class
                 })
 
             return self.html.render(c)
@@ -1430,8 +1442,13 @@ class Operation(Term):
 
         if context == 'Addition':
             if isinstance(other,Term):
-                result = self.get_html() + infix_symbol_html(Addition.symbol)  +  other.get_html()
+
+                if type(other) is Negate:
+                    result = self.get_html() + other.get_html()
+                else:
+                    result = self.get_html() + infix_symbol_html(Addition.symbol) +  other.get_html()
                 return result
+
         if context == 'Product':
             if isinstance(other,Term):
                 result = self.get_html() + infix_symbol_html(Product.symbol) + other.get_html()
@@ -1557,6 +1574,7 @@ class Sine(Operation):
     ui_style = 'prefix'
     symbol = '\\sin'
     show_parenthesis = True
+    css_class = 'baseline'
 
     def __init__(self,operand):
         self.ensure_id()
@@ -1686,6 +1704,7 @@ class Integral(Operation):
         self.differential = differential
         self.differential.group = self.id
         self.differential.operand.sensitive = False
+        self.differential.css_class = 'baseline'
 
         # The trailing differential dX
         self.tail = self.differential
