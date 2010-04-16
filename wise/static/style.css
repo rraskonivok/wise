@@ -63,7 +63,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 body {
-    background-color: #F3F3F3;
     font-family: Verdana, Arial, sans-serif; font-size:12px;  
     margin:0px; padding:0px;
 }
@@ -209,11 +208,6 @@ body {
     vertical-align: middle;
 }
 
-.palette td {
-   padding-top: 5px;
-   padding-bottom: 5px;
-   border-bottom: 1px dashed #CCCCCC;
-}
 
 .typeset {
     margin-top: 0px !important;
@@ -237,11 +231,21 @@ body {
     border: 1px dashed #cccccc;
 }
 
+/*
 #workspace .term[math]:hover {
     border-bottom: 5px solid #9CBD86;
 }
 
 #workspace .container[math]:hover {
+    border-top: 5px solid #989CD7;
+}
+*/
+
+.term_hover {
+    border-bottom: 5px solid #9CBD86;
+}
+
+.container_hover {
     border-top: 5px solid #989CD7;
 }
 
@@ -252,6 +256,10 @@ body {
     padding-right: 10px;
     display: inline-block;
     vertical-align: middle;
+}
+
+.drag_placeholder.selected {
+    background-color: #d4a5a5;
 }
 
 .ui-state-highlight {
@@ -273,10 +281,19 @@ body {
     margin-top: 40px;
 }
 
+/* Math Palette*/
+
 #palette {
-    top: 25px;
-    position: fixed;
+    position: absolute;
     right: 0px;
+    font-size: 10px;
+    overflow: hidden;
+    padding: 0px !important;
+}
+
+.ui-layout-east { /* content-div has Accordion */
+		padding: 0;
+		overflow: hidden;
 }
 
 #collapser {
@@ -288,9 +305,10 @@ body {
     float: left;
 }
 
-#vert_collapsable {
-    padding-left: 20px;
-    width: 250px;
+.palette td {
+   padding-top: 5px;
+   padding-bottom: 5px;
+   border-bottom: 1px dashed #CCCCCC;
 }
 
 .select_first {

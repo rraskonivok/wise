@@ -271,7 +271,7 @@ MathematicalTransform(
         first='Equation',
         second='Variable',
         context = 'null',
-        prettytext = '$$\\frac{d}{d B} A$$').save()
+        prettytext = 'Differentiate').save()
 
 class DifferentiateEq(Transform):
     def __new__(self,first,second):
@@ -309,7 +309,7 @@ MathematicalTransform(
         first='Equation',
         second='Variable',
         context = 'null',
-        prettytext = '$$\\frac{d}{d B} A$$').save()
+        prettytext = 'Incremental Derivative').save()
 
 class DifferentiateInternal(Transform):
     def __new__(self,first,second):
@@ -336,7 +336,7 @@ MathematicalTransform(
         first='Integral',
         second='Addition',
         context = 'null',
-        prettytext = '$$\int A+B = \int A + \int B$$').save()
+        prettytext = 'Distribute Integral').save()
 
 class LinearDistritubeIntegral(Transform):
     first_type = [ Term ]

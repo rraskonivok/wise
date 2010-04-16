@@ -94,7 +94,7 @@ def sage_parse(request, eq_id):
     return HttpResponse(js)
 
 @errors
-def eq(request, eq_id):
+def ws(request, eq_id):
     ws = Workspace.objects.get(id=eq_id)
     eqs = Equation.objects.filter(workspace=eq_id)
     debug_parse_tree = unencode( request.GET.get('tree') )
@@ -432,6 +432,13 @@ def unencode(s):
     txt = s.decode(fileencoding)
     return str(txt)
 
+def new_inline(request, eq_id):
+    lhs = mathobjects.Placeholder()
+    rhs = mathobjects.Placeholder()
+
+    eq = mathobjects.Equation(mathobjects.LHS(lhs),mathobjects.RHS(rhs))
+    return HttpResponse(json.dumps({'newline': eq.get_html()}))
+
 palette_template = '''
 {% for group in palette %}
     <h3><a href="#">{{ group.name }}</a></h3>
@@ -454,11 +461,16 @@ palette_template = '''
             {% endfor %}
         {% endifequal %}
 
+        {% ifequal group.type 'widget' %}
+        {% endifequal %}
+
     </div>
 {% endfor %}
 '''
 
 def generate_palette():
+    #TODO Be able to include snippts of html as widgets in the
+    #palette
 
     def Placeholder():
         return mathobjects.Placeholder()

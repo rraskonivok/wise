@@ -459,6 +459,8 @@ function traverse_lines()
     resize_parentheses()
     //Webkit requires that we run this twice
     resize_parentheses()
+
+    $('.equation button').parent().buttonset();
 }
 
 function resize_parentheses()
@@ -1088,58 +1090,67 @@ function parse_sage()
         ,'json')
 }
 
-function init()
-{
-    $(document).shortkeys({
-    'escape':       function () { clear_selection() },
-    't':            function () { lookup_transform() },
-    'i':            function () { lookup_identity() },
-    'e':            function () { select_equation() },
-    'r':            function () { javascript:apply_transform('PlaceholderSubstitute')  },
-    'h':            function () { cur_next() },
-    'l':            function () { cur_prev() },
-    'f4':           function () { show_debug_menu() },
-    });
-    
-    //CTRL-S
-    /*
-    $(window).keydown(function(event) {
-        event.preventDefault();
-        if (!((event.which == 83 || event.which == 115) && event.ctrlKey)) return true;
-        save_workspace();
-        event.preventDefault();
-        return false;
-    });
-    */
+function bind_hover_toggle(){
+    $('#hovertoggle').toggle(
+        function()
+        {
+            $('#workspace .term[math]').hover(
+                function()
+                {
+                    $(this).addClass('term_hover')
+                }
+                ,
+                function()
+                {
+                    $(this).removeClass('term_hover')
+                }
+            )
 
-    $(".typeset").disableTextSelect();
-    $('li[title]').tooltip({track:true});
-    $('ul[title]').tooltip({track:true});
-    
-    //Handle the math palette
-    $('#math_palette').load('/palette').ajaxComplete(function()
-    {
-        //Make it impossible to click on Placeholder objects in the palette
-        $('#math_palette .drag_placeholder').attr('math-meta-class','')
-        $("#math_palette").accordion({fillSpace: true, active: false, clearStyle: true, animated: false});
-        traverse_lines()
-    });
-    
-    //Make the math palette collapsable
-    $('#collapser').button();
-    $("#collapser").click(function () {
-        $("#vert_collapsable").toggle();
-        $("#collapser").removeClass("ui-icon-carat-1-e");
-    });
-
-    //Make buttons pretty
-    $('.equation button').parent().buttonset();
-    $('#cmdbuttons button').parent().buttonset();
-
-    jsMath.ConvertTeX(); jsMath.Process();
-    traverse_lines();
+            $('#workspace .container[math]').hover(
+                function()
+                {
+                    $(this).addClass('container_hover')
+                }
+                ,
+                function()
+                {
+                    $(this).removeClass('container_hover')
+                }
+            )
+        }
+        ,
+        function()
+        {
+            $('#workspace .term[math]').hover(
+                function()
+                {
+                    $(this).removeClass('term_hover')
+                }
+            )
+            $('#workspace .container[math]').hover(
+                function()
+                {
+                    $(this).removeClass('container_hover')
+                }
+            )
+        })
 }
 
+function new_inline(){
+    data = {}
+    $.post("new_inline/", data ,
+        function(data){
+            if(data.error) {
+                error(data.error)
+            }
+            if(data.newline) {
+                $('#lines').append(data.newline)
+            }
+            traverse_lines();
+            jsMath.ConvertTeX(); jsMath.Process();
+        }
+    ,'json')
+}
 
 function cur_next(str)
 {
