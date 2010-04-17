@@ -26,9 +26,20 @@
 
 
  <script type="text/javascript">
-$(document).onLoad(function () {
-        init();
+$(document).ajaxError(function() {
+    error("Error connecting to server")
+})
+
+$(document).ready(function () {
+    init();
+
+    //Only show the workspace after all math is rendered
+    jsMath.Synchronize(function () {
+        refresh_jsmath()
+        $("#lines").fadeIn('fast')
+    });
 });
+
 
 function init()
 {
@@ -37,7 +48,7 @@ function init()
     layout = $('body').layout({ 
         applyDefaultStyles: true,
         east__minSize: 300,
-        east__onresize:	function () { $("#math_palette").accordion("resize"); },
+        //east__onresize:	function () { $("#math_palette").accordion("resize"); },
         north__resizable: false,
     });
     layout.sizePane('east', 300);
@@ -47,7 +58,7 @@ function init()
     't':            function () { lookup_transform() },
     'i':            function () { lookup_identity() },
     'e':            function () { select_equation() },
-    'r':            function () { javascript:apply_transform('PlaceholderSubstitute')  },
+    'r':            function () { refresh_jsmath() },
     'h':            function () { cur_next() },
     'l':            function () { cur_prev() },
     'f4':           function () { show_debug_menu() },
@@ -72,30 +83,41 @@ function init()
     $('ul[title]').tooltip({track:true});
     
     //Handle the math palette
-    $('#math_palette').load('/palette').ajaxComplete(function()
-    {
-        //Make it impossible to click on Placeholder objects in the palette
+    $.ajax({
+    url: '/palette',
+    success: function(data) {
+        $("#math_palette").html(data)
+
         $('#math_palette .drag_placeholder').attr('math-meta-class','')
-        $("#math_palette").accordion({
-            fillSpace: true, 
-            animated: false
-            });
-        traverse_lines();
-    });
-    
-    //Make the math palette collapsable
-    $('#collapser').button();
-    $("#collapser").click(function () {
-        $("#vert_collapsable").toggle();
-        $("#collapser").removeClass("ui-icon-carat-1-e");
-    });
+
+        //Make the palette sections collapsable
+        $('#math_palette h3').bind('click',function() {
+                $(this).next().toggle();
+                return false
+        }).next().hide();
+
+        //Make the Palette look like an accordion widget
+        $('#math_palette').addClass('ui-accordion ui-widget ui-helper-reset ui-accordion-icons')
+        $('#math_palette h3').addClass('ui-accordion-header ui-helper-reset ui-state-default')
+        $('#math_palette div').addClass('ui-accordion-content ui-helper-reset ui-widget-content')
+
+        //Make the math terms interactive
+        traverse_lines()
+    }})
+
+    /*
+    $('#math_palette').addClass('ui-accordion ui-widget ui-helper-reset ui-accordion-icons')
+    $('#math_palette h3').addClass('ui-accordion-header ui-helper-reset ui-state-default')
+    $('#math_palette div').addClass('ui-accordion-content ui-helper-reset ui-widget-content')
+    */
 
     //Make buttons pretty
     $('.equation button').parent().buttonset();
     $('#cmdbuttons button').parent().buttonset();
 
-    jsMath.ConvertTeX(); jsMath.Process();
+    //refresh_jsmath()
     traverse_lines();
+
 }
 
  </script>
@@ -134,9 +156,10 @@ function init()
         <!-- Debug to write selected objects math strings out to debug console !!!!!!!!!!!!!! -->
         <div id="switcher"></div>
 </div>
+
 <div id="workspace" class="ui-layout-center">
     <div class="ui-widget">
-        <table id="lines">
+        <table id="lines" style="display: none">
             {% for equation in equations %}
                 {{equation}} 
             {% endfor %}

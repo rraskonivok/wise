@@ -89,48 +89,6 @@ function reset_selections()
     $().live('li[math-meta-class=term]',function(object){select_term(this)});
 }
 
-
-function operator_action(object)
-{
-    clickedon = $(object.currentTarget)
-    container = $('#'+clickedon.attr("group"))
-    data = get_info(container)
-    $.post("action/", data,
-       function(data) {
-            group_id = container.attr('id')
-            nsym = container.after(data);
-            //container.siblings().attr('group',group_id);
-            jsMath.ConvertTeX(); jsMath.Process();
-            container.remove();
-            clickedon.remove();
-       }, "html");
-    cleanup_ajax_scripts()
-    traverse_lines()
-}
-
-function operator_propogate(object)
-{
-    clickedon = $(object.currentTarget)
-    container = $('#'+clickedon.attr("group"))
-    data = get_info(container)
-    $.post("propogate/", data,
-       function(data) {
-            group_id = get_container(container).attr('id')
-            nsym = container.after(data);
-            nsym.attr('group',group_id);
-            nsym.children().attr('group',nsym.attr('id'));
-            container.siblings().attr('group',group_id);
-            nsym.siblings().attr('group',group_id);
-            jsMath.ConvertTeX(); jsMath.Process();
-            //fade_old_new(container,nsym);
-            container.remove();
-            update_math(nsym);
-            handle_changes();
-       }, "html");
-    cleanup_ajax_scripts();
-    traverse_lines();
-}
-
 function fade_and_destroy(object)
 {
     $(object).fadeOut('fast',function(){
@@ -289,7 +247,7 @@ function lookup_transform()
             $('#options').html(data);
             $('#options').fadeIn();
             $('#options button').button()
-            jsMath.ConvertTeX(); jsMath.Process();
+            refresh_jsmath()
         }
     ,'html')
 }
@@ -306,7 +264,6 @@ function lookup_identity()
         {
             $('#options').html(data);
             $('#options').fadeIn();
-            jsMath.ConvertTeX(); jsMath.Process();
         }
     ,'html')
 }
@@ -519,6 +476,7 @@ function dragging(sort_object,ui)
     }
 }
 
+/*
 function down(container,dragged)
 {
     if(is_toplevel(container))
@@ -555,6 +513,7 @@ function down(container,dragged)
     }
     cleanup_ajax_scripts()
 }
+*/
 
 function get_equation(object)
 {
@@ -612,8 +571,7 @@ function receive(ui,receiver,group_id)
            function(data){
             nsym = obj.replace(data);
             nsym.attr('group',group_id);
-            jsMath.ConvertTeX();
-            jsMath.Process();
+            refresh_jsmath($(nsym))
             receiver.attr('locked','false');
             update(get_container(nsym))
           },
@@ -646,8 +604,7 @@ function remove(ui,removed)
                 {
                     nsym = $(data).appendTo(removed);
                     nsym.attr('group',group_id);
-                    jsMath.ConvertTeX();
-                    jsMath.Process();
+                    refresh_jsmath($(nsym))
                     removed.attr('locked','false')
                     update_math(removed);
                 }
@@ -764,7 +721,6 @@ function check_combinations(object){
                    if(next.attr('math-type') != 'Negate')
                    {
                        combine(cur,next,group_type);
-                       jsMath.ConvertTeX(); jsMath.Process();
                        check_container(object)
                    }
                }
@@ -795,10 +751,10 @@ function combine(first,second,context)
            function(data){
                 nsym = first.after(data).next();
                 container.find('[group=None]').attr('group',group_id_cache)
-                jsMath.ConvertTeX(); jsMath.Process();
                 first.remove();
                 second.remove();
                 update(container);
+                refresh_jsmath($(container))
                 traverse_lines();
                 cleanup_ajax_scripts();
           },
@@ -858,14 +814,37 @@ function serialize_object(saveData)
 //This should be called after each change to the workspace
 function update(object)
 {
-    if(object.attr('locked') != 'true')
+    if(object != undefined)
     {
-        check_combinations(object);
-        check_container(object);
-        check_combinations(object);
-        clear_selection();
-        reset_selections();
-        update_math(object);
+        if(object.attr('locked') != 'true')
+        {
+            check_combinations(object);
+            check_container(object);
+            check_combinations(object);
+            clear_selection();
+            reset_selections();
+            update_math(object);
+        }
+    }
+}
+
+function refresh_jsmath(element)
+{
+    //Refresh math for a specific element
+    if(element)
+    {
+        //Toggling visiblity prevents the underlying TeX from
+        //showing
+        element.css('visibility','hidden')
+        jsMath.ConvertTeX(element[0])
+        jsMath.ProcessBeforeShowing(element[0])
+        $(function() { element.css('visibility','visible') })
+    }
+    //Refresh math Globally
+    else
+    {
+    jsMath.ConvertTeX()
+    jsMath.ProcessBeforeShowing()
     }
 }
 
@@ -878,9 +857,7 @@ function update_math(object,stack_depth)
     if(!stack_depth)
     {
         stack_depth = 1
-    }
-    else
-    {
+    } else {
         stack_depth += 1
     }
 
@@ -999,10 +976,13 @@ function apply_transform(transform)
                 group_id = obj.attr('group');
                 group_id_cache = String(group_id)
 
+
                 nsym = obj.replace(data.first);
                 nsym.attr('group',group_id_cache);
-                jsMath.ConvertTeX();
-                jsMath.Process();
+
+                refresh_jsmath($(nsym))
+
+                //refresh_jsmath()
             }
             //Swap the second term
             if(data.second)
@@ -1013,8 +993,9 @@ function apply_transform(transform)
 
                 nsym = obj.replace(data.second);
                 nsym.attr('group',group_id_cache);
-                jsMath.ConvertTeX();
-                jsMath.Process();
+
+                refresh_jsmath($(nsym))
+                //refresh_jsmath()
             }
 
             clear_selection()
@@ -1042,12 +1023,10 @@ function apply_identity(identity)
             group_id_cache = String(group_id)
             nsym = obj.replace(data.first);
             nsym.attr('group',group_id_cache);
-            jsMath.ConvertTeX();
-            jsMath.Process();
+            refresh_jsmath()
             clear_selection()
             traverse_lines();
             update(get_container(obj))
-            //update(nsym)
         },
         "json");
     cleanup_ajax_scripts()
@@ -1091,7 +1070,7 @@ function parse_sage()
                 $('#lines').append(data.newline)
             }
             traverse_lines();
-            jsMath.ConvertTeX(); jsMath.Process();
+            refresh_jsmath()
         }
         ,'json')
 }
@@ -1153,7 +1132,7 @@ function new_inline(){
                 $('#lines').append(data.newline)
             }
             traverse_lines();
-            jsMath.ConvertTeX(); jsMath.Process();
+            refresh_jsmath()
         }
     ,'json')
 }

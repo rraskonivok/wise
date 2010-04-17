@@ -276,6 +276,7 @@ body {
 
 .equation.selected td:first-child {
     border-left: 5px solid  #d4a5a5;
+    margin-left: -5px;
 }
 
 #workspace {

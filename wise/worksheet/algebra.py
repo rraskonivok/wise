@@ -60,7 +60,7 @@ MathematicalTransform(
         first='Equation',
         second='Term',
         context = 'null',
-        prettytext = '$$Substitute$$').save()
+        prettytext = 'Substitute').save()
 
 class TermSubstitute(Transform):
 
@@ -209,7 +209,7 @@ MathematicalTransform(
         first='Equation',
         second='Variable',
         context = 'null',
-        prettytext = '$$\int A dB$$').save()
+        prettytext = 'Incremental Integral').save()
 
 class Integrate(Transform):
     first_type = [ Term ]
@@ -256,14 +256,6 @@ class Differentiate(Transform):
         except ValueError, e:
             return json.dumps({'error': str(e)})
 
-        '''
-        first = LHS(Diff(first.lhs))
-        second = RHS(Diff(second.rhs))
-
-        first.lhs.ui_sortable(second.rhs)
-        second.rhs.ui_sortable(first.lhs)
-        '''
-
         return json.dumps({'first': first.get_html(), 'second': second.get_html()})
 
 MathematicalTransform(
@@ -294,13 +286,33 @@ class DifferentiateEq(Transform):
         except ValueError, e:
             return json.dumps({'error': str(e)})
 
-        '''
-        first = LHS(Diff(first.lhs))
-        second = RHS(Diff(second.rhs))
+        return json.dumps({'first': first.get_html()})
 
-        first.lhs.ui_sortable(second.rhs)
-        second.rhs.ui_sortable(first.lhs)
-        '''
+MathematicalTransform(
+        internal='IntegrateEq',
+        first='Equation',
+        second='Variable',
+        context = 'null',
+        prettytext = 'Integrate').save()
+
+class IntegrateEq(Transform):
+    def __new__(self,first,second):
+        try:
+            #Integrate wrt to the specified variable
+            dvar = second._sage_()
+
+            #Take the integral of the LHS and RHS of the equation
+            lhs = first.lhs._sage_()
+            d = sage.integrate(lhs,dvar)
+            dlhs = parse_sage_exp(d)
+
+            rhs = first.rhs._sage_()
+            d = sage.integrate(rhs,dvar)
+            drhs = parse_sage_exp(d)
+
+            first = Equation(LHS(dlhs),RHS(drhs))
+        except ValueError, e:
+            return json.dumps({'error': str(e)})
 
         return json.dumps({'first': first.get_html()})
 
@@ -371,7 +383,7 @@ MathematicalTransform(
         first='Diff',
         second='Addition',
         context = 'null',
-        prettytext = '$$\\frac{d}{d x} (A + B) = \\frac{d}{d x} A + \\frac{d}{d x} B $$').save()
+        prettytext = 'Propogate Differential through Addition').save()
 
 class LinearDistritubeDiff(Transform):
     first_type = [ Term ]
@@ -380,8 +392,8 @@ class LinearDistritubeDiff(Transform):
 
     def __new__(self,first,second):
         if first.operand.hash != second.hash:
-            return json.dumps({'error': 'Addition term should be not be nested'})
-        split = map(Diff,second.terms)
+            return json.dumps({'error': 'Addition term should be not be nested more than one level down'})
+        split = [Diff(term, first.differential) for term in second.terms]
         distributed = Addition(*split)
         return json.dumps({'first': distributed.get_html()})
 
@@ -390,7 +402,7 @@ MathematicalTransform(
         first='Diff',
         second='Product',
         context = 'null',
-        prettytext = '$$\\frac{d}{d x} (A B)  = \\frac{d}{d x} A B + A \\frac{d}{d x} B $$').save()
+        prettytext = 'Propogate Differential through Multiplication').save()
 
 class DiffLeibniz(Transform):
     def __new__(self,first,second):
@@ -411,7 +423,7 @@ MathematicalTransform(
         first='Diff',
         second='Negate',
         context = 'null',
-        prettytext = '$$\\frac{d}{d x} -A  = - \\frac{d}{d x} A $$').save()
+        prettytext = 'Factor out Negative Sign').save()
 
 class DiffNegate(Transform):
     def __new__(self,first,second):
@@ -426,7 +438,7 @@ MathematicalTransform(
         first='Diff',
         second='Term',
         context = 'null',
-        prettytext = '$$ Propogate $$').save()
+        prettytext = 'Propogate Differential through Expression').save()
 
 class DiffPropogate(Transform):
     def __new__(self,first,second):

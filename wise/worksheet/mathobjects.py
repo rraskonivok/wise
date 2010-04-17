@@ -62,13 +62,24 @@ def pairs(list):
     for i in range(len(list) - 1):
         yield (list[i],list[i+1])
 
+def fallback(fallback):
+    '''Try to run f, if f returns None or False then run fallback'''
+    def options(f):
+        def wrapper(self,*args,**kwargs):
+            if f(self,*args,**kwargs) is None:
+                return fallback(self,*args,**kwargs)
+            else:
+                return f(self,*args,**kwargs)
+        return wrapper
+    return options
+
 #-------------------------------------------------------------
 # Sage Wrapper
 #-------------------------------------------------------------
 
 class NoWrapper(Exception):
     def __init__(self,expr):
-        self.value = 'Unable to cast Sage Type to Internal: %s' % expr
+        self.value = 'Unable to cast Sage Type to Internal: %s :: %s' % (expr , str(type(expr)))
 
     def __str__(self):
         return self.value
@@ -83,7 +94,6 @@ from sage.symbolic import constants
 #ExpressionIterator may be a way to do this faster
 
 def parse_sage_exp(expr):
-    print type(expr)
 
     if type(expr) is sage.Expression:
         operator = expr.operator()
@@ -97,13 +107,23 @@ def parse_sage_exp(expr):
 
         #There has to be an less ugly way to check if a
         #number is rational or not
-        if bool(expr.denominator() != 1):
+        elif bool(expr.denominator() != 1):
             num = parse_sage_exp(expr.numerator())
             den = parse_sage_exp(expr.denominator())
             return Fraction(num,den)
 
         #Numbers
-        if expr._is_numeric():
+
+        #Constants
+        elif expr._is_constant():
+            pyo = expr.pyobject()
+            if type(pyo) is constants.Pi:
+                return Pi('pi')
+
+        elif expr._is_numeric():
+            if expr.is_zero():
+                return Zero()
+
             if expr<0:
                 expr = sage.operator.abs(expr)
                 return Negate(Numeric(str(expr)))
@@ -152,6 +172,12 @@ def parse_sage_exp(expr):
 
         elif operator is log.exp and operands == [1]:
             return E()
+
+    elif type(expr) is sage.Integer:
+        if expr<0:
+            expr = sage.operator.abs(expr)
+            return Negate(Numeric(str(expr)))
+        return Numeric(str(expr))
 
     raise NoWrapper(expr)
 
@@ -482,8 +508,6 @@ ${{latex}}$
 
 class Term(object):
 
-    #Trying to phase sympy out... replace with args
-    sympy = None
     args = None
 
     latex = '$Error$'
@@ -496,6 +520,8 @@ class Term(object):
     terms = []
     javascript = SafeUnicode()
     has_sort = False
+
+    _is_constant = False
 
     #Classes that inherit from Term should inherit this to ensure proper lookups
     base_type = 'Term'
@@ -574,9 +600,6 @@ class Term(object):
     def negate(self):
         return Negate(self)
 
-    def combine(self,other,context):
-        return self.get_html()
-
     def classname(self):
         return self.__class__.__name__
 
@@ -590,6 +613,7 @@ class Term(object):
         c = template.Context({'javascript':self.javascript})
         return self.javascript_template.render(c)
 
+
 #    def up(self):
 #        return self.get_html()
 #
@@ -599,9 +623,7 @@ class Term(object):
 #    def doubleclick(self):
 #        '''when the user double clicks on the object'''
 
-    def combine(self,other,context):
-        '''The default combination actions for Terms'''
-        return self.combine_fallback(other,context)
+
 
     def combine_fallback(self,other,context):
         '''Just slap an operator between two terms and leave it as is'''
@@ -630,6 +652,10 @@ class Term(object):
             if isinstance(other,Term):
                 result = self.get_html() + infix_symbol_html(Wedge.symbol) +  other.get_html()
                 return result
+
+    @fallback(combine_fallback)
+    def combine(self,other,context):
+        pass
 
     def ui_id(self):
         '''returns the jquery code to reference to the html tag'''
@@ -838,6 +864,7 @@ class Physical_Quantity(Base_Symbol):
 
         return self.html.render(c)
 
+    @fallback(Term.combine_fallback)
     def combine(self,other,context):
         if context == 'Addition':
             if isinstance(other,Physical_Quantity):
@@ -942,9 +969,6 @@ class Power(Term):
 
         return self.html.render(c)
 
-    def combine(self,other,context):
-        return self.combine_fallback(other,context)
-
 fraction_html = '''
 <span id="{{id}}" class="fraction container" math-meta-class="term" math-type="{{type}}" math="{{ math }}" group="{{group}}">
 
@@ -990,9 +1014,9 @@ class Fraction(Term):
 
         return self.html.render(c)
 
+    @fallback(Term.combine_fallback)
     def combine(self,other,context):
         #TODO: This breaks a heck of a lot
-        '''
         if isinstance(other,Fraction):
             num = Addition(Product(self.num,other.den),Product(self.den,other.num))
             den = Product(self.den,other.den)
@@ -1001,9 +1025,6 @@ class Fraction(Term):
             num = Addition(self.num,Product(self.den,other))
             den = self.den
             return Fraction(num,den).get_html()
-        '''
-
-        return self.combine_fallback(other,context)
 
 numeric_html = '''
 <span id="{{id}}" title="{{type}}" class="{{class}} {{sensitive}} term" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
@@ -1016,6 +1037,8 @@ class Numeric(Term):
     type = 'numeric'
     sensitive = True
     html = template.Template(numeric_html)
+
+    _is_constant = True
 
     def __init__(self,number):
         self.ensure_id()
@@ -1053,6 +1076,7 @@ class Numeric(Term):
         else:
             return Negate(self)
 
+    @fallback(Term.combine_fallback)
     def combine(self,other,context):
         if context == 'Addition':
             if self.is_zero():
@@ -1074,8 +1098,6 @@ class Numeric(Term):
                 #Multiplication by zero clears symbols
                 if self.is_zero():
                     return self.get_html()
-
-        return self.combine_fallback(other,context)
 
 #Constants should be able to be represented by multiple symbols
 
@@ -1541,6 +1563,11 @@ class Product(Operation):
     def __init__(self,*terms):
         self.ensure_id()
         self.terms = list(terms)
+
+        #Pull constants out front
+        #sorts by truth value with True's ordered first
+        self.terms = sorted(self.terms, key=lambda term: not term._is_constant)
+
         for term in self.terms:
             term.group = self.id
             if type(term) is Addition:
@@ -1571,7 +1598,6 @@ class Sine(Operation):
     ui_style = 'prefix'
     symbol = '\\sin'
     show_parenthesis = True
-    css_class = 'middle'
 
     def __init__(self,operand):
         self.ensure_id()
@@ -1628,13 +1654,12 @@ class Negate(Operation):
     def _sage_(self):
         return sage.operator.neg(self.operand._sage_())
 
+    @fallback(Term.combine_fallback)
     def combine(self,other,context):
         if context == 'Addition':
             if isinstance(other,Negate):
                 ''' -A+-B = -(A+B)'''
                 return Negate(Addition(self.operand, other.operand)).get_html()
-
-        return self.combine_fallback(other,context)
 
     def negate(self):
         return self.operand
