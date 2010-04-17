@@ -60,7 +60,7 @@ MathematicalTransform(
         first='Equation',
         second='Term',
         context = 'null',
-        prettytext = '$$Substitute$$').save()
+        prettytext = 'Substitute').save()
 
 class TermSubstitute(Transform):
 
@@ -209,7 +209,7 @@ MathematicalTransform(
         first='Equation',
         second='Variable',
         context = 'null',
-        prettytext = '$$\int A dB$$').save()
+        prettytext = 'Integrate').save()
 
 class Integrate(Transform):
     first_type = [ Term ]
@@ -371,7 +371,7 @@ MathematicalTransform(
         first='Diff',
         second='Addition',
         context = 'null',
-        prettytext = '$$\\frac{d}{d x} (A + B) = \\frac{d}{d x} A + \\frac{d}{d x} B $$').save()
+        prettytext = 'Propogate Differential through Addition').save()
 
 class LinearDistritubeDiff(Transform):
     first_type = [ Term ]
@@ -380,8 +380,8 @@ class LinearDistritubeDiff(Transform):
 
     def __new__(self,first,second):
         if first.operand.hash != second.hash:
-            return json.dumps({'error': 'Addition term should be not be nested'})
-        split = map(Diff,second.terms)
+            return json.dumps({'error': 'Addition term should be not be nested more than one level down'})
+        split = [Diff(term, first.differential) for term in second.terms]
         distributed = Addition(*split)
         return json.dumps({'first': distributed.get_html()})
 
@@ -390,7 +390,7 @@ MathematicalTransform(
         first='Diff',
         second='Product',
         context = 'null',
-        prettytext = '$$\\frac{d}{d x} (A B)  = \\frac{d}{d x} A B + A \\frac{d}{d x} B $$').save()
+        prettytext = 'Propogate Differential through Multiplication').save()
 
 class DiffLeibniz(Transform):
     def __new__(self,first,second):
@@ -411,7 +411,7 @@ MathematicalTransform(
         first='Diff',
         second='Negate',
         context = 'null',
-        prettytext = '$$\\frac{d}{d x} -A  = - \\frac{d}{d x} A $$').save()
+        prettytext = 'Factor out Negative Sign').save()
 
 class DiffNegate(Transform):
     def __new__(self,first,second):
@@ -426,7 +426,7 @@ MathematicalTransform(
         first='Diff',
         second='Term',
         context = 'null',
-        prettytext = '$$ Propogate $$').save()
+        prettytext = 'Propogate Differential through Expression').save()
 
 class DiffPropogate(Transform):
     def __new__(self,first,second):

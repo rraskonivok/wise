@@ -858,14 +858,17 @@ function serialize_object(saveData)
 //This should be called after each change to the workspace
 function update(object)
 {
-    if(object.attr('locked') != 'true')
+    if(object != undefined)
     {
-        check_combinations(object);
-        check_container(object);
-        check_combinations(object);
-        clear_selection();
-        reset_selections();
-        update_math(object);
+        if(object.attr('locked') != 'true')
+        {
+            check_combinations(object);
+            check_container(object);
+            check_combinations(object);
+            clear_selection();
+            reset_selections();
+            update_math(object);
+        }
     }
 }
 
@@ -878,9 +881,7 @@ function update_math(object,stack_depth)
     if(!stack_depth)
     {
         stack_depth = 1
-    }
-    else
-    {
+    } else {
         stack_depth += 1
     }
 
