@@ -1571,7 +1571,7 @@ class Sine(Operation):
     ui_style = 'prefix'
     symbol = '\\sin'
     show_parenthesis = True
-    css_class = 'baseline'
+    css_class = 'middle'
 
     def __init__(self,operand):
         self.ensure_id()

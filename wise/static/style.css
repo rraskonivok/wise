@@ -95,7 +95,6 @@ body {
 
 .equation button {
     float: left;
-    margin-right: 1px;
 }
 
 .num {
@@ -243,10 +242,12 @@ body {
 
 .term_hover {
     border-bottom: 5px solid #9CBD86;
+    margin-bottom: -5px;
 }
 
 .container_hover {
     border-top: 5px solid #989CD7;
+    margin-top: -5px;
 }
 
 .drag_placeholder {
@@ -262,6 +263,9 @@ body {
     background-color: #d4a5a5;
 }
 
+.ui-state-disabled {
+}
+
 .ui-state-highlight {
     background-color: red;
 }
@@ -275,17 +279,18 @@ body {
 }
 
 #workspace {
-    position: absolute;
+    padding: 0px !important;
+    overflow: hidden;
+}
+
+#workspace > .ui-widget-content {
     height: 100%;
     width: 100%;
-    margin-top: 40px;
 }
 
 /* Math Palette*/
 
 #palette {
-    position: absolute;
-    right: 0px;
     font-size: 10px;
     overflow: hidden;
     padding: 0px !important;
@@ -294,15 +299,6 @@ body {
 .ui-layout-east { /* content-div has Accordion */
 		padding: 0;
 		overflow: hidden;
-}
-
-#collapser {
-    background-color: black;
-    position: relative;
-    width: 15px;
-    height: 20px;
-    clear: none;
-    float: left;
 }
 
 .palette td {

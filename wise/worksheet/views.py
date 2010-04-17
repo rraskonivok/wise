@@ -496,6 +496,7 @@ def generate_palette():
 
     operations = {'name': 'Operations', 'type': 'tabular', 'objects': [
                     ('Addition', mathobjects.Addition(*[Placeholder(),Placeholder()]).get_html()),
+                    ('Negation', mathobjects.Negate(Placeholder()).get_html()),
                     ('Product', mathobjects.Product(*[Placeholder(),Placeholder()]).get_html()),
                     ('Fraction', mathobjects.Fraction(Placeholder(),Placeholder()).get_html()),
                     ('Power', mathobjects.Power(Placeholder(),Placeholder()).get_html()),

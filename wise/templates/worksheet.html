@@ -5,13 +5,18 @@
  <title>Worksheet - {{title}}</title>
  <link rel="stylesheet" type="text/css" href="/static/style.css" />
  <link rel="stylesheet" type="text/css" href="/static/ui/ui.css" />
+
  <script src="/static/jquery.js" type="text/javascript"></script>
  <script src="/static/jquery-ui.js" type="text/javascript"></script>
  <script src="/static/keys.js" type="text/javascript"></script>
  <script src="/static/tooltip.js" type="text/javascript"></script>
  <script src="/static/layout.js" type="text/javascript"></script>
 
-<!--<link type="text/css" rel="stylesheet" href="http://jqueryui.com/themes/base/ui.all.css" />-->
+ <!--
+<link type="text/css" rel="stylesheet" href="http://jqueryui.com/themes/base/ui.all.css" />
+<script type="text/javascript" src="http://jqueryui.com/themeroller/themeswitchertool/">
+</script>
+-->
 
  <!-- Load jsMath -->
  <script src="/static/jsMath/easy/load.js"></script>
@@ -27,10 +32,13 @@ $(document).onLoad(function () {
 
 function init()
 {
+    //$('#switcher').themeswitcher();
+
     layout = $('body').layout({ 
         applyDefaultStyles: true,
         east__minSize: 300,
-        east__onresize:	function () { $("#math_palette").accordion("resize"); }
+        east__onresize:	function () { $("#math_palette").accordion("resize"); },
+        north__resizable: false,
     });
     layout.sizePane('east', 300);
 
@@ -95,7 +103,7 @@ function init()
 <body>
 
     <div id="header" class="ui-widget-header ui-layout-north">
-        <span class="left"><b>Worksheet:</b> {{title}}</span>
+        <span class="left"><b>Worksheet:</b> {{title|title}}</span>
 
         <span class="right">
 
@@ -124,19 +132,16 @@ function init()
         <div id="horizslider" style="width: 150px"></div>Horizontal Term Spacing<br/>
         <div id="vertslider" style="width: 150px"></div>Vertical Term Spacing<br/>
         <!-- Debug to write selected objects math strings out to debug console !!!!!!!!!!!!!! -->
-        <!--
-        <script type="text/javascript" src="http://jqueryui.com/themeroller/themeswitchertool/">
-        </script>
         <div id="switcher"></div>
-        -->
 </div>
-
 <div id="workspace" class="ui-layout-center">
-    <table id="lines">
-        {% for equation in equations %}
-            {{equation}} 
-        {% endfor %}
-    </table>
+    <div class="ui-widget">
+        <table id="lines">
+            {% for equation in equations %}
+                {{equation}} 
+            {% endfor %}
+        </table>
+    </div>
 </div>
 
 <div id="palette" class="ui-layout-east">
@@ -166,6 +171,9 @@ function init()
         <button class="ui-widget"
             onclick="javascript:toggle_sageinput()"
             title="Transformation">Sage</button>
+        <button class="ui-widget"
+            onclick="javascript:new_inline()"
+            title="Transformation">New</button>
     </div>
 </div>
 

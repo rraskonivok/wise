@@ -698,6 +698,12 @@ function check_container(object)
                {
                     cur.remove();
                }
+
+               // A + - B  --> A - B
+               if(cur.hasClass('infix') && next.attr('math-type') == 'Negate')
+               {
+                    cur.remove();
+               }
                
                //  ( + A  --> ( A
                if(cur.hasClass('pnths') && next.hasClass('infix'))
