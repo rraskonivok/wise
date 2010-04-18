@@ -1649,7 +1649,7 @@ class Negate(Operation):
         self.terms = [self.operand]
 
         if type(self.operand) is Addition:
-            self.operand.show_parenthesis = True
+            self.show_parenthesis = True
 
     def _sage_(self):
         return sage.operator.neg(self.operand._sage_())

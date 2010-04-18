@@ -330,9 +330,8 @@ function get_common_context(first,second)
     }
 
     if(first_container.attr('id') == get_container(second).attr('id')) {
-        return first_container 
-    }
-    else {
+       return first_container 
+    } else {
        return null 
     }
 }
@@ -765,15 +764,15 @@ function get_container(object)
 {
     if(object.attr('group') == object.attr('id'))
     {
-        console.log('Object: '+$(object).attr('math')+' is own parent.');
+        //console.log('Object: '+$(object).attr('math')+' is own parent.');
     }
-    if(object.attr('group') != undefined)
+    if(object.attr('group') != undefined && object.attr('math-type') != 'Equation')
     {
         return $('#'+object.attr('group'))
     }
     else
     {
-        console.log('Object: '+$(object).attr('math')+' is orphaned.');
+        //console.log('Object: '+$(object).attr('math')+' is orphaned.');
     }
 }
 
@@ -843,8 +842,8 @@ function refresh_jsmath(element)
     //Refresh math Globally
     else
     {
-    jsMath.ConvertTeX()
-    jsMath.ProcessBeforeShowing()
+        jsMath.ConvertTeX()
+        jsMath.ProcessBeforeShowing()
     }
 }
 
@@ -1068,9 +1067,9 @@ function parse_sage()
             }
             if(data.newline) {
                 $('#lines').append(data.newline)
+                refresh_jsmath($(data.newline))
             }
             traverse_lines();
-            refresh_jsmath()
         }
         ,'json')
 }

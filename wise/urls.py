@@ -7,6 +7,11 @@ urlpatterns = patterns('',
      (r'^$', 'wise.worksheet.views.home'),
      (r'^home$', 'wise.worksheet.views.home'),
      (r'^test$', 'wise.worksheet.views.test'),
+
+     #Authentication
+     (r'^accounts/login/$', 'wise.worksheet.views.account_login'),
+     (r'^accounts/logout/$', 'wise.worksheet.views.account_logout'),
+
      (r'^ws/(?P<eq_id>\d+)/$', 'wise.worksheet.views.ws'),
      (r'^palette/$', 'wise.worksheet.views.palette'),
      (r'^ws/(?P<eq_id>\d+)/check/$', 'wise.worksheet.views.check'),

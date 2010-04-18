@@ -16,15 +16,24 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+import traceback
+
 from django import template
-from django.http import HttpResponse, Http404
-from wise.worksheet.models import Equation, Workspace, MathematicalTransform, MathematicalIdentity
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import render_to_response, get_object_or_404
 from django.utils import simplejson as json
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 
-import traceback
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+
+from django.contrib.auth.forms import AuthenticationForm
+
+from django.utils.translation import ugettext_lazy as _, ugettext
+
+from wise.worksheet.forms import LoginForm
+from wise.worksheet.models import Equation, Workspace, MathematicalTransform, MathematicalIdentity
 
 import parser
 import mathobjects
@@ -41,6 +50,36 @@ def errors(f):
             return HttpResponse(json.dumps({'error': str(e)}))
     return wrapper
 
+
+def account_login(request):
+    form = AuthenticationForm()
+
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        redirect = request.GET['next']
+
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            if user.is_active:
+                login(request, user)
+                return HttpResponseRedirect(redirect)
+            else:
+                return HttpResponse('Account Disabled')
+                # Return a 'disabled account' error message
+        else:
+            return render_to_response('login.html', {'form': form, 'errors': ['Invalid Login']})
+            # Return an 'invalid login' error message.
+    else:
+        return render_to_response('login.html', {'form': form})
+
+
+def account_logout(request):
+    logout(request)
+    # Redirect to a success page.
+    return HttpResponse('Logged Out')
+
+
 #Memoize single argument function
 def memoize(f):
     def wrapper(*args):
@@ -51,6 +90,7 @@ def memoize(f):
             memo[args] = result
             return result
     return wrapper
+
 
 def test(request):
     '''
@@ -68,6 +108,8 @@ def test(request):
 
     return render_to_response('index.html',{'sage': sage_test})
 
+
+@login_required
 def home(request):
     workspaces = Workspace.objects.all()
     return render_to_response('home.html', {'workspaces': workspaces})
@@ -93,6 +135,7 @@ def sage_parse(request, eq_id):
         js = json.dumps({'error': 'Could not parse'})
     return HttpResponse(js)
 
+@login_required
 @errors
 def ws(request, eq_id):
     ws = Workspace.objects.get(id=eq_id)
@@ -130,6 +173,7 @@ transform_interface = '''
 {% endfor %}
 '''
 
+@login_required
 @errors
 def lookup_transform(request, eq_id):
     first_type = unencode( request.POST.get('first') )
