@@ -218,6 +218,8 @@ identity_interface = '''
 {% endfor %}
 '''
 
+@login_required
+@errors
 def lookup_identity(request, eq_id):
     first_type = unencode( request.POST.get('first') )
     options = MathematicalIdentity.objects.filter(first=first_type)
@@ -247,7 +249,7 @@ def term(request,eq_id):
         new = mf.spawn()
         return HttpResponse(new.get_html())
 
-#Try to combine existing terms based on rules
+@login_required
 @errors
 def combine(request,eq_id):
     first = unencode( request.POST.get('first') )
@@ -321,6 +323,7 @@ def unserialize(string):
 def new(request):
     pass
 
+@login_required
 @errors
 def apply_transform(request,eq_id):
     first = unencode( request.POST.get('first') )
@@ -345,6 +348,7 @@ def apply_identity(request,eq_id):
 
     return HttpResponse(json)
 
+@login_required
 @errors
 def save_workspace(request,eq_id):
     try:
@@ -368,6 +372,7 @@ def save_workspace(request,eq_id):
 
     return HttpResponse('cat')
 
+@login_required
 @errors
 def del_workspace(request):
     #TODO this is crazy dangerous
@@ -375,6 +380,7 @@ def del_workspace(request):
         Equation.objects.filter(workspace=id).delete()
         Workspace.objects.get(id=id).delete()
 
+@login_required
 @errors
 def new_workspace(request):
     name = unencode( request.POST.get('name') )
@@ -413,6 +419,7 @@ def applyfunc(request,eq_id):
     return HttpResponse('Fail')
 '''
 
+@login_required
 @errors
 def receive(request,eq_id):
     obj = unencode( request.POST.get(u'obj') )
@@ -438,6 +445,7 @@ def receive(request,eq_id):
 
     return HttpResponse(response)
 
+@login_required
 @errors
 def remove(request,eq_id):
     obj = unencode( request.POST.get(u'obj') )
@@ -476,6 +484,8 @@ def unencode(s):
     txt = s.decode(fileencoding)
     return str(txt)
 
+@login_required
+@errors
 def new_inline(request, eq_id):
     lhs = mathobjects.Placeholder()
     rhs = mathobjects.Placeholder()

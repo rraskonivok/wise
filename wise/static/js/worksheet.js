@@ -453,6 +453,7 @@ function make_sortable(object,connector,options)
     //console.log([$(object),$(connector)]);
     group_id = $(object).attr('id');
     $(object).sortable(options)
+    console.log(object,options)
 }
 
 function dragging(sort_object,ui)

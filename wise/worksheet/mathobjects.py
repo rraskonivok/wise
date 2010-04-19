@@ -457,7 +457,7 @@ class make_sortable(object):
     def get_html(self):
         options = prototype_dict({'placeholder': self.placeholder,
                                   'connectWith': self.connectWith,
-                                  #'forceHelperSize': self.forceHelperSize,
+                                  'forceHelperSize': self.forceHelperSize,
                                   'helper': self.helper,
                                   'tolerance': self.tolerance,
                                   'axis': self.axis,
@@ -584,6 +584,11 @@ class Term(object):
 
     def __mul__(self,other):
         return Product(*[self,other])
+
+    def wrap(self,other):
+        '''Take one object and wrap it in container object, return
+        the container'''
+        return other(self)
 
     def get_sensitive(self):
         if self.sensitive is False:
@@ -1014,6 +1019,7 @@ class Fraction(Term):
 
         return self.html.render(c)
 
+
     @fallback(Term.combine_fallback)
     def combine(self,other,context):
         #TODO: This breaks a heck of a lot
@@ -1131,7 +1137,7 @@ class Khinchin(Constant):
 def Zero():
     return Numeric(0)
 
-def One(Numeric):
+def One():
     return Numeric(1)
 
 #-------------------------------------------------------------
@@ -1199,6 +1205,48 @@ class Equation(object):
 
         if not self.id:
             self.id = uf.gen()
+
+        #If we have an Equation of the form A/B = C/D then we can
+        #drag terms between 
+        if self.lhs.lhs.has_single_term() and self.rhs.rhs.has_single_term():
+            if type(self.lhs.lhs.terms[0]) is Fraction and type(self.rhs.rhs.terms[0]) is Fraction:
+
+               lfrac = self.lhs.lhs.terms[0]
+               rfrac = self.rhs.rhs.terms[0]
+
+               lden = lfrac.den
+               rden = rfrac.den
+
+               lnum = lfrac.num
+               rnum = rfrac.num
+
+               #lnumm, ldenm = lnum.wrap(Product) , lden.wrap(Product)
+               #rnumm, rdenm = rnum.wrap(Product) , rden.wrap(Product)
+
+               if type(lnum) is not Product:
+                   lfrac.num = lfrac.num.wrap(Product)
+
+               if type(rnum) is not Product:
+                   rfrac.num = rfrac.num.wrap(Product)
+
+               if type(lden) is not Product:
+                   lfrac.den = lfrac.den.wrap(Product)
+
+               if type(rden) is not Product:
+                   rfrac.den = rfrac.den.wrap(Product)
+
+               if type(lnum) is Product or type(lnum) is Variable:
+                   javascript += lnum.ui_sortable(rfrac.den)
+
+               if type(rnum) is Product or type(rnum) is Variable:
+                   javascript += rnum.ui_sortable(lfrac.den)
+
+               if type(lden) is Product or type(lden) is Variable:
+                   javascript += lden.ui_sortable(rfrac.num)
+
+               if type(rden) is Product or type(rden) is Variable:
+                   javascript += rden.ui_sortable(lfrac.num)
+
 
         c = template.Context({
             'id': self.id,
@@ -1476,6 +1524,10 @@ class Operation(Term):
     def receive(self,obj,receiver_context,sender_type,sender_context,new_position):
         return obj.get_html()
 
+    def has_single_term(self):
+        if len(self.terms) == 1:
+            return True
+
 class Unary_Operator(Term):
     arity = 1
     pass
@@ -1575,10 +1627,16 @@ class Product(Operation):
         self.operand = self.terms
         self.ui_sortable()
 
+    def remove(self,obj,remove_context):
+
+        if type(self.terms[0]) is Empty:
+            return One().get_html()
+
     def _sage_(self):
         #Get Sage objects for each term
        sterms = map(lambda o: o._sage_() , self.terms)
        return reduce(sage.operator.mul, sterms)
+
 
 class Log(Operation):
     ui_style = 'prefix'
