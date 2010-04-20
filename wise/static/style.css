@@ -229,9 +229,8 @@ input.search {
    border-bottom: 1px solid black; 
 }
 
-.units {
-    float: left;
-    clear: none;
+.unit {
+    display: inline-block;
 }
 
 .ui-selected {
@@ -259,19 +258,17 @@ input.search {
 }
 
 .drag_placeholder {
-    border: 1px dashed #d4a5a5;
+    border: 1px dashed #d4a5a5 !important;
     min-height: 20px;
     padding-left: 10px;
     padding-right: 10px;
     display: inline-block;
     vertical-align: middle;
+    opacity: 1.0 !important;
 }
 
 .drag_placeholder.selected {
     background-color: #d4a5a5;
-}
-
-.ui-state-disabled {
 }
 
 .ui-state-highlight {
@@ -326,6 +323,19 @@ input.search {
 
 #cmdbuttons {
     float:right;
+}
+
+.cmd_input {
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    clear: none;
+}
+
+.cmd_input input {
+    width: 90%;
+    background-color: white;
+    border: 2px solid #ccc;
 }
 
 #cmdbuttons button {

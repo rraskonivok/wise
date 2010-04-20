@@ -816,8 +816,8 @@ physical_html = '''
 <span class="parenthesis" title="{{type}}">
 {{quantity}}
 </span>
-    <span class="ui-state-disabled unit" group="{{id}}" math-meta-class="unit">
-    $${{unit}}$$
+    <span class="unit" group="{{id}}" math-meta-class="unit">
+    $$[[ {{unit}} ]]$$
     </span>
 </span>
 
@@ -1792,6 +1792,36 @@ class Integral(Operation):
         return sage.integral(self.operand._sage_(),
                 self.differential._sage_())
 
+#Differentiation has a slightly different setup than the other
+#prefix operators
+
+diff_html = '''
+<span id="{{id}}" math-meta-class="term" class="container {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
+    <span class="operator middle" math-type="operator" math-meta-class="operator" group="{{id}}" title="{{type}}" >
+        <span class="num">
+        $$ \partial $$
+        </span>
+
+        <span class="den">
+        <span class="math term">\partial</span>{{ differential }}
+        </span>
+    </span>
+
+{% if parenthesis %}
+    <span class="pnths left"><img class='ui-state-disabled' src="/static/ui/lp.svg" /></span>
+{% endif %}
+
+    <span class="">
+    {{operand}}
+    </span>
+
+    {% if parenthesis %}
+    <span class="pnths right"><img class='ui-state-disabled' src="/static/ui/rp.svg" /></span>
+    {% endif %}
+
+</span>
+'''
+
 class Diff(Operation):
 
     '''To do standard derivatives
@@ -1803,23 +1833,40 @@ class Diff(Operation):
 
     ui_style = 'prefix'
 
-    def __init__(self,operand,differential):
+    def __init__(self,differential,operand):
         self.ensure_id()
         self.operand = operand
         self.operand.group = self.id
         self.differential = differential
 
-        #self.differential.group = self.id
+        self.differential.group = self.id
         #self.differential.operand.sensitive = False
         #self.differential.css_class = 'baseline'
 
-        self.symbol = '\\frac{\partial}{\partial %s}' % differential.symbol
+        #self.symbol = '\\frac{\partial}{\partial %s}' % differential.symbol
 
         self.terms = [self.operand, self.differential]
 
     def _sage_(self):
         return sage.diff(self.operand._sage_(),
                 self.differential._sage_())
+
+    def get_html(self):
+        self.html = template.Template(diff_html)
+
+        c = template.Context({
+            'id': self.id,
+            'math': self.get_math(),
+            'type': self.classname(),
+            'group': self.group,
+            'operand': self.operand.get_html(),
+            'symbol': self.symbol,
+            'parenthesis': self.show_parenthesis,
+            'class': self.css_class,
+            'differential': self.differential.get_html()
+            })
+
+        return self.html.render(c)
 
     def action(self):
         #Take the derivative

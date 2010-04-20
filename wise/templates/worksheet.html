@@ -56,35 +56,14 @@ function init()
     $(document).bind(
     'keydown', 'f4', function() {show_debug_menu()})
     .bind('keydown', 't', function() {lookup_transform()})
-    .bind('keydown', '+', function() {duplicate_placeholder()})
+    .bind('keydown', '+', function() {substite_addition()})
+    .bind('keydown', '-', function() {substite_subtraction()})
+    .bind('keydown', '*', function() {substite_multiplication()})
+    .bind('keydown', '/', function() {substite_division()})
     .bind('keydown', 'esc', function() {clear_selection()})
-
-    /*
-    $(document).shortkeys({
-    'escape':       function () { clear_selection() },
-    't':            function () { lookup_transform() },
-    'i':            function () { lookup_identity() },
-    'e':            function () { select_equation() },
-    'r':            function () { refresh_jsmath() },
-    'h':            function () { cur_next() },
-    'l':            function () { cur_prev() },
-    'f4':           function () { show_debug_menu() },
-    });
-    */
 
     $("#hovertoggle").button();
     bind_hover_toggle();
-    
-    //CTRL-S
-    /*
-    $(window).keydown(function(event) {
-        event.preventDefault();
-        if (!((event.which == 83 || event.which == 115) && event.ctrlKey)) return true;
-        save_workspace();
-        event.preventDefault();
-        return false;
-    });
-    */
 
     $(".typeset").disableTextSelect();
     $('li[title]').tooltip({track:true});
@@ -167,6 +146,10 @@ function init()
 </div>
 
 <div id="workspace" class="ui-layout-center">
+    <div class="cmd_input" >
+        <input type="text"/>
+    </div>
+
     <div class="ui-widget">
         <table id="lines" style="display: none">
             {% for equation in equations %}

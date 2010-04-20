@@ -542,7 +542,7 @@ def generate_palette():
                     ('Power', mathobjects.Power(Placeholder(),Placeholder()).get_html()),
                     ('Wedge', mathobjects.Wedge(Placeholder(),Placeholder()).get_html()),
                     ('Integral', mathobjects.Integral(Placeholder(),mathobjects.Differential(Placeholder())).get_html()),
-                    ('Derivative', mathobjects.Diff(Placeholder(),mathobjects.Variable('x')).get_html()),
+                    ('Derivative', mathobjects.Diff(Placeholder(),Placeholder()).get_html()),
                 ]}
 
     numbers = {'name': 'Numbers', 'type': 'array', 'objects': [

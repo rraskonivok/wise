@@ -1005,11 +1005,11 @@ function apply_transform(transform)
     clear_lookups()
 }
 
-function duplicate_placeholder()
+function duplicate_placeholder(placeholder)
 {
    //This is used for duplicating placeholders in container type
    //objects i.e. (Addition, Multiplication)
-   placeholder = get_selection(0)
+   //placeholder = get_selection(0)
    if(placeholder.attr('math-type') == 'Placeholder')
    {
        nsym = placeholder.clone()
@@ -1018,6 +1018,102 @@ function duplicate_placeholder()
        placeholder.after(nsym)
        check_combinations(get_container(placeholder))
    }
+}
+
+function substite_addition()
+{
+    placeholder = get_selection(0)
+    if(get_container(placeholder).attr('math-type') == 'Addition')
+    {
+        duplicate_placeholder(placeholder)
+    }
+    else
+    {
+        replace_manually(placeholder, '(Addition (Placeholder ) (Placeholder ))')
+    }
+}
+
+function substite_multiplication()
+{
+    placeholder = get_selection(0)
+    if(get_container(placeholder).attr('math-type') == 'Product')
+    {
+        duplicate_placeholder(placeholder)
+    }
+    else
+    {
+        replace_manually(placeholder, '(Product (Placeholder ) (Placeholder ))')
+    }
+}
+
+function substite_subtraction()
+{
+    placeholder = get_selection(0)
+    if(get_container(placeholder).attr('math-type') == 'Addition')
+    {
+       nsym = placeholder.clone()
+       nsym.unbind()
+       nsym.attr('id','destroyme')
+       placeholder.after(nsym)
+       replace_manually(nsym, '(Negate (Placeholder ))')
+    }
+    else
+    {
+        replace_manually(placeholder, '(Addition (Negate (Placeholder )))')
+    }
+}
+
+function substite_division()
+{
+    placeholder = get_selection(0)
+    replace_manually(placeholder, '(Fraction (Placeholder ) (Placeholder ) )')
+}
+
+function replace_manually(obj, code)
+{
+    // Apply PlaceholderSubstitute with the given code argument
+    data = {}
+    data.first = get_selection(0).attr('math')
+    data.second = code
+    data.transform = 'PlaceholderSubstitute'
+
+    $.post("apply_transform/", data,
+        function(data){
+
+            if(data.error)
+            {
+                error(data.error)
+                clear_selection()
+                return
+            }
+            
+            //Remove terms (if needed)
+            if(data.remove == 'first')
+            {
+                obj.remove();
+            }
+
+            //Swap the first term
+            if(data.first)
+            {
+                group_id = obj.attr('group');
+                group_id_cache = String(group_id)
+
+
+                nsym = obj.replace(data.first);
+                nsym.attr('group',group_id_cache);
+
+                refresh_jsmath($(nsym))
+
+            }
+
+            clear_selection()
+            traverse_lines();
+            update(get_container(obj))
+        },
+        "json");
+    cleanup_ajax_scripts()
+    clear_lookups()
 }
 
 function remove_placeholder()
