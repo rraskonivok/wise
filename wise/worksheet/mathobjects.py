@@ -696,9 +696,6 @@ class Placeholder(Term):
     def get_math(self):
         return '(Placeholder )'
 
-    def combine(self,other,context):
-        return other.get_html()
-
 class Empty(Term):
     sensitive = False
     def __init__(self):
@@ -1339,7 +1336,7 @@ operation_html_postfix = '''
     {{operand}}
     </span>
 
-    <span class="ui-state-disabled" math-type="operator" math-meta-class="operator" group="{{id}}">
+    <span class="operator" math-type="operator" math-meta-class="operator" group="{{id}}">
     $${{symbol}}$$
     </span>
 </span>
@@ -1347,7 +1344,7 @@ operation_html_postfix = '''
 
 operation_html_prefix = '''
 <span id="{{id}}" math-meta-class="term" class="container {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
-    <span class="ui-state-disabled operator" math-type="operator"
+    <span class="operator" math-type="operator"
         math-meta-class="operator" group="{{id}}" title="{{type}}" >$${{symbol}}$$
     </span>
 
@@ -1368,7 +1365,7 @@ operation_html_prefix = '''
 
 operation_html_sandwich = '''
     <span id="{{id}}" math-meta-class="term" class="container {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
-    <span class="ui-state-disabled operator" math-type="operator" math-meta-class="operator" group="{{id}}" title="{{type}}">$${{symbol}}$$</span>
+    <span class="operator" math-type="operator" math-meta-class="operator" group="{{id}}" title="{{type}}">$${{symbol}}$$</span>
 
     {% if parenthesis %}
     <span class="ui-state-disabled" math-type="parenthesis" math-meta-class="sugar" group="{{id}}">$$($$</span>
@@ -1379,7 +1376,7 @@ operation_html_sandwich = '''
     </span>
 
     {% if parenthesis %}
-    <span class="ui-state-disabled" math-type="parenthesis" math-meta-class="sugar" group="{{id}}">$$)$$</span>
+    <span class="operator" math-type="parenthesis" math-meta-class="sugar" group="{{id}}">$$)$$</span>
     {% endif %}
 
     {{tail}}

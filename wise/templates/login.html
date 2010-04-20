@@ -1,0 +1,40 @@
+<html>
+    
+<head>
+    <link rel="stylesheet" type="text/css" href="/static/style.css" />
+    <title>Login</title>
+    <style>
+        #login {
+            width: 28em;
+            min-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 100px;
+            padding: 20px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div id="login">
+
+    <h1>Login</h1>
+
+    {% if errors %}
+        <ul>
+            {% for error in errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+        <form action="" method="post">
+            <table>
+                {{ form.as_table }}
+            </table>
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+
+</body>
+</html>

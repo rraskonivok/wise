@@ -53,6 +53,13 @@ function init()
     });
     layout.sizePane('east', 300);
 
+    $(document).bind(
+    'keydown', 'f4', function() {show_debug_menu()})
+    .bind('keydown', 't', function() {lookup_transform()})
+    .bind('keydown', '+', function() {duplicate_placeholder()})
+    .bind('keydown', 'esc', function() {clear_selection()})
+
+    /*
     $(document).shortkeys({
     'escape':       function () { clear_selection() },
     't':            function () { lookup_transform() },
@@ -63,6 +70,7 @@ function init()
     'l':            function () { cur_prev() },
     'f4':           function () { show_debug_menu() },
     });
+    */
 
     $("#hovertoggle").button();
     bind_hover_toggle();
@@ -129,6 +137,7 @@ function init()
 
         <span class="right">
 
+            {{username}} |
             <a href="/home">Home</a> |
             <a href="javascript:save_workspace()">Save Worksheet</a> |
             <a href="/accounts/logout">Sign Out</a> 

@@ -982,7 +982,6 @@ function apply_transform(transform)
 
                 refresh_jsmath($(nsym))
 
-                //refresh_jsmath()
             }
             //Swap the second term
             if(data.second)
@@ -995,7 +994,6 @@ function apply_transform(transform)
                 nsym.attr('group',group_id_cache);
 
                 refresh_jsmath($(nsym))
-                //refresh_jsmath()
             }
 
             clear_selection()
@@ -1007,6 +1005,36 @@ function apply_transform(transform)
     clear_lookups()
 }
 
+function duplicate_placeholder()
+{
+   //This is used for duplicating placeholders in container type
+   //objects i.e. (Addition, Multiplication)
+   placeholder = get_selection(0)
+   if(placeholder.attr('math-type') == 'Placeholder')
+   {
+       nsym = placeholder.clone()
+       nsym.unbind()
+       nsym.attr('id','destroyme')
+       placeholder.after(nsym)
+       check_combinations(get_container(placeholder))
+   }
+}
+
+function remove_placeholder()
+{
+   //This is used for duplicating placeholders in container type
+   //objects i.e. (Addition, Multiplication)
+   placeholder = get_selection(0)
+   if(placeholder.attr('math-type') == 'Placeholder')
+   {
+       nsym = placeholder.clone()
+       nsym.unbind()
+       nsym.attr('id','destroyme')
+       placeholder.after(nsym)
+       check_combinations(get_container(placeholder))
+   }
+}
+
 function apply_identity(identity)
 {
     data = {}
@@ -1015,6 +1043,13 @@ function apply_identity(identity)
 
     $.post("apply_identity/", data,
         function(data){
+            if(data.error)
+            {
+                error(data.error)
+                clear_selection()
+                return
+            }
+
             //TODO this really needs to be cleaned up 
             //Swap the first term
             obj = get_selection(0);
@@ -1197,7 +1232,3 @@ function save_workspace()
         }
         ,'json')
 }
-
-$(document).ready(function() {
-    init();
-}) 

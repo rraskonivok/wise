@@ -1,93 +1,99 @@
+/*
+ * jQuery Hotkeys Plugin
+ * Copyright 2010, John Resig
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ *
+ * Based upon the plugin by Tzury Bar Yochay:
+ * http://github.com/tzuryby/hotkeys
+ *
+ * Original idea by:
+ * Binny V A, http://www.openjs.com/scripts/events/keyboard_shortcuts/
+*/
 
-jQuery.fn.shortkeys = jQuery.fn.keys = function (obj, settings) {		
-	var el = this;
-	this.settings = jQuery.extend({
-			split: "+",
-			moreKeys: {}			
-		}, settings || {});	
-	this.wackyKeys = { '.': 190, ',': 188, ';': 59,	'Space': 32, 'rarrow': 39 , 'larrow': 37, 'escape': 27, 'f4': 115};	
-	this.formElements  = new Array("input", "select", "textarea", "button");
-	this.keys = new Array();	
-	this.onFormElement = false;
-	this.keysDown = new Array();
-	this.init = function (obj) {
-		for(x in this.wackyKeys) {
-			this.wackyKeys[x.toUpperCase()] = this.wackyKeys[x];
-		}
-		for(x in obj) {
-			this.keys.push(x.split(this.settings.split));
-		}
-		for(i in this.keys) {
-			var quickArr = new Array();
-			for(j in this.keys[i]) {
-				quickArr.push(this.convertToNumbers(this.keys[i][j].toUpperCase()));
-			}
-			quickArr.sort();
-			this.keys[i] = quickArr;
-		}
-	};	
-	this.convertToNumbers = function (inp) {
-		if (this.wackyKeys[inp] != undefined) {
-			return this.wackyKeys[inp];
-		}
-		return inp.toUpperCase().charCodeAt(0);
-	};	
-	this.keyAdd = function(keyCode) {
-		this.keysDown.push(keyCode);
-		this.keysDown.sort();
-	};
-	this.keyRemove = function (keyCode) {
-		for(i in this.keysDown) {
-			if(this.keysDown[i] == keyCode) {
-				this.keysDown.splice(i,1);
-			}
-		};	
-		this.keysDown.sort();	
-	};		
-	this.keyTest = function (i) {
-		if (this.keys[i].length != this.keysDown.length) return false;
-		for(j in this.keys[i]) {
-			if(this.keys[i][j] != this.keysDown[j]) {
-				return false;
-			}
-		}	
-		return true;
-	};
-	this.keyRemoveAll = function () {
-		this.keysDown = new Array();	
-	};
-	this.focused = function (bool) {
-		this.onFormElement = bool;
-	}	
-	$(document).keydown(function(e) {
-		el.keyAdd(e.keyCode);
-		var i = 0;
-		for(x in obj) {
-			if(el.keyTest(i) && !el.onFormElement) {
-				obj[x]();
-				return false;
-				break;	
-			}			
-			i++;
-		};	
-	});	
-	$(document).keyup(function (e) {
-		el.keyRemove(e.keyCode);
-	});	
-	for(x in this.formElements) {
-		$(this.formElements[x]).focus( function () {
-			el.focused(true);
-		});
-		$(this.formElements[x]).blur( function () {
-			el.focused(false);
-		});
-	}	
-	$(document).focus( function () {
-		el.keyRemoveAll();
-	});
+(function(jQuery){
 	
-	this.init(obj);
-	jQuery.extend(this.wackyKeys, this.settings.moreKeys);
+	jQuery.hotkeys = {
+		version: "0.8",
 
-	return this;
-}
+		specialKeys: {
+			8: "backspace", 9: "tab", 13: "return", 16: "shift", 17: "ctrl", 18: "alt", 19: "pause",
+			20: "capslock", 27: "esc", 32: "space", 33: "pageup", 34: "pagedown", 35: "end", 36: "home",
+			37: "left", 38: "up", 39: "right", 40: "down", 45: "insert", 46: "del", 
+			96: "0", 97: "1", 98: "2", 99: "3", 100: "4", 101: "5", 102: "6", 103: "7",
+			104: "8", 105: "9", 106: "*", 107: "+", 109: "-", 110: ".", 111 : "/", 
+			112: "f1", 113: "f2", 114: "f3", 115: "f4", 116: "f5", 117: "f6", 118: "f7", 119: "f8", 
+			120: "f9", 121: "f10", 122: "f11", 123: "f12", 144: "numlock", 145: "scroll", 191: "/", 224: "meta"
+		},
+	
+		shiftNums: {
+			"`": "~", "1": "!", "2": "@", "3": "#", "4": "$", "5": "%", "6": "^", "7": "&", 
+			"8": "*", "9": "(", "0": ")", "-": "_", "=": "+", ";": ": ", "'": "\"", ",": "<", 
+			".": ">",  "/": "?",  "\\": "|"
+		}
+	};
+
+	function keyHandler( handleObj ) {
+		// Only care when a possible input has been specified
+		if ( typeof handleObj.data !== "string" ) {
+			return;
+		}
+		
+		var origHandler = handleObj.handler,
+			keys = handleObj.data.toLowerCase().split(" ");
+	
+		handleObj.handler = function( event ) {
+			// Don't fire in text-accepting inputs that we didn't directly bind to
+			if ( this !== event.target && (/textarea|select/i.test( event.target.nodeName ) ||
+				 event.target.type === "text") ) {
+				return;
+			}
+			
+			// Keypress represents characters, not special keys
+			var special = event.type !== "keypress" && jQuery.hotkeys.specialKeys[ event.which ],
+				character = String.fromCharCode( event.which ).toLowerCase(),
+				key, modif = "", possible = {};
+
+			// check combinations (alt|ctrl|shift+anything)
+			if ( event.altKey && special !== "alt" ) {
+				modif += "alt+";
+			}
+
+			if ( event.ctrlKey && special !== "ctrl" ) {
+				modif += "ctrl+";
+			}
+			
+			// TODO: Need to make sure this works consistently across platforms
+			if ( event.metaKey && !event.ctrlKey && special !== "meta" ) {
+				modif += "meta+";
+			}
+
+			if ( event.shiftKey && special !== "shift" ) {
+				modif += "shift+";
+			}
+
+			if ( special ) {
+				possible[ modif + special ] = true;
+
+			} else {
+				possible[ modif + character ] = true;
+				possible[ modif + jQuery.hotkeys.shiftNums[ character ] ] = true;
+
+				// "$" can be triggered as "Shift+4" or "Shift+$" or just "$"
+				if ( modif === "shift+" ) {
+					possible[ jQuery.hotkeys.shiftNums[ character ] ] = true;
+				}
+			}
+
+			for ( var i = 0, l = keys.length; i < l; i++ ) {
+				if ( possible[ keys[i] ] ) {
+					return origHandler.apply( this, arguments );
+				}
+			}
+		};
+	}
+
+	jQuery.each([ "keydown", "keyup", "keypress" ], function() {
+		jQuery.event.special[ this ] = { add: keyHandler };
+	});
+
+})( jQuery );

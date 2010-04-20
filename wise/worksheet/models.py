@@ -1,7 +1,11 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 class Workspace(models.Model):
     name = models.CharField(max_length=200)
+    timestamp = models.DateTimeField(auto_now=True)
+    owner = models.ForeignKey(User)
+    public = models.BooleanField()
 
     #The workspace should have a number of EXPORTABLE equations which are higlighted in yellow, these
     #can be pulled into other workspaces and inserted and quered in lookup_identities via sim hashes

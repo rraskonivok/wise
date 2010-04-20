@@ -111,7 +111,7 @@ def test(request):
 
 @login_required
 def home(request):
-    workspaces = Workspace.objects.all()
+    workspaces = Workspace.objects.filter(owner=request.user)
     return render_to_response('home.html', {'workspaces': workspaces})
 
 def palette(request):
@@ -139,6 +139,10 @@ def sage_parse(request, eq_id):
 @errors
 def ws(request, eq_id):
     ws = Workspace.objects.get(id=eq_id)
+
+    if ( ws.owner.id != request.user.id ) and not ws.public:
+        return HttpResponse('You do not have permission to access this worksheet.')
+
     eqs = Equation.objects.filter(workspace=eq_id)
     debug_parse_tree = unencode( request.GET.get('tree') )
     outputs = []
@@ -165,7 +169,7 @@ def ws(request, eq_id):
     if debug_parse_tree:
         return HttpResponse(outputs)
 
-    return render_to_response('worksheet.html', {'title': ws.name, 'equations':outputs})
+    return render_to_response('worksheet.html', {'title': ws.name, 'equations':outputs, 'username': request.user.username})
 
 transform_interface = '''
 {% for option in options %}
@@ -379,6 +383,7 @@ def del_workspace(request):
     for id,s in request.POST.iteritems():
         Equation.objects.filter(workspace=id).delete()
         Workspace.objects.get(id=id).delete()
+    return HttpResponseRedirect('/home')
 
 @login_required
 @errors
@@ -386,7 +391,7 @@ def new_workspace(request):
     name = unencode( request.POST.get('name') )
     init = unencode( request.POST.get('init') )
 
-    new_workspace = Workspace(name=name)
+    new_workspace = Workspace(name=name,owner=request.user,public=False)
     new_workspace.save()
     new_id = new_workspace.id
 
@@ -398,26 +403,7 @@ def new_workspace(request):
         equation = mathobjects.Placeholder().get_math()
 
     init_eq = Equation(name=equation,workspace=new_workspace).save()
-    return HttpResponse('Success')
-
-'''
-@errors
-def applyfunc(request,eq_id):
-    id = unencode( request.POST.getlist('id') )
-    math = unencode( request.POST.getlist('math') )
-    type = unencode( request.POST.getlist('type') )
-    func = unencode( request.POST.getlist('func') )
-    if not id or not func:
-        return HttpResponse('Fail')
-
-    if func=='negate':
-        m = type_cast(math)
-        m.negate()
-        m.id = id
-        return HttpResponse( m.get_html() )
-
-    return HttpResponse('Fail')
-'''
+    return HttpResponseRedirect('/home')
 
 @login_required
 @errors

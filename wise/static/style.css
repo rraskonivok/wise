@@ -199,6 +199,14 @@ body {
     border: 1px solid #9CBD86;
 }
 
+input.search {
+	border: 1px solid #BFBFBF;
+	background: url("/static/ui/search.gif") no-repeat 10px 5px;
+    background-color: white;
+	padding-left: 30px;
+    height: 20px;
+}
+
 .helper {
     padding-left: 10px;
     padding-right: 10px;

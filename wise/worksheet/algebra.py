@@ -40,7 +40,7 @@ MathematicalTransform(
         first='Placeholder',
         second='Term',
         context = 'null',
-        prettytext = '$$Substitute$$').save()
+        prettytext = 'Substitute').save()
 
 class PlaceholderSubstitute(Transform):
     def __new__(self,first,second):
@@ -367,7 +367,7 @@ MathematicalTransform(
         first='Integral',
         second='Integral',
         context = 'Addition',
-        prettytext = '$$\int A + \int B = \int A+B $$').save()
+        prettytext = 'Combine Integrals').save()
 
 class LinearCombineIntegral(Transform):
     first_type = [ Term ]
@@ -467,6 +467,27 @@ class DiffMerge(Transform):
 
 class Identity(object):
     first_type = None
+
+
+MathematicalIdentity(
+        internal='RefreshTerm',
+        first='Term',
+        prettytext = 'Refresh').save()
+
+class RefreshTerm(Identity):
+    def __new__(self,first):
+        return json.dumps({'first': first.get_html()})
+
+
+MathematicalIdentity(
+        internal='RefreshEq',
+        first='Equation',
+        prettytext = 'Refresh').save()
+
+class RefreshEq(Identity):
+    def __new__(self,first):
+        return json.dumps({'first': first.get_html()})
+
 
 MathematicalIdentity(
         internal='LengthTo_ly',
