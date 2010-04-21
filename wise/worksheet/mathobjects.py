@@ -1355,20 +1355,24 @@ operation_html_postfix = '''
 
 operation_html_prefix = '''
 <span id="{{id}}" math-meta-class="term" class="container {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
-    <span class="operator" math-type="operator"
+    <span class="operator {{class}}" math-type="operator"
         math-meta-class="operator" group="{{id}}" title="{{type}}" >$${{symbol}}$$
     </span>
 
-{% if parenthesis %}
-    <span class="pnths left"><img class='ui-state-disabled' src="/static/ui/lp.svg" /></span>
-{% endif %}
+    {% if parenthesis %}
+    <span class="ui-state-disabled pnths left">
+       &Ograve;
+    </span>
+    {% endif %}
 
     <span class="">
     {{operand}}
     </span>
 
     {% if parenthesis %}
-    <span class="pnths right"><img class='ui-state-disabled' src="/static/ui/rp.svg" /></span>
+    <span class="ui-state-disabled pnths right">
+       &Oacute;
+    </span>
     {% endif %}
 
 </span>
@@ -1379,7 +1383,9 @@ operation_html_sandwich = '''
     <span class="operator" math-type="operator" math-meta-class="operator" group="{{id}}" title="{{type}}">$${{symbol}}$$</span>
 
     {% if parenthesis %}
-    <span class="ui-state-disabled" math-type="parenthesis" math-meta-class="sugar" group="{{id}}">$$($$</span>
+    <span class="ui-state-disabled pnths left">
+       &Ograve;
+    </span>
     {% endif %}
 
     <span class="parenthesis">
@@ -1387,17 +1393,25 @@ operation_html_sandwich = '''
     </span>
 
     {% if parenthesis %}
-    <span class="operator" math-type="parenthesis" math-meta-class="sugar" group="{{id}}">$$)$$</span>
+    <span class="ui-state-disabled pnths right">
+       &Oacute;
+    </span>
     {% endif %}
 
     {{tail}}
     </span>
 '''
 
+#The unicode here comes from cmex10 font for parentheses
+
 operation_html_infix = '''
     <span math-meta-class='term' id="{{id}}" class="container {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
     {% if parenthesis %}
-    <span class="pnths left"><img class='ui-state-disabled' src="/static/ui/lp.svg" /></span>
+
+    <span class="ui-state-disabled pnths left">
+       &Ograve;
+    </span>
+
     {% endif %}
 
     {% for o in operand %}
@@ -1408,7 +1422,11 @@ operation_html_infix = '''
     {% endfor %}
 
     {% if parenthesis %}
-    <span class="pnths right"><img class='ui-state-disabled' src="/static/ui/rp.svg" /></span>
+
+    <span class="ui-state-disabled pnths right">
+       &Oacute;
+    </span>
+
     {% endif %}
     </span>
     {{jscript}}
@@ -1497,6 +1515,9 @@ class Operation(Term):
         #Prefix Formatting
         elif self.ui_style == 'prefix':
             self.html = template.Template(operation_html_prefix)
+
+            if not self.css_class:
+                self.css_class = 'middle'
 
             c = template.Context({
                 'id': self.id,
@@ -1766,6 +1787,7 @@ class Differential(Operation):
     ui_style = 'prefix'
     symbol = 'd'
     show_parenthesis = False
+    css_class = ''
 
     def __init__(self,variable):
         self.ensure_id()
@@ -1818,16 +1840,20 @@ diff_html = '''
         </span>
     </span>
 
-{% if parenthesis %}
-    <span class="pnths left"><img class='ui-state-disabled' src="/static/ui/lp.svg" /></span>
-{% endif %}
+    {% if parenthesis %}
+        <span class="ui-state-disabled pnths left">
+           &Ograve;
+        </span>
+    {% endif %}
 
     <span class="">
     {{operand}}
     </span>
 
     {% if parenthesis %}
-    <span class="pnths right"><img class='ui-state-disabled' src="/static/ui/rp.svg" /></span>
+    <span class="ui-state-disabled pnths right">
+       &Oacute;
+    </span>
     {% endif %}
 
 </span>

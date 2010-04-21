@@ -426,7 +426,8 @@ function resize_parentheses()
         {
             parent_height = $(this).parent().height();
             $(this).height(parent_height)
-            $(this).css('top',-parent_height/2)
+            $(this).css('margin-top',-parent_height/2)
+            $(this).css('font-size',String(parent_height/3) + 'px')
         });
 }
 
@@ -1052,15 +1053,16 @@ function remove_element()
 {
     placeholder = get_selection(0)
     container = get_container(placeholder)
-    
-    if(container.attr('math-type') == 'RHS' || container.attr('math-type') == 'LHS')
-    {
-        return
-    }
 
     if(placeholder.attr('math-type') == 'Equation')
     {
         placeholder.remove()
+        return
+    }
+    
+    if(container.attr('math-type') == 'RHS' || container.attr('math-type') == 'LHS')
+    {
+        return
     }
 
     if(container.attr('math-type') == 'Addition' || container.attr('math-type') == 'Product')

@@ -180,9 +180,10 @@ body {
 }
 
 .pnths {
-    vertical-align: middle;
     height: inherit;
     display: inline-block;
+    font-family: jsMath-cmex10, times;
+    vertical-align: middle;
 }
 
 .pnths img {

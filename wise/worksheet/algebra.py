@@ -22,6 +22,44 @@ from django.utils import simplejson as json
 from wise.worksheet.models import MathematicalTransform
 from wise.worksheet.models import MathematicalIdentity
 
+def require(arg_name, *allowed_types):
+    def make_wrapper(f):
+        if hasattr(f, "wrapped_args"):
+            wrapped_args = getattr(f, "wrapped_args")
+        else:
+            code = f.func_code
+            wrapped_args = list(code.co_varnames[:code.co_argcount])
+
+        try:
+            arg_index = wrapped_args.index(arg_name)
+        except ValueError:
+            raise NameError, arg_name
+
+        def wrapper(*args, **kwargs):
+            if len(args) > arg_index:
+                arg = args[arg_index]
+                if not isinstance(arg, allowed_types):
+                    type_list = " or ".join(str(allowed_type) for allowed_type in allowed_types)
+                    raise TypeError, "Expected '%s' to be %s; was %s." % (arg_name, type_list, type(arg))
+            else:
+                if arg_name in kwargs:
+                    arg = kwargs[arg_name]
+                    if not isinstance(arg, allowed_types):
+                        type_list = " or ".join(str(allowed_type) for allowed_type in allowed_types)
+                        raise TypeError, "Expected '%s' to be %s; was %s." % (arg_name, type_list, type(arg))
+
+            return f(*args, **kwargs)
+
+        wrapper.wrapped_args = wrapped_args
+        return wrapper
+
+    return make_wrapper
+
+#@require("x", int, float)
+#@require("y", float)
+#def foo(x, y):
+#    return x+y
+
 # TODO A wrapper to do type checking on these methods and automatically
 # provide an error message?
 
@@ -102,7 +140,7 @@ MathematicalTransform(
         first='Negate',
         second='Addition',
         context = 'null',
-        prettytext = '$$-(A+B)=-A+-B$$').save()
+        prettytext = 'Distribute Negation').save()
 
 class DistributeNegation(Transform):
 
@@ -122,7 +160,7 @@ MathematicalTransform(
         first='Term',
         second='Term',
         context = 'Addition',
-        prettytext = '$$x+y=(x+y)$$').save()
+        prettytext = 'Group with Parentheses').save()
 
 class AdditiveGroup(Transform):
 
@@ -145,7 +183,6 @@ MathematicalTransform(
         prettytext = '$$x+y=y+x$$').save()
 
 class AdditiveSwap(Transform):
-
     def __new__(self,first,second):
         return json.dumps({'first': second.get_html(), 'second': first.get_html()})
 
@@ -174,7 +211,7 @@ MathematicalTransform(
         first='LHS',
         second='RHS',
         context = 'Equation',
-        prettytext = '$$(A=B) \equiv (B=A)$$').save()
+        prettytext = 'Swap Sides of Equation').save()
 
 class EquationSymmetric(Transform):
     first_type = [ Term ]
@@ -188,7 +225,7 @@ MathematicalTransform(internal='EquationTransitive',
         first='Equation',
         second='Equation',
         context = 'null',
-        prettytext = '$$A=B=C \equiv A=C$$').save()
+        prettytext = 'Apply Transitive Identity').save()
 
 #-------------------------------------------------------------
 # EquationTransitive : (Equation, Equation) --> (Equation)
@@ -213,7 +250,7 @@ MathematicalTransform(
         first='Numeric',
         second='Numeric',
         context = 'Addition',
-        prettytext = '$$x+y$$').save()
+        prettytext = 'Add Numbers').save()
 
 class AddNumerics(Transform):
     first_type = [ Term ]
@@ -346,8 +383,8 @@ MathematicalTransform(
 class DifferentiateInternal(Transform):
     def __new__(self,first,second):
         try:
-            dlhs = Diff(first.lhs.lhs, second)
-            drhs = Diff(first.rhs.rhs, second)
+            dlhs = Diff(second, first.lhs.lhs)
+            drhs = Diff(second, first.rhs.rhs)
 
             first = Equation(LHS(dlhs),RHS(drhs))
         except ValueError, e:
@@ -413,7 +450,7 @@ class LinearDistritubeDiff(Transform):
     def __new__(self,first,second):
         if first.operand.hash != second.hash:
             return json.dumps({'error': 'Addition term should be not be nested more than one level down'})
-        split = [Diff(term, first.differential) for term in second.terms]
+        split = [Diff(first.differential, term) for term in second.terms]
         distributed = Addition(*split)
         return json.dumps({'first': distributed.get_html()})
 
@@ -508,6 +545,29 @@ class RefreshEq(Identity):
     def __new__(self,first):
         return json.dumps({'first': first.get_html()})
 
+#-------------------------------------------------------------
+# EvaluateDiff : (Diff) --> (Expression)
+#-------------------------------------------------------------
+
+MathematicalIdentity(
+        internal='EvaluateDiff',
+        first='Diff',
+        prettytext = 'Evaluate Derivative').save()
+
+class EvaluateDiff(Identity):
+    def __new__(self,first):
+        first = parse_sage_exp(first._sage_())
+        return json.dumps({'first': first.get_html()})
+
+MathematicalIdentity(
+        internal='EvaluateIntegral',
+        first='Integral',
+        prettytext = 'Evaluate Integral').save()
+
+class EvaluateIntegral(Identity):
+    def __new__(self,first):
+        first = parse_sage_exp(first._sage_())
+        return json.dumps({'first': first.get_html()})
 
 MathematicalIdentity(
         internal='LengthTo_ly',
