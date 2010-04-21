@@ -598,6 +598,7 @@ function remove(ui,removed)
         sender_type: removed.attr('math-type'),
         sender_context: get_container(removed).attr('math-type'),
     }
+
     $.post("remove/", data,
            function(data){
                 if(data)
@@ -890,6 +891,7 @@ function update_math(object,stack_depth)
     mst = '(' + object.attr('math-type') + ' ' +  mst + ')';
 
     object.attr('math',mst); 
+    object.attr('num_children',members.length)
 
     if(object.attr('group') != undefined)
     {
@@ -1046,6 +1048,42 @@ function substite_multiplication()
     }
 }
 
+function remove_element()
+{
+    placeholder = get_selection(0)
+    container = get_container(placeholder)
+    
+    if(container.attr('math-type') == 'RHS' || container.attr('math-type') == 'LHS')
+    {
+        return
+    }
+
+    if(placeholder.attr('math-type') == 'Equation')
+    {
+        placeholder.remove()
+    }
+
+    if(container.attr('math-type') == 'Addition' || container.attr('math-type') == 'Product')
+    {
+        if( parseInt(container.attr('num_children')) > 1 )
+        {
+            container = get_container(placeholder)
+            container_cache = String(container.selector)
+            placeholder.remove()
+            clear_selection()
+            update($(container_cache))
+        }
+        else
+        {
+            replace_manually(placeholder, '(Placeholder )')
+        }
+    }
+    else
+    {
+        replace_manually(placeholder, '(Placeholder )')
+    }
+}
+
 function substite_subtraction()
 {
     placeholder = get_selection(0)
@@ -1075,7 +1113,7 @@ function replace_manually(obj, code)
     data = {}
     data.first = get_selection(0).attr('math')
     data.second = code
-    data.transform = 'PlaceholderSubstitute'
+    data.transform = 'Replace'
 
     $.post("apply_transform/", data,
         function(data){

@@ -60,6 +60,7 @@ function init()
     .bind('keydown', '-', function() {substite_subtraction()})
     .bind('keydown', '*', function() {substite_multiplication()})
     .bind('keydown', '/', function() {substite_division()})
+    .bind('keydown', 'del', function() {remove_element()})
     .bind('keydown', 'esc', function() {clear_selection()})
 
     $("#hovertoggle").button();

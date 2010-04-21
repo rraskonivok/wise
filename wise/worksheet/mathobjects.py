@@ -138,12 +138,15 @@ def parse_sage_exp(expr):
         #Basic Algebraic Structures
         elif operator is sage.operator.add:
             return apply(Addition,map(parse_sage_exp,operands))
+
         elif operator is sage.operator.mul:
             if operands[-1] == -1:
                 return Negate(apply(Product,map(parse_sage_exp,operands[0:-1])))
             return apply(Product,map(parse_sage_exp,operands))
+
         elif operator is sage.operator.div:
             return apply(Fraction,map(parse_sage_exp,operands))
+
         elif operator is sage.operator.pow:
             if operands[1] == -1:
                 return apply(Fraction,[Numeric(1),parse_sage_exp(operands[0])])
@@ -152,6 +155,7 @@ def parse_sage_exp(expr):
                 #Convert this into a Fraction
                 return apply(Fraction,[Numeric(1),parse_sage_exp(operands[0])])
             return apply(Power,map(parse_sage_exp,operands))
+
         elif operator is sage.operator.neg:
             return apply(Negate,map(parse_sage_exp,operands))
 
@@ -677,6 +681,13 @@ class Term(object):
         self.javascript = make_sortable(self,other).get_html()
         return self.get_javascript()
 
+class PlaceholderInExpression(Exception):
+    def __init__(self):
+        self.value = 'A Placeholder was found in the equation and cannot be evaluated'
+
+    def __str__(self):
+        return self.value
+
 placeholder_html = '''<span id="{{id}}" class="{{class}}{{sensitive}} drag_placeholder term" math="{{math}}" math-type="{{type}}" title="{{type}}" math-meta-class="term" group="{{group}}"></span>'''
 
 class Placeholder(Term):
@@ -691,7 +702,7 @@ class Placeholder(Term):
         self.latex = '$\\text{Placeholder}$'
 
     def _sage_(self):
-        return sage.var('P')
+        raise PlaceholderInExpression()
 
     def get_math(self):
         return '(Placeholder )'
@@ -1837,15 +1848,11 @@ class Diff(Operation):
         self.ensure_id()
         self.operand = operand
         self.operand.group = self.id
+
         self.differential = differential
-
         self.differential.group = self.id
-        #self.differential.operand.sensitive = False
-        #self.differential.css_class = 'baseline'
 
-        #self.symbol = '\\frac{\partial}{\partial %s}' % differential.symbol
-
-        self.terms = [self.operand, self.differential]
+        self.terms = [self.differential, self.operand]
 
     def _sage_(self):
         return sage.diff(self.operand._sage_(),

@@ -22,6 +22,9 @@ from django.utils import simplejson as json
 from wise.worksheet.models import MathematicalTransform
 from wise.worksheet.models import MathematicalIdentity
 
+# TODO A wrapper to do type checking on these methods and automatically
+# provide an error message?
+
 #-------------------------------------------------------------
 # Transforms
 #-------------------------------------------------------------
@@ -30,6 +33,23 @@ class Transform(object):
     first_type = None
     second_type = None
     context = None
+
+#-------------------------------------------------------------
+# Replace : (Term, Term) --> Term
+#-------------------------------------------------------------
+
+#This should only be used internally by the UI
+
+MathematicalTransform(
+        internal='Replace',
+        first='',
+        second='',
+        context = '',
+        prettytext = '').save()
+
+class Replace(Transform):
+    def __new__(self,first,second):
+        return json.dumps({'first': second.get_html()})
 
 #-------------------------------------------------------------
 # Placeholder Substitute : (Placeholder, Term) --> Term
