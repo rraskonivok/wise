@@ -531,6 +531,9 @@ def generate_palette():
                     ('Sine', mathobjects.Sine(Placeholder()).get_html()),
                     ('Cosine', mathobjects.Cosine(Placeholder()).get_html()),
                     ('Tangent', mathobjects.Tangent(Placeholder()).get_html()),
+                    ('Secant', mathobjects.Secant(Placeholder()).get_html()),
+                    ('Cosecant', mathobjects.Cosecant(Placeholder()).get_html()),
+                    ('Cotangent', mathobjects.Cotangent(Placeholder()).get_html()),
                     ('Logarithm', mathobjects.Log(Placeholder()).get_html()),
                 ]}
 
@@ -543,6 +546,7 @@ def generate_palette():
                     ('Wedge', mathobjects.Wedge(Placeholder(),Placeholder()).get_html()),
                     ('Integral', mathobjects.Integral(Placeholder(),mathobjects.Differential(Placeholder())).get_html()),
                     ('Derivative', mathobjects.Diff(Placeholder(),Placeholder()).get_html()),
+                    ('Derivative', mathobjects.FDiff(Placeholder(),Placeholder()).get_html()),
                 ]}
 
     numbers = {'name': 'Numbers', 'type': 'array', 'objects': [

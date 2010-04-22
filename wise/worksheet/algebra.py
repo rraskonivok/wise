@@ -262,6 +262,23 @@ class AddNumerics(Transform):
         return json.dumps({'first': sumof.get_html(), 'second': None})
 
 MathematicalTransform(
+        internal='Collect',
+        first='Term',
+        second='Variable',
+        context = 'null',
+        prettytext = 'Collect').save()
+
+class Collect(Transform):
+    first_type = [ Term ]
+    second_type = [ Term ]
+    context = Addition
+
+    def __new__(self,first,second):
+        collected = first._sage_().collect(second._sage_())
+        first = parse_sage_exp(collected)
+        return json.dumps({'first': first.get_html()})
+
+MathematicalTransform(
         internal='Integrate',
         first='Equation',
         second='Variable',
@@ -487,7 +504,7 @@ class DiffNegate(Transform):
         if first.operand.hash != second.hash:
             return json.dumps({'error': 'Multiplication term should be not be nested'})
 
-        propogate = Negate( Diff(second.operand) )
+        propogate = Negate( Diff(first.differential, second.operand) )
         return json.dumps({'first': propogate.get_html()})
 
 MathematicalTransform(

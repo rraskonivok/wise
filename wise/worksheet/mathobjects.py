@@ -87,6 +87,7 @@ class NoWrapper(Exception):
 from sage.functions import trig
 from sage.functions import log
 from sage.symbolic import constants
+from sage import symbolic
 
 #Longterm Goal: Recursive descent isn't the fastest way to do
 #this find a better way
@@ -169,6 +170,15 @@ def parse_sage_exp(expr):
         elif operator is trig.tan:
             return apply(Tangent,map(parse_sage_exp,operands))
 
+        elif operator is trig.sec:
+            return apply(Secant,map(parse_sage_exp,operands))
+
+        elif operator is trig.csc:
+            return apply(Cosecant,map(parse_sage_exp,operands))
+
+        elif operator is trig.cot:
+            return apply(Cotangent,map(parse_sage_exp,operands))
+
         #Exponential & Logarithms
 
         elif operator is log.ln:
@@ -177,11 +187,26 @@ def parse_sage_exp(expr):
         elif operator is log.exp and operands == [1]:
             return E()
 
+        elif operator is symbolic.operators.FDerivativeOperator:
+            return apply(FDiff,map(parse_sage_exp,operands))
+
+        elif isinstance(operator,symbolic.function.SymbolicFunction):
+            return FreeFunction(operator.name(),Variable(str(operands[0])))
+            return Variable(str(operands[0]))
+
+        elif type(operator) is symbolic.operators.FDerivativeOperator:
+            arg1 = parse_sage_exp(operator.function())
+            arg2 = parse_sage_exp(operands[0])
+            return FDiff(arg2,arg1)
+
     elif type(expr) is sage.Integer:
         if expr<0:
             expr = sage.operator.abs(expr)
             return Negate(Numeric(str(expr)))
         return Numeric(str(expr))
+
+    elif isinstance(expr,symbolic.function.SymbolicFunction):
+        return Variable(expr.name())
 
     raise NoWrapper(expr)
 
@@ -1031,14 +1056,14 @@ class Fraction(Term):
     @fallback(Term.combine_fallback)
     def combine(self,other,context):
         #TODO: This breaks a heck of a lot
-        if isinstance(other,Fraction):
-            num = Addition(Product(self.num,other.den),Product(self.den,other.num))
-            den = Product(self.den,other.den)
-            return Fraction(num,den).get_html()
-        elif isinstance(other,Numeric):
-            num = Addition(self.num,Product(self.den,other))
-            den = self.den
-            return Fraction(num,den).get_html()
+        #if isinstance(other,Fraction):
+        #    num = Addition(Product(self.num,other.den),Product(self.den,other.num))
+        #    den = Product(self.den,other.den)
+        #    return Fraction(num,den).get_html()
+        #elif isinstance(other,Numeric):
+        #    num = Addition(self.num,Product(self.den,other))
+        #    den = self.den
+        #    return Fraction(num,den).get_html()
 
 numeric_html = '''
 <span id="{{id}}" title="{{type}}" class="{{class}} {{sensitive}} term" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
@@ -1666,6 +1691,21 @@ class Product(Operation):
        sterms = map(lambda o: o._sage_() , self.terms)
        return reduce(sage.operator.mul, sterms)
 
+class FreeFunction(Operation):
+    ui_style = 'prefix'
+    show_parenthesis = True
+
+    def __init__(self,symbol,operand):
+        self.ensure_id()
+        if symbol is not Base_Symbol:
+            symbol = Base_Symbol(symbol)
+        self.symbol = symbol.symbol
+        self.operand = operand
+        self.operand.group = self.id
+        self.terms = [symbol,self.operand]
+
+    def _sage_(self):
+       return sage.sin(self.operand._sage_())
 
 class Log(Operation):
     ui_style = 'prefix'
@@ -1722,6 +1762,48 @@ class Tangent(Operation):
 
     def _sage_(self):
        return sage.tan(self.operand._sage_())
+
+class Secant(Operation):
+    ui_style = 'prefix'
+    symbol = '\\sec'
+    show_parenthesis = True
+
+    def __init__(self,operand):
+        self.ensure_id()
+        self.operand = operand
+        self.operand.group = self.id
+        self.terms = [self.operand]
+
+    def _sage_(self):
+       return sage.sec(self.operand._sage_())
+
+class Cosecant(Operation):
+    ui_style = 'prefix'
+    symbol = '\\csc'
+    show_parenthesis = True
+
+    def __init__(self,operand):
+        self.ensure_id()
+        self.operand = operand
+        self.operand.group = self.id
+        self.terms = [self.operand]
+
+    def _sage_(self):
+       return sage.csc(self.operand._sage_())
+
+class Cotangent(Operation):
+    ui_style = 'prefix'
+    symbol = '\\cot'
+    show_parenthesis = True
+
+    def __init__(self,operand):
+        self.ensure_id()
+        self.operand = operand
+        self.operand.group = self.id
+        self.terms = [self.operand]
+
+    def _sage_(self):
+       return sage.cot(self.operand._sage_())
 
 class Negate(Operation):
     ui_style = 'prefix'
@@ -1886,6 +1968,151 @@ class Diff(Operation):
 
     def get_html(self):
         self.html = template.Template(diff_html)
+
+        c = template.Context({
+            'id': self.id,
+            'math': self.get_math(),
+            'type': self.classname(),
+            'group': self.group,
+            'operand': self.operand.get_html(),
+            'symbol': self.symbol,
+            'parenthesis': self.show_parenthesis,
+            'class': self.css_class,
+            'differential': self.differential.get_html()
+            })
+
+        return self.html.render(c)
+
+    def action(self):
+        #Take the derivative
+        deriv = sympify(self.sympy)
+        #Cast it to internal types
+        newterm = sympy2parsetree(deriv)
+        return newterm.get_html()
+
+    def propogate(self):
+
+        #Propagates differentiation by descent
+
+        if type(self.operand) is Addition:
+            # Linearity of Differentiation: 
+            # d/dx ( A + B + C ) ---> ( d/dx A + d/dx B + d/dx C) 
+
+            split = map(Diff,self.operand.terms)
+            split = map(lambda obj: obj.propogate(), split)
+            return Addition(*split)
+
+        elif type(self.operand) is Product:
+            ''' Product Rule'''
+            def leibniz(f,g):
+                cross1 = Diff(f).propogate()
+                cross2 = Diff(g).propogate()
+
+                cross_result = cross1 * g + f * cross2
+                cross_result.show_parenthesis = True
+                return cross_result
+
+            newterms = reduce(leibniz,self.operand.terms)
+            return Addition(newterms)
+
+        #elif type(self.operand) is Fraction:
+        #    def leibniz(f,g):
+        #        cross = Addition( Product(Diff(f),g) , Product(f,Diff(g)) )
+        #        cross.show_parenthesis = True
+        #        return cross
+
+        #    newnum = leibniz(self.operand.num,self.operand.den)
+        #    newden = Product(self.operand.num,self.operand.den)
+        #    return Fraction(newnum,newden).get_html()
+
+        #elif type(self.operand) is Base_Symbol:
+        #    if self.operand.symbol == self.variable:
+        #        return One().get_html()
+        #    else:
+        #        #This is partial differetiation
+        #        return Zero().get_html()
+
+        elif type(self.operand) is Numeric:
+            return Zero()
+
+        else:
+            #Just leave the operator in since we can't do anything meaningful with it
+            return self
+
+fdiff_html = '''
+<span id="{{id}}" math-meta-class="term" class="container {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
+    <span class="operator middle" math-type="operator" math-meta-class="operator" group="{{id}}" title="{{type}}" >
+        <span class="num">
+        $$ d $$
+        </span>
+
+        <span class="den">
+        <span class="math term">d </span>{{ differential }}
+        </span>
+    </span>
+
+    {% if parenthesis %}
+        <span class="ui-state-disabled pnths left">
+           &Ograve;
+        </span>
+    {% endif %}
+
+    <span class="">
+    {{operand}}
+    </span>
+
+    {% if parenthesis %}
+    <span class="ui-state-disabled pnths right">
+       &Oacute;
+    </span>
+    {% endif %}
+
+</span>
+'''
+
+class FDiff(Operation):
+
+    '''To do standard derivatives
+
+    y=Function('y')(x)
+    x=Symbol('x')
+    diff(y*x,x)
+    '''
+
+    ui_style = 'prefix'
+
+    def __init__(self,differential,operand):
+        self.ensure_id()
+        self.operand = operand
+        self.operand.group = self.id
+
+        self.differential = differential
+        self.differential.group = self.id
+
+        self.terms = [self.differential, self.operand]
+
+    def _sage_(self):
+        expr = self.operand._sage_()
+        vrs = expr.variables()
+
+        d = self.differential._sage_().variables()
+
+        # Symmetric difference between the two sets
+        fncs = set(vrs) - set(d)
+
+        #Assume all variables are functions of the differential
+        #variable
+
+        # This produces objects in the global namespace uses
+        # function_factory
+        subs = map(lambda x: x==sage.function(str(x))(d[0]) ,fncs)
+        for sub in subs:
+            expr = expr.subs(sub)
+
+        return sage.diff(expr, self.differential._sage_())
+
+    def get_html(self):
+        self.html = template.Template(fdiff_html)
 
         c = template.Context({
             'id': self.id,

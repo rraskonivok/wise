@@ -426,7 +426,7 @@ function resize_parentheses()
         {
             parent_height = $(this).parent().height();
             $(this).height(parent_height)
-            $(this).css('margin-top',-parent_height/2)
+            $(this).css('margin-top',-parent_height/3)
             $(this).css('font-size',String(parent_height/3) + 'px')
         });
 }
