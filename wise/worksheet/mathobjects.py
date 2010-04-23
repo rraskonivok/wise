@@ -1055,6 +1055,7 @@ class Fraction(Term):
 
     @fallback(Term.combine_fallback)
     def combine(self,other,context):
+        pass
         #TODO: This breaks a heck of a lot
         #if isinstance(other,Fraction):
         #    num = Addition(Product(self.num,other.den),Product(self.den,other.num))

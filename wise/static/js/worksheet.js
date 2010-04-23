@@ -130,6 +130,20 @@ function select_term(object)
 
 
     clickedon = $(object)
+
+    //We shouldn't be able to click on the "invisible" addition
+    //container we add to each of the RHS or LHS
+
+    container = get_container(clickedon)
+
+    if(container != undefined)
+    {
+        if(container.attr('math-type') == 'RHS' || container.attr('math-type') == 'LHS')
+        {
+            return
+        }
+    }
+
     if(clickedon.hasClass('selected'))
     {
         clickedon.removeClass('selected');
@@ -570,6 +584,12 @@ function receive(ui,receiver,group_id)
     }
     $.post("receive/", data,
            function(data){
+
+            if(data.error) {
+                error(data.error)
+                return
+            }
+
             nsym = obj.replace(data);
             nsym.attr('group',group_id);
             refresh_jsmath($(nsym))
@@ -602,14 +622,16 @@ function remove(ui,removed)
 
     $.post("remove/", data,
            function(data){
-                if(data)
-                {
-                    nsym = $(data).appendTo(removed);
-                    nsym.attr('group',group_id);
-                    refresh_jsmath($(nsym))
-                    removed.attr('locked','false')
-                    update_math(removed);
+                if(data.error) {
+                    error(data.error)
+                    return
                 }
+
+                nsym = $(data).appendTo(removed);
+                nsym.attr('group',group_id);
+                refresh_jsmath($(nsym))
+                removed.attr('locked','false')
+                update_math(removed);
           },
         "html");
     cleanup_ajax_scripts()
@@ -823,8 +845,6 @@ function update(object)
             check_combinations(object);
             check_container(object);
             check_combinations(object);
-            clear_selection();
-            reset_selections();
             update_math(object);
         }
     }
@@ -1023,29 +1043,104 @@ function duplicate_placeholder(placeholder)
    }
 }
 
+function next_placeholder(start)
+{
+    last = $('#lines .drag_placeholder:last')
+    first = $('#lines .drag_placeholder:first')
+
+    if(!start)
+    {
+        if(get_selection(0).exists())
+        {
+            start = get_selection(0)
+        }
+        else
+        {
+            start = first
+        }
+    }
+
+
+    if($(last).attr('id') == $(start).attr('id'))
+    {
+        clear_selection()
+        select_term(first)
+        return
+    }
+
+    placeholders= $('#lines .drag_placeholder')
+
+    var i=0;
+    for (i=0;i<=placeholders.length;i++)
+    {
+        if($(placeholders[i]).attr('id') == $(start).attr('id'))
+        {
+            if(i === placeholders.length)
+            {
+                clear_selection()
+                select_term($(placeholders[1]))
+            }
+            else
+            {
+                clear_selection()
+                select_term($(placeholders[i+1]))
+            }
+        }
+    }
+
+    /*
+    if(get_container(start) != undefined)
+    {
+        console.log('Jumping up')
+        next_placeholder(get_container(start))
+    }
+    */
+}
+
 function substite_addition()
 {
     placeholder = get_selection(0)
-    if(get_container(placeholder).attr('math-type') == 'Addition')
+    if(placeholder.attr('math-type') == 'Placeholder')
     {
-        duplicate_placeholder(placeholder)
+        if(get_container(placeholder).attr('math-type') == 'Addition')
+        {
+            add_after(placeholder, '(Placeholder )')
+        }
+        else
+        {
+            replace_manually(placeholder, '(Addition (Placeholder ) (Placeholder ))')
+        }
     }
     else
     {
-        replace_manually(placeholder, '(Addition (Placeholder ) (Placeholder ))')
+        if(get_container(placeholder).attr('math-type') == 'Addition')
+        {
+            add_after(placeholder, '(Placeholder )')
+        }
     }
+
 }
 
 function substite_multiplication()
 {
     placeholder = get_selection(0)
-    if(get_container(placeholder).attr('math-type') == 'Product')
+    if(placeholder.attr('math-type') == 'Placeholder')
     {
-        duplicate_placeholder(placeholder)
+        if(get_container(placeholder).attr('math-type') == 'Product')
+        {
+            add_after(placeholder, '(Placeholder )')
+        }
+        else
+        {
+            replace_manually(placeholder, '(Product (Placeholder ) (Placeholder ))')
+        }
     }
     else
     {
-        replace_manually(placeholder, '(Product (Placeholder ) (Placeholder ))')
+        if(get_container(placeholder).attr('math-type') == 'Product')
+        {
+            add_after(placeholder, '(Placeholder )')
+        }
     }
 }
 
@@ -1057,6 +1152,11 @@ function remove_element()
     if(placeholder.attr('math-type') == 'Equation')
     {
         placeholder.remove()
+        return
+    }
+
+    if(placeholder.attr('math-type') == 'RHS' || placeholder.attr('math-type') == 'LHS')
+    {
         return
     }
     
@@ -1091,11 +1191,7 @@ function substite_subtraction()
     placeholder = get_selection(0)
     if(get_container(placeholder).attr('math-type') == 'Addition')
     {
-       nsym = placeholder.clone()
-       nsym.unbind()
-       nsym.attr('id','destroyme')
-       placeholder.after(nsym)
-       replace_manually(nsym, '(Negate (Placeholder ))')
+        add_after(placeholder,'(Negate (Placeholder ))')
     }
     else
     {
@@ -1156,19 +1252,41 @@ function replace_manually(obj, code)
     clear_lookups()
 }
 
-function remove_placeholder()
+function add_after(obj, code)
 {
-   //This is used for duplicating placeholders in container type
-   //objects i.e. (Addition, Multiplication)
-   placeholder = get_selection(0)
-   if(placeholder.attr('math-type') == 'Placeholder')
-   {
-       nsym = placeholder.clone()
-       nsym.unbind()
-       nsym.attr('id','destroyme')
-       placeholder.after(nsym)
-       check_combinations(get_container(placeholder))
-   }
+    // Apply PlaceholderSubstitute with the given code argument
+    data = {}
+    data.first = '(Placeholder )'
+    data.second = code
+    data.transform = 'Replace'
+
+    $.post("apply_transform/", data,
+        function(data){
+
+            if(data.error)
+            {
+                error(data.error)
+                clear_selection()
+                return
+            }
+
+            if(data.first)
+            {
+                group_id = obj.attr('group');
+                group_id_cache = String(group_id)
+
+                nsym = obj.after(data.first).next();
+                nsym.attr('group',group_id_cache);
+
+                refresh_jsmath($(nsym))
+            }
+
+            traverse_lines();
+            update(get_container(obj))
+        },
+        "json");
+    cleanup_ajax_scripts()
+    clear_lookups()
 }
 
 function apply_identity(identity)
@@ -1236,7 +1354,9 @@ function parse_sage()
         function(data){
             if(data.error) {
                 error(data.error)
+                return
             }
+
             if(data.newline) {
                 $('#lines').append(data.newline)
                 refresh_jsmath($(data.newline))

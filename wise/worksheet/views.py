@@ -108,7 +108,6 @@ def test(request):
 
     return render_to_response('index.html',{'sage': sage_test})
 
-
 @login_required
 def home(request):
     workspaces = Workspace.objects.filter(owner=request.user)
@@ -243,16 +242,6 @@ term_html=template.Template('''<li id="{{term.id}}">
 <span class="noselect">${{term.latex}}$</span>
 </li>''')
 
-@errors
-def term(request,eq_id):
-    id = request.POST.get('id')
-    if id == 'plus':
-        new = pf.spawn()
-        return HttpResponse(new.get_html())
-    elif id == 'times':
-        new = mf.spawn()
-        return HttpResponse(new.get_html())
-
 @login_required
 @errors
 def combine(request,eq_id):
@@ -269,50 +258,6 @@ def combine(request,eq_id):
     #print mathobjects.pretty(second)
 
     return HttpResponse(combination)
-
-@errors
-def action(request,eq_id):
-    type = unencode( request.POST.get('type') )
-    math = unencode( request.POST.get('math') )
-    obj = mathobjects.ParseTree(math).eval_args()
-
-    result = obj.action()
-
-    return HttpResponse(result)
-
-@errors
-def propogate(request,eq_id):
-    type = unencode( request.POST.get('type') )
-    math = unencode( request.POST.get('math') )
-    obj = mathobjects.ParseTree(math).eval_args()
-
-    result = obj.propogate()
-
-    return HttpResponse(result)
-
-@errors
-def down(request,eq_id):
-    '''This is normal used for subexpression-level factoring'''
-    container = unencode( request.POST.get('container') )
-    dragged = unencode( request.POST.get('dragged') )
-    container_obj = mathobjects.ParseTree(container).eval_args()
-    dragged_obj = mathobjects.ParseTree(dragged).eval_args()
-
-    result = container_obj.down(dragged_obj)
-
-    return HttpResponse(result)
-
-@errors
-def topdown(request,eq_id):
-    '''This is normal used for equation-level division'''
-    equation = unencode( request.POST.get('equation') )
-    dragged = unencode( request.POST.get('dragged') )
-    equation_obj = mathobjects.ParseTree(equation).eval_args()
-    dragged_obj = mathobjects.ParseTree(dragged).eval_args()
-
-    result = equation_obj.down(dragged_obj)
-
-    return HttpResponse(result)
 
 @errors
 def unserialize(string):
@@ -342,6 +287,7 @@ def apply_transform(request,eq_id):
 
     return HttpResponse(json)
 
+@login_required
 @errors
 def apply_identity(request,eq_id):
     first = unencode( request.POST.get('first') )
@@ -545,8 +491,9 @@ def generate_palette():
                     ('Power', mathobjects.Power(Placeholder(),Placeholder()).get_html()),
                     ('Wedge', mathobjects.Wedge(Placeholder(),Placeholder()).get_html()),
                     ('Integral', mathobjects.Integral(Placeholder(),mathobjects.Differential(Placeholder())).get_html()),
-                    ('Derivative', mathobjects.Diff(Placeholder(),Placeholder()).get_html()),
+                    ('Partial Derivative', mathobjects.Diff(Placeholder(),Placeholder()).get_html()),
                     ('Derivative', mathobjects.FDiff(Placeholder(),Placeholder()).get_html()),
+                    ('Laplacian', mathobjects.Laplacian(Placeholder()).get_html()),
                 ]}
 
     numbers = {'name': 'Numbers', 'type': 'array', 'objects': [

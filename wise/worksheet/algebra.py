@@ -577,6 +577,16 @@ class EvaluateDiff(Identity):
         return json.dumps({'first': first.get_html()})
 
 MathematicalIdentity(
+        internal='EvaluateFDiff',
+        first='FDiff',
+        prettytext = 'Evaluate Implicit Derivative').save()
+
+class EvaluateFDiff(Identity):
+    def __new__(self,first):
+        first = parse_sage_exp(first._sage_())
+        return json.dumps({'first': first.get_html()})
+
+MathematicalIdentity(
         internal='EvaluateIntegral',
         first='Integral',
         prettytext = 'Evaluate Integral').save()

@@ -62,6 +62,8 @@ function init()
     .bind('keydown', '/', function() {substite_division()})
     .bind('keydown', 'del', function() {remove_element()})
     .bind('keydown', 'esc', function() {clear_selection()})
+    .bind('keydown', 'r', function() {refresh_jsmath()})
+    .bind('keydown', 'shift+tab', function() {next_placeholder()})
 
     $("#hovertoggle").button();
     bind_hover_toggle();
@@ -135,6 +137,8 @@ function init()
         <button class="ui-widget" onclick="javascript:toggle_units()">toggle_units</button>
         <button class="ui-widget" onclick="javascript:toggle_sageinput()">sage_input</button>
         <button class="ui-widget" onclick="javascript:debug_math()">show_math</button>
+        <button class="ui-widget"
+            onclick="javascript:update(get_selection(0))"> update math for selected</button>
         <button class="ui-widget" onclick="javascript:jsMath.ConvertTeX(); jsMath.Process();">refresh_jsmath</button>
         <button class="ui-widget" onclick="javascript:$('#debug_console').text($('.selected').attr('math'))">show math for selected</button>
         <button class="ui-widget"

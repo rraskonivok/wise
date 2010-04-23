@@ -140,6 +140,7 @@ body {
     display: inline-block;
     /* Some operators look better with this */
     /*vertical-align: middle;*/
+    z-index: -1;
 }
 
 .exponent {
