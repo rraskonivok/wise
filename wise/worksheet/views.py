@@ -37,7 +37,7 @@ from wise.worksheet.models import Equation, Workspace, MathematicalTransform, Ma
 
 import parser
 import mathobjects
-#http://friggeri.net/blog/2008/12/21/jquery-gestures
+from decorator import decorator
 
 #Wraps errors out to server log and javascript popup
 def errors(f):
@@ -50,6 +50,22 @@ def errors(f):
             return HttpResponse(json.dumps({'error': str(e)}))
     return wrapper
 
+#Memoize freq
+def _memoize(func, *args, **kw):
+    if kw: # frozenset is used to ensure hashability
+        key = args, frozenset(kw.iteritems())
+    else:
+        key = args
+    cache = func.cache # attributed added by memoize
+    if key in cache:
+        return cache[key]
+    else:
+        cache[key] = result = func(*args, **kw)
+        return result
+
+def memoize(f):
+    f.cache = {}
+    return decorator(_memoize, f)
 
 def account_login(request):
     form = AuthenticationForm()
@@ -78,19 +94,6 @@ def account_logout(request):
     logout(request)
     # Redirect to a success page.
     return HttpResponse('Logged Out')
-
-
-#Memoize single argument function
-def memoize(f):
-    def wrapper(*args):
-        if args[0] in memo:
-            return memo[args[0]]
-        else:
-            result = f(*args)
-            memo[args] = result
-            return result
-    return wrapper
-
 
 def test(request):
     '''
@@ -454,6 +457,7 @@ palette_template = '''
 {% endfor %}
 '''
 
+@memoize
 def generate_palette():
     #TODO Be able to include snippts of html as widgets in the
     #palette
@@ -510,3 +514,7 @@ def generate_palette():
     c = template.Context({'palette':palette})
 
     return HttpResponse(interface_ui.render(c))
+
+for name, obj in locals().items():
+    if hasattr(obj,'mapping'):
+        print obj.pretty, obj.domain, obj.codomain

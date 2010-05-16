@@ -773,6 +773,13 @@ function combine(first,second,context)
 
     $.post("combine/", data,
            function(data){
+
+                if(data.error)
+                {
+                    error(data.error)
+                    return
+                }
+
                 nsym = first.after(data).next();
                 container.find('[group=None]').attr('group',group_id_cache)
                 first.remove();
@@ -1095,6 +1102,11 @@ function next_placeholder(start)
         next_placeholder(get_container(start))
     }
     */
+}
+
+function show_cmd()
+{
+   $('.cmd_input').toggle() 
 }
 
 function substite_addition()

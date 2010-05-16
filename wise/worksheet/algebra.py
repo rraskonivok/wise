@@ -16,11 +16,18 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+from library_utils import *
+from library_utils import _
+
 from wise.worksheet.mathobjects import *
 from django.utils import simplejson as json
 
 from wise.worksheet.models import MathematicalTransform
 from wise.worksheet.models import MathematicalIdentity
+
+@Map( _( Real , Real ) >> _( Real ) )
+def add(a,b):
+    return a+b
 
 def require(arg_name, *allowed_types):
     def make_wrapper(f):
