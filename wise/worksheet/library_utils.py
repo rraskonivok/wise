@@ -1,26 +1,19 @@
-from decorator import decorator, FunctionMaker
+from decorator import decorator
+from itertools import islice
 
-'''
-class condition(object):
-    def __new__(self,statement):
-        def decorator(cls):
-            def wrapper(*args):
-                wrapped = cls(*args)
-                if statement(wrapped):
-                    return wrapped
-                else:
-                    raise Exception('Condition violated')
-            return wrapper
-        return decorator
-'''
+#from wise.worksheet.models import MathematicalTransform
+#from wise.worksheet.models import MathematicalIdentity
 
 def Mapping(x, y):
     def f1(func):
 
         func.case = {}
         func.mapping = True
+
         func.domain = x.args
         func.codomain = y.args
+
+        func.context = None
 
         def wrapper(*args):
             domain = args[1:]
@@ -38,7 +31,6 @@ def Mapping(x, y):
             else:
                 return codomain
 
-
         return decorator(wrapper, func)
     return f1
 
@@ -49,6 +41,10 @@ class _(object):
     def __rshift__(self,other):
         return Mapping(self,other)
 
+    def __hash__(self):
+        args = map(lambda o: o.__name__, self.args)
+        return hash(tuple(args))
+
     def __ge__(self,other):
         return Coercion(self,other)
 
@@ -58,45 +54,7 @@ def _mapping(func, *args, **kw):
 def Map(f):
     return decorator(_mapping, f )
 
-######
-
-#class Real(object):
-#    def __init__(self, number):
-#        self.number = number
-#
-#    def __repr__(self):
-#        return str(self.number)
-#
-#    def __add__(self, other):
-#        return self.__class__(self.number + other.number)
-#
-#    def __hash__(self):
-#        return hash(self.number)
-#
-#    def __gt__(self, other):
-#        return self.number > other
-#
-#    def __eq__(self, other):
-#        return self.number == other
-#
-#    def __or__(self, other):
-#        return other(self)
-#
-#class Integer(Real):
-#    pass
-
-#add.case[Real(1),Real(0)] = 3
-#print add.case[Real(1),Real(0)]
-#
-#add.pretty = 'Addition'
-
-#print add(Real(1), Real(0))
-#print add(Real(1), Real(0))
-#print add(Integer(1), Real(-3))
-#
-#print add.case
-
-for name, obj in locals().items():
-    if hasattr(obj,'mapping'):
-        print obj.pretty, obj.domain, obj.codomain
-
+def iter_mappings(module):
+    for name, obj in module.items():
+        if hasattr(obj,'mapping'):
+            yield obj

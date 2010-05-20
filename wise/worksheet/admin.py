@@ -1,11 +1,11 @@
-from wise.worksheet.models import Equation,Workspace,MathematicalObject,MathematicalTransform,MathematicalIdentity
+from wise.worksheet.models import MathematicalEquation,Workspace
 
 from django.contrib import admin
 
 class EquationInline(admin.StackedInline):
-    model = Equation
+    model = MathematicalEquation
     extra = 3
-    inlines = [Equation]
+    inlines = [MathematicalEquation]
 
 class WorkspaceAdmin(admin.ModelAdmin):
     fieldsets = [
@@ -15,7 +15,6 @@ class WorkspaceAdmin(admin.ModelAdmin):
     inlines = [EquationInline]
 
 admin.site.register(Workspace,WorkspaceAdmin)
-admin.site.register(Equation)
-admin.site.register(MathematicalObject)
-admin.site.register(MathematicalTransform)
-admin.site.register(MathematicalIdentity)
+admin.site.register(MathematicalEquation)
+#admin.site.register(MathematicalTransform)
+#admin.site.register(MathematicalIdentity)

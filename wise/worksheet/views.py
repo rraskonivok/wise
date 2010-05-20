@@ -17,6 +17,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 import traceback
+import parser
+import mathobjects
+
+from decorator import decorator
 
 from django import template
 from django.http import HttpResponse, HttpResponseRedirect, Http404
@@ -27,17 +31,10 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-
 from django.contrib.auth.forms import AuthenticationForm
 
-from django.utils.translation import ugettext_lazy as _, ugettext
-
 from wise.worksheet.forms import LoginForm
-from wise.worksheet.models import Equation, Workspace, MathematicalTransform, MathematicalIdentity
-
-import parser
-import mathobjects
-from decorator import decorator
+from wise.worksheet.models import Workspace, MathematicalEquation
 
 #Wraps errors out to server log and javascript popup
 def errors(f):
@@ -145,12 +142,12 @@ def ws(request, eq_id):
     if ( ws.owner.id != request.user.id ) and not ws.public:
         return HttpResponse('You do not have permission to access this worksheet.')
 
-    eqs = Equation.objects.filter(workspace=eq_id)
+    eqs = MathematicalEquation.objects.filter(workspace=eq_id)
     debug_parse_tree = unencode( request.GET.get('tree') )
     outputs = []
 
     for eq in eqs:
-        eqtext = unencode(eq.name)
+        eqtext = unencode(eq.code)
         tree = mathobjects.ParseTree(eqtext)
 
         #For debugging... maybe we want to add a tag to show this
@@ -182,29 +179,36 @@ transform_interface = '''
 @login_required
 @errors
 def lookup_transform(request, eq_id):
-    first_type = unencode( request.POST.get('first') )
-    second_type = unencode( request.POST.get('second') )
-    context = unencode( request.POST.get('context') )
+    typ = request.POST.get('type')
+    selection = hash(tuple(request.POST.getlist('selections[]')))
 
-    if not (first_type and second_type and context):
-        return HttpResponse(json.dumps({'error': 'Insufficent lookup information'}))
+    #lookup1 = set(MathematicalTransform.objects.filter(domain=selection))
+
+    print lookup1
+
+    #first_type = unencode( request.POST.get('first') )
+    #second_type = unencode( request.POST.get('second') )
+    #context = unencode( request.POST.get('context') )
+
+    #if not (first_type and second_type and context):
+    #    return HttpResponse(json.dumps({'error': 'Insufficent lookup information'}))
 
     #Fix this with:
     #    if first_type in dir('mathobjects') 
 
     #TODO: This is ugly and dangerous
-    if first_type != 'null':
-        first_basetype = eval('mathobjects.' + first_type).base_type
+    #if first_type != 'null':
+    #    first_basetype = eval('mathobjects.' + first_type).base_type
 
-    if second_type != 'null':
-        second_basetype = eval('mathobjects.' + second_type).base_type
+    #if second_type != 'null':
+    #    second_basetype = eval('mathobjects.' + second_type).base_type
 
 
     #Create sets of the database queries
-    lookup1 = set(MathematicalTransform.objects.filter(first=first_type,second=second_type,context=context))
-    lookup2 = set(MathematicalTransform.objects.filter(first=first_basetype,second=second_basetype,context=context)) 
-    lookup3 = set(MathematicalTransform.objects.filter(first=first_type,second=second_basetype,context=context))
-    lookup4 = set(MathematicalTransform.objects.filter(first=first_basetype,second=second_type,context=context))
+    #lookup1 = set(MathematicalTransform.objects.filter(first=first_type,second=second_type,context=context))
+    #lookup2 = set(MathematicalTransform.objects.filter(first=first_basetype,second=second_basetype,context=context)) 
+    #lookup3 = set(MathematicalTransform.objects.filter(first=first_type,second=second_basetype,context=context))
+    #lookup4 = set(MathematicalTransform.objects.filter(first=first_basetype,second=second_type,context=context))
 
     #Take the union of the sets so as to avoid identical operations
     options = lookup1 | lookup2 | lookup3 | lookup4
@@ -228,14 +232,14 @@ identity_interface = '''
 @errors
 def lookup_identity(request, eq_id):
     first_type = unencode( request.POST.get('first') )
-    options = MathematicalIdentity.objects.filter(first=first_type)
+    #options = MathematicalIdentity.objects.filter(first=first_type)
 
     #Fix this with:
     #    if first_type in dir('mathobjects') 
 
     #TODO: This is ugly and dangerous
     first_basetype = eval('mathobjects.' + first_type).base_type
-    options2 = MathematicalIdentity.objects.filter(first=first_basetype)
+    #options2 = MathematicalIdentity.objects.filter(first=first_basetype)
 
     interface_ui = template.Template(identity_interface)
     c = template.Context({'options':options,'options2':options2})
@@ -309,7 +313,7 @@ def save_workspace(request,eq_id):
     except ObjectDoesNotExist:
         return HttpResponse(json.dumps({'error':'Workspace is missing'}))
 
-    eqs = Equation.objects.filter(workspace=eq_id)
+    eqs = MathematicalEquation.objects.filter(workspace=eq_id)
 
     #Delete old elements in the workspace
     data = {}
@@ -321,7 +325,7 @@ def save_workspace(request,eq_id):
 
     for i in xrange(indexes):
         math = request.POST.get(str(i))
-        Equation(name=math, workspace=workspace).save()
+        MathematicalEquation(code=math, workspace=workspace).save()
 
     return HttpResponse('cat')
 
@@ -330,7 +334,7 @@ def save_workspace(request,eq_id):
 def del_workspace(request):
     #TODO this is crazy dangerous
     for id,s in request.POST.iteritems():
-        Equation.objects.filter(workspace=id).delete()
+        MathematicalEquation.objects.filter(workspace=id).delete()
         Workspace.objects.get(id=id).delete()
     return HttpResponseRedirect('/home')
 
@@ -351,7 +355,7 @@ def new_workspace(request):
     else:
         equation = mathobjects.Placeholder().get_math()
 
-    init_eq = Equation(name=equation,workspace=new_workspace).save()
+    init_eq = MathematicalEquation(code=equation, workspace=new_workspace).save()
     return HttpResponseRedirect('/home')
 
 @login_required

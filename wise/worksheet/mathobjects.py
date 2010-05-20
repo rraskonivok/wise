@@ -16,12 +16,11 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+import traceback
+
 from django import template
 from django.utils import simplejson as json
 from django.utils.safestring import SafeUnicode
-
-from sympy import *
-import traceback
 
 #Our parser functions
 import parser
@@ -811,7 +810,7 @@ class Unit(Term):
     def __init__(self,symbol):
         self.symbol = symbol
         self.args = str(symbol)
-        self.latex = latex(symbol)
+        self.latex = sage.latex(symbol)
 
     def _sage_(self):
         import sympy.physics.units as units
@@ -1467,7 +1466,6 @@ def infix_symbol_html(symbol):
 
 class Operation(Term):
     '''An operator acting a term'''
-    # (Operator (Diff x) (x**2)) -- double click to propogate through
 
     ui_style = 'prefix'
 
@@ -1497,8 +1495,8 @@ class Operation(Term):
     def action(self,operand):
         return self.get_html()
 
-    def propogate(self):
-        return self.get_html()
+#    def propogate(self):
+#        return self.get_html()
 
     def get_html(self):
 
@@ -1834,8 +1832,8 @@ class Negate(Operation):
     def negate(self):
         return self.operand
 
-    def propogate(self):
-        return self.get_html()
+#    def propogate(self):
+#        return self.get_html()
 
 class Wedge(Operation):
     ui_style = 'infix'
@@ -2189,5 +2187,6 @@ class FDiff(Operation):
 # Transforms
 #-------------------------------------------------------------
 
-from algebra import *
+import algebra
 
+print [i.domain for i in algebra.mappings]

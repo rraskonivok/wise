@@ -10,65 +10,55 @@ class Workspace(models.Model):
     #The workspace should have a number of EXPORTABLE equations which are higlighted in yellow, these
     #can be pulled into other workspaces and inserted and quered in lookup_identities via sim hashes
 
-#    def __unicode__(self):
-#        return self.name
+    def __unicode__(self):
+        return self.name
 
-class Equation(models.Model):
-    workspace = models.ForeignKey(Workspace,blank=False,null=False)
-    name = models.CharField(max_length=10000)
+class MathematicalEquation(models.Model):
+    workspace = models.ForeignKey(Workspace, primary_key=True, blank=False,null=False)
+    code = models.TextField(max_length=10000,blank=False, null=False)
+
     followsfrom = models.OneToOneField('self',null=True,blank=True)
     followsby = models.CharField(max_length=200,null=True,blank=True)
 
-#    def __unicode__(self):
-#        return self.name
+# Arity = 1
+# f : ( A ) -> Z
+class UnaryTransform(models.Model):
 
-#Statements of the form {n is integer} , x >0 ...
-#Charactersitics of the workspace... physical quanities... sig figures
+    internal = models.CharField(max_length=200, primary_key=True, unique=True)
+    module = models.CharField(max_length=200)
 
-class Assumption(models.Model):
-    workspace = models.ForeignKey(Workspace,blank=False,null=False)
+    domain_lower = models.FloatField()
+    domain_upper = models.FloatField()
 
-#Ad-hoc statements created to simplify equations ... k = (a^2+b^2+7)
-class References(models.Model):
-    workspace = models.ForeignKey(Workspace,blank=False,null=False)
+    context = models.CharField(max_length=200, null=True)
+    pretty = models.CharField(max_length=200)
 
-class MathematicalObject(models.Model):
-    internalname = models.CharField(max_length=200)
-    prettyname = models.CharField(max_length=200)
-    arguments = models.IntegerField(max_length=3)
+    def __unicode__(self):
+        return self.pretty
 
-#    def __unicode__(self):
-#        return self.prettyname
+# Arity = 2
+# f : ( A ,B ) -> Z
+class BinaryTransform(models.Model):
 
-class MathematicalTransform(models.Model):
-    first = models.CharField(max_length=200)
-    second = models.CharField(max_length=200)
-    context = models.CharField(max_length=200)
-    prettytext = models.CharField(max_length=200)
-    internal = models.CharField(max_length=200,primary_key=True)
+    internal = models.CharField(max_length=200, primary_key=True, unique=True)
+    module = models.CharField(max_length=200)
 
-#    def __unicode__(self):
-#        return self.prettytext
+    #First Operand
+    domain1_lower = models.FloatField()
+    domain1_upper = models.FloatField()
 
-class MathematicalIdentity(models.Model):
-    first = models.CharField(max_length=200)
-    prettytext = models.CharField(max_length=200)
-    internal = models.CharField(max_length=200,primary_key=True)
+    #Second Operand
+    domain2_lower = models.FloatField()
+    domain2_upper = models.FloatField()
 
-#    def __unicode__(self):
-#        return self.prettytext
+    context = models.CharField(max_length=200, null=True)
+    pretty = models.CharField(max_length=200)
 
-#Identites are for SINGLE elements
+    def __unicode__(self):
+        return self.pretty
 
-#Identites are for SINGLE elements
+    def __unicode__(self):
+        return self.prettytext
 
-#class MathematicalDefinition
-#class MathematicalTheorem
-
-#There should exisit context free transforms such as substituting one expression in another and context-sensitive transforms such as factoring inside an addition statement or combining exponents
-
-#Theorems should provide either new expressions or new assumptions, references
-
-#Definitions should be one-to-one mappings between high-level objects and low-level objects
-
-
+# The code certainly supports n-ary operators, at this time I'm
+# not sure how to store them in the database though

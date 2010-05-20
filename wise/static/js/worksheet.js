@@ -222,48 +222,72 @@ function get_selection(n)
     return $('#'+$($("#selectionlist").children()[n]).attr('pointer'));
 }
 
+function get_selections()
+{
+    return $.map( $("#selectionlist").children(), 
+            function(x) 
+            {
+                return $(x).attr('math-type')
+            });
+}
+
  // ---------------------------------------------
  //  Lookups
  // -------------------------------------------
 
 function lookup_transform()
 {
-    first = get_selection(0);
-    second = get_selection(1);
-    first_type = first.attr('math-type');
-    second_type = second.attr('math-type');
-
-    data = {}
-    data.first = first_type
-    data.second = second_type
-
-    if(get_nested(first,second) != null)
+    if(num_selected() == 2)
     {
-        data.nested = true
+
+        first = get_selection(0);
+        second = get_selection(1);
+        first_type = first.attr('math-type');
+        second_type = second.attr('math-type');
+
+        data = {}
+        data.first = first_type
+        data.second = second_type
+        data.selections = get_selections()
+
+        data.type = 'binary'
+
+        if(get_nested(first,second) != null)
+        {
+            data.nested = true
+        }
+        else
+        {
+            data.nested = false
+        }
+
+        context = get_common_context(first,second)
+
+        if(context != null)
+        {
+            context = context.attr('math-type') 
+        }
+
+        data.context = context
+
+        $.post("lookup_transform/",data, function(data)
+            {
+                $('#selectionlist').hide()
+                $('#options').html(data);
+                $('#options').fadeIn();
+                $('#options button').button()
+                refresh_jsmath()
+            }
+        ,'html')
     }
     else
     {
-        data.nested = false
+        data = {}
+        data.type = 'generic'
+        data.selections = get_selections()
+
+        $.post("lookup_transform/",data)
     }
-
-    context = get_common_context(first,second)
-
-    if(context != null)
-    {
-        context = context.attr('math-type') 
-    }
-
-    data.context = context
-
-    $.post("lookup_transform/",data, function(data)
-        {
-            $('#selectionlist').hide()
-            $('#options').html(data);
-            $('#options').fadeIn();
-            $('#options button').button()
-            refresh_jsmath()
-        }
-    ,'html')
 }
 
 function lookup_identity()
@@ -1106,7 +1130,8 @@ function next_placeholder(start)
 
 function show_cmd()
 {
-   $('.cmd_input').toggle() 
+   alert('cat');
+   $('.cmd_input').toggle();
 }
 
 function substite_addition()
@@ -1164,6 +1189,7 @@ function remove_element()
     if(placeholder.attr('math-type') == 'Equation')
     {
         placeholder.remove()
+        clear_selection()
         return
     }
 
