@@ -47,6 +47,15 @@ def errors(f):
             return HttpResponse(json.dumps({'error': str(e)}))
     return wrapper
 
+def unencode(s):
+    if type(s) is list:
+        s = s[0]
+    elif s is None:
+        return None
+    fileencoding = "iso-8859-1"
+    txt = s.decode(fileencoding)
+    return str(txt)
+
 #Memoize freq
 def _memoize(func, *args, **kw):
     if kw: # frozenset is used to ensure hashability
@@ -224,27 +233,6 @@ identity_interface = '''
 
 @login_required
 @errors
-def lookup_identity(request, eq_id):
-    first_type = unencode( request.POST.get('first') )
-    #options = MathematicalIdentity.objects.filter(first=first_type)
-
-    #Fix this with:
-    #    if first_type in dir('mathobjects') 
-
-    #TODO: This is ugly and dangerous
-    first_basetype = eval('mathobjects.' + first_type).base_type
-    #options2 = MathematicalIdentity.objects.filter(first=first_basetype)
-
-    interface_ui = template.Template(identity_interface)
-    c = template.Context({'options':options,'options2':options2})
-    return HttpResponse(interface_ui.render(c))
-
-term_html=template.Template('''<li id="{{term.id}}">
-<span class="noselect">${{term.latex}}$</span>
-</li>''')
-
-@login_required
-@errors
 def combine(request,eq_id):
     first = unencode( request.POST.get('first') )
     second = unencode( request.POST.get('second') )
@@ -254,9 +242,6 @@ def combine(request,eq_id):
     second = mathobjects.ParseTree(second).eval_args()
 
     combination = first.combine(second,context)
-
-    #print mathobjects.pretty(first)
-    #print mathobjects.pretty(second)
 
     return HttpResponse(combination)
 
@@ -402,26 +387,6 @@ def remove(request,eq_id):
 
     return HttpResponse(response)
 
-def continuous_rainbow(length):
-    def cycle(iterable):
-        while True:
-            for item in iterable:
-                yield item
-
-    pastel_rainbow = ["#FFE3E3","#FFFEDB","#DBFFE1","#DBF1FF","#E6C5E2"]
-    c=cycle(pastel_rainbow)
-
-    return [c.next() for i in range(10)]
-
-def unencode(s):
-    if type(s) is list:
-        s = s[0]
-    elif s is None:
-        return None
-    fileencoding = "iso-8859-1"
-    txt = s.decode(fileencoding)
-    return str(txt)
-
 @login_required
 @errors
 def new_inline(request, eq_id):
@@ -517,7 +482,3 @@ def generate_palette():
     c = template.Context({'palette':palette})
 
     return HttpResponse(interface_ui.render(c))
-
-for name, obj in locals().items():
-    if hasattr(obj,'mapping'):
-        print obj.pretty, obj.domain, obj.codomain

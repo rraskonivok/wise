@@ -33,4 +33,8 @@ def PlaceholderSubstitute( ph, tm ):
 
 PlaceholderSubstitute.pretty = 'Substitute'
 
+@Map( _( Term , Term ) >> _( Term ) )
+def Replace( first, second ):
+    return second
+
 mappings = iter_mappings(locals())

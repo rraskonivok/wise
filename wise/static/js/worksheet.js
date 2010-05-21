@@ -16,6 +16,10 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+///////////////////////////////////////////////////////////
+// Utilities
+///////////////////////////////////////////////////////////
+
 $.fn.exists = function(){return jQuery(this).length>0;}
 
 $.fn.replace = function(htmls){
@@ -41,6 +45,16 @@ $.fn.id = function()
     return $(this).attr('id')
 }
 
+$.fn.math = function()
+{
+    return $(this).attr('math')
+}
+
+$.fn.mathtype = function()
+{
+    return $(this).attr('math-type')
+}
+
 $.extend($.fn.disableTextSelect = function() {
         return this.each(function(){
                 if($.browser.mozilla){//Firefox
@@ -52,6 +66,11 @@ $.extend($.fn.disableTextSelect = function() {
                 }
         });
 });
+
+function whatisit(object)
+{
+    return $(object).id() +', '+$(object).mathtype() +', '+$(object).math()
+}
 
 //I miss Lisp
 function zip(listA, listB)
@@ -137,78 +156,15 @@ selection.clear = function() {
     this.count = 0;
 }
 
-function error(text)
+function clear_selection()
 {
-   $('#error_dialog').text(text);
-   $('#error_dialog').dialog({modal:true,dialogClass:'alert'});
-}
-
-function dialog(text)
-{
-   $('#error_dialog').text(text);
-   $('#error_dialog').dialog({modal:true,dialogClass:'alert'});
-}
-
-function handle_equation(object)
-{
-    lhs = $(object.find('.lhs'));
-    rhs = $(object.find('.rhs'));
-}
-
-function cleanup_ajax_scripts()
-{
-    //The ensures that any <script> tags inserted via ajax don't get executed more than once
-    $("script[data-type=ajax]").remove()
-}
-
-$(document).ajaxStart(function(){$('#ajax_loading').show()})
-$(document).ajaxStop(function(){$('#ajax_loading').hide()})
-
-function connect_to_every_sortable(object)
-{
-    $(object).children().draggable({
-        connectToSortable: $('.ui-sortable'),
-        helper: 'clone',
-        appendTo: 'body',
-    });
-}
-
-function reset_selections()
-{
-    $().live('li[math-meta-class=term]',function(object){select_term(this)});
-}
-
-function fade_and_destroy(object)
-{
-    $(object).fadeOut('fast',function(){
-        $(object).remove();
-    });
-}
-
-function fade_old_new(old,news)
-{
-    $(old).hide('slow',function() {
-        $(news).show(function() {
-            $(old).remove();
+    $.each($("#selectionlist button"),function() {
+                $(this).remove(); 
         });
-    });
-}
-
-function debug_math()
-{
-    $.each($('[math]'),function() {
-        $(this).attr('title',$(this).attr('math'));
-    });
-}
-
-function toggle_spacing()
-{
-    $('.container').css('vertical-align','baseline')
-}
-
-function toggle_units()
-{
-    $("body .unit").fadeOut();    
+    $('.selected').removeClass('selected');
+    $('#options').hide();
+    $('#selectionlist').fadeIn();
+    selection.clear()
 }
 
 function select_term(object)
@@ -316,27 +272,208 @@ function format_selection()
     $($("#selectionlist").children()[1]).css('border','2px solid #989cd7');
 }
 
-function get_selections_type()
+///////////////////////////////////////////////////////////
+// UI Handling
+///////////////////////////////////////////////////////////
+
+$(document).ajaxStart(function(){$('#ajax_loading').show()})
+$(document).ajaxStop(function(){$('#ajax_loading').hide()})
+
+function error(text)
 {
-    return $.map( $("#selectionlist").children(), 
-            function(x) 
-            {
-                return $(x).attr('math-type')
-            });
+   $('#error_dialog').text(text);
+   $('#error_dialog').dialog({modal:true,dialogClass:'alert'});
 }
 
-function get_selections_math()
+function dialog(text)
 {
-    return $.map( $("#selectionlist").children(), 
-            function(x) 
-            {
-                return $(x).attr('math')
-            });
+   $('#error_dialog').text(text);
+   $('#error_dialog').dialog({modal:true,dialogClass:'alert'});
 }
 
- // ---------------------------------------------
- //  Lookups
- // -------------------------------------------
+function clear_lookups()
+{
+    $('#options').fadeOut()
+}
+
+function show_debug_menu()
+{
+    $('#debug_menu').dialog();
+    $('#horizslider').slider({
+        slide:
+        function(e,ui)
+        {
+            term_spacing(ui.value,null)
+        }}
+    );
+    $('#vertslider').slider({
+        slide:
+        function(e,ui)
+        {
+            term_spacing(null,ui.value)
+        }}
+    );
+}
+
+function resize_parentheses()
+{
+    //Scale parentheses
+    $.each($('.pnths'), function(obj)
+        {
+            parent_height = $(this).parent().height();
+            $(this).height(parent_height)
+            $(this).css('margin-top',-parent_height/3)
+            $(this).css('font-size',String(parent_height/3) + 'px')
+        });
+}
+
+/*
+function connect_to_every_sortable(object)
+{
+    $(object).children().draggable({
+        connectToSortable: $('.ui-sortable'),
+        helper: 'clone',
+        appendTo: 'body',
+    });
+}
+*/
+
+function reset_selections()
+{
+    $().live('li[math-meta-class=term]',function(object){select_term(this)});
+}
+
+function fade_and_destroy(object)
+{
+    $(object).fadeOut('fast',function(){
+        $(object).remove();
+    });
+}
+
+function fade_old_new(old,news)
+{
+    $(old).hide('slow',function() {
+        $(news).show(function() {
+            $(old).remove();
+        });
+    });
+}
+
+function term_spacing(x,y)
+{
+    if(x)
+    {
+        $('.term').css('padding-right',x)
+        $('.term').css('padding-left',x)
+    }
+
+    if(y)
+    {
+        $('.term').css('padding-top',y)
+        $('.term').css('padding-bottom',y)
+    }
+}
+
+function toggle_spacing()
+{
+    $('.container').css('vertical-align','baseline')
+}
+
+function toggle_units()
+{
+    $("body .unit").fadeOut();    
+}
+
+function handle_equation(object)
+{
+    lhs = $(object.find('.lhs'));
+    rhs = $(object.find('.rhs'));
+}
+
+function cleanup_ajax_scripts()
+{
+    //The ensures that any <script> tags inserted via ajax don't get executed more than once
+    $("script[data-type=ajax]").remove()
+}
+
+function debug_math()
+{
+    $.each($('[math]'),function() {
+        $(this).attr('title',$(this).attr('math'));
+    });
+}
+
+function bind_hover_toggle(){
+    $('#hovertoggle').toggle(
+        function()
+        {
+            $('#workspace .term[math]').hover(
+                function()
+                {
+                    $(this).addClass('term_hover')
+                }
+                ,
+                function()
+                {
+                    $(this).removeClass('term_hover')
+                }
+            )
+
+            $('#workspace .container[math]').hover(
+                function()
+                {
+                    $(this).addClass('container_hover')
+                }
+                ,
+                function()
+                {
+                    $(this).removeClass('container_hover')
+                }
+            )
+        }
+        ,
+        function()
+        {
+            $('#workspace .term[math]').hover(
+                function()
+                {
+                    $(this).removeClass('term_hover')
+                }
+            )
+            $('#workspace .container[math]').hover(
+                function()
+                {
+                    $(this).removeClass('container_hover')
+                }
+            )
+        })
+}
+
+function toggle_sageinput()
+{
+    $('#sage_input').dialog();
+}
+
+function show_cmd()
+{
+   alert('cat');
+   $('.cmd_input').toggle();
+}
+
+function debug_colors(object)
+{
+    $('li[math-meta-class=term]').css('border-bottom','5px solid red');
+    $('ul[math-type]').css('border-bottom','5px solid blue');
+    $('.rhs').css('border-bottom','none');
+    $('.lhs').css('border-bottom','none');
+    $('.equation').css('background-color','#CCCCCC');
+    $('.rhs').css('background-color','#FFCCCC');
+    $('.lhs').css('background-color','#CCFF00');
+}
+
+///////////////////////////////////////////////////////////
+// Server Queries
+///////////////////////////////////////////////////////////
 
 function lookup_transform()
 {
@@ -372,26 +509,255 @@ function lookup_transform()
         } ,'html')
 }
 
-function lookup_identity()
+function apply_transform(transform,selections)
 {
-    first = get_selection(0);
-    first_type = first.attr('math-type');
+    var data = {}
+    data.transform = transform
 
+    if(selections == null) {
+        //Fetch the math for each of the selections
+        data.selections = selection.list_prop('math')
+    }
+    else { 
+        data.selections = selections
+    }
+
+    $.post("apply_transform/", data,
+        function(data){
+
+            if(data.error)
+            {
+                error(data.error)
+                $('#selectionlist').fadeIn();
+                clear_selection()
+                return
+            }
+
+            for(var i=0; i<data.length; i++)
+            {
+                obj = selection.nth(i)
+                group_id = obj.attr('group');
+                group_id_cache = String(group_id)
+
+                if (data[i] == null)
+                {
+                    obj.remove()    
+                }
+                else
+                {
+                    nsym = obj.replace(data[i]);
+                    nsym.attr('group',group_id_cache);
+                    refresh_jsmath($(nsym))
+                }
+            }
+
+            clear_selection()
+            traverse_lines();
+            update(get_container(obj))
+        },
+        "json");
+
+    cleanup_ajax_scripts()
+    clear_lookups()
+}
+
+function receive(ui,receiver,group_id)
+{
+    group_id = receiver.attr('id')
+
+    obj = ui.item
+    //If we drop an element in make sure we associate it with the group immediately
+    obj.attr('group',group_id);
+
+    //If we drag from a jquery draggable then the ui.item doesn't exist here yet
+    //so just remap all the children with the group... this should be safe (right?)
+    receiver.children('[math]').attr('group',group_id)
+
+    //TODO do we need this?
+    //update_math(ui.sender);
+
+    //Make sure nothing is changed while we process the request
+    receiver.attr('locked','true')
+
+    data = {
+        //The math of the dragged object 
+        obj: ui.item.attr('math'),
+        obj_type: ui.item.attr('math-type'),
+
+        //The math of the receiving object
+        receiver: receiver.attr('math'),
+        receiver_type: receiver.attr('math-type'),
+        receiver_context: get_container(receiver).attr('math-type'),
+
+        //The math of the sender object
+        sender: ui.sender.attr('math'),
+        sender_type: ui.sender.attr('math-type'),
+        sender_context: get_container(ui.sender).attr('math-type'),
+        
+        //The new position of the dragged obect inside receiver
+        new_position: ui.item.parent().children("[math]").index(ui.item),
+    }
+    $.post("receive/", data,
+           function(data){
+
+            if(data.error) {
+                error(data.error)
+                return
+            }
+
+            nsym = obj.replace(data);
+            nsym.attr('group',group_id);
+            refresh_jsmath($(nsym))
+            receiver.attr('locked','false');
+            update(get_container(nsym))
+          },
+        "html");
+    cleanup_ajax_scripts()
+
+}
+
+function remove(ui,removed)
+{
+    //TODO: Do we need to call this?
+
+    group_id = removed.attr('id')
+    obj = ui.item
+    removed.attr('locked','true')
+
+    data = {
+        //The math of the dragged object 
+        obj: ui.item.attr('math'),
+        obj_type: ui.item.attr('math-type'),
+
+        //The math of the sender object
+        sender: removed.attr('math'),
+        sender_type: removed.attr('math-type'),
+        sender_context: get_container(removed).attr('math-type'),
+    }
+
+    $.post("remove/", data,
+           function(data){
+                if(data.error) {
+                    error(data.error)
+                    return
+                }
+
+                nsym = $(data).appendTo(removed);
+                nsym.attr('group',group_id);
+                refresh_jsmath($(nsym))
+                removed.attr('locked','false')
+                update_math(removed);
+          },
+        "html");
+    cleanup_ajax_scripts()
+}
+
+function combine(first,second,context)
+{
+    data = {};
+    data.context = context
+    data.first = $(first).attr('math');
+    data.second = $(second).attr('math');
+
+    if($(first).attr('group') != $(second).attr('group'))
+    {
+        alert('Mismatched group ids in same context')
+        return null
+    } else { 
+        group_id = $(first).attr('group')
+    }
+
+    container = get_container(first)
+    group_id = container.attr('id')
+    group_id_cache = String(group_id)
+
+    $.post("combine/", data,
+           function(data){
+
+                if(data.error)
+                {
+                    error(data.error)
+                    return
+                }
+
+                nsym = first.after(data).next();
+                container.find('[group=None]').attr('group',group_id_cache)
+                first.remove();
+                second.remove();
+                update(container);
+                refresh_jsmath($(container))
+                traverse_lines();
+                cleanup_ajax_scripts();
+          },
+        "html");
+}
+
+function new_inline(){
     data = {}
-    data.first = first_type
-
-    $.post("lookup_identity/",data, function(data) 
-        {
-            $('#options').html(data);
-            $('#options').fadeIn();
+    $.post("new_inline/", data ,
+        function(data){
+            if(data.error) {
+                error(data.error)
+            }
+            if(data.newline) {
+                $('#lines').append(data.newline)
+            }
+            traverse_lines();
+            refresh_jsmath()
         }
-    ,'html')
+    ,'json')
 }
 
-function clear_lookups()
+function save_workspace()
 {
-    $('#options').fadeOut()
+    data = {}
+    i = 0
+
+    $.each($("tr.equation"),
+        function(obj)
+        { 
+                data[i] = $(this).attr('math')
+                i += 1
+        })
+
+    //Flash the border to indicate we've saved.
+    $('#workspace').animate({ border: "5px solid red" }, 1000);
+    $('#workspace').animate({ border: "0px solid black" }, 1000);
+
+    $.post("save_workspace/", data ,
+        function(data){
+            if(data.error) {
+                error(data.error)
+            }
+        }
+        ,'json')
 }
+
+function parse_sage()
+{
+    var data = {}
+    data.sage = $('#sage_text').val()
+    $.post("sage_parse/", data ,
+        function(data){
+            if(data.error) {
+                error(data.error)
+                return
+            }
+
+            if(data.newline) {
+                $('#lines').append(data.newline)
+                refresh_jsmath($(data.newline))
+            }
+            traverse_lines();
+        }
+        ,'json')
+}
+
+
+
+///////////////////////////////////////////////////////////
+// Tree Traversal
+///////////////////////////////////////////////////////////
 
 function get_common_parent(first,second)
 {
@@ -491,26 +857,6 @@ function are_siblings(first,second)
 }
 
 
-function construct_numeric(num)
-{
-    term = $(document.createElement('span')).html('$$'+num+'$$')
-    term.attr('math','(Numeric ' + num + +')')
-    term.attr('math-meta-type','term')
-    term.attr('math-type','Numeric')
-    return(term)
-}
-
-function clear_selection()
-{
-    $.each($("#selectionlist button"),function() {
-                $(this).remove(); 
-        });
-    $('.selected').removeClass('selected');
-    $('#options').hide();
-    $('#selectionlist').fadeIn();
-    selection.clear()
-}
-
 function traverse_lines()
 {
     //Traverse the lines of the workspace and make them sortable equations
@@ -540,32 +886,9 @@ function traverse_lines()
     $('.equation button').parent().buttonset();
 }
 
-function resize_parentheses()
-{
-    //Scale parentheses
-    $.each($('.pnths'), function(obj)
-        {
-            parent_height = $(this).parent().height();
-            $(this).height(parent_height)
-            $(this).css('margin-top',-parent_height/3)
-            $(this).css('font-size',String(parent_height/3) + 'px')
-        });
-}
-
-function term_spacing(x,y)
-{
-    if(x)
-    {
-        $('.term').css('padding-right',x)
-        $('.term').css('padding-left',x)
-    }
-
-    if(y)
-    {
-        $('.term').css('padding-top',y)
-        $('.term').css('padding-bottom',y)
-    }
-}
+///////////////////////////////////////////////////////////
+// Drag & Drop
+///////////////////////////////////////////////////////////
 
 function make_sortable(object,connector,options)
 {
@@ -598,186 +921,39 @@ function dragging(sort_object,ui)
     }
 }
 
-/*
-function down(container,dragged)
-{
-    if(is_toplevel(container))
-    {
-        equation = get_equation(dragged)
-        var data = {}
-        data.dragged = $(dragged).attr('math') 
-        data.equation = equation.attr('math')
-        $.post("topdown/", data,
-           function(data) {
-                equation.after(data);
-                equation.remove()
-                jsMath.ConvertTeX(); jsMath.Process();
-                dragged.remove();
-                traverse_lines();
-           }, "html");
-    }
-    else
-    {
-        var data = {}
-        data.container = $(container).attr('math') 
-        data.dragged = $(dragged).attr('math') 
-        data.context = get_container(container).attr('math-type'); 
-        $.post("down/", data,
-           function(data) {
-                group_id = container.attr('group')
-                nsym = container.after(data);
-                container.siblings().attr('group',group_id);
-                jsMath.ConvertTeX(); jsMath.Process();
-                container.remove();
-                dragged.remove();
-                traverse_lines();
-           }, "html");
-    }
-    cleanup_ajax_scripts()
-}
-*/
-
-function get_equation(object)
-{
-    eq = $(object).parents("tr");
-    return(eq)
-}
-
-function get_lhs(object)
-{
-    return $(get_equation(object).find('[math-type=LHS]'));
-}
-
-function get_rhs(object)
-{
-    return $(get_equation(object).find('[math-type=RHS]'));
-}
-
-function receive(ui,receiver,group_id)
-{
-    group_id = receiver.attr('id')
-
-    obj = ui.item
-    //If we drop an element in make sure we associate it with the group immediately
-    obj.attr('group',group_id);
-
-    //If we drag from a jquery draggable then the ui.item doesn't exist here yet
-    //so just remap all the children with the group... this should be safe (right?)
-    receiver.children('[math]').attr('group',group_id)
-
-    //TODO do we need this?
-    //update_math(ui.sender);
-
-    //Make sure nothing is changed while we process the request
-    receiver.attr('locked','true')
-
-    data = {
-        //The math of the dragged object 
-        obj: ui.item.attr('math'),
-        obj_type: ui.item.attr('math-type'),
-
-        //The math of the receiving object
-        receiver: receiver.attr('math'),
-        receiver_type: receiver.attr('math-type'),
-        receiver_context: get_container(receiver).attr('math-type'),
-
-        //The math of the sender object
-        sender: ui.sender.attr('math'),
-        sender_type: ui.sender.attr('math-type'),
-        sender_context: get_container(ui.sender).attr('math-type'),
-        
-        //The new position of the dragged obect inside receiver
-        new_position: ui.item.parent().children("[math]").index(ui.item),
-    }
-    $.post("receive/", data,
-           function(data){
-
-            if(data.error) {
-                error(data.error)
-                return
-            }
-
-            nsym = obj.replace(data);
-            nsym.attr('group',group_id);
-            refresh_jsmath($(nsym))
-            receiver.attr('locked','false');
-            update(get_container(nsym))
-          },
-        "html");
-    cleanup_ajax_scripts()
-
-}
-
-function remove(ui,removed)
-{
-    //TODO: Do we need to call this?
-
-    group_id = removed.attr('id')
-    obj = ui.item
-    removed.attr('locked','true')
-
-    data = {
-        //The math of the dragged object 
-        obj: ui.item.attr('math'),
-        obj_type: ui.item.attr('math-type'),
-
-        //The math of the sender object
-        sender: removed.attr('math'),
-        sender_type: removed.attr('math-type'),
-        sender_context: get_container(removed).attr('math-type'),
-    }
-
-    $.post("remove/", data,
-           function(data){
-                if(data.error) {
-                    error(data.error)
-                    return
-                }
-
-                nsym = $(data).appendTo(removed);
-                nsym.attr('group',group_id);
-                refresh_jsmath($(nsym))
-                removed.attr('locked','false')
-                update_math(removed);
-          },
-        "html");
-    cleanup_ajax_scripts()
-}
-
-function whatisit(object)
-{
-    return $(object).attr('id')+', '+$(object).attr('math-type')+', '+$(object).attr('math')
-}
+///////////////////////////////////////////////////////////
+// Math Parsing & Generating
+///////////////////////////////////////////////////////////
 
 function check_container(object)
 {
-    //This handles stupid checks that are too expensive to do via Ajax, ie removing infix sugar and whatnot
+    //This handles stupid checks that are too expensive to do via Ajax, ie removing infix sugar 
     $.each(object.children(), function()
         {
-           prev = $(this).prev();
-           cur = $(this);
-           next = $(this).next();
-           last = $(object).children(':last-child');
-           first = $(object).children(':first-child');
-           group = $(this).attr('group');
+           var prev = $(this).prev();
+           var cur = $(this);
+           var next = $(this).next();
+           var last = $(object).children(':last-child');
+           var first = $(object).children(':first-child');
+           var group = $(this).attr('group');
            if(group != "")
            {
                
-               //Rules for handling parenthesis
+               // -- Rules for handling parenthesis --
 
                //This forces left parenthesis over to the left
                if(cur.hasClass('term') && next.hasClass('pnths') && next.hasClass('left'))
                {
-                   cur.swap(next)
+                   cur.swap(next);
                }
 
                //This forces left parenthesis over to the left
                if(cur.hasClass('pnths') && next.hasClass('term') && cur.hasClass('right'))
                {
-                   cur.swap(next)
+                   cur.swap(next);
                }
 
-               //Rules for cleaning up infix sugar
+               // -- Rules for cleaning up infix sugar --
 
                group_type = $('#'+group).attr('math-type');
 
@@ -796,13 +972,13 @@ function check_container(object)
                //  ( + A  --> ( A
                if(cur.hasClass('pnths') && next.hasClass('infix'))
                {
-                    next.remove() 
+                    next.remove();
                }
 
                //  + ) --> )
                if(cur.hasClass('infix') && next.hasClass('pnths'))
                {
-                    cur.remove() 
+                    cur.remove();
                }
                 
                // + A + B --> A + B
@@ -859,46 +1035,6 @@ function check_combinations(object){
         });
 }
 
-function combine(first,second,context)
-{
-    data = {};
-    data.context = context
-    data.first = $(first).attr('math');
-    data.second = $(second).attr('math');
-
-    if($(first).attr('group') != $(second).attr('group'))
-    {
-        alert('Mismatched group ids in same context')
-        return null
-    } else { 
-        group_id = $(first).attr('group')
-    }
-
-    container = get_container(first)
-    group_id = container.attr('id')
-    group_id_cache = String(group_id)
-
-    $.post("combine/", data,
-           function(data){
-
-                if(data.error)
-                {
-                    error(data.error)
-                    return
-                }
-
-                nsym = first.after(data).next();
-                container.find('[group=None]').attr('group',group_id_cache)
-                first.remove();
-                second.remove();
-                update(container);
-                refresh_jsmath($(container))
-                traverse_lines();
-                cleanup_ajax_scripts();
-          },
-        "html");
-}
-
 function get_container(object)
 {
     if(object.attr('group') == object.attr('id'))
@@ -917,7 +1053,7 @@ function get_container(object)
 
 function is_toplevel(object)
 {
-    //If container is RHS or LHS tag this is toplevel and perform division on entire equation instead of factoring out a term
+    //If container is RHS or LHS we consider it toplevel
     context = get_container($(object)).attr('math-type');
     if(context == 'LHS' || context == 'RHS') 
     {
@@ -926,27 +1062,6 @@ function is_toplevel(object)
     else {
         return false;
     }
-}
-
-function debug_colors(object)
-{
-    $('li[math-meta-class=term]').css('border-bottom','5px solid red');
-    $('ul[math-type]').css('border-bottom','5px solid blue');
-    $('.rhs').css('border-bottom','none');
-    $('.lhs').css('border-bottom','none');
-    $('.equation').css('background-color','#CCCCCC');
-    $('.rhs').css('background-color','#FFCCCC');
-    $('.lhs').css('background-color','#CCFF00');
-}
-
-function serialize_object(saveData)
-{
-    var a = [];
-    for (key in saveData) {
-            a.push(key+"="+saveData[key]);
-    }
-    var serialized = a.join("&")
-    return serialized;
 }
 
 //This should be called after each change to the workspace
@@ -976,7 +1091,8 @@ function refresh_jsmath(element)
         jsMath.ProcessBeforeShowing(element[0])
         $(function() { element.css('visibility','visible') })
     }
-    //Refresh math Globally
+    //Refresh math Globally, shouldn't be called too much because
+    //it bogs down the browser
     else
     {
         jsMath.ConvertTeX()
@@ -1035,37 +1151,6 @@ function update_math(object,stack_depth)
     }
 }
 
-function pass_array(object)
-{
-    /* A little bit of recursive magic */
-    //a = object.sortable('serialize',{attribute: 'math'});
-    //b = object.sortable('toArray');
-    /* We can only do one task at a time otherwise indeces get screwed up*/
-    a = $.map(object.children(),function(i)
-    {
-        return $(i).attr("math");
-    });
-    b = $.map(object.children(),function(i)
-    {
-        return $(i).attr("math-type");
-    });
-    c = $.map(object.children(),function(i)
-    {
-        if($(i).attr('math')!=undefined)
-        {
-            return $(i).attr("id");
-        }
-    });
-}
-
-function get_info(object)
-{
-    a = $(object).attr("math");
-    b = $(object).attr("math-type");
-    c = $(object).attr("id");
-    return { math: a, type: b, id: c }
-}
-
 function dropin(old,nwr)
 {
     //Drop an element in place of another, preserving group linkings
@@ -1077,92 +1162,6 @@ function dropin(old,nwr)
     });
 }
 
-function apply_transform(transform)
-{
-    var data = {}
-    data.transform = transform
-
-    //Fetch the math for each of the selections
-    data.selections = selection.list_prop('math')
-
-    $.post("apply_transform/", data,
-        function(data){
-
-            if(data.error)
-            {
-                error(data.error)
-                $('#selectionlist').fadeIn();
-                clear_selection()
-                return
-            }
-
-            for(var i=0; i<data.length; i++)
-            {
-                obj = selection.nth(i)
-                group_id = obj.attr('group');
-                group_id_cache = String(group_id)
-
-                if (data[i] == null)
-                {
-                    obj.remove()    
-                }
-                else
-                {
-                    nsym = obj.replace(data[i]);
-                    nsym.attr('group',group_id_cache);
-                    refresh_jsmath($(nsym))
-                }
-            }
-
-            /*
-            
-            //Remove terms (if needed)
-            if(data.remove == 'first')
-            {
-                get_selection(0).remove();
-            }
-
-            if(data.remove == 'second')
-            {
-                get_selection(1).remove();
-            }
-
-            //Swap the first term
-            if(data.first)
-            {
-                obj = get_selection(0);
-                group_id = obj.attr('group');
-                group_id_cache = String(group_id)
-
-
-                nsym = obj.replace(data.first);
-                nsym.attr('group',group_id_cache);
-
-                refresh_jsmath($(nsym))
-
-            }
-            //Swap the second term
-            if(data.second)
-            {
-                obj = get_selection(1);
-                group_id = obj.attr('group');
-                group_id_cache = String(group_id)
-
-                nsym = obj.replace(data.second);
-                nsym.attr('group',group_id_cache);
-
-                refresh_jsmath($(nsym))
-            }
-            */
-
-            clear_selection()
-            traverse_lines();
-            update(get_container(obj))
-        },
-        "json");
-//    cleanup_ajax_scripts()
-//    clear_lookups()
-}
 
 function duplicate_placeholder(placeholder)
 {
@@ -1233,11 +1232,6 @@ function next_placeholder(start)
     */
 }
 
-function show_cmd()
-{
-   alert('cat');
-   $('.cmd_input').toggle();
-}
 
 function substite_addition()
 {
@@ -1320,12 +1314,14 @@ function remove_element()
         }
         else
         {
-            replace_manually(placeholder, '(Placeholder )')
+            apply_transform('Replace', [ placeholder.math() , '(Placeholder )' ])
+            //replace_manually(placeholder, '(Placeholder )')
         }
     }
     else
     {
-        replace_manually(placeholder, '(Placeholder )')
+        apply_transform('Replace', [ placeholder.math() , '(Placeholder )' ])
+        //replace_manually(placeholder, '(Placeholder )')
     }
 }
 
@@ -1350,7 +1346,6 @@ function substite_division()
 
 function replace_manually(obj, code)
 {
-    // Apply PlaceholderSubstitute with the given code argument
     data = {}
     data.first = selection.nth(0).attr('math')
     data.second = code
@@ -1432,202 +1427,3 @@ function add_after(obj, code)
     clear_lookups()
 }
 
-function apply_identity(identity)
-{
-    data = {}
-    data.first = get_selection(0).attr('math')
-    data.identity = identity
-
-    $.post("apply_identity/", data,
-        function(data){
-            if(data.error)
-            {
-                error(data.error)
-                clear_selection()
-                return
-            }
-
-            //TODO this really needs to be cleaned up 
-            //Swap the first term
-            obj = get_selection(0);
-            group_id = $(obj).attr('group');
-            //Yah, don't even try to understand why we need to cache this.... this is VERY odd
-            group_id_cache = String(group_id)
-            nsym = obj.replace(data.first);
-            nsym.attr('group',group_id_cache);
-            refresh_jsmath()
-            clear_selection()
-            traverse_lines();
-            update(get_container(obj))
-        },
-        "json");
-    cleanup_ajax_scripts()
-    clear_lookups()
-}
-
-function show_debug_menu()
-{
-    $('#debug_menu').dialog();
-    $('#horizslider').slider({
-        slide:
-        function(e,ui)
-        {
-            term_spacing(ui.value,null)
-        }}
-    );
-    $('#vertslider').slider({
-        slide:
-        function(e,ui)
-        {
-            term_spacing(null,ui.value)
-        }}
-    );
-}
-
-function toggle_sageinput()
-{
-    $('#sage_input').dialog();
-}
-
-function parse_sage()
-{
-    var data = {}
-    data.sage = $('#sage_text').val()
-    $.post("sage_parse/", data ,
-        function(data){
-            if(data.error) {
-                error(data.error)
-                return
-            }
-
-            if(data.newline) {
-                $('#lines').append(data.newline)
-                refresh_jsmath($(data.newline))
-            }
-            traverse_lines();
-        }
-        ,'json')
-}
-
-function bind_hover_toggle(){
-    $('#hovertoggle').toggle(
-        function()
-        {
-            $('#workspace .term[math]').hover(
-                function()
-                {
-                    $(this).addClass('term_hover')
-                }
-                ,
-                function()
-                {
-                    $(this).removeClass('term_hover')
-                }
-            )
-
-            $('#workspace .container[math]').hover(
-                function()
-                {
-                    $(this).addClass('container_hover')
-                }
-                ,
-                function()
-                {
-                    $(this).removeClass('container_hover')
-                }
-            )
-        }
-        ,
-        function()
-        {
-            $('#workspace .term[math]').hover(
-                function()
-                {
-                    $(this).removeClass('term_hover')
-                }
-            )
-            $('#workspace .container[math]').hover(
-                function()
-                {
-                    $(this).removeClass('container_hover')
-                }
-            )
-        })
-}
-
-function new_inline(){
-    data = {}
-    $.post("new_inline/", data ,
-        function(data){
-            if(data.error) {
-                error(data.error)
-            }
-            if(data.newline) {
-                $('#lines').append(data.newline)
-            }
-            traverse_lines();
-            refresh_jsmath()
-        }
-    ,'json')
-}
-
-function cur_next(str)
-{
-    current = $('.selected');
-    if(!current.exists())
-    {
-        next = $("#rhs");
-    }
-    if(current.children('ul li').exists())
-    {
-        next = current.children('ul li');
-    }
-    else
-    {   
-        next = current.next();
-        if(!next.exists())
-        {
-            next = current.parent().next();
-        }
-    }
-    next.addClass('selected');
-    current.removeClass('selected');
-}
-
-
-function cur_prev(str)
-{
-    current = $('.selected');
-    prev = current.prev();
-    if(!prev.exists())
-    {
-        prev = current.parent().prev();
-    }
-    prev.addClass('selected');
-    current.removeClass('selected');
-}
-
-function save_workspace()
-{
-    data = {}
-    i = 0
-
-    $.each($("tr.equation"),
-        function(obj)
-        { 
-                data[i] = $(this).attr('math')
-                i += 1
-        })
-
-    //Flash the border to indicate we've saved.
-    $('#workspace').animate({ border: "5px solid red" }, 1000);
-    $('#workspace').animate({ border: "0px solid black" }, 1000);
-
-    $.post("save_workspace/", data ,
-        function(data){
-            if(data.error) {
-                error(data.error)
-            }
-        }
-        ,'json')
-}
