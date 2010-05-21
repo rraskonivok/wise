@@ -277,7 +277,7 @@ class Branch(object):
         '''evaluate by descent'''
         def f(x):
             #print 'TYPE IS',x
-            if type(x) is str:
+            if (type(x) is str) or (type(x) is unicode):
                 # The two special cases where a string in the
                 # parse tree is not a string
                 if x == 'Placeholder':
@@ -2189,4 +2189,4 @@ class FDiff(Operation):
 
 import algebra
 
-print [i.domain for i in algebra.mappings]
+#print [i.domain for i in algebra.mappings]

@@ -15,6 +15,9 @@ def Mapping(x, y):
 
         func.context = None
 
+        func.internal = func.__name__
+        func.pretty = func.internal
+
         def wrapper(*args):
             domain = args[1:]
 
@@ -22,14 +25,18 @@ def Mapping(x, y):
             if domain in func.case:
                 print 'abc'
 
-            domain_check = all(isinstance(a,b) for a,b in zip(domain,x.args))
-            codomain_check =  all(isinstance(a,b) for a,b in zip((codomain,),y.args))
+            # TODO: Do we really need to always do a type check...
+            # it may be needlessly expensive
 
-            if not domain_check or not codomain_check:
-                print "%s takes [%s -> %s ] instead is [ %s -> %s ]" % (func.__name__, x.args , y.args, map(type,domain), map(type,(codomain,)))
-                return None
-            else:
-                return codomain
+            #domain_check = all(isinstance(a,b) for a,b in zip(domain,x.args))
+            #codomain_check =  all(isinstance(a,b) for a,b in zip((codomain,),y.args))
+
+            #if not domain_check or not codomain_check:
+            #    print "%s takes [%s -> %s ] instead is [ %s -> %s ]" % (func.__name__, x.args , y.args, map(type,domain), map(type,(codomain,)))
+            #    return None
+            #else:
+            #    return codomain
+            return codomain
 
         return decorator(wrapper, func)
     return f1
@@ -54,7 +61,12 @@ def _mapping(func, *args, **kw):
 def Map(f):
     return decorator(_mapping, f )
 
+#TODO this should return an iterator
 def iter_mappings(module):
+    mappings = []
     for name, obj in module.items():
         if hasattr(obj,'mapping'):
-            yield obj
+            mappings.append(obj)
+
+    return tuple(mappings)
+

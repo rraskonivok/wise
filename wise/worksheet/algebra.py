@@ -23,7 +23,7 @@ from wise.worksheet.mathobjects import *
 
 @Map( _( Numeric , Numeric ) >> _( Numeric ) )
 def add(a,b):
-    return a+b
+    return Numeric(a.number+b.number)
 
 add.pretty = 'Add'
 

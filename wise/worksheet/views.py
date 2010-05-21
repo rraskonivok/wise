@@ -64,6 +64,16 @@ def memoize(f):
     f.cache = {}
     return decorator(_memoize, f)
 
+def html(obj):
+    if obj is None:
+        return None
+    return obj.get_html()
+
+def maps(func, obj):
+    if hasattr(obj,'__iter__'):
+        return map(func, obj)
+    return [func(obj)]
+
 def account_login(request):
     form = AuthenticationForm()
 
@@ -170,52 +180,36 @@ def ws(request, eq_id):
 
     return render_to_response('worksheet.html', {'title': ws.name, 'equations':outputs, 'username': request.user.username})
 
-transform_interface = '''
-{% for option in options %}
-    <button title="{{option.internal}}" onclick="javascript:apply_transform('{{option.internal}}')">{{option.prettytext}}</button>
+mapping_lookup = '''
+{% for map in mappings %}
+    <button title="{{map.pretty}}" onclick="javascript:apply_transform('{{map.internal}}')">{{map.pretty}}</button>
 {% endfor %}
 '''
 
 @login_required
 @errors
 def lookup_transform(request, eq_id):
-    typ = request.POST.get('type')
-    selection = hash(tuple(request.POST.getlist('selections[]')))
+    typs = tuple(request.POST.getlist('selections[]'))
+    #print [i for i in mathobjects.algebra.mappings]
 
-    #lookup1 = set(MathematicalTransform.objects.filter(domain=selection))
+    def str_to_mathtype(typ):
+        return mathobjects.__dict__[typ]
 
-    print lookup1
+    domain = tuple( map(str_to_mathtype, typs) )
 
-    #first_type = unencode( request.POST.get('first') )
-    #second_type = unencode( request.POST.get('second') )
-    #context = unencode( request.POST.get('context') )
+    def compatible_pred(obj_types, fun_signature):
+        if len(obj_types) != len(fun_signature): return False
+        return all(issubclass(ot, ft) for ot, ft in zip(obj_types, fun_signature))
 
-    #if not (first_type and second_type and context):
-    #    return HttpResponse(json.dumps({'error': 'Insufficent lookup information'}))
+    @memoize
+    def get_comptables(obj_types, fun_signatures):
+        return [t for t in fun_signatures if compatible_pred(obj_types, t.domain)]
 
-    #Fix this with:
-    #    if first_type in dir('mathobjects') 
+    compatible_mappings = get_comptables( domain, mathobjects.algebra.mappings)
 
-    #TODO: This is ugly and dangerous
-    #if first_type != 'null':
-    #    first_basetype = eval('mathobjects.' + first_type).base_type
+    interface_ui = template.Template(mapping_lookup)
 
-    #if second_type != 'null':
-    #    second_basetype = eval('mathobjects.' + second_type).base_type
-
-
-    #Create sets of the database queries
-    #lookup1 = set(MathematicalTransform.objects.filter(first=first_type,second=second_type,context=context))
-    #lookup2 = set(MathematicalTransform.objects.filter(first=first_basetype,second=second_basetype,context=context)) 
-    #lookup3 = set(MathematicalTransform.objects.filter(first=first_type,second=second_basetype,context=context))
-    #lookup4 = set(MathematicalTransform.objects.filter(first=first_basetype,second=second_type,context=context))
-
-    #Take the union of the sets so as to avoid identical operations
-    options = lookup1 | lookup2 | lookup3 | lookup4
-
-    interface_ui = template.Template(transform_interface)
-
-    c = template.Context({'options':options})
+    c = template.Context({'mappings':compatible_mappings})
     return HttpResponse(interface_ui.render(c))
 
 identity_interface = '''
@@ -282,17 +276,22 @@ def new(request):
 @login_required
 @errors
 def apply_transform(request,eq_id):
-    first = unencode( request.POST.get('first') )
-    second = unencode( request.POST.get('second') )
+    code = tuple(request.POST.getlist('selections[]'))
     transform = unencode( request.POST.get('transform') )
-    nested = unencode( request.POST.get('nested') )
 
-    first = mathobjects.ParseTree(first).eval_args()
-    second = mathobjects.ParseTree(second).eval_args()
+    def parse(code):
+        return mathobjects.ParseTree(code).eval_args()
 
-    json = eval('mathobjects.'+transform)(first,second)
+    args = map(parse, code)
 
-    return HttpResponse(json)
+    transform = mathobjects.algebra.__dict__[transform]
+
+    response = transform(*args)
+    print args, response
+
+    new_elements = maps(html, response)
+
+    return HttpResponse(json.dumps(new_elements))
 
 @login_required
 @errors

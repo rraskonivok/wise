@@ -36,6 +36,11 @@ $.fn.swap = function(b) {
     return this;
 };
 
+$.fn.id = function()
+{
+    return $(this).attr('id')
+}
+
 $.extend($.fn.disableTextSelect = function() {
         return this.each(function(){
                 if($.browser.mozilla){//Firefox
@@ -47,6 +52,90 @@ $.extend($.fn.disableTextSelect = function() {
                 }
         });
 });
+
+//I miss Lisp
+function zip(listA, listB)
+{
+    var lst = []
+    if( listA.length == listB.length ) {
+        for(var i = 0; i < listA.length; i++) {
+            lst.push([listA[i],listB[i]])
+        }
+        return lst
+    }
+}
+
+//Cycle through all pairs of an array
+function cycle(listA)
+{
+    var listB = listA.slice(0);
+    listB.push(listB.shift())
+    return zip(listA, listB)
+}
+
+///////////////////////////////////////////////////////////
+// Selection Handling
+///////////////////////////////////////////////////////////
+
+// Out global selection container
+var selection = {};
+selection.count = 0;
+selection.objs = {};
+selection.__lst = [];
+
+selection.add = function (obj) {
+    this.objs[obj.id()] = obj;
+    this.count += 1; 
+}
+
+selection.del = function (key) {
+    delete this.objs[key]
+    this.count -= 1; 
+}
+
+selection.get = function (key) {
+    return this.objs[key];
+}
+
+selection.list = function() {
+    var lst = [];
+    for (i in this.objs) {
+       lst.push(this.objs[i]);
+    }
+    this.__lst = lst;
+    return lst;
+}
+
+//Return a list of the given property of the elements
+//Ex: selection.list_prop('math')
+selection.list_prop = function(prop) {
+    var lst = [];
+    for (i in this.objs) {
+       lst.push(this.objs[i].attr(prop));
+    }
+    return lst;
+}
+
+selection.nth = function(n) {
+    if(this.__lst.length == 0) {
+        this.list();
+    }
+    var nth = this.__lst[n];
+
+    //We do this so that selection.nth(0).exists will return
+    //false if the value is not in the array
+    if (nth == undefined) {
+        return $();
+    } else {
+        return nth;
+    }
+}
+
+selection.clear = function() {
+    this.objs = {};
+    this.__lst = [];
+    this.count = 0;
+}
 
 function error(text)
 {
@@ -128,7 +217,6 @@ function select_term(object)
     clear_lookups()
     $("#selectionlist").fadeIn()
 
-
     clickedon = $(object)
 
     //We shouldn't be able to click on the "invisible" addition
@@ -150,11 +238,12 @@ function select_term(object)
         id = clickedon.attr("id");
         $.each($("#selectionlist button"),function()
         {
-            if($(this).attr('pointer') === id)
+            if($(this).attr('index') === id)
             {
                 $(this).remove(); 
             }
         });
+        selection.del(id)
     }
     else
     {
@@ -162,42 +251,59 @@ function select_term(object)
         typ = clickedon.attr('math-type');
         li = $(document.createElement('button')).html(typ)
         li.button()
+
         cancel = $(document.createElement('div'))
         cancel.addClass('ui-icon')
         cancel.addClass('ui-icon-close')
         cancel.css('float','left')
         cancel.css('cursor','pointer')
+
         li.prepend(cancel)
-        li.attr('pointer',clickedon.attr('id'))
-        li.attr('math-type',clickedon.attr('math-type'))
-        cancel.attr('pointer',clickedon.attr('id'))
+        index = clickedon.attr('id')
+
+        selection.add(clickedon);
+
+        li.attr('index',index)
+
+        //li.attr('math',clickedon.attr('math'))
+        //li.attr('math-type',clickedon.attr('math-type'))
+
+        cancel.attr('index',index)
 
         li.bind('mouseover',function()
             {
-                id = $(this).attr('pointer') 
-                $('#'+id).css('background','#DD9090'); 
+                index = $(this).attr('index') 
+                obj = selection.get(index)
+                obj.css('background','#DD9090'); 
             });
         li.bind('mouseout',function()
             {
-                id = $(this).attr('pointer') 
-                $('#'+id).css('background','inherit'); 
+                index = $(this).attr('index') 
+                obj = selection.get(index)
+                obj.css('background','inherit'); 
             });
-        cancel.bind('click',function()
+        li.bind('click',function()
             {
-                ($(this).parent().remove())
-                id = $(this).attr('pointer') 
-                $('#'+id).removeClass('selected');
-                $('#'+id).css('background','inherit'); 
+                index = $(this).attr('index') 
+
+                obj = selection.get(index)
+                obj.removeClass('selected');
+                obj.css('background','inherit'); 
+
+                selection.del(index)
+
+                $(this).remove()
                 format_selection()
             });
 
-        placed = $("#selectionlist").append(li);
-        clickedon.effect('transfer',{ to: li, className: 'ui-effects-transfer' },400)
+        $("#selectionlist").append(li);
+
+        //clickedon.effect('transfer',{ to: li, className: 'ui-effects-transfer' },400)
         format_selection();
     //Bind to select object command
     }
     
-    if(num_selected() > 1 && get_selection(0).attr('math-type') == 'Placeholder')
+    if(selection.count == 2 && (selection.nth(0)).attr('math-type') == 'Placeholder')
     {
         apply_transform('PlaceholderSubstitute')
     }
@@ -210,24 +316,21 @@ function format_selection()
     $($("#selectionlist").children()[1]).css('border','2px solid #989cd7');
 }
 
-function num_selected()
-{
-    //The number of elements in the selection queue:
-    return $("#selectionlist").children().length
-}
-
-function get_selection(n)
-{
-    //Return the nth selected item
-    return $('#'+$($("#selectionlist").children()[n]).attr('pointer'));
-}
-
-function get_selections()
+function get_selections_type()
 {
     return $.map( $("#selectionlist").children(), 
             function(x) 
             {
                 return $(x).attr('math-type')
+            });
+}
+
+function get_selections_math()
+{
+    return $.map( $("#selectionlist").children(), 
+            function(x) 
+            {
+                return $(x).attr('math')
             });
 }
 
@@ -237,57 +340,36 @@ function get_selections()
 
 function lookup_transform()
 {
-    if(num_selected() == 2)
-    {
+    data = {}
 
-        first = get_selection(0);
-        second = get_selection(1);
-        first_type = first.attr('math-type');
-        second_type = second.attr('math-type');
+    //Get the types of the values we have selected
+    data.selections = selection.list_prop('math-type')
 
-        data = {}
-        data.first = first_type
-        data.second = second_type
-        data.selections = get_selections()
+    //Iterate through all elements
+    //if(get_nested(first,second) != null)
+    //{
+    //    data.nested = true
+    //}
+    //else
+    //{
+    //    data.nested = false
+    //}
 
-        data.type = 'binary'
+    //context = get_common_context(first,second)
+    //if(context != null)
+    //{
+    //    context = context.attr('math-type') 
+    //}
 
-        if(get_nested(first,second) != null)
+    //data.context = context
+
+    $.post("lookup_transform/",data, function(data)
         {
-            data.nested = true
-        }
-        else
-        {
-            data.nested = false
-        }
-
-        context = get_common_context(first,second)
-
-        if(context != null)
-        {
-            context = context.attr('math-type') 
-        }
-
-        data.context = context
-
-        $.post("lookup_transform/",data, function(data)
-            {
-                $('#selectionlist').hide()
-                $('#options').html(data);
-                $('#options').fadeIn();
-                $('#options button').button()
-                refresh_jsmath()
-            }
-        ,'html')
-    }
-    else
-    {
-        data = {}
-        data.type = 'generic'
-        data.selections = get_selections()
-
-        $.post("lookup_transform/",data)
-    }
+            $('#selectionlist').hide();
+            $('#options').html(data);
+            $('#options').fadeIn();
+            $('#options button').button()
+        } ,'html')
 }
 
 function lookup_identity()
@@ -426,6 +508,7 @@ function clear_selection()
     $('.selected').removeClass('selected');
     $('#options').hide();
     $('#selectionlist').fadeIn();
+    selection.clear()
 }
 
 function traverse_lines()
@@ -996,21 +1079,42 @@ function dropin(old,nwr)
 
 function apply_transform(transform)
 {
-    data = {}
-    data.first = get_selection(0).attr('math')
-    data.second = get_selection(1).attr('math')
+    var data = {}
     data.transform = transform
+
+    //Fetch the math for each of the selections
+    data.selections = selection.list_prop('math')
 
     $.post("apply_transform/", data,
         function(data){
-            //TODO this really needs to be cleaned up 
 
             if(data.error)
             {
                 error(data.error)
+                $('#selectionlist').fadeIn();
                 clear_selection()
                 return
             }
+
+            for(var i=0; i<data.length; i++)
+            {
+                obj = selection.nth(i)
+                group_id = obj.attr('group');
+                group_id_cache = String(group_id)
+
+                if (data[i] == null)
+                {
+                    obj.remove()    
+                }
+                else
+                {
+                    nsym = obj.replace(data[i]);
+                    nsym.attr('group',group_id_cache);
+                    refresh_jsmath($(nsym))
+                }
+            }
+
+            /*
             
             //Remove terms (if needed)
             if(data.remove == 'first')
@@ -1049,14 +1153,15 @@ function apply_transform(transform)
 
                 refresh_jsmath($(nsym))
             }
+            */
 
             clear_selection()
             traverse_lines();
             update(get_container(obj))
         },
         "json");
-    cleanup_ajax_scripts()
-    clear_lookups()
+//    cleanup_ajax_scripts()
+//    clear_lookups()
 }
 
 function duplicate_placeholder(placeholder)
@@ -1081,9 +1186,9 @@ function next_placeholder(start)
 
     if(!start)
     {
-        if(get_selection(0).exists())
+        if(selection.nth(0).exists())
         {
-            start = get_selection(0)
+            start = selection.nth(0)
         }
         else
         {
@@ -1183,7 +1288,7 @@ function substite_multiplication()
 
 function remove_element()
 {
-    placeholder = get_selection(0)
+    placeholder = selection.nth(0)
     container = get_container(placeholder)
 
     if(placeholder.attr('math-type') == 'Equation')
@@ -1247,7 +1352,7 @@ function replace_manually(obj, code)
 {
     // Apply PlaceholderSubstitute with the given code argument
     data = {}
-    data.first = get_selection(0).attr('math')
+    data.first = selection.nth(0).attr('math')
     data.second = code
     data.transform = 'Replace'
 
