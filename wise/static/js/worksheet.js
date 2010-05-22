@@ -72,6 +72,15 @@ function whatisit(object)
     return $(object).id() +', '+$(object).mathtype() +', '+$(object).math()
 }
 
+function sleep(milliseconds) {
+  var start = new Date().getTime();
+  for (var i = 0; i < 1e7; i++) {
+    if ((new Date().getTime() - start) > milliseconds){
+      break;
+    }
+  }
+}
+
 //I miss Lisp
 function zip(listA, listB)
 {
@@ -281,8 +290,14 @@ $(document).ajaxStop(function(){$('#ajax_loading').hide()})
 
 function error(text)
 {
-   $('#error_dialog').text(text);
-   $('#error_dialog').dialog({modal:true,dialogClass:'alert'});
+    $.pnotify({ 'Error': 'Regular Notice', pnotify_text: text, pnotify_delay: 5000 });
+   //$('#error_dialog').text(text);
+   //$('#error_dialog').dialog({modal:true,dialogClass:'alert'});
+}
+
+function notify(text)
+{
+    $.pnotify({ '': 'Regular Notice', pnotify_text: text, pnotify_delay: 5000 });
 }
 
 function dialog(text)
@@ -456,8 +471,16 @@ function toggle_sageinput()
 
 function show_cmd()
 {
-   alert('cat');
-   $('.cmd_input').toggle();
+   if(selection.count > 0)
+   {
+       $('#cmd_input').toggle();
+       $("#sage_cmd").focus()
+   }
+}
+
+function exec_cmd()
+{
+    sage_inline($('#sage_cmd').val())
 }
 
 function debug_colors(object)
@@ -502,11 +525,29 @@ function lookup_transform()
 
     $.post("lookup_transform/",data, function(data)
         {
-            $('#selectionlist').hide();
-            $('#options').html(data);
-            $('#options').fadeIn();
-            $('#options button').button()
-        } ,'html')
+            if (data.empty) {
+                notify('No transforms found for given objects');
+                return;
+            }
+
+            //Generate buttons which invoke the transformations
+            $('#options').empty();
+
+            for(var mapping in data)
+            {
+                var pretty = data[mapping][0]
+                var internal = data[mapping][1]
+                var button = $( document.createElement('button') )
+
+                button.attr('onclick','apply_transform("' + internal + '")')
+                button.html(pretty);
+
+                $('#selectionlist').hide();
+                $('#options').prepend(button);
+                $('#options').show();
+                $('#options button').button();
+            } 
+        } ,'json')
 }
 
 function apply_transform(transform,selections)
@@ -721,22 +762,25 @@ function save_workspace()
         })
 
     //Flash the border to indicate we've saved.
-    $('#workspace').animate({ border: "5px solid red" }, 1000);
-    $('#workspace').animate({ border: "0px solid black" }, 1000);
+    $('#workspace').animate({ border: "5px solid red" }, 300);
+    $('#workspace').animate({ border: "0px solid black" }, 300);
 
     $.post("save_workspace/", data ,
         function(data){
             if(data.error) {
                 error(data.error)
             }
-        }
-        ,'json')
+            if(data.success) {
+                error('Succesfully saved workspace.')
+            }
+        } ,'json')
 }
 
-function parse_sage()
+function parse_sage(text)
 {
     var data = {}
-    data.sage = $('#sage_text').val()
+//    data.sage = $('#sage_text').val()
+    data.sage = text
     $.post("sage_parse/", data ,
         function(data){
             if(data.error) {
@@ -753,7 +797,34 @@ function parse_sage()
         ,'json')
 }
 
+function sage_inline(text)
+{
+    var data = {}
+//    data.sage = $('#sage_text').val()
+    data.sage = text
 
+    $.post("sage_inline/", data ,
+        function(data) {
+            if(data.error) {
+                error(data.error)
+                $("#sage_cmd").focus()
+                return
+            }
+            
+            obj = selection.nth(0);
+
+            group_id = obj.attr('group');
+            group_id_cache = String(group_id)
+
+            nsym = obj.replace(data);
+            nsym.attr('group',group_id_cache);
+            refresh_jsmath($(nsym))
+
+            $('#cmd_input').toggle();
+            clear_selection();
+        }
+        ,'json')
+}
 
 ///////////////////////////////////////////////////////////
 // Tree Traversal
@@ -898,7 +969,7 @@ function make_sortable(object,connector,options)
     //console.log([$(object),$(connector)]);
     group_id = $(object).attr('id');
     $(object).sortable(options)
-    console.log(object,options)
+    //console.log(object,options)
 }
 
 function dragging(sort_object,ui)
@@ -1119,16 +1190,16 @@ function update_math(object,stack_depth)
         return null
     }
 
-    mst = new String;
+    var mst = new String;
 
-    self_id = object.attr('id')
+    self_id = object.attr('id');
 
     members = $('#' + self_id + ' *[group='+object.attr('id')+']');
 
     //If we have an empty container
     if(members.length == 0)
     {
-        mst = 'None'
+        mst = 'None';
     }
 
     $.each(members,function()
@@ -1139,15 +1210,16 @@ function update_math(object,stack_depth)
         }
     });
 
-    mst = '(' + object.attr('math-type') + ' ' +  mst + ')';
+    mst = '(' + object.mathtype() + ' ' +  mst + ')';
 
     object.attr('math',mst); 
     object.attr('num_children',members.length)
 
+
     if(object.attr('group') != undefined)
     {
         group = $('#'+object.attr('group'));
-        update_math(group,stack_depth);
+        update_math(group,stack_depth)
     }
 }
 

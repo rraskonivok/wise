@@ -11,6 +11,8 @@
  <script src="/static/keys.js" type="text/javascript"></script>
  <script src="/static/tooltip.js" type="text/javascript"></script>
  <script src="/static/layout.js" type="text/javascript"></script>
+ <script src="/static/pnotify.js" type="text/javascript"></script>
+ <script src="/static/vi.js" type="text/javascript"></script>
 
  <!--
 <link type="text/css" rel="stylesheet" href="http://jqueryui.com/themes/base/ui.all.css" />
@@ -45,26 +47,33 @@ function init()
 {
     //$('#switcher').themeswitcher();
 
+    //Whether we want the toolbar on the right or left
+    toolbar = 'west'
+
     layout = $('body').layout({ 
         applyDefaultStyles: true,
         east__minSize: 300,
+        west__minSize: 300,
         //east__onresize:	function () { $("#math_palette").accordion("resize"); },
         north__resizable: false,
     });
-    layout.sizePane('east', 300);
+    //layout.sizePane('east', 300);
+    layout.sizePane('west', 300);
 
     $(document).bind(
-    'keydown', 'f4', function() {show_debug_menu()})
-    .bind('keydown', 't', function() {lookup_transform()})
-    .bind('keydown', '+', function() {substite_addition()})
-    .bind('keydown', '-', function() {substite_subtraction()})
-    .bind('keydown', '*', function() {substite_multiplication()})
-    .bind('keydown', '/', function() {substite_division()})
-    .bind('keydown', 'del', function() {remove_element()})
-    .bind('keydown', 'esc', function() {clear_selection()})
-    .bind('keydown', 'r', function() {refresh_jsmath()})
-    .bind('keydown', 'shift+tab', function() {next_placeholder()})
-    .bind('keydown', ';', function() {show_cmd()})
+        'keydown', 'f4', function() {show_debug_menu()})
+        .bind('keydown', 't', function() {lookup_transform()})
+        .bind('keydown', '+', function() {substite_addition()})
+        .bind('keydown', '-', function() {substite_subtraction()})
+        .bind('keydown', '*', function() {substite_multiplication()})
+        .bind('keydown', '/', function() {substite_division()})
+        .bind('keydown', 'del', function() {remove_element()})
+        .bind('keydown', 'esc', function() {clear_selection()})
+        .bind('keydown', 'r', function() {refresh_jsmath()})
+        .bind('keydown', 'o', function() {new_inline()})
+        .bind('keydown', 'shift+tab', function() {next_placeholder()})
+        .bind('keydown', 's', function() {show_cmd()}
+    )
 
     $("#hovertoggle").button();
     bind_hover_toggle();
@@ -72,6 +81,11 @@ function init()
     $(".typeset").disableTextSelect();
     $('li[title]').tooltip({track:true});
     $('ul[title]').tooltip({track:true});
+
+    $("#cmd_form").submit(function(e) { 
+            exec_cmd();
+            e.preventDefault();
+            });
     
     //Handle the math palette
     $.ajax({
@@ -91,6 +105,7 @@ function init()
         $('#math_palette').addClass('ui-accordion ui-widget ui-helper-reset ui-accordion-icons')
         $('#math_palette h3').addClass('ui-accordion-header ui-helper-reset ui-state-default')
         $('#math_palette div').addClass('ui-accordion-content ui-helper-reset ui-widget-content')
+
 
         //Make the math terms interactive
         traverse_lines()
@@ -153,8 +168,11 @@ function init()
 </div>
 
 <div id="workspace" class="ui-layout-center">
-    <div class="cmd_input" >
-        <input type="text"/>
+    <div id="cmd_input" style="display:none" >
+        <form id="cmd_form">
+            <input id="sage_cmd" type="text" />
+            <input type=submit />
+        </form>
     </div>
 
     <div class="ui-widget">
@@ -166,7 +184,7 @@ function init()
     </div>
 </div>
 
-<div id="palette" class="ui-layout-east">
+<div id="palette" class="ui-layout-west">
     <div id="math_palette">
     </div>
 </div>
@@ -176,7 +194,6 @@ function init()
 
 <div id="sage_input" title="Sage Parser" style="display:none">
     <textarea id="sage_text" style="width:90%; height: 85%"></textarea>
-    <button onclick="javascript:parse_sage()">Execute</button>
 </div>
 
 <div id="toolbar" class="ui-widget ui-widget-content ui-layout-south">

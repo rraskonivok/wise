@@ -19,24 +19,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import traceback
 import parser
 import mathobjects
-
 from decorator import decorator
 
 from django import template
+
+from django.core import serializers
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import render_to_response, get_object_or_404
 from django.utils import simplejson as json
-from django.core import serializers
-from django.core.exceptions import ObjectDoesNotExist
-
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
+from django.views.decorators.cache import cache_page
 
 from wise.worksheet.forms import LoginForm
 from wise.worksheet.models import Workspace, MathematicalEquation
 
-#Wraps errors out to server log and javascript popup
+CACHE_INTERVAL = 30*60 # 5 Minutes
+
+# Wraps errors out to server log and javascript popup
 def errors(f):
     def wrapper(*args,**kwargs):
         try:
@@ -47,6 +49,7 @@ def errors(f):
             return HttpResponse(json.dumps({'error': str(e)}))
     return wrapper
 
+#Strip unicode
 def unencode(s):
     if type(s) is list:
         s = s[0]
@@ -56,7 +59,6 @@ def unencode(s):
     txt = s.decode(fileencoding)
     return str(txt)
 
-#Memoize freq
 def _memoize(func, *args, **kw):
     if kw: # frozenset is used to ensure hashability
         key = args, frozenset(kw.iteritems())
@@ -82,6 +84,10 @@ def maps(func, obj):
     if hasattr(obj,'__iter__'):
         return map(func, obj)
     return [func(obj)]
+
+def JSONResponse(obj):
+    '''Convenience wrapper for JSON responses'''
+    return HttpResponse(json.dumps(obj))
 
 def account_login(request):
     form = AuthenticationForm()
@@ -112,10 +118,6 @@ def account_logout(request):
     return HttpResponse('Logged Out')
 
 def test(request):
-    '''
-    workspaces = Workspace.objects.all()
-    return render_to_response('home.html', {'workspaces': workspaces})
-    '''
     try:
         x = mathobjects.sage.var('x')
         exp = x**2
@@ -132,6 +134,7 @@ def home(request):
     workspaces = Workspace.objects.filter(owner=request.user)
     return render_to_response('home.html', {'workspaces': workspaces})
 
+@cache_page(CACHE_INTERVAL)
 def palette(request):
     return generate_palette()
 
@@ -141,17 +144,41 @@ def sage_parse(request, eq_id):
     if not sage:
         sage = unencode( request.GET.get('sage') )
 
-    sage = sage.split('\n')
-    print sage
+    code = sage.split('\n')
 
-    evald = mathobjects.sage.sage_eval(sage)
-    parsd = mathobjects.parse_sage_exp(evald)
+    parsd = run_code(code)
 
     if parsd:
-        js = json.dumps({'newline': parsd.get_html()})
+        return JSONResponse({'newline': html(parsd)})
     else:
-        js = json.dumps({'error': 'Could not parse'})
-    return HttpResponse(js)
+        return JSONResponse({'error': 'Could not parse Sage input.'})
+
+@errors
+def sage_inline(request, eq_id):
+    code = unencode( request.POST.get('sage') )
+
+    common = {'x': mathobjects.Variable('x')}
+
+    if code in common:
+        print 'common'
+        return JSONResponse(html(common[code]))
+
+    executed = run_code(code)
+
+    if executed:
+        return JSONResponse(html(executed))
+    else:
+        return JSONResponse({'error': 'Could not parse Sage input.'})
+
+def run_code(code,ecmds=list()):
+    try:
+        evald = mathobjects.sage.sage_eval(code)
+        parsd = mathobjects.parse_sage_exp(evald)
+        return parsd
+    except NameError, e:
+        m = str(e).split()[1]
+        code.insert(0,( 'var(%s)\n' % m ))
+        return run_code(code)
 
 @login_required
 @errors
@@ -187,8 +214,12 @@ def ws(request, eq_id):
     if debug_parse_tree:
         return HttpResponse(outputs)
 
-    return render_to_response('worksheet.html', {'title': ws.name, 'equations':outputs, 'username': request.user.username})
+    return render_to_response('worksheet.html', {
+        'title': ws.name,
+        'equations':outputs,
+        'username': request.user.username })
 
+#TODO: We should really just render this with javascript
 mapping_lookup = '''
 {% for map in mappings %}
     <button title="{{map.pretty}}" onclick="javascript:apply_transform('{{map.internal}}')">{{map.pretty}}</button>
@@ -197,6 +228,7 @@ mapping_lookup = '''
 
 @login_required
 @errors
+@cache_page(CACHE_INTERVAL)
 def lookup_transform(request, eq_id):
     typs = tuple(request.POST.getlist('selections[]'))
     #print [i for i in mathobjects.algebra.mappings]
@@ -216,10 +248,12 @@ def lookup_transform(request, eq_id):
 
     compatible_mappings = get_comptables( domain, mathobjects.algebra.mappings)
 
-    interface_ui = template.Template(mapping_lookup)
+    if not compatible_mappings:
+        return JSONResponse({'empty': True})
 
-    c = template.Context({'mappings':compatible_mappings})
-    return HttpResponse(interface_ui.render(c))
+    mappings_list = [(m.pretty , m.internal) for m in compatible_mappings]
+
+    return JSONResponse(mappings_list)
 
 identity_interface = '''
 {% for option in options %}
@@ -233,6 +267,7 @@ identity_interface = '''
 
 @login_required
 @errors
+@cache_page(CACHE_INTERVAL)
 def combine(request,eq_id):
     first = unencode( request.POST.get('first') )
     second = unencode( request.POST.get('second') )
@@ -272,22 +307,11 @@ def apply_transform(request,eq_id):
     transform = mathobjects.algebra.__dict__[transform]
 
     response = transform(*args)
-    print args, response
+    #print args, response
 
     new_elements = maps(html, response)
 
     return HttpResponse(json.dumps(new_elements))
-
-@login_required
-@errors
-def apply_identity(request,eq_id):
-    first = unencode( request.POST.get('first') )
-    identity = unencode( request.POST.get('identity') )
-    first = mathobjects.ParseTree(first).eval_args()
-
-    json = eval('mathobjects.'+identity)(first)
-
-    return HttpResponse(json)
 
 @login_required
 @errors
@@ -311,7 +335,7 @@ def save_workspace(request,eq_id):
         math = request.POST.get(str(i))
         MathematicalEquation(code=math, workspace=workspace).save()
 
-    return HttpResponse('cat')
+    return HttpResponse(json.dumps({'success': True}))
 
 @login_required
 @errors
@@ -344,6 +368,7 @@ def new_workspace(request):
 
 @login_required
 @errors
+@cache_page(CACHE_INTERVAL)
 def receive(request,eq_id):
     obj = unencode( request.POST.get(u'obj') )
     obj_type = unencode( request.POST.get('obj_type') )
@@ -370,6 +395,7 @@ def receive(request,eq_id):
 
 @login_required
 @errors
+@cache_page(CACHE_INTERVAL)
 def remove(request,eq_id):
     obj = unencode( request.POST.get(u'obj') )
     obj_type = unencode( request.POST.get('obj_type') )
@@ -389,6 +415,7 @@ def remove(request,eq_id):
 
 @login_required
 @errors
+@cache_page(CACHE_INTERVAL)
 def new_inline(request, eq_id):
     lhs = mathobjects.Placeholder()
     rhs = mathobjects.Placeholder()
@@ -425,7 +452,6 @@ palette_template = '''
 {% endfor %}
 '''
 
-@memoize
 def generate_palette():
     #TODO Be able to include snippts of html as widgets in the
     #palette
