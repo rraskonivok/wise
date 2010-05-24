@@ -50,6 +50,11 @@ $.fn.math = function()
     return $(this).attr('math')
 }
 
+$.fn.group = function()
+{
+    return $(this).attr('group')
+}
+
 $.fn.mathtype = function()
 {
     return $(this).attr('math-type')
@@ -100,6 +105,120 @@ function cycle(listA)
     listB.push(listB.shift())
     return zip(listA, listB)
 }
+
+
+///////////////////////////////////////////////////////////
+// Term Handling
+///////////////////////////////////////////////////////////
+
+//This is the key algorithm that makes everything run, the
+//properties and methods are .prototyped for speed since they are
+//likely called thousands of times.
+
+// This is a hash trie, see http://en.wikipedia.org/wiki/Trie
+
+function RootedTree(root) {
+    root.tree = this;
+    root.depth = 1;
+    root._parent = this;
+    this.root = root;
+    this.levels[0] = [root];
+}
+
+RootedTree.prototype.walk = function(node) {
+    if (!node) {
+        node = this.root;
+    }
+    if (node.hasChildren())
+    {
+        for (child in node.children) {
+            this.walk(node.children[child])
+        }
+    }
+}
+
+RootedTree.prototype.tree = this;
+RootedTree.prototype.nodes = [];
+RootedTree.prototype.levels = [];
+RootedTree.prototype.depth = 0;
+
+function Node() {
+    this.children = [];
+    this._parent = null;
+}
+
+Node.prototype.tree = null;
+Node.prototype.hasChildren = function() {return this.children.length > 0}
+Node.prototype.depth = null;
+
+Node.prototype.addNode = function(node)
+{
+    if(this.tree.depth < this.depth + 1) {
+        this.tree.depth = this.depth + 1;
+        this.tree.levels[this.depth] = [];
+    }
+    node.tree = this.tree;
+    node.depth = this.depth + 1;
+    node._parent = this
+    this.children.push(node);
+    (this.tree.levels[node.depth-1]).push(node);
+}
+
+function Expression() {
+    /* Javascript is much faster at manipulating
+    arrays than strings */
+    this.children = [];
+    this._parent = null;
+    this._math = [];
+}
+
+Expression.prototype = new Node();
+Expression.prototype.smath = function() { return this._math.join(' ') }
+
+/*
+A = new Expression();
+A.mathtype = 'Addition'
+B = new Expression();
+B._math = 'b'
+B.mathtype = 'Addition'
+C = new Expression();
+C.mathtype = 'Addition'
+D = new Expression();
+D.mathtype = 'Addition'
+D._math = 'd'
+T = new RootedTree(A);
+T._math = []
+*/
+
+/*
+             A            Level 1 
+           /   \
+          B     C         Level 2
+         / \     \
+        D   E     G       Level 3
+
+*/ 
+
+/*
+// O(n) , n = nodes in tree
+for (level in T.levels.reverse()) {
+    var terms = T.levels[level];
+    for(term in terms) {
+       term = terms[term]; 
+       var _parent = term._parent
+       if(!term.hasChildren())
+       {
+            term.math = term._math
+       }
+       else
+       {
+           term.math = ['(',term.mathtype,' ',term._math.join(' '),')'].join('')
+       }
+       _parent._math.push(term.math)
+    }
+}
+*/
+
 
 ///////////////////////////////////////////////////////////
 // Selection Handling
@@ -537,10 +656,10 @@ function lookup_transform()
             {
                 var pretty = data[mapping][0]
                 var internal = data[mapping][1]
-                var button = $( document.createElement('button') )
+                button = $( document.createElement('button') ).html(pretty)
+                button.attr('internal',internal)
 
-                button.attr('onclick','apply_transform("' + internal + '")')
-                button.html(pretty);
+                button.bind('click',function() { apply_transform($(this).attr('internal'))} )
 
                 $('#selectionlist').hide();
                 $('#options').prepend(button);
@@ -820,7 +939,8 @@ function sage_inline(text)
             nsym.attr('group',group_id_cache);
             refresh_jsmath($(nsym))
 
-            $('#cmd_input').toggle();
+            $('body').focus()
+            $('#cmd_input').hide();
             clear_selection();
         }
         ,'json')
@@ -931,7 +1051,7 @@ function are_siblings(first,second)
 function traverse_lines()
 {
     //Traverse the lines of the workspace and make them sortable equations
-    $.each($('#lines').find('tr'),function()
+    $.each($('.lines').find('tr'),function()
     {
         handle_equation($(this));
     });
@@ -1215,12 +1335,53 @@ function update_math(object,stack_depth)
     object.attr('math',mst); 
     object.attr('num_children',members.length)
 
-
     if(object.attr('group') != undefined)
     {
         group = $('#'+object.attr('group'));
         update_math(group,stack_depth)
     }
+}
+
+function build_tree()
+{
+    teq = $('[math-type=Equation]');
+    eq = new Expression();
+    eq.math = teq.math();
+    eq.math = teq.math();
+    T = new RootedTree(eq);
+    $('#tree').empty();
+
+    $.getJSON("json_tree",
+        function(data){
+          console.log(data)
+          jsn = data
+          $.each(data.items, function(i,item){
+              console.log(item.name)
+          });
+        });
+
+    String.prototype.repeat = function( num )
+    {
+        return new Array( num + 1 ).join( this );
+    }
+
+    function descend(obj, tree) {
+        children = $('[group='+obj.id()+']')
+        $.each(children,function() {
+            var child = $(this);
+            var node = new Expression();
+            node.math = child.math();
+            tree.addNode(node);
+            a = $('<a>')
+            a.bind('mouseover',function() { child.css('background-color', 'red') } )
+            a.bind('mouseout',function() { child.css('background-color', 'inherit') } )
+            a.html(node.math + '<br/>')
+
+            $('#tree').append(a);
+            descend(child,node)
+        });
+    }
+    descend(teq,eq)
 }
 
 function dropin(old,nwr)
@@ -1232,6 +1393,19 @@ function dropin(old,nwr)
     old.fadeOut(function() {
         nsym = old.after(nwr);
     });
+}
+
+function get_equation(object) {
+    eq = $(object).parents("tr");
+    return(eq)
+}
+
+function get_lhs(object) {
+    return $(get_equation(object).find('[math-type=LHS]'));
+}
+
+function get_rhs(object) {
+    return $(get_equation(object).find('[math-type=RHS]'));
 }
 
 

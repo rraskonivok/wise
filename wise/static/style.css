@@ -281,6 +281,15 @@ input.search {
     border: 1px dashed #d4a5a5;
 }
 
+.cell {
+    width: 100%;
+    border-right: 5px solid red;
+    left: -5px;
+}
+
+.cell table {
+}
+
 .equation.selected td:first-child {
     border-left: 5px solid  #d4a5a5;
     margin-left: -5px;
@@ -327,14 +336,14 @@ input.search {
     float:right;
 }
 
-.cmd_input {
+#cmd_form {
     width: 100%;
     position: absolute;
     bottom: 0;
     clear: none;
 }
 
-.cmd_input input {
+#sage_cmd {
     width: 90%;
     background-color: white;
     border: 2px solid #ccc;

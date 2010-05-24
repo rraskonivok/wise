@@ -38,7 +38,7 @@ $(document).ready(function () {
     //Only show the workspace after all math is rendered
     jsMath.Synchronize(function () {
         refresh_jsmath()
-        $("#lines").fadeIn('fast')
+        $(".lines").fadeIn('fast')
     });
 });
 
@@ -71,7 +71,7 @@ function init()
         .bind('keydown', 'esc', function() {clear_selection()})
         .bind('keydown', 'r', function() {refresh_jsmath()})
         .bind('keydown', 'o', function() {new_inline()})
-        .bind('keydown', 'shift+tab', function() {next_placeholder()})
+        .bind('keydown', 'tab', function() {next_placeholder()})
         .bind('keydown', 's', function() {show_cmd()}
     )
 
@@ -175,8 +175,8 @@ function init()
         </form>
     </div>
 
-    <div class="ui-widget">
-        <table id="lines" style="display: none">
+    <div class="cell">
+        <table class="lines" style="display: none">
             {% for equation in equations %}
                 {{equation}} 
             {% endfor %}
@@ -186,6 +186,12 @@ function init()
 
 <div id="palette" class="ui-layout-west">
     <div id="math_palette">
+    </div>
+</div>
+
+<div id="east" class="ui-layout-east">
+    <button onclick="build_tree()">Build Tree</button>
+    <div id="tree">
     </div>
 </div>
 

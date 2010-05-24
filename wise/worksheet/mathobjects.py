@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 '''
 Wise
 Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
@@ -214,6 +216,7 @@ def parse_sage_exp(expr):
 # Parse Tree
 #-------------------------------------------------------------
 
+# Note:
 # I was totally strung out on caffeine when I wrote all these
 # recursive data structures and they seem to work flawlessly but
 # I probably will never understand why again
@@ -221,20 +224,35 @@ def parse_sage_exp(expr):
 # Create our parse tree structure, the Branch object simply holds
 # the arguments before they are evaluated into internal Math
 # objects
+# 
+# Calling Sage or casting into Internal objects is expensive and
+# so we try and do as much as we can with the syntax tree before
+# casting.
 
 class InternalMathObjectNotFound(Exception):
     pass
 
+import hashlib
+
 class Branch(object):
+
     def __init__(self,typ,args,parent):
         self.type = typ
+        self.name = None
+
+        self.valid = False
+        self.hash = False
+        self.commutative = False
+
+        if self.type == 'Addition':
+            self.commutative = True
 
         def descend(ob):
             if type(ob) is str:
                 return ob
             else:
                 #Yah, there is a serious functional slant to this
-                return reduce(lambda a,b: Branch(a,b,parent), ob)
+                return reduce(lambda a,b: Branch(a,b,self), ob)
 
         #Allow for the possibility of argument-less/terminal Branches
         if args:
@@ -246,25 +264,120 @@ class Branch(object):
         #print (self.type,hex(hash(self)))
 
     def __repr__(self):
-        return 'Branch: %s(%r)' % (self.type,self.args,hash(self))
+        return 'Branch: %s(%r)' % (self.type,self.args)
 
     def __getitem__(self,n):
         return self.args[n]
 
-    #The hash that we'll use for high-level substitutions
     def __hash__(self):
-        #This is a commutative hash, hash(a+b)=hash(b+a)
-        if self.args:
-            return reduce(lambda x,y: long(x)+long(y),map(hash,self.args))
+        return self.gethash()
+
+    def gethash(self):
+
+        #        Eq.              Eq.           
+        #       / \              / \          
+        #      /   \            /   \         
+        #    LHS   RHS         LHS   RHS          
+        #    /|\    |          /|\    |          
+        #   / | \   |     =   / | \   |        
+        #  x  y  z add       x  y  z add       
+        #          / \               / \       
+        #         /   \             /   \      
+        #        1     2           1     2         
+        #
+        # The point of this hash function is so that equivalent
+        # mathobjects "bubble" up through the tree. Since
+        # addition is commutative: 
+        #
+        # hash ( 1 + 0 ) = hash( 1 ) + hash ( 0 ) 
+        #                = hash( 0 ) + hash ( 1 )
+        #
+        # Mathematical structures are in general much too
+        # complex for this to always work, but it is very useful
+        # for substitutions on toplevel nodes like Equation.
+
+        if self.valid:
+            return self.hash
+
+        def f(x):
+            if isinstance(x,unicode):
+                digester = hashlib.sha1()
+                digester.update(x)
+                return digester.hexdigest()
+            else:
+                return x.gethash()
+
+        ls = map(f,self.args)
+        digester = hashlib.sha1()
+
+        if self.commutative:
+            sm = sum([int(hsh,16) for hsh in ls])
+            digester.update(str(sm))
+            self.hash = digester.hexdigest()
         else:
-            return hash(self.__class__.__name__)
+            for arg in ls:
+                digester.update(arg)
+            self.hash = digester.hexdigest()
+
+        self.valid = True
+        return self.hash
+
 
     def is_toplevel(self):
         return self.parent == None
 
-    def iter_args(self):
-        for arg in self.args:
-            yield arg
+    def walk(self):
+        # See TinyTree
+        for i in self.args:
+            if type(i) is type(self):
+                for j in i.walk():
+                    yield j
+                yield i
+
+    def walk_all(self):
+        # See TinyTree
+        for i in self.args:
+            if type(i) is type(self):
+                for j in i.walk():
+                    yield j
+                yield i
+            else:
+                yield i
+
+    def walk_args(self):
+        # See TinyTree
+        for i in self.args:
+            if type(i) is type(self):
+                for j in i.walk():
+                    yield j
+            else:
+                yield i
+
+    def json(self):
+        def f(x):
+            if type(x) is type(self):
+
+                i = x.json()
+                return i
+            else:
+                return x
+        obj = map(f,self.args)
+        return {'name': 'blagh', 'type': self.type , 'args': obj }
+
+    def json_flat(self,lst=None):
+        if not lst:
+            lst = []
+
+        def f(x):
+            if type(x) is type(self):
+                i = x.json_flat(lst)
+                return i
+            else:
+                return x
+
+        lst.append({'name': self.name, 'type': self.type})
+        map(f,self.args)
+        return lst
 
     def eval_args(self):
 
@@ -274,7 +387,7 @@ class Branch(object):
         # anything other than (Equation ...)  it will fail and
         # not reach this point anyways.
 
-        '''evaluate by descent'''
+        #Evalute by descent
         def f(x):
             #print 'TYPE IS',x
             if (type(x) is str) or (type(x) is unicode):
@@ -312,8 +425,8 @@ class Branch(object):
                 print 'something strange is being passed'
 
         #See above if you are worried 
-        obj = apply(eval(self.type),map(f,self.args))
-        obj.hash = hash(self)
+        obj = apply(eval(self.type),(map(f,self.args)))
+        #obj.hash = hash(self)
 
         return obj
 
@@ -359,7 +472,7 @@ def pretty(t):
 
     def show(x):
         if isinstance(x,Branch):
-            return str(x.type) + '  ::  ' +  str(hash(x))
+            return str(x.type) + '  ::  ' +  hash(x)
         else:
             return repr(x)
 
@@ -370,10 +483,6 @@ def pretty(t):
 
 # def sympy2parsetree(exp):
 #     '''Recursive descent parser for sympy expressions'''
-# 
-#     #This is not terribly efficent (i.e. O(n^k) ) but we should
-#     only be passing subexpressions that are maybe a few levels
-#     deep so it doesn't really matter.
 # 
 #     args = []
 #     for term in exp.iter_basic_args():

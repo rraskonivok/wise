@@ -87,7 +87,7 @@ def maps(func, obj):
 
 def JSONResponse(obj):
     '''Convenience wrapper for JSON responses'''
-    return HttpResponse(json.dumps(obj))
+    return HttpResponse(json.dumps(obj), mimetype="application/json")
 
 def account_login(request):
     form = AuthenticationForm()
@@ -189,14 +189,29 @@ def ws(request, eq_id):
         return HttpResponse('You do not have permission to access this worksheet.')
 
     eqs = MathematicalEquation.objects.filter(workspace=eq_id)
-    debug_parse_tree = unencode( request.GET.get('tree') )
+
+    debug_parse_tree = request.GET.get('tree')
     outputs = []
+
+    if not eqs:
+        raise Http404
+
+    namespace_increment = 0
+
+    json_list = []
 
     for eq in eqs:
         eqtext = unencode(eq.code)
         tree = mathobjects.ParseTree(eqtext)
 
-        #For debugging... maybe we want to add a tag to show this
+        for node in tree.walk():
+            node.name = 'uid%i' % namespace_increment
+            namespace_increment += 1
+
+        if json_tree:
+            json_list.append(tree.json_flat())
+
+        #For debugging... 
         if debug_parse_tree:
             pretty_tree = mathobjects.pretty(tree)
             etree = tree.eval_args()
@@ -204,27 +219,37 @@ def ws(request, eq_id):
 
             tree = '<pre>%s</pre>' % pretty_tree
             outputs += tree
+
         else:
             etree = tree.eval_args()
             outputs.append(etree.get_html())
 
-    if not eqs:
-        raise Http404
-
     if debug_parse_tree:
-        return HttpResponse(outputs)
+        return HttpResponse( outputs )
+    else:
+        return render_to_response('worksheet.html', {
+            'title': ws.name,
+            'equations':outputs,
+            'username': request.user.username })
 
-    return render_to_response('worksheet.html', {
-        'title': ws.name,
-        'equations':outputs,
-        'username': request.user.username })
+@errors
+def json_tree(request, eq_id):
+    eqs = MathematicalEquation.objects.filter(workspace=eq_id)
+    namespace_increment = 0
+    json_list = []
 
-#TODO: We should really just render this with javascript
-mapping_lookup = '''
-{% for map in mappings %}
-    <button title="{{map.pretty}}" onclick="javascript:apply_transform('{{map.internal}}')">{{map.pretty}}</button>
-{% endfor %}
-'''
+    for eq in eqs:
+        code = eq.code
+        tree = mathobjects.ParseTree(code)
+        json_list.append(tree.json_flat())
+
+        print tree.gethash()
+        for node in tree.walk():
+            print node.hash, node.type
+            node.name = 'uid%i' % namespace_increment
+            namespace_increment += 1
+
+    return JSONResponse(json_list)
 
 @login_required
 @errors
