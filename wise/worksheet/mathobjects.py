@@ -27,6 +27,10 @@ from django.utils.safestring import SafeUnicode
 #Our parser functions
 import parser
 
+#Used for hashing trees
+from hashlib import sha1
+from binascii import crc32
+
 #The whole sage library (this takes some time)
 import sage.all as sage
 
@@ -73,6 +77,18 @@ def fallback(fallback):
                 return f(self,*args,**kwargs)
         return wrapper
     return options
+
+#Wrapper to make crcdigest behave like hashlib functions
+class crcdigest(object):
+    def __init__(self):
+        #crc32(0) = 0
+        self.hash = 0
+
+    def update(self,text):
+        self.hash = crc32(text,self.hash)
+
+    def hexdigest(self):
+        return hex(self.hash)
 
 #-------------------------------------------------------------
 # Sage Wrapper
@@ -232,9 +248,23 @@ def parse_sage_exp(expr):
 class InternalMathObjectNotFound(Exception):
     pass
 
-import hashlib
-
 class Branch(object):
+    # I believe this is a type of Hash tree, 
+    # http://en.wikipedia.org/wiki/Hash_tree
+    #                                                             
+    #         O            The hash of a non-terminal node is 
+    #        / \           hash of its children's hashes.
+    #       /   \                
+    #      O     O         Terminal nodes have carry a unicode   
+    #     /|\    |         string which is hashed yield the hash
+    #    / | \   |         of the node.                         
+    #   #  #  #  O                                               
+    #           / \        All nodes have carry a unicode      
+    #          /   \       string 'type' which is hashed
+    #         #     #      into the node.
+
+    # We use the SHA1 algorithm, since it likely to have
+    # collisions than CRC32. But it's much slower.
 
     def __init__(self,typ,args,parent):
         self.type = typ
@@ -274,16 +304,16 @@ class Branch(object):
 
     def gethash(self):
 
-        #        Eq.              Eq.           
+        #      Eq. 1     =      Eq. 2          
         #       / \              / \          
         #      /   \            /   \         
         #    LHS   RHS         LHS   RHS          
-        #    /|\    |          /|\    |          
-        #   / | \   |     =   / | \   |        
-        #  x  y  z add       x  y  z add       
-        #          / \               / \       
-        #         /   \             /   \      
-        #        1     2           1     2         
+        #    /|\    |           |    /|\  
+        #   / | \   |           |   / | \ 
+        #  x  y  z add         add x  y  z
+        #          / \         / \    
+        #         /   \       /   \   
+        #        1     2     2     1      
         #
         # The point of this hash function is so that equivalent
         # mathobjects "bubble" up through the tree. Since
@@ -296,19 +326,27 @@ class Branch(object):
         # complex for this to always work, but it is very useful
         # for substitutions on toplevel nodes like Equation.
 
+        #HASH_ALGORITHM = sha1
+        HASH_ALGORITHM = crcdigest
+
         if self.valid:
             return self.hash
 
         def f(x):
             if isinstance(x,unicode):
-                digester = hashlib.sha1()
+                digester = HASH_ALGORITHM()
                 digester.update(x)
                 return digester.hexdigest()
             else:
                 return x.gethash()
 
         ls = map(f,self.args)
-        digester = hashlib.sha1()
+        digester = HASH_ALGORITHM()
+
+        # Hashing the type assures that
+        # Addition( x y) and Multiplication( x y)
+        # yield different hashes 
+        digester.update(self.type)
 
         if self.commutative:
             sm = sum([int(hsh,16) for hsh in ls])
