@@ -109,6 +109,8 @@ from sage import symbolic
 #Longterm Goal: Recursive descent isn't the fastest way to do
 #this find a better way
 
+# We could just walk the parse tree casting as we go along.
+
 #ExpressionIterator may be a way to do this faster
 
 def parse_sage_exp(expr):
@@ -268,7 +270,7 @@ class Branch(object):
 
     def __init__(self,typ,args,parent):
         self.type = typ
-        self.name = None
+        self.id = None
 
         self.valid = False
         self.hash = False
@@ -333,7 +335,7 @@ class Branch(object):
             return self.hash
 
         def f(x):
-            if isinstance(x,unicode):
+            if isinstance(x,unicode) or isinstance(x,str):
                 digester = HASH_ALGORITHM()
                 digester.update(x)
                 return digester.hexdigest()
@@ -344,7 +346,7 @@ class Branch(object):
         digester = HASH_ALGORITHM()
 
         # Hashing the type assures that
-        # Addition( x y) and Multiplication( x y)
+        # Addition( x y ) and Multiplication( x y )
         # yield different hashes 
         digester.update(self.type)
 
@@ -360,12 +362,25 @@ class Branch(object):
         self.valid = True
         return self.hash
 
+    def gen_uids(self,uid_generator):
+        '''Take a uid generator and walk the tree assigning each
+        node a unique id'''
+
+        self.id = uid_generator.next()
+        self.idgen = uid_generator
+
+        for node in self.walk():
+            node.id = uid_generator.next()
+            # Give the element the uid generator so it can spawn
+            # new elements that don't conflict in the HTML
+            # id/namespace
+            node.idgen = uid_generator
+
 
     def is_toplevel(self):
         return self.parent == None
 
     def walk(self):
-        # See TinyTree
         for i in self.args:
             if type(i) is type(self):
                 for j in i.walk():
@@ -373,7 +388,6 @@ class Branch(object):
                 yield i
 
     def walk_all(self):
-        # See TinyTree
         for i in self.args:
             if type(i) is type(self):
                 for j in i.walk():
@@ -383,7 +397,6 @@ class Branch(object):
                 yield i
 
     def walk_args(self):
-        # See TinyTree
         for i in self.args:
             if type(i) is type(self):
                 for j in i.walk():
@@ -400,7 +413,7 @@ class Branch(object):
             else:
                 return x
         obj = map(f,self.args)
-        return {'name': 'blagh', 'type': self.type , 'args': obj }
+        return {'name': self.id, 'type': self.type , 'args': obj }
 
     def json_flat(self,lst=None):
         if not lst:
@@ -413,17 +426,20 @@ class Branch(object):
             else:
                 return x
 
-        lst.append({'name': self.name, 'type': self.type})
+        lst.append({'name': self.id, 'type': self.type})
         map(f,self.args)
         return lst
 
     def eval_args(self):
+        '''Create an instance of the node's type ( self.type )
+        and pass the node's arguments ( self.args ) to the new
+        instance'''
 
         # We call the evil eval a couple of times but it's OK
         # because any arguments are previously run through the
         # math syntax parser and if the user tries to inject
-        # anything other than (Equation ...)  it will fail and
-        # not reach this point anyways.
+        # anything other than (Equation ...)  it will throw an
+        # error and not reach this point anyways.
 
         #Evalute by descent
         def f(x):
@@ -454,8 +470,7 @@ class Branch(object):
                     #print 'instance located',inst
 
                     #Descend into another branch 
-                    i = x.eval_args()
-                    return i
+                    return x.eval_args()
                 except KeyError:
                     raise InternalMathObjectNotFound
                     print 'Could not find class: ',x.type
@@ -464,7 +479,9 @@ class Branch(object):
 
         #See above if you are worried 
         obj = apply(eval(self.type),(map(f,self.args)))
-        #obj.hash = hash(self)
+        obj.hash = self.hash
+        obj.id = self.id
+        obj.idgen = self.idgen
 
         return obj
 
@@ -482,7 +499,7 @@ def ParseTree(str):
     except Exception, e:
         raise ParseError(str)
 
-# Prints out a tree diagram of the abstract syntax tree with the
+# Prints out a tree diagram of the parse tree with the
 # hashes for each object Ex:
 #
 # Equation  ::  4028231753125593003
@@ -515,23 +532,6 @@ def pretty(t):
             return repr(x)
 
     return pretty_tree(t,kids,show)
-
-# We don't use sympy anymore, but we might need it for unit
-# handling or something of that nature
-
-# def sympy2parsetree(exp):
-#     '''Recursive descent parser for sympy expressions'''
-# 
-#     args = []
-#     for term in exp.iter_basic_args():
-#        args.append(sympy2parsetree(term))
-#     #If we have an atomic object
-#     if not args:
-#         return type_cast(exp)
-#     #If we have an expression object
-#     else:
-#         return apply(sympy2internal(exp),args)
-
 
 #-------------------------------------------------------------
 # Sugar Factories
@@ -566,7 +566,7 @@ class prototype_dict(dict):
     > a = prototype_dict()
     > a['foo'] = 'bar'
     > print a
-    #{ foo : 'bar' }
+    { foo : 'bar' }
 
     '''
 
@@ -672,8 +672,6 @@ class make_sortable(object):
 #    Then q(y) should be true for objects y of type S where S is
 #    a subtype of T.
 
-#Pretty much everything inherits from this
-
 term_html = '''
 <span id="{{id}}" class="{{class}}{{sensitive}} term" math="{{math}}" math-type="{{type}}" title="{{type}}" math-meta-class="term" group="{{group}}">
 <span class="noselect" >
@@ -697,9 +695,6 @@ class Term(object):
     has_sort = False
 
     _is_constant = False
-
-    #Classes that inherit from Term should inherit this to ensure proper lookups
-    base_type = 'Term'
 
     def __init__(self,*ex):
         print 'Anonymous Term was caught with arguments',ex
@@ -774,8 +769,9 @@ class Term(object):
     def ensure_id(self):
         '''Make sure there is a unique id set, if there isn't
         make one, but never overwrite preexisting one'''
+
         if not self.id:
-            self.id = uf.gen()
+            self.id = self.idgen.next()
 
     def negate(self):
         return Negate(self)
@@ -847,6 +843,9 @@ class Term(object):
         pass
 
     def ui_sortable(self,other=None):
+        self.ensure_id()
+        other.ensure_id()
+
         self.has_sort = True
         #TODO: add support for binding callbacks to python methods... later
         self.javascript = make_sortable(self,other).get_html()
@@ -1136,8 +1135,6 @@ class Power(Term):
         return sage.operator.pow(base,exponent)
 
     def get_html(self):
-        if not self.id:
-            self.id = uf.gen()
         self.exponent.css_class = 'exponent'
         self.exponent.group = self.id
         self.base.css_class = 'exponent'
@@ -1227,7 +1224,6 @@ class Numeric(Term):
     _is_constant = True
 
     def __init__(self,number):
-        self.ensure_id()
 
         # TODO We shouldn't assume integers
         self.number = int(number)
@@ -1359,14 +1355,10 @@ class Equation(object):
     rhs = None
     html = template.Template(equation_html)
     id = None
-    base_type = 'Equation'
 
     def __init__(self,lhs,rhs):
-        self.ensure_id()
         self.rhs = rhs
         self.lhs = lhs
-        self.rhs.group = self.id
-        self.lhs.group = self.id
         self.math = '(Equation ' + self.lhs.get_math() + ' ' +self.rhs.get_math()  + ')'
 
     def get_math(self):
@@ -1376,19 +1368,24 @@ class Equation(object):
         return self.lhs._sage_() == self.rhs._sage_()
 
     def get_html(self):
+        self.rhs.group = self.id
+        self.lhs.group = self.id
+
         self.lhs.javascript = None
         self.rhs.javascript = None
+
+        self.rhs.rhs.id = self.idgen.next()
+        self.lhs.lhs.id = self.idgen.next()
+
         s1 = self.lhs.lhs.ui_sortable(self.rhs.rhs)
         s2 = self.rhs.rhs.ui_sortable(self.lhs.lhs)
 
         javascript = s1 + s2
 
-        if not self.id:
-            self.id = uf.gen()
-
         #If we have an Equation of the form A/B = C/D then we can
-        #drag terms between 
+        #drag terms between the numerator and denominator
         if self.lhs.lhs.has_single_term() and self.rhs.rhs.has_single_term():
+            #TODO: Change these to isinstance
             if type(self.lhs.lhs.terms[0]) is Fraction and type(self.rhs.rhs.terms[0]) is Fraction:
 
                lfrac = self.lhs.lhs.terms[0]
@@ -1444,7 +1441,7 @@ class Equation(object):
         make one, but never overwrite preexisting one'''
 
         if not self.id:
-            self.id = uf.gen()
+            self.id = self.idgen.next()
 
     def down(self,other):
         if type(other) is Numeric:
@@ -1468,15 +1465,15 @@ class RHS(Term):
     html = template.Template(rhs_html)
 
     def __init__(self,*terms):
-        self.ensure_id()
         self.rhs = Addition(*terms)
-        self.rhs.group = self.id
         self.terms = [self.rhs]
 
     def _sage_(self):
         return self.rhs._sage_()
 
     def get_html(self):
+        self.rhs.group = self.id
+
         c = template.Context({
             'id': self.id,
             'latex':self.latex,
@@ -1500,15 +1497,15 @@ class LHS(Term):
     html = template.Template(lhs_html)
 
     def __init__(self,*terms):
-        self.ensure_id()
         self.lhs = Addition(*terms)
-        self.lhs.group = self.id
         self.terms = [self.lhs]
 
     def _sage_(self):
         return self.lhs._sage_()
 
     def get_html(self):
+        self.lhs.group = self.id
+
         c = template.Context({'id': self.id, 'latex':self.latex, 'math': self.get_math(), 'type': self.classname(), 'group': self.group, 'lhs': self.lhs.get_html()})
         return self.html.render(c)
 
@@ -1619,6 +1616,7 @@ class Operation(Term):
     symbol = None
     show_parenthesis = False
     recursive_propogation = False
+    sortable = False
 
     #Arity of the operator
     arity = None
@@ -1646,6 +1644,15 @@ class Operation(Term):
 #        return self.get_html()
 
     def get_html(self):
+
+        for term in self.terms:
+            term.group = self.id
+
+        # If a parent element has already initiated a sort (i.e
+        # like Equation does) then don't overwrite that
+        # javascript.
+        if self.sortable and not self.has_sort:
+            self.ui_sortable()
 
         #Infix Formatting
         if self.ui_style == 'infix':
@@ -1764,7 +1771,6 @@ class Addition(Operation):
     show_parenthesis = False
 
     def __init__(self,*terms):
-        self.ensure_id()
         self.terms = list(terms)
 
         #If have nested Additions collapse them Ex: 
@@ -1774,11 +1780,11 @@ class Addition(Operation):
             if type(terms[0]) is Addition:
                 self.terms = terms[0].terms
 
-        for term in self.terms:
-            term.group = self.id
+        #for term in self.terms:
+        #    term.group = self.id
 
         self.operand = self.terms
-        self.ui_sortable()
+        #self.ui_sortable()
 
     def __add__(self,other):
         if type(other) is Addition:
@@ -1958,7 +1964,6 @@ class Negate(Operation):
     css_class = 'negate'
 
     def __init__(self,operand):
-        self.ensure_id()
         self.operand = operand
         self.operand.group = self.id
         self.terms = [self.operand]

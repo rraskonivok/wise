@@ -1,10 +1,16 @@
 from decorator import decorator
 from itertools import islice
 
-#from wise.worksheet.models import MathematicalTransform
-#from wise.worksheet.models import MathematicalIdentity
+# This isn't a static typing wrapper (though there is support
+# for typechecking) but simply a way at hinting at what types of
+# arguments the function could take. So given an arbitrary domain
+# ( real , real ) we can infer that the function will act
+# on ( int , int ) or ( int, real ) etc... given that int is a
+# subtype of real.
 
 def Mapping(x, y):
+    '''Provides type-hinting for a python function'''
+
     def f1(func):
 
         func.case = {}
@@ -25,9 +31,7 @@ def Mapping(x, y):
             if domain in func.case:
                 print 'abc'
 
-            # TODO: Do we really need to always do a type check...
-            # it may be needlessly expensive
-
+            #TODO: Type checking is expensive, add it as optional
             #domain_check = all(isinstance(a,b) for a,b in zip(domain,x.args))
             #codomain_check =  all(isinstance(a,b) for a,b in zip((codomain,),y.args))
 

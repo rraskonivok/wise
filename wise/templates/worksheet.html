@@ -28,6 +28,11 @@
 
 
  <script type="text/javascript">
+
+// This is passed by Django to help us keep track of the #uid
+// counter
+var NAMESPACE_INDEX = {{ namespace_index }};
+
 $(document).ajaxError(function() {
     error("Error connecting to server")
 })

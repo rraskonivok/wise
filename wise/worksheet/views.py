@@ -89,6 +89,11 @@ def JSONResponse(obj):
     '''Convenience wrapper for JSON responses'''
     return HttpResponse(json.dumps(obj), mimetype="application/json")
 
+def uidgen(i=0):
+    while True:
+        yield 'uid%i' % i
+        i += 1
+
 def account_login(request):
     form = AuthenticationForm()
 
@@ -190,26 +195,18 @@ def ws(request, eq_id):
 
     eqs = MathematicalEquation.objects.filter(workspace=eq_id)
 
-    debug_parse_tree = request.GET.get('tree')
-    outputs = []
-
     if not eqs:
         raise Http404
 
-    namespace_increment = 0
+    debug_parse_tree = request.GET.get('tree')
+    outputs = []
 
-    json_list = []
+    uid = uidgen()
 
     for eq in eqs:
         eqtext = unencode(eq.code)
         tree = mathobjects.ParseTree(eqtext)
-
-        for node in tree.walk():
-            node.name = 'uid%i' % namespace_increment
-            namespace_increment += 1
-
-        if json_tree:
-            json_list.append(tree.json_flat())
+        tree.gen_uids(uid)
 
         #For debugging... 
         if debug_parse_tree:
@@ -230,7 +227,9 @@ def ws(request, eq_id):
         return render_to_response('worksheet.html', {
             'title': ws.name,
             'equations':outputs,
-            'username': request.user.username })
+            'username': request.user.username,
+            'namespace_index': uid.next()[3:],
+            })
 
 @errors
 def json_tree(request, eq_id):
@@ -241,13 +240,14 @@ def json_tree(request, eq_id):
     for eq in eqs:
         code = eq.code
         tree = mathobjects.ParseTree(code)
-        json_list.append(tree.json_flat())
+        tree.id = 'uid%i' % namespace_increment
 
-        print tree.gethash()
         for node in tree.walk():
-            print node.hash, node.type
-            node.name = 'uid%i' % namespace_increment
+            node.id = 'uid%i' % namespace_increment
+            print node.hash, node.type, node.id
             namespace_increment += 1
+
+        json_list.append(tree.json_flat())
 
     return JSONResponse(json_list)
 
@@ -280,16 +280,6 @@ def lookup_transform(request, eq_id):
 
     return JSONResponse(mappings_list)
 
-identity_interface = '''
-{% for option in options %}
-    <button onclick="javascript:apply_identity('{{option.internal}}')">{{option.prettytext}}</button>
-{% endfor %}
-
-{% for option in options2 %}
-    <button onclick="javascript:apply_identity('{{option.internal}}')">{{option.prettytext}}</button>
-{% endfor %}
-'''
-
 @login_required
 @errors
 @cache_page(CACHE_INTERVAL)
@@ -297,9 +287,18 @@ def combine(request,eq_id):
     first = unencode( request.POST.get('first') )
     second = unencode( request.POST.get('second') )
     context = unencode( request.POST.get('context') )
+    namespace_index = int( request.POST.get('namespace_index') )
 
-    first = mathobjects.ParseTree(first).eval_args()
-    second = mathobjects.ParseTree(second).eval_args()
+    uid = uidgen(namespace_index)
+
+    first = mathobjects.ParseTree(first)
+    second = mathobjects.ParseTree(second)
+
+    first.gen_uids(uid)
+    second.gen_uids(uid)
+
+    first = first.eval_args()
+    second = second.eval_args()
 
     combination = first.combine(second,context)
 
@@ -408,9 +407,19 @@ def receive(request,eq_id):
 
     new_position = unencode( request.POST.get('new_position') )
 
-    inserted = mathobjects.ParseTree(obj).eval_args()
+    namespace_index = int( request.POST.get('namespace_index') )
 
-    received = mathobjects.ParseTree(receiver).eval_args()
+    uid = uidgen(namespace_index)
+
+    inserted = mathobjects.ParseTree(obj)
+    received = mathobjects.ParseTree(receiver)
+
+    inserted.gen_uids(uid)
+    received.gen_uids(uid)
+
+    inserted = inserted.eval_args()
+    received = received.eval_args()
+
     response = received.receive(inserted,receiver_context,sender_type,sender_context,new_position)
 
     if response is None:
@@ -429,8 +438,19 @@ def remove(request,eq_id):
     sender_type = unencode( request.POST.get('sender_type') )
     sender_context = unencode( request.POST.get('sender_context') )
 
-    obj = mathobjects.ParseTree(obj).eval_args()
-    sender = mathobjects.ParseTree(sender).eval_args()
+    namespace_index = int( request.POST.get('namespace_index') )
+
+    uid = uidgen(namespace_index)
+
+    obj = mathobjects.ParseTree(obj)
+    sender = mathobjects.ParseTree(sender)
+
+    obj.gen_uids(uid)
+    sender.gen_uids(uid)
+
+    obj = obj.eval_args()
+    sender = sender.eval_args()
+
     response = sender.remove(obj,sender_context)
 
     if response is None:

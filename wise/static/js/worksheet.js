@@ -756,6 +756,8 @@ function receive(ui,receiver,group_id)
         
         //The new position of the dragged obect inside receiver
         new_position: ui.item.parent().children("[math]").index(ui.item),
+
+        namespace_index: NAMESPACE_INDEX
     }
     $.post("receive/", data,
            function(data){
@@ -793,6 +795,8 @@ function remove(ui,removed)
         sender: removed.attr('math'),
         sender_type: removed.attr('math-type'),
         sender_context: get_container(removed).attr('math-type'),
+
+        namespace_index: NAMESPACE_INDEX
     }
 
     $.post("remove/", data,
@@ -818,6 +822,7 @@ function combine(first,second,context)
     data.context = context
     data.first = $(first).attr('math');
     data.second = $(second).attr('math');
+    data.namespace_index = NAMESPACE_INDEX;
 
     if($(first).attr('group') != $(second).attr('group'))
     {
