@@ -718,7 +718,6 @@ class Term(object):
         internally'''
 
     def get_html(self):
-        self.ensure_id()
         c = template.Context({
             'id': self.id,
             'class': self.css_class,
@@ -749,6 +748,7 @@ class Term(object):
 
     #############################################################
 
+    #These can (and often should) be overloaded
     def __add__(self,other):
         return Addition(*[self,other])
 
@@ -772,6 +772,13 @@ class Term(object):
 
         if not self.id:
             self.id = self.idgen.next()
+        self.associate_terms()
+
+    def associate_terms(self):
+        '''Iterate through any child terms and associate their
+        group property with the id of thet parent'''
+        for term in self.terms:
+            term.group = self.id
 
     def negate(self):
         return Negate(self)
@@ -1009,7 +1016,6 @@ class Physical_Quantity(Base_Symbol):
     html = template.Template(physical_html)
 
     def __init__(self,quantity,units):
-        self.ensure_id()
         self.terms = [quantity,units]
 
         self.quantity = quantity
@@ -1075,7 +1081,6 @@ class Physical_Quantity(Base_Symbol):
 
 class Length(Physical_Quantity):
     def __init__(self,quantity,unit=Unit('m')):
-        self.ensure_id()
         self.quantity = quantity
         self.quantity.group = self.id
         self.unit = unit
@@ -1085,7 +1090,6 @@ class Length(Physical_Quantity):
 
 class Momentum(Physical_Quantity):
     def __init__(self,quantity,unit=Unit('N')):
-        self.ensure_id()
         self.quantity = quantity
         self.quantity.group = self.id
         self.unit = unit
@@ -1095,7 +1099,6 @@ class Momentum(Physical_Quantity):
 
 class Mass(Physical_Quantity):
     def __init__(self,quantity,unit=Unit('kg')):
-        self.ensure_id()
         self.quantity = quantity
         self.quantity.group = self.id
         self.unit = unit
@@ -1170,7 +1173,6 @@ class Fraction(Term):
     html = template.Template(fraction_html)
 
     def __init__(self,num,den):
-        self.ensure_id()
         self.num = num
         self.den = den
         self.den.css_class = 'middle'
@@ -1288,7 +1290,6 @@ class Constant(Term):
     representation = None
 
     def __init__(self,*symbol):
-        self.ensure_id()
         self.args = self.representation.args
         self.latex = self.representation.latex
 
@@ -1356,9 +1357,16 @@ class Equation(object):
     html = template.Template(equation_html)
     id = None
 
-    def __init__(self,lhs,rhs):
+    def __init__(self,lhs=None,rhs=None):
+
+        if not lhs:
+            lhs = LHS(Placeholder())
+        if not rhs:
+            rhs = RHS(Placeholder())
+
         self.rhs = rhs
         self.lhs = lhs
+
         self.math = '(Equation ' + self.lhs.get_math() + ' ' +self.rhs.get_math()  + ')'
 
     def get_math(self):
@@ -1627,7 +1635,6 @@ class Operation(Term):
     is_anticommutative = False
 
     def __init__(self,operand):
-        self.ensure_id()
         self.operand = operand
         self.operand.group = self.id
 
@@ -1644,9 +1651,7 @@ class Operation(Term):
 #        return self.get_html()
 
     def get_html(self):
-
-        for term in self.terms:
-            term.group = self.id
+        self.associate_terms()
 
         # If a parent element has already initiated a sort (i.e
         # like Equation does) then don't overwrite that
@@ -1756,7 +1761,6 @@ class Gradient(Operation):
     show_parenthesis = True
 
     def __init__(self,operand):
-        self.ensure_id()
         self.operand = operand
         self.operand.group = self.id
         self.terms = [self.operand]
@@ -1773,18 +1777,13 @@ class Addition(Operation):
     def __init__(self,*terms):
         self.terms = list(terms)
 
-        #If have nested Additions collapse them Ex: 
+        #If we have nested Additions collapse them Ex: 
         #(Addition (Addition x y ) ) = (Addition x y)
-
         if len(terms) == 1:
             if type(terms[0]) is Addition:
                 self.terms = terms[0].terms
 
-        #for term in self.terms:
-        #    term.group = self.id
-
         self.operand = self.terms
-        #self.ui_sortable()
 
     def __add__(self,other):
         if type(other) is Addition:
@@ -1819,7 +1818,6 @@ class Product(Operation):
     show_parenthesis = False
 
     def __init__(self,*terms):
-        self.ensure_id()
         self.terms = list(terms)
 
         #Pull constants out front
@@ -1831,7 +1829,7 @@ class Product(Operation):
             if type(term) is Addition:
                 term.show_parenthesis = True
         self.operand = self.terms
-        self.ui_sortable()
+        #self.ui_sortable()
 
     def remove(self,obj,remove_context):
 
@@ -1848,7 +1846,6 @@ class FreeFunction(Operation):
     show_parenthesis = True
 
     def __init__(self,symbol,operand):
-        self.ensure_id()
         if symbol is not Base_Symbol:
             symbol = Base_Symbol(symbol)
         self.symbol = symbol.symbol
@@ -1865,7 +1862,6 @@ class Log(Operation):
     show_parenthesis = True
 
     def __init__(self,operand):
-        self.ensure_id()
         self.operand = operand
         self.operand.group = self.id
         self.terms = [self.operand]
@@ -1879,7 +1875,6 @@ class Sine(Operation):
     show_parenthesis = True
 
     def __init__(self,operand):
-        self.ensure_id()
         self.operand = operand
         self.operand.group = self.id
         self.terms = [self.operand]
@@ -1893,7 +1888,6 @@ class Cosine(Operation):
     show_parenthesis = True
 
     def __init__(self,operand):
-        self.ensure_id()
         self.operand = operand
         self.operand.group = self.id
         self.terms = [self.operand]
@@ -1907,7 +1901,6 @@ class Tangent(Operation):
     show_parenthesis = True
 
     def __init__(self,operand):
-        self.ensure_id()
         self.operand = operand
         self.operand.group = self.id
         self.terms = [self.operand]
@@ -1921,7 +1914,6 @@ class Secant(Operation):
     show_parenthesis = True
 
     def __init__(self,operand):
-        self.ensure_id()
         self.operand = operand
         self.operand.group = self.id
         self.terms = [self.operand]
@@ -1935,7 +1927,6 @@ class Cosecant(Operation):
     show_parenthesis = True
 
     def __init__(self,operand):
-        self.ensure_id()
         self.operand = operand
         self.operand.group = self.id
         self.terms = [self.operand]
@@ -1949,7 +1940,6 @@ class Cotangent(Operation):
     show_parenthesis = True
 
     def __init__(self,operand):
-        self.ensure_id()
         self.operand = operand
         self.operand.group = self.id
         self.terms = [self.operand]
@@ -1993,12 +1983,11 @@ class Wedge(Operation):
     show_parenthesis = True
 
     def __init__(self,*terms):
-        self.ensure_id()
         self.terms = list(terms)
         for term in self.terms:
             term.group = self.id
         self.operand = self.terms
-        self.ui_sortable()
+    #    self.ui_sortable()
 
     def _sage_(self):
         #Get Sage objects for each term
@@ -2011,7 +2000,6 @@ class Laplacian(Operation):
     symbol = '\\nabla^2'
 
     def __init__(self,operand):
-        self.ensure_id()
         self.operand = operand
         self.operand.group = self.id
         self.terms = [self.operand]
@@ -2023,7 +2011,6 @@ class Differential(Operation):
     css_class = ''
 
     def __init__(self,variable):
-        self.ensure_id()
 
         self.variable = variable
         self.operand = self.variable
@@ -2041,7 +2028,6 @@ class Integral(Operation):
     show_parenthesis = False
 
     def __init__(self,operand,differential):
-        self.ensure_id()
         self.operand = operand
         self.operand.group = self.id
         self.differential = differential
@@ -2094,31 +2080,23 @@ diff_html = '''
 
 class Diff(Operation):
 
-    '''To do standard derivatives
-
-    y=Function('y')(x)
-    x=Symbol('x')
-    diff(y*x,x)
-    '''
-
     ui_style = 'prefix'
 
     def __init__(self,differential,operand):
-        self.ensure_id()
         self.operand = operand
-        self.operand.group = self.id
-
         self.differential = differential
-        self.differential.group = self.id
-
         self.terms = [self.differential, self.operand]
 
     def _sage_(self):
-        return sage.diff(self.operand._sage_(),
-                self.differential._sage_())
+        return sage.diff(
+                   self.operand._sage_(),
+                   self.differential._sage_()
+               )
 
     def get_html(self):
         self.html = template.Template(diff_html)
+        self.operand.group = self.id
+        self.differential.group = self.id
 
         c = template.Context({
             'id': self.id,
@@ -2133,13 +2111,6 @@ class Diff(Operation):
             })
 
         return self.html.render(c)
-
-    def action(self):
-        #Take the derivative
-        deriv = sympify(self.sympy)
-        #Cast it to internal types
-        newterm = sympy2parsetree(deriv)
-        return newterm.get_html()
 
     def propogate(self):
 
@@ -2233,7 +2204,6 @@ class FDiff(Operation):
     ui_style = 'prefix'
 
     def __init__(self,differential,operand):
-        self.ensure_id()
         self.operand = operand
         self.operand.group = self.id
 

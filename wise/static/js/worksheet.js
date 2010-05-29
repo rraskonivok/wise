@@ -219,6 +219,18 @@ for (level in T.levels.reverse()) {
 }
 */
 
+function new_cell() {
+    //Returns a reference to the lines placeholder where new
+    //lines should be appended
+    
+    var cell = $('<div>');
+    cell.addClass('cell');
+    var lines = $('<table>');
+    lines.addClass('lines')
+    cell.append(lines);
+    $("#workspace").append(cell);
+    return lines;
+}
 
 ///////////////////////////////////////////////////////////
 // Selection Handling
@@ -433,6 +445,7 @@ function clear_lookups()
 function show_debug_menu()
 {
     $('#debug_menu').dialog();
+    $('#debug_menu').show();
     $('#horizslider').slider({
         slide:
         function(e,ui)
@@ -516,12 +529,6 @@ function toggle_spacing()
 function toggle_units()
 {
     $("body .unit").fadeOut();    
-}
-
-function handle_equation(object)
-{
-    lhs = $(object.find('.lhs'));
-    rhs = $(object.find('.rhs'));
 }
 
 function cleanup_ajax_scripts()
@@ -673,6 +680,7 @@ function apply_transform(transform,selections)
 {
     var data = {}
     data.transform = transform
+    data.namespace_index = NAMESPACE_INDEX
 
     if(selections == null) {
         //Fetch the math for each of the selections
@@ -693,23 +701,25 @@ function apply_transform(transform,selections)
                 return
             }
 
-            for(var i=0; i<data.length; i++)
+            for(var i=0; i<data.new_elements.length; i++)
             {
                 obj = selection.nth(i)
                 group_id = obj.attr('group');
                 group_id_cache = String(group_id)
 
-                if (data[i] == null)
+                if (data.new_elements[i] == null)
                 {
-                    obj.remove()    
+                    obj.remove()
                 }
                 else
                 {
-                    nsym = obj.replace(data[i]);
+                    nsym = obj.replace(data.new_elements[i]);
                     nsym.attr('group',group_id_cache);
                     refresh_jsmath($(nsym))
                 }
             }
+            
+            NAMESPACE_INDEX = data.namespace_index
 
             clear_selection()
             traverse_lines();
@@ -859,16 +869,20 @@ function combine(first,second,context)
 
 function new_inline(){
     data = {}
+    data.namespace_index = NAMESPACE_INDEX;
+
     $.post("new_inline/", data ,
         function(data){
             if(data.error) {
                 error(data.error)
             }
+
             if(data.newline) {
-                $('#lines').append(data.newline)
+                cell = new_cell();
+                cell.append(data.newline);
             }
             traverse_lines();
-            refresh_jsmath()
+            refresh_jsmath();
         }
     ,'json')
 }
@@ -1052,29 +1066,18 @@ function are_siblings(first,second)
     return (get_common_context(first,second) != null)
 }
 
-
 function traverse_lines()
 {
-    //Traverse the lines of the workspace and make them sortable equations
-    $.each($('.lines').find('tr'),function()
-    {
-        handle_equation($(this));
-    });
-
+    //All elements with a [title] attribute show tooltips
+    //containing their math-type
     $('#workspace [title]').tooltip({track:true});
-
-    $('[math-meta-class=term]').unbind('click');
     $('[math-meta-class=term]').unbind('click');
 
     $('*[math-meta-class=term]').click(
             function(event) {
                 select_term(this); event.stopPropagation() 
             });
-    //$('.pnths').css('height',function(){return $(this).parent().height()+20})
     
-    //Let's try something else because jQuery is being funky with nested sortables 
-    //connect_to_every_sortable(".palette");
-
     resize_parentheses()
     //Webkit requires that we run this twice
     resize_parentheses()
@@ -1358,10 +1361,10 @@ function build_tree()
 
     $.getJSON("json_tree",
         function(data){
-          console.log(data)
+          //console.log(data)
           jsn = data
           $.each(data.items, function(i,item){
-              console.log(item.name)
+              //console.log(item.name)
           });
         });
 

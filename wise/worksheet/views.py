@@ -28,6 +28,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import render_to_response, get_object_or_404
 from django.utils import simplejson as json
+from django.utils.html import strip_spaces_between_tags as strip_whitespace
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
@@ -71,6 +72,9 @@ def _memoize(func, *args, **kw):
         cache[key] = result = func(*args, **kw)
         return result
 
+def minimize_html(html):
+    return strip_whitespace(html.rstrip('\n'))
+
 def memoize(f):
     f.cache = {}
     return decorator(_memoize, f)
@@ -78,7 +82,7 @@ def memoize(f):
 def html(obj):
     if obj is None:
         return None
-    return obj.get_html()
+    return minimize_html(obj.get_html())
 
 def maps(func, obj):
     if hasattr(obj,'__iter__'):
@@ -193,10 +197,10 @@ def ws(request, eq_id):
     if ( ws.owner.id != request.user.id ) and not ws.public:
         return HttpResponse('You do not have permission to access this worksheet.')
 
-    eqs = MathematicalEquation.objects.filter(workspace=eq_id)
-
-    if not eqs:
-        raise Http404
+    try:
+        eqs = MathematicalEquation.objects.filter(workspace=eq_id)
+    except ObjectDoesNotExist:
+        return HttpResponse('No equations found in worksheet')
 
     debug_parse_tree = request.GET.get('tree')
     outputs = []
@@ -219,7 +223,7 @@ def ws(request, eq_id):
 
         else:
             etree = tree.eval_args()
-            outputs.append(etree.get_html())
+            outputs.append(html(etree))
 
     if debug_parse_tree:
         return HttpResponse( outputs )
@@ -322,20 +326,33 @@ def new(request):
 def apply_transform(request,eq_id):
     code = tuple(request.POST.getlist('selections[]'))
     transform = unencode( request.POST.get('transform') )
+    namespace_index = int( request.POST.get('namespace_index') )
+
+    uid = uidgen(namespace_index)
 
     def parse(code):
-        return mathobjects.ParseTree(code).eval_args()
+        parsed = mathobjects.ParseTree(code)
+        parsed.gen_uids(uid)
+        evaled = parsed.eval_args()
+        return evaled
 
     args = map(parse, code)
 
     transform = mathobjects.algebra.__dict__[transform]
 
     response = transform(*args)
+
+    #if hasattr(response,'__iter__'):
+    #    for element in response:
+    #        element.gen_uids()
+    #else:
+    #    response.gen_uids()
     #print args, response
 
     new_elements = maps(html, response)
 
-    return HttpResponse(json.dumps(new_elements))
+    return JSONResponse({'new_elements': new_elements,
+                         'namespace_index': uid.next()[3:]})
 
 @login_required
 @errors
@@ -462,11 +479,14 @@ def remove(request,eq_id):
 @errors
 @cache_page(CACHE_INTERVAL)
 def new_inline(request, eq_id):
-    lhs = mathobjects.Placeholder()
-    rhs = mathobjects.Placeholder()
+    namespace_index = int( request.POST.get('namespace_index') )
+    uid = uidgen(namespace_index)
 
-    eq = mathobjects.Equation(mathobjects.LHS(lhs),mathobjects.RHS(rhs))
-    return HttpResponse(json.dumps({'newline': eq.get_html()}))
+    eq = mathobjects.Equation()
+    eq.id = uid.next()
+    eq.idgen = uid
+
+    return JSONResponse({'newline': html(eq)})
 
 palette_template = '''
 {% for group in palette %}

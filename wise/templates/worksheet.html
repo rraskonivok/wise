@@ -65,8 +65,7 @@ function init()
     //layout.sizePane('east', 300);
     layout.sizePane('west', 300);
 
-    $(document).bind(
-        'keydown', 'f4', function() {show_debug_menu()})
+    $(document).bind( 'keydown', 'f4', function() {show_debug_menu()})
         .bind('keydown', 't', function() {lookup_transform()})
         .bind('keydown', '+', function() {substite_addition()})
         .bind('keydown', '-', function() {substite_subtraction()})
@@ -168,7 +167,6 @@ function init()
         <button class="ui-widget" onclick="javascript:save_workspace()">save workspace</button>
         <div id="horizslider" style="width: 150px"></div>Horizontal Term Spacing<br/>
         <div id="vertslider" style="width: 150px"></div>Vertical Term Spacing<br/>
-        <!-- Debug to write selected objects math strings out to debug console !!!!!!!!!!!!!! -->
         <div id="switcher"></div>
 </div>
 
@@ -183,7 +181,7 @@ function init()
     <div class="cell">
         <table class="lines" style="display: none">
             {% for equation in equations %}
-                {{equation}} 
+                {{equation|safe}} 
             {% endfor %}
         </table>
     </div>

@@ -28,8 +28,6 @@ def Mapping(x, y):
             domain = args[1:]
 
             codomain = func(*domain)
-            if domain in func.case:
-                print 'abc'
 
             #TODO: Type checking is expensive, add it as optional
             #domain_check = all(isinstance(a,b) for a,b in zip(domain,x.args))
