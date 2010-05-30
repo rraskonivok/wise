@@ -84,6 +84,12 @@ def html(obj):
         return None
     return minimize_html(obj.get_html())
 
+def parse(code, uid):
+    parsed = mathobjects.ParseTree(code)
+    parsed.gen_uids(uid)
+    evaled = parsed.eval_args()
+    return evaled
+
 def maps(func, obj):
     if hasattr(obj,'__iter__'):
         return map(func, obj)
@@ -233,23 +239,19 @@ def ws(request, eq_id):
             'equations':outputs,
             'username': request.user.username,
             'namespace_index': uid.next()[3:],
+            'json_tree': json.dumps(tree.json_flat()),
             })
 
 @errors
 def json_tree(request, eq_id):
     eqs = MathematicalEquation.objects.filter(workspace=eq_id)
-    namespace_increment = 0
+    uid = uidgen()
     json_list = []
 
     for eq in eqs:
         code = eq.code
         tree = mathobjects.ParseTree(code)
-        tree.id = 'uid%i' % namespace_increment
-
-        for node in tree.walk():
-            node.id = 'uid%i' % namespace_increment
-            print node.hash, node.type, node.id
-            namespace_increment += 1
+        tree.gen_uids(uid)
 
         json_list.append(tree.json_flat())
 
@@ -330,13 +332,7 @@ def apply_transform(request,eq_id):
 
     uid = uidgen(namespace_index)
 
-    def parse(code):
-        parsed = mathobjects.ParseTree(code)
-        parsed.gen_uids(uid)
-        evaled = parsed.eval_args()
-        return evaled
-
-    args = map(parse, code)
+    args = [parse(cde, uid) for cde in code]
 
     transform = mathobjects.algebra.__dict__[transform]
 
@@ -442,6 +438,7 @@ def receive(request,eq_id):
     if response is None:
         response = 'Could not find rewrite rule'
 
+    #TODO we have to pass namespace_index as well
     return HttpResponse(response)
 
 @login_required
@@ -473,6 +470,7 @@ def remove(request,eq_id):
     if response is None:
         response = 'Could not find rewrite rule'
 
+    #TODO we have to pass namespace_index as well
     return HttpResponse(response)
 
 @login_required
@@ -482,11 +480,10 @@ def new_inline(request, eq_id):
     namespace_index = int( request.POST.get('namespace_index') )
     uid = uidgen(namespace_index)
 
-    eq = mathobjects.Equation()
-    eq.id = uid.next()
-    eq.idgen = uid
+    new = parse('(Equation (LHS (Placeholder ) ) (RHS (Placeholder )))',uid)
 
-    return JSONResponse({'newline': html(eq)})
+    return JSONResponse({'newline': html(new),
+                         'namespace_index': uid.next()[3:]})
 
 palette_template = '''
 {% for group in palette %}

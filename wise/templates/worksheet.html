@@ -32,6 +32,7 @@
 // This is passed by Django to help us keep track of the #uid
 // counter
 var NAMESPACE_INDEX = {{ namespace_index }};
+var JSON_TREE = $.parseJSON('{{ json_tree|safe }}');
 
 $(document).ajaxError(function() {
     error("Error connecting to server")
@@ -97,7 +98,6 @@ function init()
     success: function(data) {
         $("#math_palette").html(data)
 
-        $('#math_palette .drag_placeholder').attr('math-meta-class','')
 
         //Make the palette sections collapsable
         $('#math_palette h3').bind('click',function() {
@@ -112,7 +112,7 @@ function init()
 
 
         //Make the math terms interactive
-        traverse_lines()
+        handle_palette();
     }})
 
     /*
@@ -170,20 +170,22 @@ function init()
         <div id="switcher"></div>
 </div>
 
-<div id="workspace" class="ui-layout-center">
-    <div id="cmd_input" style="display:none" >
-        <form id="cmd_form">
-            <input id="sage_cmd" type="text" />
-            <input type=submit />
-        </form>
-    </div>
+<div class="center ui-layout-center">
+    <div id="workspace">
+        <div id="cmd_input" style="display:none" >
+            <form id="cmd_form">
+                <input id="sage_cmd" type="text" />
+                <input type=submit />
+            </form>
+        </div>
 
-    <div class="cell">
-        <table class="lines" style="display: none">
-            {% for equation in equations %}
-                {{equation|safe}} 
-            {% endfor %}
-        </table>
+        <div class="cell">
+            <table class="lines" style="display: none">
+                {% for equation in equations %}
+                    {{equation|safe}} 
+                {% endfor %}
+            </table>
+        </div>
     </div>
 </div>
 

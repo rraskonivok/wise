@@ -426,7 +426,10 @@ class Branch(object):
             else:
                 return x
 
-        lst.append({'name': self.id, 'type': self.type})
+        lst.append({"id": self.id,
+                    "type": self.type,
+                    "children": [child.id for child in self.args if isinstance(child,Branch)]})
+
         map(f,self.args)
         return lst
 
@@ -1376,6 +1379,9 @@ class Equation(object):
         return self.lhs._sage_() == self.rhs._sage_()
 
     def get_html(self):
+        self.rhs.id = self.idgen.next()
+        self.lhs.id = self.idgen.next()
+
         self.rhs.group = self.id
         self.lhs.group = self.id
 
@@ -1384,6 +1390,9 @@ class Equation(object):
 
         self.rhs.rhs.id = self.idgen.next()
         self.lhs.lhs.id = self.idgen.next()
+
+        self.rhs.rhs.associate_terms()
+        self.lhs.lhs.associate_terms()
 
         s1 = self.lhs.lhs.ui_sortable(self.rhs.rhs)
         s2 = self.rhs.rhs.ui_sortable(self.lhs.lhs)
@@ -1481,6 +1490,7 @@ class RHS(Term):
 
     def get_html(self):
         self.rhs.group = self.id
+        self.rhs.associate_terms()
 
         c = template.Context({
             'id': self.id,
@@ -1513,8 +1523,17 @@ class LHS(Term):
 
     def get_html(self):
         self.lhs.group = self.id
+        self.lhs.associate_terms()
 
-        c = template.Context({'id': self.id, 'latex':self.latex, 'math': self.get_math(), 'type': self.classname(), 'group': self.group, 'lhs': self.lhs.get_html()})
+        c = template.Context({
+            'id': self.id,
+            'latex':self.latex,
+            'math': self.get_math(),
+            'type': self.classname(),
+            'group': self.group,
+            'lhs': self.lhs.get_html()
+            })
+
         return self.html.render(c)
 
 operation_html_postfix = '''
@@ -1636,7 +1655,6 @@ class Operation(Term):
 
     def __init__(self,operand):
         self.operand = operand
-        self.operand.group = self.id
 
         #We should define a class so that we can do substitutions
         #later... based on whether or not the terms are commutative

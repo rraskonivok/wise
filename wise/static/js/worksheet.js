@@ -219,19 +219,6 @@ for (level in T.levels.reverse()) {
 }
 */
 
-function new_cell() {
-    //Returns a reference to the lines placeholder where new
-    //lines should be appended
-    
-    var cell = $('<div>');
-    cell.addClass('cell');
-    var lines = $('<table>');
-    lines.addClass('lines')
-    cell.append(lines);
-    $("#workspace").append(cell);
-    return lines;
-}
-
 ///////////////////////////////////////////////////////////
 // Selection Handling
 ///////////////////////////////////////////////////////////
@@ -680,7 +667,7 @@ function apply_transform(transform,selections)
 {
     var data = {}
     data.transform = transform
-    data.namespace_index = NAMESPACE_INDEX
+    data.namespace_index = NAMESPACE_INDEX;
 
     if(selections == null) {
         //Fetch the math for each of the selections
@@ -878,13 +865,20 @@ function new_inline(){
             }
 
             if(data.newline) {
-                cell = new_cell();
-                cell.append(data.newline);
+                cell = $('<div class="cell"></div>');
+                $("#workspace").append(cell);
+                lines = $('<table class="lines"></table>');
+                cell.html(lines);
+                lines.html(data.newline);
+                traverse_lines();
+                refresh_jsmath(cell);
             }
-            traverse_lines();
-            refresh_jsmath();
+
+            NAMESPACE_INDEX = data.namespace_index;
         }
     ,'json')
+
+    cleanup_ajax_scripts();
 }
 
 function save_workspace()
@@ -1070,10 +1064,10 @@ function traverse_lines()
 {
     //All elements with a [title] attribute show tooltips
     //containing their math-type
-    $('#workspace [title]').tooltip({track:true});
-    $('[math-meta-class=term]').unbind('click');
+    $('#workspace *[title]').tooltip({track:true});
+    $('#workspace *[math-meta-class=term]').unbind('click');
 
-    $('*[math-meta-class=term]').click(
+    $('#workspace *[math-meta-class=term]').click(
             function(event) {
                 select_term(this); event.stopPropagation() 
             });
@@ -1083,6 +1077,21 @@ function traverse_lines()
     resize_parentheses()
 
     $('.equation button').parent().buttonset();
+}
+
+function handle_palette()
+{
+
+    $('#palette *[title]').tooltip({track:true});
+    $('#palette *[math-meta-class=term]').not('.drag_placeholder').click(
+            function(event) {
+                select_term(this); event.stopPropagation() 
+            });
+
+    //Prevent subelements of math elements in the palette from
+    //being selected
+    
+    resize_parentheses()
 }
 
 ///////////////////////////////////////////////////////////
@@ -1368,11 +1377,6 @@ function build_tree()
           });
         });
 
-    String.prototype.repeat = function( num )
-    {
-        return new Array( num + 1 ).join( this );
-    }
-
     function descend(obj, tree) {
         children = $('[group='+obj.id()+']')
         $.each(children,function() {
@@ -1390,6 +1394,37 @@ function build_tree()
         });
     }
     descend(teq,eq)
+}
+
+function build_from_json()
+{
+    //eq = new Expression();
+    //T = new RootedTree(eq);
+
+    nodes = {};
+    eq = new Expression()
+
+    for(var term in JSON_TREE) {
+       term = JSON_TREE[term];
+       var node = new Expression();
+       nodes[term.id] = node; 
+       node.math = term.id;
+    }
+
+    console.log(nodes);
+
+    for(term in JSON_TREE) {
+       index = term;
+       term = JSON_TREE[term];
+       prent = nodes[term.id]
+       if(index == 0) { T = new RootedTree(prent) };
+        for(var child in term.children) {
+           child = term.children[child];
+           console.log(nodes[child]);
+           prent.addNode(nodes[child]);
+       }
+    }
+    console.log(nodes);
 }
 
 function dropin(old,nwr)
@@ -1434,8 +1469,8 @@ function duplicate_placeholder(placeholder)
 
 function next_placeholder(start)
 {
-    last = $('#lines .drag_placeholder:last')
-    first = $('#lines .drag_placeholder:first')
+    last = $('.lines .drag_placeholder:last')
+    first = $('.lines .drag_placeholder:first')
 
     if(!start)
     {
@@ -1457,7 +1492,7 @@ function next_placeholder(start)
         return
     }
 
-    placeholders= $('#lines .drag_placeholder')
+    placeholders= $('.lines .drag_placeholder')
 
     var i=0;
     for (i=0;i<=placeholders.length;i++)
