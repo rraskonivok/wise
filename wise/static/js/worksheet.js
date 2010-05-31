@@ -106,6 +106,82 @@ function cycle(listA)
     return zip(listA, listB)
 }
 
+///////////////////////////////////////////////////////////
+// Expression Tree Handling
+///////////////////////////////////////////////////////////
+
+//Lookup table which establishes a correspondance between the DOM
+//ids (i.e. uid314 ) and the Node objects in the expression tree.
+var _nodes = {}
+
+function build_tree_from_json(json_input) {
+    //Our Expression tree
+    var T;
+
+    //Craete a hash table: { 'uid3': Node of uid3 }
+    for(var term in json_input) {
+       term = json_input[term];
+       var node = new Expression();
+       _nodes[term.id] = node; 
+       node.id = term.id;
+       node.name = term.type;
+       node.dom = $('#' + node.id);
+    }
+
+    //Iterate through the children and lookup their corresponding
+    //nodes and attach to tree
+    for(term in json_input) {
+       index = term;
+       term = json_input[term];
+       prent = _nodes[term.id]
+       if(index == 0) { T = new RootedTree(prent) };
+        for(var child in term.children) {
+           child = term.children[child];
+           //console.log(nodes[child]);
+           prent.addNode(_nodes[child]);
+       }
+    }
+
+    //Nested JSON Tree (InfoVis requires this)
+    function recurse(node) {
+       var json = {};
+       json.id = 'node' + node.id;
+       json.data = node;
+       json.name = node.name;
+       json.children = []
+       for(child in node.children) {
+            child = node.children[child];
+            json.children.push(recurse(child));
+       }
+       return json
+    }
+
+    json = recurse(T.root);
+    return T
+}
+
+function append_json_to_tree(old_node, json_input) {
+    //The first node in json_input must be the root of the new
+    //subtree
+    //
+    console.log('old');
+    console.log(old_node);
+    
+    for(var term in json_input) {
+       index = term;
+       term = json_input[term];
+       var node = new Expression();
+       if(index == 0) {
+            old_node.swapNode(node);
+            console.log('swapping');
+       }
+       _nodes[term.id] = node; 
+       node.id = term.id;
+       node.name = term.type;
+       node.dom = $('#' + node.id);
+    }
+    
+}
 
 ///////////////////////////////////////////////////////////
 // Term Handling
@@ -116,6 +192,8 @@ function cycle(listA)
 //likely called thousands of times.
 
 // This is a hash trie, see http://en.wikipedia.org/wiki/Trie
+
+EQUATION_TREE = null;
 
 function RootedTree(root) {
     root.tree = this;
@@ -160,8 +238,21 @@ Node.prototype.addNode = function(node)
     node.tree = this.tree;
     node.depth = this.depth + 1;
     node._parent = this
+    node.index = this.children.length;
     this.children.push(node);
     (this.tree.levels[node.depth-1]).push(node);
+}
+
+Node.prototype.swapNode = function(newNode) {
+
+   console.log('newNode');
+   console.log(newNode);
+
+   newNode._parent = this._parent;
+   newNode.index = this.index;
+   newNode.depth = this.depth;
+   newNode.tree = this.tree;
+   this._parent.children[this.index] = newNode;
 }
 
 function Expression() {
@@ -432,7 +523,6 @@ function clear_lookups()
 function show_debug_menu()
 {
     $('#debug_menu').dialog();
-    $('#debug_menu').show();
     $('#horizslider').slider({
         slide:
         function(e,ui)
@@ -688,21 +778,28 @@ function apply_transform(transform,selections)
                 return
             }
 
-            for(var i=0; i<data.new_elements.length; i++)
+            //Iterate over the elements in the image of the
+            //transformation, attempt to map them 1:1 with the
+            //elements in the domain. Elements mapped to 'null'
+            //are deleted.
+            for(var i=0; i<data.new_html.length; i++)
             {
                 obj = selection.nth(i)
                 group_id = obj.attr('group');
                 group_id_cache = String(group_id)
 
-                if (data.new_elements[i] == null)
+                if (data.new_html[i] == null)
                 {
                     obj.remove()
                 }
                 else
                 {
-                    nsym = obj.replace(data.new_elements[i]);
+                    append_json_to_tree(_nodes[obj.id()],data.new_json[i]);
+                    nsym = obj.replace(data.new_html[i]);
                     nsym.attr('group',group_id_cache);
                     refresh_jsmath($(nsym))
+
+                    //Update tree
                 }
             }
             
@@ -1396,35 +1493,98 @@ function build_tree()
     descend(teq,eq)
 }
 
-function build_from_json()
-{
-    //eq = new Expression();
-    //T = new RootedTree(eq);
 
-    nodes = {};
-    eq = new Expression()
+function visualize_tree(json) {
+    var infovis = document.getElementById('infovis');
 
-    for(var term in JSON_TREE) {
-       term = JSON_TREE[term];
-       var node = new Expression();
-       nodes[term.id] = node; 
-       node.math = term.id;
-    }
+    $('#infovis').empty();
 
-    console.log(nodes);
+    var w = infovis.offsetWidth, h = infovis.offsetHeight;
+    //init canvas
+    //Create a new canvas instance.
+    var canvas = new Canvas('mycanvas', {
+        'injectInto': 'infovis',
+        'width': w,
+        'height': h,
+    });
+    //end
+    
+    //init st
+    //Create a new ST instance
+    var st = new ST(canvas, {
+        duration: 100,
+        transition: Trans.Quart.easeInOut,
+        levelDistance: 50,
+        orientation: 'top', 
 
-    for(term in JSON_TREE) {
-       index = term;
-       term = JSON_TREE[term];
-       prent = nodes[term.id]
-       if(index == 0) { T = new RootedTree(prent) };
-        for(var child in term.children) {
-           child = term.children[child];
-           console.log(nodes[child]);
-           prent.addNode(nodes[child]);
-       }
-    }
-    console.log(nodes);
+        Node: {
+            height: 20,
+            width: 60,
+            type: 'rectangle',
+            color: '#F7FBFF',
+            overridable: true,
+        },
+        
+        Edge: {
+            type: 'bezier',
+            overridable: true,
+            lineWidth: 2,
+            color: '#ccc',
+        },
+        
+        onCreateLabel: function(label, node){
+            label.id = node.id;            
+            label.innerHTML = node.name;
+
+            label.onclick = function(){
+                st.onClick(node.id);
+            };
+
+            $(label).bind('mouseover', function() {
+                node.data.dom.css('background-color','blue');
+            })
+            $(label).bind('mouseout', function() {
+                node.data.dom.css('background-color','inherit');
+            })
+            var style = label.style;
+            style.width = 60 + 'px';
+            style.height = 17 + 'px';
+            style.cursor = 'pointer';
+            style.color = '#333';
+            style.fontSize = '0.8em';
+            style.textAlign= 'center';
+            style.paddingTop = '3px';
+        },
+        
+        onBeforePlotNode: function(node){
+            if (node.selected) {
+                node.data.$color = "#ff7";
+            }
+            else {
+                delete node.data.$color;
+                var GUtil = Graph.Util;
+                if(!GUtil.anySubnode(node, "exist")) {
+                    depth = node._depth
+                    node.data.$color = ['#F7FBFF', '#DEEBF7', '#C6DBEF', '#9ECAE1', '#6BAED6', '#4292C6'][depth];
+                }
+            }
+        },
+        
+        onBeforePlotLine: function(adj){
+            if (adj.nodeFrom.selected && adj.nodeTo.selected) {
+                adj.data.$color = '#000';
+                adj.data.$lineWidth = 3;
+            }
+            else {
+                delete adj.data.$color;
+                delete adj.data.$lineWidth;
+            }
+        }
+    });
+    st.loadJSON(json);
+    st.compute();
+    st.onClick(st.root);
+    
 }
 
 function dropin(old,nwr)

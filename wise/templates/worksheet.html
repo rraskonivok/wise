@@ -13,6 +13,9 @@
  <script src="/static/layout.js" type="text/javascript"></script>
  <script src="/static/pnotify.js" type="text/javascript"></script>
  <script src="/static/vi.js" type="text/javascript"></script>
+ <script language="javascript" type="text/javascript"
+     src="/static/Jit/jit.js"></script>
+ 
 
  <!--
 <link type="text/css" rel="stylesheet" href="http://jqueryui.com/themes/base/ui.all.css" />
@@ -94,7 +97,7 @@ function init()
     
     //Handle the math palette
     $.ajax({
-    url: '/palette',
+    url: '/palette/',
     success: function(data) {
         $("#math_palette").html(data)
 
@@ -113,7 +116,7 @@ function init()
 
         //Make the math terms interactive
         handle_palette();
-    }})
+    }});
 
     /*
     $('#math_palette').addClass('ui-accordion ui-widget ui-helper-reset ui-accordion-icons')
@@ -127,7 +130,7 @@ function init()
 
     //refresh_jsmath()
     traverse_lines();
-
+    EQUATION_TREE = build_tree_from_json(JSON_TREE);
 }
 
  </script>
@@ -196,7 +199,9 @@ function init()
 
 <div id="east" class="ui-layout-east">
     <button onclick="build_tree()">Build Tree</button>
+    <button onclick="build_from_json()">Build InfoVis Tree</button>
     <div id="tree">
+        <div id="infovis" style="width: inherit; height: 300px"></div>    
     </div>
 </div>
 

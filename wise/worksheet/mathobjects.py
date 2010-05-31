@@ -727,7 +727,7 @@ class Term(object):
             'sensitive':self.get_sensitive(),
             'latex':self.latex,
             'math': self.get_math(),
-            'type': self.classname(),
+            'type': self.classname,
             'group': self.group
             })
 
@@ -741,13 +741,13 @@ class Term(object):
 
         #Container-type Objects, Example: (Addition 1 2 3)
         if len(self.terms) > 1:
-            return '(' + self.classname() + ' ' + spaceiter(map(lambda o: o.get_math(), self.terms)) + ')'
+            return '(' + self.classname + ' ' + spaceiter(map(lambda o: o.get_math(), self.terms)) + ')'
         #Term-type Objects Example: (Numeric 3)
         elif len(self.terms) == 1:
-            return '(' + self.classname() + ' ' + self.terms[0].get_math() + ')'
+            return '(' + self.classname + ' ' + self.terms[0].get_math() + ')'
         #Terms with special arguments
         else:
-            return '(' + self.classname() + ' ' + str(self.args) + ')'
+            return '(' + self.classname + ' ' + str(self.args) + ')'
 
     #############################################################
 
@@ -786,6 +786,7 @@ class Term(object):
     def negate(self):
         return Negate(self)
 
+    @property
     def classname(self):
         return self.__class__.__name__
 
@@ -795,21 +796,22 @@ class Term(object):
         for term in self.terms:
             term.map_recursive(function)
 
+    def json_flat(self,lst=None):
+        if not lst:
+            lst = []
+
+        lst.append({"id": self.id,
+                    "type": self.classname,
+                    "children": [term.id for term in self.terms]})
+
+        for term in self.terms:
+            term.json_flat(lst)
+
+        return lst
+
     def get_javascript(self):
         c = template.Context({'javascript':self.javascript})
         return self.javascript_template.render(c)
-
-
-#    def up(self):
-#        return self.get_html()
-#
-#    def down(self,other):
-#        return self.get_html()
-#
-#    def doubleclick(self):
-#        '''when the user double clicks on the object'''
-
-
 
     def combine_fallback(self,other,context):
         '''Just slap an operator between two terms and leave it as is'''
@@ -1050,7 +1052,7 @@ class Physical_Quantity(Base_Symbol):
             'sensitive':self.get_sensitive(),
             'quantity':quantity_repr,
             'math': self.get_math(),
-            'type': self.classname(),
+            'type': self.classname,
             'group': self.group,
             'unit': self.unit.symbol})
 
@@ -1151,7 +1153,7 @@ class Power(Term):
             'math': self.get_math(),
             'group': self.group,
             'base': self.base.get_html(),
-            'type': self.classname(),
+            'type': self.classname,
             'exponent': self.exponent.get_html() })
 
         return self.html.render(c)
@@ -1195,7 +1197,7 @@ class Fraction(Term):
             'num': self.num.get_html(),
             'den': self.den.get_html(),
             'group': self.group,
-            'type': self.classname()
+            'type': self.classname
             })
 
         return self.html.render(c)
@@ -1245,7 +1247,7 @@ class Numeric(Term):
             'sensitive':self.get_sensitive(),
             'latex':self.latex,
             'math': self.get_math(),
-            'type': self.classname(),
+            'type': self.classname,
             'group': self.group})
 
         return self.html.render(c)
@@ -1496,7 +1498,7 @@ class RHS(Term):
             'id': self.id,
             'latex':self.latex,
             'math': self.get_math(),
-            'type': self.classname(),
+            'type': self.classname,
             'group': self.group,
             'rhs': self.rhs.get_html()
             })
@@ -1529,7 +1531,7 @@ class LHS(Term):
             'id': self.id,
             'latex':self.latex,
             'math': self.get_math(),
-            'type': self.classname(),
+            'type': self.classname,
             'group': self.group,
             'lhs': self.lhs.get_html()
             })
@@ -1685,7 +1687,7 @@ class Operation(Term):
             c = template.Context({
                 'id': self.id,
                 'math': self.get_math(),
-                'type': self.classname(),
+                'type': self.classname,
                 'group': self.group,
                 'operand': objects,
                 'symbol': self.symbol,
@@ -1703,7 +1705,7 @@ class Operation(Term):
             c = template.Context({
                 'id': self.id,
                 'math': self.get_math(),
-                'type': self.classname(),
+                'type': self.classname,
                 'group': self.group,
                 'operand': self.operand.get_html(),
                 'symbol': self.symbol,
@@ -1723,7 +1725,7 @@ class Operation(Term):
             c = template.Context({
                 'id': self.id,
                 'math': self.get_math(),
-                'type': self.classname(),
+                'type': self.classname,
                 'group': self.group,
                 'operand': self.operand.get_html(),
                 'symbol': self.symbol,
@@ -1738,7 +1740,7 @@ class Operation(Term):
             c = template.Context({
                 'id': self.id,
                 'math': self.get_math(),
-                'type': self.classname(),
+                'type': self.classname,
                 'group': self.group,
                 'operand': self.operand.get_html(),
                 'symbol': self.symbol,
@@ -2119,7 +2121,7 @@ class Diff(Operation):
         c = template.Context({
             'id': self.id,
             'math': self.get_math(),
-            'type': self.classname(),
+            'type': self.classname,
             'group': self.group,
             'operand': self.operand.get_html(),
             'symbol': self.symbol,
@@ -2256,7 +2258,7 @@ class FDiff(Operation):
         c = template.Context({
             'id': self.id,
             'math': self.get_math(),
-            'type': self.classname(),
+            'type': self.classname,
             'group': self.group,
             'operand': self.operand.get_html(),
             'symbol': self.symbol,

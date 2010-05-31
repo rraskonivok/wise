@@ -84,6 +84,11 @@ def html(obj):
         return None
     return minimize_html(obj.get_html())
 
+def json_flat(obj):
+    if obj is None:
+        return None
+    return obj.json_flat()
+
 def parse(code, uid):
     parsed = mathobjects.ParseTree(code)
     parsed.gen_uids(uid)
@@ -338,16 +343,11 @@ def apply_transform(request,eq_id):
 
     response = transform(*args)
 
-    #if hasattr(response,'__iter__'):
-    #    for element in response:
-    #        element.gen_uids()
-    #else:
-    #    response.gen_uids()
-    #print args, response
+    new_html = maps(html, response)
+    new_json = maps(json_flat, response)
 
-    new_elements = maps(html, response)
-
-    return JSONResponse({'new_elements': new_elements,
+    return JSONResponse({'new_html': new_html,
+                         'new_json': new_json,
                          'namespace_index': uid.next()[3:]})
 
 @login_required
