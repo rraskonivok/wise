@@ -110,19 +110,40 @@ function cycle(listA)
 // Expression Tree Handling
 ///////////////////////////////////////////////////////////
 
-//Lookup table which establishes a correspondance between the DOM
-//ids (i.e. uid314 ) and the Node objects in the expression tree.
-var _nodes = {}
+function Cell() {
+    this.equations = []; 
+    this.length = 0;
+    this.dom = null;
+}
+
+function Equation() {
+    this.tree = null;
+    this.cell = null;
+    this.next = null;
+    this.prev = null;
+    this.index = null;
+}
+
+function RootedTree(root) {
+    root.tree = this;
+    root.depth = 1;
+    root._parent = this;
+    this.root = root;
+    this.levels[0] = [root];
+}
 
 function build_tree_from_json(json_input) {
     //Our Expression tree
     var T;
 
+    //Lookup table which establishes a correspondance between the DOM
+    //ids (i.e. uid314 ) and the Node objects in the expression tree.
+
     //Craete a hash table: { 'uid3': Node of uid3 }
     for(var term in json_input) {
        term = json_input[term];
        var node = new Expression();
-       _nodes[term.id] = node; 
+       NODES[term.id] = node; 
        node.id = term.id;
        node.name = term.type;
        node.dom = $('#' + node.id);
@@ -133,14 +154,31 @@ function build_tree_from_json(json_input) {
     for(term in json_input) {
        index = term;
        term = json_input[term];
-       prent = _nodes[term.id]
+       prent = NODES[term.id]
        if(index == 0) { T = new RootedTree(prent) };
-        for(var child in term.children) {
+       for(var child in term.children) {
            child = term.children[child];
            //console.log(nodes[child]);
-           prent.addNode(_nodes[child]);
+           prent.addNode(NODES[child]);
        }
     }
+
+    return T;
+}
+
+function nested_json(T) {
+    //Returns the nested JSON form a (sub)tree.
+    //
+    // The nested JSON is of the form:
+    //  var json = {  
+    //      "id": "aUniqueIdentifier",  
+    //      "name": "usually a nodes name",  
+    //      "data": {
+    //          "some key": "some value",
+    //          "some other key": "some other value"
+    //       },  
+    //      "children": [ 'other nodes or empty' ]  
+    //  };  
 
     //Nested JSON Tree (InfoVis requires this)
     function recurse(node) {
@@ -156,8 +194,7 @@ function build_tree_from_json(json_input) {
        return json
     }
 
-    json = recurse(T.root);
-    return T
+    return recurse(T.root);
 }
 
 function append_json_to_tree(old_node, json_input) {
@@ -175,7 +212,7 @@ function append_json_to_tree(old_node, json_input) {
             old_node.swapNode(node);
             console.log('swapping');
        }
-       _nodes[term.id] = node; 
+       NODES[term.id] = node; 
        node.id = term.id;
        node.name = term.type;
        node.dom = $('#' + node.id);
@@ -224,7 +261,7 @@ function Node() {
     this.children = [];
     this._parent = null;
 }
-
+this.equations = [];
 Node.prototype.tree = null;
 Node.prototype.hasChildren = function() {return this.children.length > 0}
 Node.prototype.depth = null;
@@ -258,37 +295,16 @@ Node.prototype.swapNode = function(newNode) {
 function Expression() {
     /* Javascript is much faster at manipulating
     arrays than strings */
+
     this.children = [];
     this._parent = null;
     this._math = [];
+    this.dom = null;
+    this.hash = null;
 }
 
 Expression.prototype = new Node();
 Expression.prototype.smath = function() { return this._math.join(' ') }
-
-/*
-A = new Expression();
-A.mathtype = 'Addition'
-B = new Expression();
-B._math = 'b'
-B.mathtype = 'Addition'
-C = new Expression();
-C.mathtype = 'Addition'
-D = new Expression();
-D.mathtype = 'Addition'
-D._math = 'd'
-T = new RootedTree(A);
-T._math = []
-*/
-
-/*
-             A            Level 1 
-           /   \
-          B     C         Level 2
-         / \     \
-        D   E     G       Level 3
-
-*/ 
 
 /*
 // O(n) , n = nodes in tree
@@ -388,15 +404,15 @@ function clear_selection()
 function select_term(object)
 {
     //Since the selections have changed clear any looked-up (is that even a word?) actions
-    clear_lookups()
-    $("#selectionlist").fadeIn()
+    clear_lookups();
+    $("#selectionlist").fadeIn();
 
-    clickedon = $(object)
+    clickedon = $(object);
 
     //We shouldn't be able to click on the "invisible" addition
     //container we add to each of the RHS or LHS
 
-    container = get_container(clickedon)
+    container = get_container(clickedon);
 
     if(container != undefined)
     {
@@ -794,7 +810,7 @@ function apply_transform(transform,selections)
                 }
                 else
                 {
-                    append_json_to_tree(_nodes[obj.id()],data.new_json[i]);
+                    append_json_to_tree(NODES[obj.id()],data.new_json[i]);
                     nsym = obj.replace(data.new_html[i]);
                     nsym.attr('group',group_id_cache);
                     refresh_jsmath($(nsym))
@@ -1378,7 +1394,7 @@ function update(object)
         {
             check_combinations(object);
             check_container(object);
-            check_combinations(object);
+            //check_combinations(object);
             update_math(object);
         }
     }
@@ -1493,29 +1509,49 @@ function build_tree()
     descend(teq,eq)
 }
 
+function visualize_tree(tree) {
 
-function visualize_tree(json) {
-    var infovis = document.getElementById('infovis');
+    if(!tree) {
+        tree = NODES[selection.nth(0).id()].tree; 
+    }
 
-    $('#infovis').empty();
+    var json = nested_json(tree);
 
-    var w = infovis.offsetWidth, h = infovis.offsetHeight;
-    //init canvas
-    //Create a new canvas instance.
-    var canvas = new Canvas('mycanvas', {
-        'injectInto': 'infovis',
-        'width': w,
-        'height': h,
-    });
-    //end
+    if(active_graph) {
+        st = active_graph;
+        st.canvas.clear();
+
+        var lbs = st.fx.labels;
+        for (var label in lbs) {
+            if (lbs[label]) {
+             lbs[label].parentNode.removeChild(lbs[label]);
+            }
+        }
+
+        st.fx.labels = {};
+
+        st.loadJSON(json);
+        st.compute();
+        st.onClick(st.root);
+        active_graph = st;
+
+        //active_graph.op.morph(json, {  
+        //      type: 'replot',  
+        //      duration: 1500, 
+        //      hideLabels: false
+        //});   
+        return;
+    }
     
-    //init st
-    //Create a new ST instance
+    var canvas = __CANVAS__;
+    canvas.clear();
+
     var st = new ST(canvas, {
         duration: 100,
         transition: Trans.Quart.easeInOut,
         levelDistance: 50,
         orientation: 'top', 
+        clearCanvas: true,
 
         Node: {
             height: 20,
@@ -1584,7 +1620,8 @@ function visualize_tree(json) {
     st.loadJSON(json);
     st.compute();
     st.onClick(st.root);
-    
+
+    active_graph = st;
 }
 
 function dropin(old,nwr)

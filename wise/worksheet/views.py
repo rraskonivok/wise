@@ -35,7 +35,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.views.decorators.cache import cache_page
 
 from wise.worksheet.forms import LoginForm
-from wise.worksheet.models import Workspace, MathematicalEquation
+from wise.worksheet.models import Workspace, MathematicalEquation, Cell
 
 CACHE_INTERVAL = 30*60 # 5 Minutes
 
@@ -84,10 +84,15 @@ def html(obj):
         return None
     return minimize_html(obj.get_html())
 
+def cellify(s,index):
+    return '<div class="cell" data-index="%s"><table class="lines" style="display: none">%s</table></div>' % (index, s)
+
 def json_flat(obj):
     if obj is None:
         return None
     return obj.json_flat()
+
+
 
 def parse(code, uid):
     parsed = mathobjects.ParseTree(code)
@@ -209,42 +214,57 @@ def ws(request, eq_id):
         return HttpResponse('You do not have permission to access this worksheet.')
 
     try:
-        eqs = MathematicalEquation.objects.filter(workspace=eq_id)
+        cells = Cell.objects.filter(workspace=eq_id)
     except ObjectDoesNotExist:
-        return HttpResponse('No equations found in worksheet')
+        return HttpResponse('No cells found in worksheet')
 
     debug_parse_tree = request.GET.get('tree')
-    outputs = []
-
     uid = uidgen()
 
-    for eq in eqs:
-        eqtext = unencode(eq.code)
-        tree = mathobjects.ParseTree(eqtext)
-        tree.gen_uids(uid)
+    json_cells = []
+    html_cells = []
 
-        #For debugging... 
-        if debug_parse_tree:
-            pretty_tree = mathobjects.pretty(tree)
-            etree = tree.eval_args()
-            print etree._sage_()
+    for index,cell in enumerate(cells):
+        json_cell = []
+        html_eq = []
 
-            tree = '<pre>%s</pre>' % pretty_tree
-            outputs += tree
+        try:
+            eqs = MathematicalEquation.objects.filter(cell=cell)
+        except ObjectDoesNotExist:
+            return HttpResponse('Cell is empty.')
 
-        else:
-            etree = tree.eval_args()
-            outputs.append(html(etree))
+        for eq in eqs:
+            eqtext = unencode(eq.code)
+            tree = mathobjects.ParseTree(eqtext)
+            tree.gen_uids(uid)
+            json_cell.append(tree.json_flat())
+
+            #For debugging... 
+            if debug_parse_tree:
+                pretty_tree = mathobjects.pretty(tree)
+                etree = tree.eval_args()
+                print etree._sage_()
+
+                tree = '<pre>%s</pre>' % pretty_tree
+                outputs += tree
+
+            else:
+                etree = tree.eval_args()
+                html_eq.append(html(etree))
+
+        #This is stupid unintuitive syntax
+        html_cells.append(cellify(''.join(html_eq),index))
+        json_cells.append(json_cell)
 
     if debug_parse_tree:
         return HttpResponse( outputs )
     else:
         return render_to_response('worksheet.html', {
             'title': ws.name,
-            'equations':outputs,
+            'equations': html_cells,
             'username': request.user.username,
             'namespace_index': uid.next()[3:],
-            'json_tree': json.dumps(tree.json_flat()),
+            'json_cells': json.dumps(json_cells),
             })
 
 @errors
