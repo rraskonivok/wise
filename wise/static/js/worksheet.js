@@ -16,6 +16,10 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+//Optimization Tips:
+//http://net.tutsplus.com/tutorials/javascript-ajax/10-ways-to-instantly-increase-your-jquery-performance/
+//http://www.codenothing.com/archives/2010/8-jquery-micro-optimization-tips/
+
 ///////////////////////////////////////////////////////////
 // Utilities
 ///////////////////////////////////////////////////////////
@@ -166,6 +170,22 @@ function build_tree_from_json(json_input) {
     return T;
 }
 
+//Nested JSON Tree (InfoVis requires this)
+function recurse(node) {
+   var json = {};
+   json.id = 'node' + node.id;
+   json.data = node;
+   json.name = node.name;
+   json.children = []
+
+   for(child in node.children) {
+        child = node.children[child];
+        json.children.push(recurse(child));
+   }
+
+   return json
+}
+
 function nested_json(T) {
     //Returns the nested JSON form a (sub)tree.
     //
@@ -179,34 +199,16 @@ function nested_json(T) {
     //       },  
     //      "children": [ 'other nodes or empty' ]  
     //  };  
-
-    //Nested JSON Tree (InfoVis requires this)
-    function recurse(node) {
-       var json = {};
-       json.id = 'node' + node.id;
-       json.data = node;
-       json.name = node.name;
-       json.children = []
-       for(child in node.children) {
-            child = node.children[child];
-            json.children.push(recurse(child));
-       }
-       return json
-    }
-
     return recurse(T.root);
 }
 
-function append_json_to_tree(old_node, json_input) {
-    //The first node in json_input must be the root of the new
-    //subtree
-    //
-    console.log('old');
-    console.log(old_node);
+function merge_json_to_tree(old_node, json_input) {
+    //Swap out a node in a tree with an expression created from
+    //JSON 
     
     for(var term in json_input) {
-       index = term;
-       term = json_input[term];
+       var index = term;
+       var term = json_input[term];
        var node = new Expression();
        if(index == 0) {
             old_node.swapNode(node);
@@ -217,7 +219,23 @@ function append_json_to_tree(old_node, json_input) {
        node.name = term.type;
        node.dom = $('#' + node.id);
     }
+}
+
+function append_json_to_tree(root, json_input) {
     
+    for(var term in json_input) {
+       index = term;
+       term = json_input[term];
+       var node = new Expression();
+       if(index == 0) {
+            root.addNode(node);
+            console.log('appending');
+       }
+       NODES[term.id] = node; 
+       node.id = term.id;
+       node.name = term.type;
+       node.dom = $('#' + node.id);
+    }
 }
 
 ///////////////////////////////////////////////////////////
@@ -278,6 +296,17 @@ Node.prototype.addNode = function(node)
     node.index = this.children.length;
     this.children.push(node);
     (this.tree.levels[node.depth-1]).push(node);
+}
+
+Node.prototype.delNode = function(node)
+{
+    this._parent.children.splice(this.index,1);
+
+    //Regenerate the indices
+    for(var i=0; i < this._parent.children.length; i++)
+    {
+        this._parent.children[i].index = i;
+    }
 }
 
 Node.prototype.swapNode = function(newNode) {
@@ -392,6 +421,7 @@ selection.clear = function() {
 
 function clear_selection()
 {
+    //TODO: Remove $.each
     $.each($("#selectionlist button"),function() {
                 $(this).remove(); 
         });
@@ -426,6 +456,7 @@ function select_term(object)
     {
         clickedon.removeClass('selected');
         id = clickedon.attr("id");
+        //TODO: Remove $.each
         $.each($("#selectionlist button"),function()
         {
             if($(this).attr('index') === id)
@@ -558,6 +589,7 @@ function show_debug_menu()
 function resize_parentheses()
 {
     //Scale parentheses
+    //TODO: Remove $.each
     $.each($('.pnths'), function(obj)
         {
             parent_height = $(this).parent().height();
@@ -632,6 +664,7 @@ function cleanup_ajax_scripts()
 
 function debug_math()
 {
+    //TODO: Remove $.each
     $.each($('[math]'),function() {
         $(this).attr('title',$(this).attr('math'));
     });
@@ -810,12 +843,10 @@ function apply_transform(transform,selections)
                 }
                 else
                 {
-                    append_json_to_tree(NODES[obj.id()],data.new_json[i]);
+                    merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
                     nsym = obj.replace(data.new_html[i]);
                     nsym.attr('group',group_id_cache);
                     refresh_jsmath($(nsym))
-
-                    //Update tree
                 }
             }
             
@@ -843,9 +874,6 @@ function receive(ui,receiver,group_id)
     //so just remap all the children with the group... this should be safe (right?)
     receiver.children('[math]').attr('group',group_id)
 
-    //TODO do we need this?
-    //update_math(ui.sender);
-
     //Make sure nothing is changed while we process the request
     receiver.attr('locked','true')
 
@@ -859,7 +887,7 @@ function receive(ui,receiver,group_id)
         receiver_type: receiver.attr('math-type'),
         receiver_context: get_container(receiver).attr('math-type'),
 
-        //The math of the sender object
+        //The math of the sender objec
         sender: ui.sender.attr('math'),
         sender_type: ui.sender.attr('math-type'),
         sender_context: get_container(ui.sender).attr('math-type'),
@@ -869,28 +897,42 @@ function receive(ui,receiver,group_id)
 
         namespace_index: NAMESPACE_INDEX
     }
+
     $.post("receive/", data,
            function(data){
 
             if(data.error) {
-                error(data.error)
+                error(data.error);
                 return
             }
 
-            nsym = obj.replace(data);
+            //Remove the old element from the tree
+            NODES[obj.id()].delNode();
+            nsym = obj.replace(data.new_html);
             nsym.attr('group',group_id);
-            refresh_jsmath($(nsym))
+
+            refresh_jsmath($(nsym));
             receiver.attr('locked','false');
+
+            console.log('RECIEVER');
+            console.log(receiver.id());
+
+            append_json_to_tree(NODES[receiver.id()],data.new_json);
+
             update(get_container(nsym))
           },
-        "html");
-    cleanup_ajax_scripts()
+        "json");
 
+    cleanup_ajax_scripts();
 }
 
 function remove(ui,removed)
 {
-    //TODO: Do we need to call this?
+    //Rather unintuitivly this handles transformations that are
+    //induced after a object is removed from a container. The
+    //best example is when the last element from a equation side
+    //(i.e. LHS) is removed, this induces the remove method on
+    //LHS and appends a zero.
 
     group_id = removed.attr('id')
     obj = ui.item
@@ -916,13 +958,16 @@ function remove(ui,removed)
                     return
                 }
 
-                nsym = $(data).appendTo(removed);
+                nsym = $(data.new_html).appendTo(removed);
                 nsym.attr('group',group_id);
-                refresh_jsmath($(nsym))
+
+                refresh_jsmath(nsym);
+                merge_json_to_tree(NODES[removed.id()],data.new_json);
+
                 removed.attr('locked','false')
                 update_math(removed);
           },
-        "html");
+        "json");
     cleanup_ajax_scripts()
 }
 
@@ -955,21 +1000,34 @@ function combine(first,second,context)
                     return
                 }
 
-                nsym = first.after(data).next();
+                nsym = first.after(data.new_html).next();
+
+                //Find the root node and associate it with the
+                //new container, the root node should be the only
+                //one which the server didn't automatically
+                //assign a new id to.
                 container.find('[group=None]').attr('group',group_id_cache)
+
                 first.remove();
                 second.remove();
+
+                //Make appropriate changes to the tree
+                console.log(first.id());
+                merge_json_to_tree(NODES[first.id()],data.new_json[0]);
+                merge_json_to_tree(NODES[second.id()],data.new_json[1]);
+
                 update(container);
-                refresh_jsmath($(container))
+                refresh_jsmath(container);
                 traverse_lines();
                 cleanup_ajax_scripts();
           },
-        "html");
+        "json");
 }
 
 function new_inline(){
     data = {}
     data.namespace_index = NAMESPACE_INDEX;
+    data.cell_index = CELL_INDEX;
 
     $.post("new_inline/", data ,
         function(data){
@@ -977,20 +1035,28 @@ function new_inline(){
                 error(data.error)
             }
 
-            if(data.newline) {
-                cell = $('<div class="cell"></div>');
-                $("#workspace").append(cell);
-                lines = $('<table class="lines"></table>');
-                cell.html(lines);
-                lines.html(data.newline);
+            if(data.new_html) {
+                //TOOD Simplify this mess
+                
+                new_cell_html = $(data.new_html);
+                $("#workspace").append(new_cell_html);
+                $('.lines').show();
+                refresh_jsmath(new_cell_html);
                 traverse_lines();
-                refresh_jsmath(cell);
+
+                var new_cell = new Cell();
+                new_cell.dom = new_cell_html;
+                var eq = build_tree_from_json(data.new_json);
+                new_cell.equations.push(eq);
+
+                CELLS.push(new_cell);
+                CELL_INDEX = data.cell_index;
+
             }
 
             NAMESPACE_INDEX = data.namespace_index;
         }
     ,'json')
-
     cleanup_ajax_scripts();
 }
 
@@ -999,6 +1065,7 @@ function save_workspace()
     data = {}
     i = 0
 
+    //TODO: Remove $.each
     $.each($("tr.equation"),
         function(obj)
         { 
@@ -1177,8 +1244,13 @@ function traverse_lines()
 {
     //All elements with a [title] attribute show tooltips
     //containing their math-type
-    $('#workspace *[title]').tooltip({track:true});
+    //$('#workspace *[title]').tooltip({track:true});
     $('#workspace *[math-meta-class=term]').unbind('click');
+
+    /*$('#workspace *[title]').simpletip(
+            {fixed:false,
+            content: $(this).attr('title'),
+            position: });*/
 
     $('#workspace *[math-meta-class=term]').click(
             function(event) {
@@ -1249,6 +1321,7 @@ function dragging(sort_object,ui)
 function check_container(object)
 {
     //This handles stupid checks that are too expensive to do via Ajax, ie removing infix sugar 
+    //TODO: Remove $.each
     $.each(object.children(), function()
         {
            var prev = $(this).prev();
@@ -1326,6 +1399,7 @@ function check_combinations(object){
     {
        return 
     }
+    //TODO: Remove $.each
     $.each(object.children(), function()
         {
            prev = $(this).prev();
@@ -1452,6 +1526,7 @@ function update_math(object,stack_depth)
         mst = 'None';
     }
 
+    //TODO: Remove $.each
     $.each(members,function()
     {
         if($(this).attr("math") != undefined)
@@ -1485,6 +1560,7 @@ function build_tree()
         function(data){
           //console.log(data)
           jsn = data
+          //TODO: Remove $.each
           $.each(data.items, function(i,item){
               //console.log(item.name)
           });
@@ -1492,6 +1568,7 @@ function build_tree()
 
     function descend(obj, tree) {
         children = $('[group='+obj.id()+']')
+        //TODO: Remove $.each
         $.each(children,function() {
             var child = $(this);
             var node = new Expression();

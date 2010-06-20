@@ -72,26 +72,29 @@ def _memoize(func, *args, **kw):
         cache[key] = result = func(*args, **kw)
         return result
 
+# All these methods are null-safe, so if you pass anything that
+# is null it just maps to None
 def minimize_html(html):
+    if not html:
+        return None
     return strip_whitespace(html.rstrip('\n'))
+
+def html(obj):
+    if not obj:
+        return None
+    return minimize_html(obj.get_html())
+
+def json_flat(obj):
+    if not obj:
+        return None
+    return obj.json_flat()
 
 def memoize(f):
     f.cache = {}
     return decorator(_memoize, f)
 
-def html(obj):
-    if obj is None:
-        return None
-    return minimize_html(obj.get_html())
-
 def cellify(s,index):
     return '<div class="cell" data-index="%s"><table class="lines" style="display: none">%s</table></div>' % (index, s)
-
-def json_flat(obj):
-    if obj is None:
-        return None
-    return obj.json_flat()
-
 
 
 def parse(code, uid):
@@ -101,6 +104,9 @@ def parse(code, uid):
     return evaled
 
 def maps(func, obj):
+    '''It's like map() but awesomer, namely in that you can pass
+    a single argument to it and it doesn't crash and burn'''
+
     if hasattr(obj,'__iter__'):
         return map(func, obj)
     return [func(obj)]
@@ -237,7 +243,6 @@ def ws(request, eq_id):
             eqtext = unencode(eq.code)
             tree = mathobjects.ParseTree(eqtext)
             tree.gen_uids(uid)
-            json_cell.append(tree.json_flat())
 
             #For debugging... 
             if debug_parse_tree:
@@ -251,6 +256,7 @@ def ws(request, eq_id):
             else:
                 etree = tree.eval_args()
                 html_eq.append(html(etree))
+                json_cell.append(etree.json_flat())
 
         #This is stupid unintuitive syntax
         html_cells.append(cellify(''.join(html_eq),index))
@@ -264,6 +270,7 @@ def ws(request, eq_id):
             'equations': html_cells,
             'username': request.user.username,
             'namespace_index': uid.next()[3:],
+            'cell_index': len(cells),
             'json_cells': json.dumps(json_cells),
             })
 
@@ -331,9 +338,15 @@ def combine(request,eq_id):
     first = first.eval_args()
     second = second.eval_args()
 
-    combination = first.combine(second,context)
+    # The combination of the two elements (if a rule exists),
+    # otherwise default to just the whatever the container the
+    # two objects coexist in requires.
+    new_html, objs = first.combine(second,context)
+    new_json = map(json_flat, objs)
 
-    return HttpResponse(combination)
+    return JSONResponse({'new_html': new_html,
+                         'new_json': new_json,
+                         'namespace_index': uid.next()[3:]})
 
 @errors
 def unserialize(string):
@@ -453,13 +466,11 @@ def receive(request,eq_id):
     inserted = inserted.eval_args()
     received = received.eval_args()
 
-    response = received.receive(inserted,receiver_context,sender_type,sender_context,new_position)
+    new = received.receive(inserted,receiver_context,sender_type,sender_context,new_position)
 
-    if response is None:
-        response = 'Could not find rewrite rule'
-
-    #TODO we have to pass namespace_index as well
-    return HttpResponse(response)
+    return JSONResponse({'new_html': html(new),
+                         'new_json': json_flat(new),
+                         'namespace_index': uid.next()[3:]})
 
 @login_required
 @errors
@@ -485,25 +496,30 @@ def remove(request,eq_id):
     obj = obj.eval_args()
     sender = sender.eval_args()
 
-    response = sender.remove(obj,sender_context)
+    new = sender.remove(obj,sender_context)
 
-    if response is None:
-        response = 'Could not find rewrite rule'
-
-    #TODO we have to pass namespace_index as well
-    return HttpResponse(response)
+    return JSONResponse({'new_html': html(new),
+                         'new_json': json_flat(new),
+                         'namespace_index': uid.next()[3:]})
 
 @login_required
 @errors
 @cache_page(CACHE_INTERVAL)
 def new_inline(request, eq_id):
     namespace_index = int( request.POST.get('namespace_index') )
+    cell_index = int( request.POST.get('cell_index') )
+
     uid = uidgen(namespace_index)
 
-    new = parse('(Equation (LHS (Placeholder ) ) (RHS (Placeholder )))',uid)
+    # TODO we should do this without parsing, this is really slow
+    # and inefficent
+    new = parse('(Equation (LHS (Placeholder )) (RHS (Placeholder )))',uid)
+    newline_html = cellify(html(new),cell_index+1)
 
-    return JSONResponse({'newline': html(new),
-                         'namespace_index': uid.next()[3:]})
+    return JSONResponse({'new_html': newline_html,
+                         'new_json': json_flat(new),
+                         'namespace_index': uid.next()[3:],
+                         'cell_index': cell_index + 1})
 
 palette_template = '''
 {% for group in palette %}

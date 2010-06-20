@@ -18,11 +18,13 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+#For error reporting
 import traceback
 
 from django import template
 from django.utils import simplejson as json
 from django.utils.safestring import SafeUnicode
+from django.utils.html import strip_spaces_between_tags as strip_whitespace
 
 #Our parser functions
 import parser
@@ -62,6 +64,21 @@ def memoize(f):
             memo[args] = result
             return result
     return wrapper
+
+def minimize_html(html):
+    if not html:
+        return None
+    return strip_whitespace(html.rstrip('\n'))
+
+def html(*objs):
+    if not objs:
+        return None
+    new_html = [];
+
+    for obj in objs:
+        new_html.append(minimize_html(obj.get_html()))
+
+    return ''.join(new_html)
 
 def pairs(list):
     for i in range(len(list) - 1):
@@ -816,30 +833,40 @@ class Term(object):
     def combine_fallback(self,other,context):
         '''Just slap an operator between two terms and leave it as is'''
 
+        # This differs slightly from the the transformations called on
+        # expressions in that we return both the json and the
+        # html for the new object, the reason being that often
+        # include syntatic sugar in the response sent to the
+        # client 
+
         if context == 'Addition':
             if isinstance(other,Term):
 
                 if type(other) is Negate:
+                    # Don't add a plus sign if we have a negation
+                    # to avoid verbose expressions like 3 + -4
                     result = self.get_html() + other.get_html()
 
                 elif type(other) is Numeric:
                     if other.is_zero():
                         result = self.get_html()
                     else:
-                        result = self.get_html() + infix_symbol_html(Addition.symbol) +  other.get_html()
+                        result = self.get_html() + infix_symbol_html(Addition.symbol) + other.get_html()
 
                 else:
                     result = self.get_html() + infix_symbol_html(Addition.symbol) +  other.get_html()
 
-                return result
-        if context == 'Product':
+                return result,[self,other]
+
+        elif context == 'Product':
             if isinstance(other,Term):
                 result = self.get_html() + infix_symbol_html(Product.symbol) +  other.get_html()
-                return result
-        if context == 'Wedge':
+                return result,[self,other]
+
+        elif context == 'Wedge':
             if isinstance(other,Term):
                 result = self.get_html() + infix_symbol_html(Wedge.symbol) +  other.get_html()
-                return result
+                return result,[self,other]
 
     @fallback(combine_fallback)
     def combine(self,other,context):
@@ -1064,14 +1091,10 @@ class Physical_Quantity(Base_Symbol):
             if isinstance(other,Physical_Quantity):
                 #Same type of quantity (Length <-> Length)
                 if isinstance(other,type(self)):
-
                     # A [unit] + B [unit] = (A+B)[unit]
-
                     combined = Addition(self.quantity,other.quantity)
                     combined.show_parenthesis = True
                     return Length(combined).get_html()
-
-        return self.combine_fallback(other,context)
 
     def convert_unit(self,other):
         '''Scale the quantity by the necessary factor needed to convert between unit systems
@@ -1373,12 +1396,30 @@ class Equation(object):
         self.lhs = lhs
 
         self.math = '(Equation ' + self.lhs.get_math() + ' ' +self.rhs.get_math()  + ')'
+        self.terms = [self.rhs, self.lhs]
 
     def get_math(self):
         return self.math
 
+    @property
+    def classname(self):
+        return self.__class__.__name__
+
     def _sage_(self):
         return self.lhs._sage_() == self.rhs._sage_()
+
+    def json_flat(self,lst=None):
+        if not lst:
+            lst = []
+
+        lst.append({"id": self.id,
+                    "type": self.classname,
+                    "children": [term.id for term in self.terms]})
+
+        for term in self.terms:
+            term.json_flat(lst)
+
+        return lst
 
     def get_html(self):
         self.rhs.id = self.idgen.next()
@@ -1486,6 +1527,7 @@ class RHS(Term):
     def __init__(self,*terms):
         self.rhs = Addition(*terms)
         self.terms = [self.rhs]
+        self.args = [self.rhs]
 
     def _sage_(self):
         return self.rhs._sage_()
@@ -1519,6 +1561,7 @@ class LHS(Term):
     def __init__(self,*terms):
         self.lhs = Addition(*terms)
         self.terms = [self.lhs]
+        self.args = [self.lhs]
 
     def _sage_(self):
         return self.lhs._sage_()
@@ -1754,7 +1797,7 @@ class Operation(Term):
         return self.symbol
 
     def receive(self,obj,receiver_context,sender_type,sender_context,new_position):
-        return obj.get_html()
+        return obj
 
     def has_single_term(self):
         if len(self.terms) == 1:
@@ -1820,17 +1863,16 @@ class Addition(Operation):
 
         if sender_context == 'LHS' or sender_context == 'RHS':
             obj = obj.negate()
-            return obj.get_html()
+            return obj
         else:
-            return obj.get_html()
+            return obj
 
     def remove(self,obj,remove_context):
         '''If we drag everything form this side of the equation
         zero it out'''
 
         if type(self.terms[0]) is Empty:
-            zero = Numeric(0)
-            return zero.get_html()
+            return Numeric(0)
 
 class Product(Operation):
     ui_style = 'infix'
@@ -1852,9 +1894,8 @@ class Product(Operation):
         #self.ui_sortable()
 
     def remove(self,obj,remove_context):
-
         if type(self.terms[0]) is Empty:
-            return One().get_html()
+            return One()
 
     def _sage_(self):
         #Get Sage objects for each term
@@ -1986,10 +2027,11 @@ class Negate(Operation):
 
     @fallback(Term.combine_fallback)
     def combine(self,other,context):
+        ''' -A+-B = -(A+B)'''
+
         if context == 'Addition':
             if isinstance(other,Negate):
-                ''' -A+-B = -(A+B)'''
-                return Negate(Addition(self.operand, other.operand)).get_html()
+                return Negate(Addition(self.operand, other.operand))
 
     def negate(self):
         return self.operand
