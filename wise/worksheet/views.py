@@ -374,10 +374,12 @@ def apply_transform(request,eq_id):
 
     transform = mathobjects.algebra.__dict__[transform]
 
-    response = transform(*args)
+    new = transform(*args)
+    new.idgen = uid
+    new.ensure_id()
 
-    new_html = maps(html, response)
-    new_json = maps(json_flat, response)
+    new_html = maps(html, new)
+    new_json = maps(json_flat, new)
 
     return JSONResponse({'new_html': new_html,
                          'new_json': new_json,
@@ -467,6 +469,8 @@ def receive(request,eq_id):
     received = received.eval_args()
 
     new = received.receive(inserted,receiver_context,sender_type,sender_context,new_position)
+    new.idgen = uid
+    new.ensure_id()
 
     return JSONResponse({'new_html': html(new),
                          'new_json': json_flat(new),
@@ -497,6 +501,8 @@ def remove(request,eq_id):
     sender = sender.eval_args()
 
     new = sender.remove(obj,sender_context)
+    new.idgen = uid
+    new.ensure_id()
 
     return JSONResponse({'new_html': html(new),
                          'new_json': json_flat(new),

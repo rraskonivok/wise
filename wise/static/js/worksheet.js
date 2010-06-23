@@ -203,39 +203,61 @@ function nested_json(T) {
 }
 
 function merge_json_to_tree(old_node, json_input) {
+   var newtree = build_tree_from_json(json_input); 
+   old_node.swapNode(newtree.root);
+
     //Swap out a node in a tree with an expression created from
     //JSON 
-    
-    for(var term in json_input) {
-       var index = term;
-       var term = json_input[term];
-       var node = new Expression();
-       if(index == 0) {
-            old_node.swapNode(node);
-            console.log('swapping');
-       }
-       NODES[term.id] = node; 
-       node.id = term.id;
-       node.name = term.type;
-       node.dom = $('#' + node.id);
-    }
+
+    //js doesn't have proper iterators *grumble, grumble*
+    //if(json_input.length == 1) {
+    //   var node = new Expression();
+    //   var term = json_input[0];
+
+    //   old_node.swapNode(node);
+    //   //console.log("old_node: %s",old_node.id());
+
+    //   NODES[term.id] = node; 
+    //   node.id = term.id;
+    //   node.name = term.type;
+    //   node.dom = $('#' + term.id);
+
+    //   //delete NODES[old_node.id()];
+    //} else {
+    //    for(var term in json_input) {
+    //       var index = term;
+    //       var term = json_input[term];
+    //       var node = new Expression();
+    //       if(index == 0) {
+    //            old_node.swapNode(node);
+    //            //console.log("old_node: %s",old_node.id());
+    //            //delete NODES[old_node.id()];
+    //       }
+    //       NODES[term.id] = node; 
+    //       node.id = term.id;
+    //       node.name = term.type;
+    //       node.dom = $('#' + node.id);
+    //    }
+    //}
 }
 
-function append_json_to_tree(root, json_input) {
-    
-    for(var term in json_input) {
-       index = term;
-       term = json_input[term];
-       var node = new Expression();
-       if(index == 0) {
-            root.addNode(node);
-            console.log('appending');
-       }
-       NODES[term.id] = node; 
-       node.id = term.id;
-       node.name = term.type;
-       node.dom = $('#' + node.id);
-    }
+function append_to_tree(root, json_input) {
+   var newtree = build_tree_from_json(json_input); 
+   root.addNode(newtree.root);
+
+    //for(var term in json_input) {
+    //   var index = term;
+    //   var term = json_input[term];
+    //   node = new Expression();
+    //   if(index == 0) {
+    //        root.addNode(node);
+    //     //   console.log("root_node: %s",root.id());
+    //   }
+    //   NODES[term.id] = node; 
+    //   node.id = term.id;
+    //   node.name = term.type;
+    //   node.dom = $('#' + term.id);
+    //}
 }
 
 ///////////////////////////////////////////////////////////
@@ -850,7 +872,7 @@ function apply_transform(transform,selections)
                 }
             }
             
-            NAMESPACE_INDEX = data.namespace_index
+            NAMESPACE_INDEX = data.namespace_index;
 
             clear_selection()
             traverse_lines();
@@ -906,20 +928,21 @@ function receive(ui,receiver,group_id)
                 return
             }
 
-            //Remove the old element from the tree
-            NODES[obj.id()].delNode();
             nsym = obj.replace(data.new_html);
             nsym.attr('group',group_id);
 
             refresh_jsmath($(nsym));
             receiver.attr('locked','false');
 
-            console.log('RECIEVER');
-            console.log(receiver.id());
-
-            append_json_to_tree(NODES[receiver.id()],data.new_json);
-
             update(get_container(nsym))
+
+            //append_json_to_tree(NODES[receiver.id()],data.new_json);
+            append_to_tree(NODES[receiver.id()],data.new_json);
+
+            //Remove the old element from the tree
+            NODES[obj.id()].delNode();
+
+            NAMESPACE_INDEX = data.namespace_index;
           },
         "json");
 
@@ -958,14 +981,17 @@ function remove(ui,removed)
                     return
                 }
 
-                nsym = $(data.new_html).appendTo(removed);
-                nsym.attr('group',group_id);
+                if(data.new_html) {
+                    nsym = $(data.new_html).appendTo(removed);
+                    nsym.attr('group',group_id);
 
-                refresh_jsmath(nsym);
-                merge_json_to_tree(NODES[removed.id()],data.new_json);
+                    refresh_jsmath(nsym);
+                    append_to_tree(NODES[removed.id()],data.new_json);
 
-                removed.attr('locked','false')
-                update_math(removed);
+                    removed.attr('locked','false')
+                    update_math(removed);
+                    NAMESPACE_INDEX = data.namespace_index;
+                }
           },
         "json");
     cleanup_ajax_scripts()
@@ -1002,6 +1028,9 @@ function combine(first,second,context)
 
                 nsym = first.after(data.new_html).next();
 
+                //Render the TeX
+                refresh_jsmath(container);
+
                 //Find the root node and associate it with the
                 //new container, the root node should be the only
                 //one which the server didn't automatically
@@ -1011,15 +1040,28 @@ function combine(first,second,context)
                 first.remove();
                 second.remove();
 
+                var first_node = NODES[first.id()];
+                var second_node = NODES[second.id()];
+
                 //Make appropriate changes to the tree
-                console.log(first.id());
-                merge_json_to_tree(NODES[first.id()],data.new_json[0]);
-                merge_json_to_tree(NODES[second.id()],data.new_json[1]);
+                if(!data.new_json[0]) {
+                    first_node.delNode(); 
+                } else {
+                    merge_json_to_tree(first_node,data.new_json[0]);
+                }
+
+                if(!data.new_json[1]) {
+                    second_node.delNode(); 
+                } else {
+                    merge_json_to_tree(second_node,data.new_json[1]);
+                }
 
                 update(container);
-                refresh_jsmath(container);
+
                 traverse_lines();
                 cleanup_ajax_scripts();
+
+                NAMESPACE_INDEX = data.namespace_index;
           },
         "json");
 }
@@ -1253,6 +1295,11 @@ function traverse_lines()
             position: });*/
 
     $('#workspace *[math-meta-class=term]').click(
+            function(event) {
+                select_term(this); event.stopPropagation() 
+            });
+
+    $('#palette *[math-meta-class=term]').click(
             function(event) {
                 select_term(this); event.stopPropagation() 
             });

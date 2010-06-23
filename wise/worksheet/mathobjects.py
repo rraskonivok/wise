@@ -554,21 +554,6 @@ def pretty(t):
     return pretty_tree(t,kids,show)
 
 #-------------------------------------------------------------
-# Sugar Factories
-#-------------------------------------------------------------
-
-class UIDFactory:
-    def __init__(self):
-        self.increment = 0
-
-    @errors
-    def gen(self):
-        self.increment +=1
-        return 'uid'+str(self.increment)
-
-uf = UIDFactory()
-
-#-------------------------------------------------------------
 # JQuery Interfaces
 #-------------------------------------------------------------
 
@@ -715,6 +700,7 @@ class Term(object):
     has_sort = False
 
     _is_constant = False
+    idgen = None
 
     def __init__(self,*ex):
         print 'Anonymous Term was caught with arguments',ex
@@ -850,6 +836,7 @@ class Term(object):
                 elif type(other) is Numeric:
                     if other.is_zero():
                         result = self.get_html()
+                        other = None;
                     else:
                         result = self.get_html() + infix_symbol_html(Addition.symbol) + other.get_html()
 
