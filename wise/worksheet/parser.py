@@ -63,35 +63,30 @@ op = (lambda s: some(lambda tok: tok.type == 'OP' and tok.value == s) >> tokval)
 op_ = lambda s: skip(op(s))
 const = lambda x: lambda _: x
 
+makeop = lambda s, f: op(s) >> const(f)
+
+add = makeop('+', operator.add)
+sub = makeop('-', operator.sub)
+mul = makeop('*', operator.mul)
+div = makeop('/', operator.div)
+pow = makeop('**', operator.pow)
+
 unarg = lambda f: lambda x: f(*x)
 eval_expr = unarg(lambda a, f, b: f(a, b))
 
 number = some(lambda tok: tok.type == 'NUMBER') >> tokval
 var = some(lambda tok: tok.type == 'NAME') >> tokval
 string = some(lambda tok: tok.type == 'STRING') >> tokval
-#operator = add | sub | mul | div | pow
-#expr = (var | number) + many(operator + (var | number | string))
+operator = add | sub | mul | div | pow
+expr = (var | number) + many(operator + (var | number | string))
+po = op_('(')
+pc = op_(')')
 
 @with_forward_decls
 def primary():
-    return (op_('(') + var + many((var|number|string) | primary) + op_(')'))
+    return (var + many(var|string|number|primary)) | (po + primary + pc)
 
 toplevel = primary
-
-def ptree(t):
-    def kids(x):
-        if isinstance(x, Branch):
-            return x.args
-        else:
-            return []
-
-    def show(x):
-        if isinstance(x, Branch):
-            return x.type
-        else:
-            return repr(x)
-
-    return pretty_tree(t, kids, show)
 
 def eq_parse(str):
 	return toplevel.parse(tokenize(str))

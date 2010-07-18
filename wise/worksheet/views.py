@@ -148,17 +148,15 @@ def account_logout(request):
     # Redirect to a success page.
     return HttpResponse('Logged Out')
 
+@errors
 def test(request):
-    try:
-        x = mathobjects.sage.var('x')
-        exp = x**2
-        RHS = mathobjects.parse_sage_exp(mathobjects.sage.diff(exp))
-        LHS = mathobjects.Diff(mathobjects.parse_sage_exp(exp))
-        sage_test = mathobjects.Equation(mathobjects.LHS(LHS),mathobjects.RHS(RHS)).get_html()
-    except Exception,e:
-        sage_test = e
-
-    return render_to_response('index.html',{'sage': sage_test})
+    add = mathobjects.pure.add
+    rational = mathobjects.pure.rational
+    one = mathobjects.pure.PureInt(1)
+    two = mathobjects.pure.PureInt(2)
+    sage_test = str(rational(one,two))
+    pure_exp = mathobjects.parse_pure_exp(sage_test)
+    return render_to_response('index.html',{'sage': pure_exp.get_html()})
 
 @login_required
 def home(request):
@@ -375,8 +373,15 @@ def apply_transform(request,eq_id):
     transform = mathobjects.algebra.__dict__[transform]
 
     new = transform(*args)
-    new.idgen = uid
-    new.ensure_id()
+
+    #Yah, this is ugly
+    if hasattr(new,'__iter__'):
+        for nval in new:
+            nval.idgen = uid
+        [nval.ensure_id() for nval in new]
+    else:
+        new.idgen = uid
+        new.ensure_id()
 
     new_html = maps(html, new)
     new_json = maps(json_flat, new)
@@ -519,7 +524,7 @@ def new_inline(request, eq_id):
 
     # TODO we should do this without parsing, this is really slow
     # and inefficent
-    new = parse('(Equation (LHS (Placeholder )) (RHS (Placeholder )))',uid)
+    new = parse('(Definition (LHS (Placeholder )) (RHS (Placeholder )))',uid)
     newline_html = cellify(html(new),cell_index+1)
 
     return JSONResponse({'new_html': newline_html,

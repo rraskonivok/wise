@@ -37,4 +37,11 @@ PlaceholderSubstitute.pretty = 'Substitute'
 def Replace( first, second ):
     return second
 
+@Map( _( Definition , Equation ) >> _( Definition, Equation ) )
+def Reduce( first, second ):
+    rule = python_to_pure(first)
+    print 'new_rule',python_to_pure(first)
+    return first,pure_to_python(pure.reduce_with(rule,python_to_pure(second)))
+
 mappings = iter_mappings(locals())
+

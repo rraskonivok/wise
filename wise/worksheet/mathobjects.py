@@ -33,8 +33,7 @@ import parser
 from hashlib import sha1
 from binascii import crc32
 
-#The whole sage library (this takes some time)
-import sage.all as sage
+import pure.algebra as pure
 
 #-------------------------------------------------------------
 # Utilities
@@ -118,10 +117,10 @@ class NoWrapper(Exception):
     def __str__(self):
         return self.value
 
-from sage.functions import trig
-from sage.functions import log
-from sage.symbolic import constants
-from sage import symbolic
+#from sage.functions import trig
+#from sage.functions import log
+#from sage.symbolic import constants
+#from sage import symbolic
 
 #Longterm Goal: Recursive descent isn't the fastest way to do
 #this find a better way
@@ -130,122 +129,145 @@ from sage import symbolic
 
 #ExpressionIterator may be a way to do this faster
 
-def parse_sage_exp(expr):
+#def parse_sage_exp(expr):
+#
+#    if type(expr) is sage.Expression:
+#        operator = expr.operator()
+#        operands = expr.operands()
+#
+#        #Symbols
+#        if expr._is_symbol():
+#            return Variable(str(expr))
+#
+#        #Rational Numbers
+#
+#        #There has to be an less ugly way to check if a
+#        #number is rational or not
+#        elif bool(expr.denominator() != 1):
+#            den = parse_sage_exp(expr.denominator())
+#            return Fraction(num,den)
+#
+#        #Numbers
+#
+#        #Constants
+#        elif expr._is_constant():
+#            pyo = expr.pyobject()
+#            if type(pyo) is constants.Pi:
+#                return Pi('pi')
+#
+#        elif expr._is_numeric():
+#            if expr.is_zero():
+#                return Zero()
+#
+#            if expr<0:
+#                expr = sage.operator.abs(expr)
+#                return Negate(Numeric(str(expr)))
+#            return Numeric(str(expr))
+#
+#        #Relational Structures (i.e. Equations, Inequalities...)
+#        elif expr.is_relational():
+#            lhs = LHS(parse_sage_exp(expr.lhs()))
+#            rhs = RHS(parse_sage_exp(expr.rhs()))
+#            return Equation(lhs,rhs)
+#
+#        #Basic Algebraic Structures
+#        elif operator is sage.operator.add:
+#            return apply(Addition,map(parse_sage_exp,operands))
+#
+#        elif operator is sage.operator.mul:
+#            if operands[-1] == -1:
+#                return Negate(apply(Product,map(parse_sage_exp,operands[0:-1])))
+#            return apply(Product,map(parse_sage_exp,operands))
+#
+#        elif operator is sage.operator.div:
+#            return apply(Fraction,map(parse_sage_exp,operands))
+#
+#        elif operator is sage.operator.pow:
+#            if operands[1] == -1:
+#                return apply(Fraction,[Numeric(1),parse_sage_exp(operands[0])])
+#            if operands[1] < -1:
+#                nexp = sage.operator.abs(operands[1])
+#                #Convert this into a Fraction
+#                return apply(Fraction,[Numeric(1),parse_sage_exp(operands[0])])
+#            return apply(Power,map(parse_sage_exp,operands))
+#
+#        elif operator is sage.operator.neg:
+#            return apply(Negate,map(parse_sage_exp,operands))
+#
+#        #Trigonometric Functions
+#        elif operator is trig.cos:
+#            return apply(Cosine,map(parse_sage_exp,operands))
+#
+#        elif operator is trig.sin:
+#            return apply(Sine,map(parse_sage_exp,operands))
+#
+#        elif operator is trig.tan:
+#            return apply(Tangent,map(parse_sage_exp,operands))
+#
+#        elif operator is trig.sec:
+#            return apply(Secant,map(parse_sage_exp,operands))
+#
+#        elif operator is trig.csc:
+#            return apply(Cosecant,map(parse_sage_exp,operands))
+#
+#        elif operator is trig.cot:
+#            return apply(Cotangent,map(parse_sage_exp,operands))
+#
+#        #Exponential & Logarithms
+#
+#        elif operator is log.ln:
+#            return apply(Log,map(parse_sage_exp,operands))
+#
+#        elif operator is log.exp and operands == [1]:
+#            return E()
+#
+#        elif operator is symbolic.operators.FDerivativeOperator:
+#            return apply(FDiff,map(parse_sage_exp,operands))
+#
+#        elif isinstance(operator,symbolic.function.SymbolicFunction):
+#            return FreeFunction(operator.name(),Variable(str(operands[0])))
+#            return Variable(str(operands[0]))
+#
+#        elif type(operator) is symbolic.operators.FDerivativeOperator:
+#            arg1 = parse_sage_exp(operator.function())
+#            arg2 = parse_sage_exp(operands[0])
+#            return FDiff(arg2,arg1)
+#
+#    elif type(expr) is sage.Integer:
+#        if expr<0:
+#            expr = sage.operator.abs(expr)
+#            return Negate(Numeric(str(expr)))
+#        return Numeric(str(expr))
+#
+#    elif isinstance(expr,symbolic.function.SymbolicFunction):
+#        return Variable(expr.name())
+#
+#    raise NoWrapper(expr)
 
-    if type(expr) is sage.Expression:
-        operator = expr.operator()
-        operands = expr.operands()
+def translate_pure(key):
+    #TODO: move outside so we don't init it on every pass
+    translation_table = {
+            'add':Addition,
+            'mul':Product,
+            'rational':Fraction,
+            'eq':Equation,
+            }
+    return translation_table[key]
 
-        #Symbols
-        if expr._is_symbol():
-            return Variable(str(expr))
+def parse_pure_exp(expr, uidgen=None):
+    #Get the string representation of the pure expression
+    parsed = ParseTree(str(expr))
+    if uidgen:
+        parsed.gen_uids(uidgen)
+    #Map into the Python wrapper classes
+    return parsed.eval_pure()
 
-        #Rational Numbers
+#Convenience wrappers with more obvious names...
+def pure_to_python(obj,uidgen=None):
+    return parse_pure_exp(obj,uidgen=None)
 
-        #There has to be an less ugly way to check if a
-        #number is rational or not
-        elif bool(expr.denominator() != 1):
-            num = parse_sage_exp(expr.numerator())
-            den = parse_sage_exp(expr.denominator())
-            return Fraction(num,den)
-
-        #Numbers
-
-        #Constants
-        elif expr._is_constant():
-            pyo = expr.pyobject()
-            if type(pyo) is constants.Pi:
-                return Pi('pi')
-
-        elif expr._is_numeric():
-            if expr.is_zero():
-                return Zero()
-
-            if expr<0:
-                expr = sage.operator.abs(expr)
-                return Negate(Numeric(str(expr)))
-            return Numeric(str(expr))
-
-        #Relational Structures (i.e. Equations, Inequalities...)
-        elif expr.is_relational():
-            lhs = LHS(parse_sage_exp(expr.lhs()))
-            rhs = RHS(parse_sage_exp(expr.rhs()))
-            return Equation(lhs,rhs)
-
-        #Basic Algebraic Structures
-        elif operator is sage.operator.add:
-            return apply(Addition,map(parse_sage_exp,operands))
-
-        elif operator is sage.operator.mul:
-            if operands[-1] == -1:
-                return Negate(apply(Product,map(parse_sage_exp,operands[0:-1])))
-            return apply(Product,map(parse_sage_exp,operands))
-
-        elif operator is sage.operator.div:
-            return apply(Fraction,map(parse_sage_exp,operands))
-
-        elif operator is sage.operator.pow:
-            if operands[1] == -1:
-                return apply(Fraction,[Numeric(1),parse_sage_exp(operands[0])])
-            if operands[1] < -1:
-                nexp = sage.operator.abs(operands[1])
-                #Convert this into a Fraction
-                return apply(Fraction,[Numeric(1),parse_sage_exp(operands[0])])
-            return apply(Power,map(parse_sage_exp,operands))
-
-        elif operator is sage.operator.neg:
-            return apply(Negate,map(parse_sage_exp,operands))
-
-        #Trigonometric Functions
-        elif operator is trig.cos:
-            return apply(Cosine,map(parse_sage_exp,operands))
-
-        elif operator is trig.sin:
-            return apply(Sine,map(parse_sage_exp,operands))
-
-        elif operator is trig.tan:
-            return apply(Tangent,map(parse_sage_exp,operands))
-
-        elif operator is trig.sec:
-            return apply(Secant,map(parse_sage_exp,operands))
-
-        elif operator is trig.csc:
-            return apply(Cosecant,map(parse_sage_exp,operands))
-
-        elif operator is trig.cot:
-            return apply(Cotangent,map(parse_sage_exp,operands))
-
-        #Exponential & Logarithms
-
-        elif operator is log.ln:
-            return apply(Log,map(parse_sage_exp,operands))
-
-        elif operator is log.exp and operands == [1]:
-            return E()
-
-        elif operator is symbolic.operators.FDerivativeOperator:
-            return apply(FDiff,map(parse_sage_exp,operands))
-
-        elif isinstance(operator,symbolic.function.SymbolicFunction):
-            return FreeFunction(operator.name(),Variable(str(operands[0])))
-            return Variable(str(operands[0]))
-
-        elif type(operator) is symbolic.operators.FDerivativeOperator:
-            arg1 = parse_sage_exp(operator.function())
-            arg2 = parse_sage_exp(operands[0])
-            return FDiff(arg2,arg1)
-
-    elif type(expr) is sage.Integer:
-        if expr<0:
-            expr = sage.operator.abs(expr)
-            return Negate(Numeric(str(expr)))
-        return Numeric(str(expr))
-
-    elif isinstance(expr,symbolic.function.SymbolicFunction):
-        return Variable(expr.name())
-
-    raise NoWrapper(expr)
-
+def python_to_pure(obj):
+    return obj._pure_()
 
 #-------------------------------------------------------------
 # Parse Tree
@@ -266,6 +288,7 @@ def parse_sage_exp(expr):
 
 class InternalMathObjectNotFound(Exception):
     pass
+
 
 class Branch(object):
     # I believe this is a type of Hash tree, 
@@ -504,6 +527,36 @@ class Branch(object):
         obj.idgen = self.idgen
 
         return obj
+
+    def eval_pure(self):
+        '''Like pure_eval but instead of mapping into internal
+        python objects it maps into Pure Objects. This is used
+        for when we run an expression through pure and want to
+        map the result into something to use in Python.'''
+
+        #Evalute by descent
+        def f(x):
+            #print 'TYPE IS',x
+            if isinstance(x,str):
+                if x.isdigit():
+                    return Numeric(x)
+                else:
+                    return Variable(x)
+            elif isinstance(x,Branch):
+                '''create a new class from the Branch type'''
+                try:
+                    return x.eval_pure()
+                except KeyError:
+                    raise InternalMathObjectNotFound
+                    print 'Could not find class: ',x.type
+            else:
+                print 'something strange is being passed'
+
+        typ = translate_pure(self.type)
+        obj = apply(typ,(map(f,self.args)))
+
+        return obj
+
 
 class ParseError(Exception):
     def __init__(self,expr):
@@ -911,8 +964,8 @@ class Empty(Term):
     def get_math(self):
         return 'Empty'
 
-    def _sage_(self):
-        return sage.var('P')
+    #def _sage_(self):
+    #    return sage.var('P')
 
     def combine(self,other,context):
         return other.get_html()
@@ -950,8 +1003,8 @@ class Base_Symbol(Term):
         self.symbol = greek_lookup(symbol)
         self.latex = greek_lookup(symbol)
 
-    def _sage_(self):
-        return sage.var(self.symbol)
+    def _pure_(self):
+        return pure.var(self.symbol)
 
 class Greek(Base_Symbol):
     sensitive = True
@@ -959,7 +1012,7 @@ class Greek(Base_Symbol):
         self.symbol = symbol
         self.args = symbol
         #TODO: Just do a lookup table to avoid having to fall back on sage.latex
-        self.latex = sage.latex(sage.var(symbol))
+        #self.latex = sage.latex(sage.var(symbol))
 
 class Variable(Base_Symbol):
     assumptions = None
@@ -970,9 +1023,11 @@ class Variable(Base_Symbol):
         self.latex = '$%s$' % symbol
         self.args = str(symbol)
 
-    def _sage_(self):
-        return sage.var(self.symbol)
+    #def _sage_(self):
+    #    return sage.var(self.symbol)
 
+    def _pure_(self):
+        return pure.PureSymbol(self.symbol)
 
 class RealVariable(Base_Symbol):
     '''It's like above but with the assumption that it's real'''
@@ -982,16 +1037,15 @@ class Unit(Term):
     def __init__(self,symbol):
         self.symbol = symbol
         self.args = str(symbol)
-        self.latex = sage.latex(symbol)
-
-    def _sage_(self):
-        import sympy.physics.units as units
-        return sage.var(self.symbol)
-        if self.symbol in dir(locals()['units']):
-            unit = eval('units.'+self.symbol)
-            return unit
-        else:
-            return sage.var(self.symbol)
+        #self.latex = sage.latex(symbol)
+    #def _sage_(self):
+    #    import sympy.physics.units as units
+    #    return sage.var(self.symbol)
+    #    if self.symbol in dir(locals()['units']):
+    #        unit = eval('units.'+self.symbol)
+    #        return unit
+    #    else:
+    #        return sage.var(self.symbol)
 
     def get_sympy(self):
         import sympy.physics.units as units
@@ -1042,8 +1096,8 @@ class Physical_Quantity(Base_Symbol):
         self.unit = units
         self.unit.group = self.id
 
-    def _sage_(self):
-        return self.quantity._sage_() * self.unit._sage_()
+    #def _sage_(self):
+    #    return self.quantity._sage_() * self.unit._sage_()
 
     def get_html(self):
 
@@ -1147,10 +1201,10 @@ class Power(Term):
         if basetype is Fraction or isinstance(self.base, Operation):
             self.base.show_parenthesis = True
 
-    def _sage_(self):
-        base = self.base._sage_()
-        exponent = self.exponent._sage_()
-        return sage.operator.pow(base,exponent)
+    #def _sage_(self):
+    #    base = self.base._sage_()
+    #    exponent = self.exponent._sage_()
+    #    return sage.operator.pow(base,exponent)
 
     def get_html(self):
         self.exponent.css_class = 'exponent'
@@ -1193,9 +1247,12 @@ class Fraction(Term):
         self.den.css_class = 'middle'
         self.terms = [num,den]
 
-    def _sage_(self):
-        return self.num._sage_() / self.den._sage_()
-        return sage.Rational((self.num._sage_() , self.den._sage_()))
+    #def _sage_(self):
+    #    return self.num._sage_() / self.den._sage_()
+    #    return sage.Rational((self.num._sage_() , self.den._sage_()))
+
+    def _pure_(self):
+       return pure.rational(self.num._pure_(), self.den._pure_())
 
     def get_html(self):
         self.num.group = self.id
@@ -1247,8 +1304,8 @@ class Numeric(Term):
         self.args = str(number)
         self.latex = number
 
-    def _sage_(self):
-        return sage.Integer(self.number)
+    def _pure_(self):
+        return pure.PureInt(self.number)
 
     def get_html(self):
         c = template.Context({
@@ -1311,20 +1368,20 @@ class Constant(Term):
 class E(Constant):
     representation = Base_Symbol('e')
 
-    def _sage_(self):
-        return sage.exp(1)
+    #def _sage_(self):
+    #    return sage.exp(1)
 
 class Pi(Constant):
     representation = Base_Symbol('pi')
 
-    def _sage_(self):
-        return sage.pi
+    #def _sage_(self):
+    #    return sage.pi
 
 class Khinchin(Constant):
     representation = Base_Symbol('K_0')
 
-    def _sage_(self):
-        return sage.khinchin
+    #def _sage_(self):
+    #    return sage.khinchin
 
 def Zero():
     return Numeric(0)
@@ -1351,7 +1408,7 @@ class Workspace(object):
     '''
 
 equation_html = '''
-    <tr id="{{id}}" class="equation" math="{{math}}" math-type="Equation">
+    <tr id="{{id}}" class="equation" math="{{math}}" math-type="{{classname}}" toplevel="true">
 
     <td>
         <button class="ui-icon ui-icon-triangle-1-w" onclick="select_term(get_lhs(this))">{{lhs_id}}</button>
@@ -1359,41 +1416,54 @@ equation_html = '''
         <button class="ui-icon ui-icon-triangle-1-e" onclick="select_term(get_rhs(this))">{{rhs_id}}</button>
     </td>
     <td>{{lhs}}</td>
-    <td><span class="equalsign">$$=$$</span></td>
+    <td><span class="equalsign">$${{symbol}}$$</span></td>
     <td>{{rhs}}</td>
 
     </tr>
 '''
 
 class Equation(object):
-    '''A statement involving LHS = RHS'''
+    '''A statement relating some LHS to RHS'''
     lhs = None
     rhs = None
     html = template.Template(equation_html)
     id = None
+    symbol = "="
 
     def __init__(self,lhs=None,rhs=None):
 
+        # Conviencence definition so that we can call Equation()
+        # to spit out an empty equation
         if not lhs:
             lhs = LHS(Placeholder())
         if not rhs:
             rhs = RHS(Placeholder())
 
+        if not isinstance(lhs,LHS):
+            lhs = LHS(lhs)
+
+        if not isinstance(rhs,RHS):
+            rhs = RHS(rhs)
+
         self.rhs = rhs
         self.lhs = lhs
 
-        self.math = '(Equation ' + self.lhs.get_math() + ' ' +self.rhs.get_math()  + ')'
         self.terms = [self.rhs, self.lhs]
 
-    def get_math(self):
-        return self.math
+    @property
+    def math(self):
+        l1 =' '.join([self.classname, self.lhs.get_math(), self.rhs.get_math()])
+        return ''.join(['(',l1,')'])
+
+    def _pure_(self):
+        return pure.eq(self.lhs._pure_(),self.rhs._pure_())
 
     @property
     def classname(self):
         return self.__class__.__name__
 
-    def _sage_(self):
-        return self.lhs._sage_() == self.rhs._sage_()
+    #def _sage_(self):
+    #    return self.lhs._sage_() == self.rhs._sage_()
 
     def json_flat(self,lst=None):
         if not lst:
@@ -1478,7 +1548,9 @@ class Equation(object):
             'lhs_id': self.lhs.id,
             'math': self.math,
             'lhs': self.lhs.get_html(),
-            'rhs': self.rhs.get_html()
+            'rhs': self.rhs.get_html(),
+            'symbol': self.symbol,
+            'classname': self.classname
             })
 
         return self.html.render(c)
@@ -1516,8 +1588,11 @@ class RHS(Term):
         self.terms = [self.rhs]
         self.args = [self.rhs]
 
-    def _sage_(self):
-        return self.rhs._sage_()
+    def _pure_(self):
+        return self.rhs._pure_()
+
+    #def _sage_(self):
+    #    return self.rhs._sage_()
 
     def get_html(self):
         self.rhs.group = self.id
@@ -1550,8 +1625,11 @@ class LHS(Term):
         self.terms = [self.lhs]
         self.args = [self.lhs]
 
-    def _sage_(self):
-        return self.lhs._sage_()
+    #def _sage_(self):
+    #    return self.lhs._sage_()
+
+    def _pure_(self):
+        return self.lhs._pure_()
 
     def get_html(self):
         self.lhs.group = self.id
@@ -1662,6 +1740,12 @@ operation_html_infix = '''
 
 def infix_symbol_html(symbol):
     return '''<span class="ui-state-disabled infix term" math-type='infix' math-meta-class='sugar'>$${{%s}}$$</span>''' % symbol
+
+class Definition(Equation):
+    symbol = ":="
+
+    def _pure_(self):
+        return pure.PureRule(self.lhs._pure_(),self.rhs._pure_())
 
 #-------------------------------------------------------------
 # Operations
@@ -1815,9 +1899,9 @@ class Gradient(Operation):
         self.operand.group = self.id
         self.terms = [self.operand]
 
-    def _sage_(self):
-        #TODO
-        return sage.var('z')
+    #def _sage_(self):
+    #    #TODO
+    #    return sage.var('z')
 
 class Addition(Operation):
     ui_style = 'infix'
@@ -1840,10 +1924,21 @@ class Addition(Operation):
             self.terms.extend(other.terms)
             return self
 
-    def _sage_(self):
-        #Get Sage objects for each term
-           sterms = map(lambda o: o._sage_() , self.terms)
-           return reduce(sage.operator.add, sterms)
+    #def _sage_(self):
+    #    #Get Sage objects for each term
+    #       sterms = map(lambda o: o._sage_() , self.terms)
+    #       return reduce(sage.operator.add, sterms)
+
+    def _pure_(self):
+        # There is some ambiguity here since we often use an
+        # addition operator of arity=1 to make UI magic happen
+        # clientside, but we just eliminiate it when converting
+        # into a expression
+       if len(self.terms) == 1:
+           return self.terms[0]._pure_()
+       else:
+           pterms = map(lambda o: o._pure_() , self.terms)
+           return pure.add(*pterms)
 
     def receive(self,obj,receiver_context,sender_type,sender_context,new_position):
         #If an object is dragged between sides of the equation negate the object
@@ -1884,10 +1979,10 @@ class Product(Operation):
         if type(self.terms[0]) is Empty:
             return One()
 
-    def _sage_(self):
-        #Get Sage objects for each term
-       sterms = map(lambda o: o._sage_() , self.terms)
-       return reduce(sage.operator.mul, sterms)
+    #def _sage_(self):
+    #    #Get Sage objects for each term
+    #   sterms = map(lambda o: o._sage_() , self.terms)
+    #   return reduce(sage.operator.mul, sterms)
 
 class FreeFunction(Operation):
     ui_style = 'prefix'
@@ -1901,8 +1996,8 @@ class FreeFunction(Operation):
         self.operand.group = self.id
         self.terms = [symbol,self.operand]
 
-    def _sage_(self):
-       return sage.sin(self.operand._sage_())
+    #def _sage_(self):
+    #   return sage.sin(self.operand._sage_())
 
 class Log(Operation):
     ui_style = 'prefix'
@@ -1914,8 +2009,8 @@ class Log(Operation):
         self.operand.group = self.id
         self.terms = [self.operand]
 
-    def _sage_(self):
-       return sage.log(self.operand._sage_())
+    #def _sage_(self):
+    #   return sage.log(self.operand._sage_())
 
 class Sine(Operation):
     ui_style = 'prefix'
@@ -1927,8 +2022,8 @@ class Sine(Operation):
         self.operand.group = self.id
         self.terms = [self.operand]
 
-    def _sage_(self):
-       return sage.sin(self.operand._sage_())
+    #def _sage_(self):
+    #   return sage.sin(self.operand._sage_())
 
 class Cosine(Operation):
     ui_style = 'prefix'
@@ -1940,8 +2035,8 @@ class Cosine(Operation):
         self.operand.group = self.id
         self.terms = [self.operand]
 
-    def _sage_(self):
-       return sage.cos(self.operand._sage_())
+    #def _sage_(self):
+    #   return sage.cos(self.operand._sage_())
 
 class Tangent(Operation):
     ui_style = 'prefix'
@@ -1953,8 +2048,8 @@ class Tangent(Operation):
         self.operand.group = self.id
         self.terms = [self.operand]
 
-    def _sage_(self):
-       return sage.tan(self.operand._sage_())
+    #def _sage_(self):
+    #   return sage.tan(self.operand._sage_())
 
 class Secant(Operation):
     ui_style = 'prefix'
@@ -1966,8 +2061,8 @@ class Secant(Operation):
         self.operand.group = self.id
         self.terms = [self.operand]
 
-    def _sage_(self):
-       return sage.sec(self.operand._sage_())
+    #def _sage_(self):
+    #   return sage.sec(self.operand._sage_())
 
 class Cosecant(Operation):
     ui_style = 'prefix'
@@ -1979,8 +2074,8 @@ class Cosecant(Operation):
         self.operand.group = self.id
         self.terms = [self.operand]
 
-    def _sage_(self):
-       return sage.csc(self.operand._sage_())
+    #def _sage_(self):
+    #   return sage.csc(self.operand._sage_())
 
 class Cotangent(Operation):
     ui_style = 'prefix'
@@ -1992,8 +2087,8 @@ class Cotangent(Operation):
         self.operand.group = self.id
         self.terms = [self.operand]
 
-    def _sage_(self):
-       return sage.cot(self.operand._sage_())
+    #def _sage_(self):
+    #   return sage.cot(self.operand._sage_())
 
 class Negate(Operation):
     ui_style = 'prefix'
@@ -2009,8 +2104,8 @@ class Negate(Operation):
         if type(self.operand) is Addition:
             self.show_parenthesis = True
 
-    def _sage_(self):
-        return sage.operator.neg(self.operand._sage_())
+    #def _sage_(self):
+    #    return sage.operator.neg(self.operand._sage_())
 
     @fallback(Term.combine_fallback)
     def combine(self,other,context):
@@ -2038,11 +2133,11 @@ class Wedge(Operation):
         self.operand = self.terms
     #    self.ui_sortable()
 
-    def _sage_(self):
-        #Get Sage objects for each term
-        #TODO, this should be a wedge product
-        sterms = map(lambda o: o._sage_() , self.terms)
-        return sage.operator.add(*sterms)
+    #def _sage_(self):
+    #    #Get Sage objects for each term
+    #    #TODO, this should be a wedge product
+    #    sterms = map(lambda o: o._sage_() , self.terms)
+    #    return sage.operator.add(*sterms)
 
 class Laplacian(Operation):
     ui_style = 'prefix'
@@ -2067,9 +2162,9 @@ class Differential(Operation):
         self.operand.group = self.id
         self.terms = [self.operand]
 
-    def _sage_(self):
-        #TODO: Does sage have a class for infinitesimals?
-        return self.variable._sage_()
+    #def _sage_(self):
+    #    #TODO: Does sage have a class for infinitesimals?
+    #    return self.variable._sage_()
 
 class Integral(Operation):
     ui_style = 'sandwich'
@@ -2089,9 +2184,9 @@ class Integral(Operation):
 
         self.terms = [self.operand, self.tail]
 
-    def _sage_(self):
-        return sage.integral(self.operand._sage_(),
-                self.differential._sage_())
+    #def _sage_(self):
+    #    return sage.integral(self.operand._sage_(),
+    #            self.differential._sage_())
 
 #Differentiation has a slightly different setup than the other
 #prefix operators
@@ -2136,11 +2231,11 @@ class Diff(Operation):
         self.differential = differential
         self.terms = [self.differential, self.operand]
 
-    def _sage_(self):
-        return sage.diff(
-                   self.operand._sage_(),
-                   self.differential._sage_()
-               )
+    #def _sage_(self):
+    #    return sage.diff(
+    #               self.operand._sage_(),
+    #               self.differential._sage_()
+    #           )
 
     def get_html(self):
         self.html = template.Template(diff_html)
@@ -2261,25 +2356,25 @@ class FDiff(Operation):
 
         self.terms = [self.differential, self.operand]
 
-    def _sage_(self):
-        expr = self.operand._sage_()
-        vrs = expr.variables()
+    #def _sage_(self):
+    #    expr = self.operand._sage_()
+    #    vrs = expr.variables()
 
-        d = self.differential._sage_().variables()
+    #    d = self.differential._sage_().variables()
 
-        # Symmetric difference between the two sets
-        fncs = set(vrs) - set(d)
+    #    # Symmetric difference between the two sets
+    #    fncs = set(vrs) - set(d)
 
-        #Assume all variables are functions of the differential
-        #variable
+    #    #Assume all variables are functions of the differential
+    #    #variable
 
-        # This produces objects in the global namespace uses
-        # function_factory
-        subs = map(lambda x: x==sage.function(str(x))(d[0]) ,fncs)
-        for sub in subs:
-            expr = expr.subs(sub)
+    #    # This produces objects in the global namespace uses
+    #    # function_factory
+    #    subs = map(lambda x: x==sage.function(str(x))(d[0]) ,fncs)
+    #    for sub in subs:
+    #        expr = expr.subs(sub)
 
-        return sage.diff(expr, self.differential._sage_())
+    #    return sage.diff(expr, self.differential._sage_())
 
     def get_html(self):
         self.html = template.Template(fdiff_html)
@@ -2353,6 +2448,7 @@ class FDiff(Operation):
         else:
             #Just leave the operator in since we can't do anything meaningful with it
             return self
+
 
 #-------------------------------------------------------------
 # Transforms

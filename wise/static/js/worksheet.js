@@ -865,10 +865,18 @@ function apply_transform(transform,selections)
                 }
                 else
                 {
+                    console.log('iteration');
+                    console.log(data.new_json[i][0].type);
+                    toplevel = (data.new_json[i][0].type)
+                    if(toplevel == 'Definition' | toplevel == 'Equation') {
+                        nsym = obj.replace(data.new_html[i]);
+                        refresh_jsmath($(nsym));
+                    } else {
                     merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
                     nsym = obj.replace(data.new_html[i]);
                     nsym.attr('group',group_id_cache);
                     refresh_jsmath($(nsym))
+                    }
                 }
             }
             
@@ -1314,7 +1322,7 @@ function traverse_lines()
 function handle_palette()
 {
 
-    $('#palette *[title]').tooltip({track:true});
+    //$('#palette *[title]').tooltip({track:true});
     $('#palette *[math-meta-class=term]').not('.drag_placeholder').click(
             function(event) {
                 select_term(this); event.stopPropagation() 
@@ -1483,7 +1491,7 @@ function get_container(object)
     {
         //console.log('Object: '+$(object).attr('math')+' is own parent.');
     }
-    if(object.attr('group') != undefined && object.attr('math-type') != 'Equation')
+    if(object.attr('group') != undefined && object.attr('toplevel') != 'true')
     {
         return $('#'+object.attr('group'))
     }
