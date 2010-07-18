@@ -171,19 +171,39 @@ function build_tree_from_json(json_input) {
 }
 
 //Nested JSON Tree (InfoVis requires this)
-function recurse(node) {
-   var json = {};
-   json.id = 'node' + node.id;
-   json.data = node;
-   json.name = node.name;
-   json.children = []
+function recurse(node, stack_depth) {
 
-   for(child in node.children) {
-        child = node.children[child];
-        json.children.push(recurse(child));
-   }
+    if(!stack_depth)
+    {
+        stack_depth = 1
+    } else {
+        stack_depth += 1
+    }
 
-   return json
+    if(stack_depth > 25)
+    {
+        alert('fuck, maximum recursion depth reached' + $(object).attr('id') + ',group:' + $(object).attr('group')  )
+        return null
+    }
+    else
+    {
+        var json = {};
+        json.id = 'node' + node.id;
+        json.data = node;
+        json.name = node.name;
+        json.children = []
+
+        console.log(json,stack_depth);
+
+        for(child in node.children) {
+             child = node.children[child];
+             if(child) {
+                 json.children.push(recurse(child, stack_depth));
+             }
+        }
+
+        return json
+    }
 }
 
 function nested_json(T) {
@@ -198,7 +218,7 @@ function nested_json(T) {
     //          "some other key": "some other value"
     //       },  
     //      "children": [ 'other nodes or empty' ]  
-    //  };  
+    //  }; 
     return recurse(T.root);
 }
 
@@ -859,9 +879,14 @@ function apply_transform(transform,selections)
                 group_id = obj.attr('group');
                 group_id_cache = String(group_id)
 
-                if (data.new_html[i] == null)
-                {
-                    obj.remove()
+                if (data.new_html[i] == null) {
+                    obj.remove();
+                }
+                else if(data.new_html[i] == 'pass') {
+                    console.log("Doing nothing");
+                }
+                else if(data.new_html[i] == 'delete') {
+                    console.log("Deleting - at some point in the future");
                 }
                 else
                 {
@@ -869,13 +894,21 @@ function apply_transform(transform,selections)
                     console.log(data.new_json[i][0].type);
                     toplevel = (data.new_json[i][0].type)
                     if(toplevel == 'Definition' | toplevel == 'Equation') {
+                        build_tree_from_json(data.new_json[i])
+                        //merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
                         nsym = obj.replace(data.new_html[i]);
-                        refresh_jsmath($(nsym));
+                        //nsym.attr('group',group_id_cache);
+                        refresh_jsmath($(nsym))
                     } else {
-                    merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
-                    nsym = obj.replace(data.new_html[i]);
-                    nsym.attr('group',group_id_cache);
-                    refresh_jsmath($(nsym))
+                        merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
+                        nsym = obj.replace(data.new_html[i]);
+                        nsym.attr('group',group_id_cache);
+                        refresh_jsmath($(nsym))
+                    }
+                    //update(get_container(nsym))
+                    //Check to see if the uid assigning failed
+                    if(nsym.find('#None').length > 0) {
+                        error("Warning: some elements do not have uids");
                     }
                 }
             }
@@ -884,7 +917,7 @@ function apply_transform(transform,selections)
 
             clear_selection()
             traverse_lines();
-            update(get_container(obj))
+            //update(get_container(obj))
         },
         "json");
 
@@ -1602,52 +1635,25 @@ function update_math(object,stack_depth)
     }
 }
 
-function build_tree()
-{
-    teq = $('[math-type=Equation]');
-    eq = new Expression();
-    eq.math = teq.math();
-    eq.math = teq.math();
-    T = new RootedTree(eq);
-    $('#tree').empty();
-
-    $.getJSON("json_tree",
-        function(data){
-          //console.log(data)
-          jsn = data
-          //TODO: Remove $.each
-          $.each(data.items, function(i,item){
-              //console.log(item.name)
-          });
-        });
-
-    function descend(obj, tree) {
-        children = $('[group='+obj.id()+']')
-        //TODO: Remove $.each
-        $.each(children,function() {
-            var child = $(this);
-            var node = new Expression();
-            node.math = child.math();
-            tree.addNode(node);
-            a = $('<a>')
-            a.bind('mouseover',function() { child.css('background-color', 'red') } )
-            a.bind('mouseout',function() { child.css('background-color', 'inherit') } )
-            a.html(node.math + '<br/>')
-
-            $('#tree').append(a);
-            descend(child,node)
-        });
-    }
-    descend(teq,eq)
-}
-
 function visualize_tree(tree) {
 
     if(!tree) {
-        tree = NODES[selection.nth(0).id()].tree; 
+        if(NODES[selection.nth(0).id()]) {
+            tree = NODES[selection.nth(0).id()].tree; 
+        }
+        else
+        {
+            error('Could not create tree from selection');
+            return;
+        }
     }
 
     var json = nested_json(tree);
+
+    if(!json) {
+            error('Could not generate JSON from object');
+            return;
+    }
 
     if(active_graph) {
         st = active_graph;

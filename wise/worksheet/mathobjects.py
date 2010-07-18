@@ -258,13 +258,16 @@ def parse_pure_exp(expr, uidgen=None):
     #Get the string representation of the pure expression
     parsed = ParseTree(str(expr))
     if uidgen:
+        print 'generating UIDs inline'
         parsed.gen_uids(uidgen)
+    else:
+        print "You better be manually assigning UIDs or else!!!!"
     #Map into the Python wrapper classes
     return parsed.eval_pure()
 
 #Convenience wrappers with more obvious names...
 def pure_to_python(obj,uidgen=None):
-    return parse_pure_exp(obj,uidgen=None)
+    return parse_pure_exp(obj,uidgen)
 
 def python_to_pure(obj):
     return obj._pure_()
@@ -509,7 +512,7 @@ class Branch(object):
                     # namspaces instead, maybe that would be a
                     # little safer
 
-                    inst = eval(x.type)
+                    #inst = eval(x.type)
                     #print 'instance located',inst
 
                     #Descend into another branch 
@@ -536,12 +539,15 @@ class Branch(object):
 
         #Evalute by descent
         def f(x):
-            #print 'TYPE IS',x
+            #Ugly Hack
             if isinstance(x,str):
                 if x.isdigit():
-                    return Numeric(x)
+                    obj = Numeric(x)
                 else:
-                    return Variable(x)
+                    obj = Variable(x)
+                obj.idgen = self.idgen
+                obj.id = self.idgen.next()
+                return obj
             elif isinstance(x,Branch):
                 '''create a new class from the Branch type'''
                 try:
@@ -554,6 +560,8 @@ class Branch(object):
 
         typ = translate_pure(self.type)
         obj = apply(typ,(map(f,self.args)))
+        obj.id = self.id
+        obj.idgen = self.idgen
 
         return obj
 
@@ -1561,6 +1569,11 @@ class Equation(object):
 
         if not self.id:
             self.id = self.idgen.next()
+        #self.lhs.idgen = self.idgen
+        #self.rhs.idgen = self.idgen
+
+        #self.lhs.ensure_id()
+        #self.rhs.ensure_id()
 
     def down(self,other):
         if type(other) is Numeric:
@@ -1978,6 +1991,17 @@ class Product(Operation):
     def remove(self,obj,remove_context):
         if type(self.terms[0]) is Empty:
             return One()
+
+    def _pure_(self):
+        # There is some ambiguity here since we often use an
+        # addition operator of arity=1 to make UI magic happen
+        # clientside, but we just eliminiate it when converting
+        # into a expression
+       if len(self.terms) == 1:
+           return self.terms[0]._pure_()
+       else:
+           pterms = map(lambda o: o._pure_() , self.terms)
+           return pure.mul(*pterms)
 
     #def _sage_(self):
     #    #Get Sage objects for each term

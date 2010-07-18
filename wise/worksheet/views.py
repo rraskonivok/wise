@@ -372,19 +372,40 @@ def apply_transform(request,eq_id):
 
     transform = mathobjects.algebra.__dict__[transform]
 
+    #Ugly hack to allow us to pass the uid generator and use it
+    # in the middle of a transformation in case we need to
+    # generate a whole new batch of uids (like when converting
+    # pure <-> python ).
+    for arg in args:
+        arg.idgen = uid
+
     new = transform(*args)
 
     #Yah, this is ugly
     if hasattr(new,'__iter__'):
         for nval in new:
-            nval.idgen = uid
-        [nval.ensure_id() for nval in new]
+            if not isinstance(nval,str):
+                nval.idgen = uid
+                nval.ensure_id()
     else:
         new.idgen = uid
         new.ensure_id()
 
-    new_html = maps(html, new)
-    new_json = maps(json_flat, new)
+    #Yah, remove this soon. UGLY
+    def mappy_html(obj):
+        if isinstance(obj,str):
+            return obj
+        else:
+            return html(obj)
+
+    def mappy_json(obj):
+        if isinstance(obj,str):
+            return obj
+        else:
+            return json_flat(obj)
+
+    new_html = maps(mappy_html, new)
+    new_json = maps(mappy_json, new)
 
     return JSONResponse({'new_html': new_html,
                          'new_json': new_json,
