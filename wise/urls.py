@@ -4,7 +4,7 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-     (r'^$', 'wise.worksheet.views.home'),
+     #(r'^$', 'wise.worksheet.views.home'),
      (r'^home$', 'wise.worksheet.views.home'),
      (r'^test$', 'wise.worksheet.views.test'),
 
@@ -12,6 +12,7 @@ urlpatterns = patterns('',
      (r'^accounts/login/$', 'wise.worksheet.views.account_login'),
      (r'^accounts/logout/$', 'wise.worksheet.views.account_logout'),
 
+     #Worksheet
      (r'^ws/(?P<eq_id>\d+)/$', 'wise.worksheet.views.ws'),
      (r'^palette/$', 'wise.worksheet.views.palette'),
      (r'^ws/(?P<eq_id>\d+)/receive/$', 'wise.worksheet.views.receive'),
@@ -28,8 +29,14 @@ urlpatterns = patterns('',
      (r'^ws/(?P<eq_id>\d+)/combine/$', 'wise.worksheet.views.combine'),
      (r'^new/$', 'wise.worksheet.views.new'),
 
+     #Symbols
+     (r'^sym/$', 'wise.worksheet.views.symbols_list'),
+     (r'^sym/(?P<sym_id>\d+)/$', 'wise.worksheet.views.sym'),
+     (r'^symbol_request/$', 'wise.worksheet.views.symbols_request'),
+
      #Uncomment the next line to enable the admin:
      (r'^admin/', include(admin.site.urls)),
+
 )
 
 from django.conf import settings

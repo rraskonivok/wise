@@ -20,6 +20,30 @@ class Cell(models.Model):
     def __unicode__(self):
         return self.workspace.name + ('[%s]' % (self.index))
 
+class Symbol(models.Model):
+    name = models.CharField(max_length=200)
+    index = models.IntegerField(blank=False,null=False)
+    timestamp = models.DateTimeField(auto_now=True)
+    owner = models.ForeignKey(User)
+    public = models.BooleanField()
+
+    tex = models.TextField(max_length=100,blank=False, null=False)
+
+    numeric = models.BooleanField()
+    zero = models.BooleanField()
+    positive = models.BooleanField()
+    negative = models.BooleanField()
+    integer = models.BooleanField()
+    even = models.BooleanField()
+    odd = models.BooleanField()
+    prime = models.BooleanField()
+    rational = models.BooleanField()
+    real = models.BooleanField()
+    complex = models.BooleanField()
+
+    def __unicode__(self):
+        return self.tex
+
 class MathematicalEquation(models.Model):
     cell = models.ForeignKey(Cell,blank=False,null=False)
     code = models.TextField(max_length=10000,blank=False, null=False)

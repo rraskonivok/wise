@@ -64,6 +64,11 @@ $.fn.mathtype = function()
     return $(this).attr('math-type')
 }
 
+$.fn.node = function()
+{
+    return NODES[$(this).id()]
+}
+
 $.extend($.fn.disableTextSelect = function() {
         return this.each(function(){
                 if($.browser.mozilla){//Firefox
@@ -342,13 +347,26 @@ Node.prototype.addNode = function(node)
 
 Node.prototype.delNode = function(node)
 {
-    this._parent.children.splice(this.index,1);
-
-    //Regenerate the indices
-    for(var i=0; i < this._parent.children.length; i++)
+    //If the node is not the root / toplevel
+    if(this.depth > 1)
     {
-        this._parent.children[i].index = i;
+        this._parent.children.splice(this.index,1);
+
+        //Regenerate the indices
+        for(var i=0; i < this._parent.children.length; i++)
+        {
+            this._parent.children[i].index = i;
+        }
     }
+    //Eat up the node's children recursively, quite a modest
+    //proposal
+    for(var i=0; i < this.children.length; i++)
+    {
+        this.children[i].delNode();
+    }
+    //Destroy the node itself
+    delete NODES[this.id];
+    delete this;
 }
 
 Node.prototype.swapNode = function(newNode) {
@@ -905,7 +923,7 @@ function apply_transform(transform,selections)
                         nsym.attr('group',group_id_cache);
                         refresh_jsmath($(nsym))
                     }
-                    //update(get_container(nsym))
+                    update(get_container(nsym))
                     //Check to see if the uid assigning failed
                     if(nsym.find('#None').length > 0) {
                         error("Warning: some elements do not have uids");
@@ -1635,6 +1653,12 @@ function update_math(object,stack_depth)
     }
 }
 
+function user_symbols() {
+
+    $("#usersymbols").load("/symbol_request");
+    refresh_jsmath();
+}
+
 function visualize_tree(tree) {
 
     if(!tree) {
@@ -1906,46 +1930,49 @@ function substite_multiplication()
 
 function remove_element()
 {
-    placeholder = selection.nth(0)
-    container = get_container(placeholder)
+    var placeholder = selection.nth(0)
+    var container = get_container(placeholder)
 
-    if(placeholder.attr('math-type') == 'Equation')
+    if(placeholder.node().depth == 1)
     {
+        NODES[placeholder.id()].delNode();
         placeholder.remove()
         clear_selection()
-        return
+        return;
     }
 
     if(placeholder.attr('math-type') == 'RHS' || placeholder.attr('math-type') == 'LHS')
     {
-        return
+        return;
     }
     
-    if(container.attr('math-type') == 'RHS' || container.attr('math-type') == 'LHS')
-    {
-        return
-    }
-
-    if(container.attr('math-type') == 'Addition' || container.attr('math-type') == 'Product')
-    {
-        if( parseInt(container.attr('num_children')) > 1 )
+    if(container) { 
+        if(container.attr('math-type') == 'RHS' || container.attr('math-type') == 'LHS')
         {
-            container = get_container(placeholder)
-            container_cache = String(container.selector)
-            placeholder.remove()
-            clear_selection()
-            update($(container_cache))
+            return;
+        }
+
+        if(container.attr('math-type') == 'Addition' || container.attr('math-type') == 'Product')
+        {
+            if( parseInt(container.attr('num_children')) > 1 )
+            {
+                container = get_container(placeholder)
+                container_cache = String(container.selector)
+                placeholder.remove()
+                clear_selection()
+                update($(container_cache))
+            }
+            else
+            {
+                apply_transform('Replace', [ placeholder.math() , '(Placeholder )' ])
+                //replace_manually(placeholder, '(Placeholder )')
+            }
         }
         else
         {
             apply_transform('Replace', [ placeholder.math() , '(Placeholder )' ])
             //replace_manually(placeholder, '(Placeholder )')
         }
-    }
-    else
-    {
-        apply_transform('Replace', [ placeholder.math() , '(Placeholder )' ])
-        //replace_manually(placeholder, '(Placeholder )')
     }
 }
 

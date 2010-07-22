@@ -29,7 +29,7 @@ add.pretty = 'Add'
 
 @Map( _( Placeholder , Term ) >> _( Term ) )
 def PlaceholderSubstitute( ph, tm ):
-    return tm
+    return tm, 'pass'
 
 PlaceholderSubstitute.pretty = 'Substitute'
 
@@ -37,11 +37,22 @@ PlaceholderSubstitute.pretty = 'Substitute'
 def Replace( first, second ):
     return second
 
+@Map( _( Term ) >> _( Term ) )
+def RefreshTerm( first ):
+    return first
+
+RefreshTerm.pretty = 'Refresh'
+
+@Map( _( Equation ) >> _( Equation ) )
+def RefreshEq( first ):
+    return first
+
+RefreshEq.pretty = 'Refresh'
+
 @Map( _( Definition , Equation ) >> _( None, Equation ) )
 def Reduce( first, second ):
     rule = python_to_pure(first)
     print 'new_rule',python_to_pure(first)
-    print 'idgen',first.idgen
     return 'pass' ,pure_to_python(pure.reduce_with(rule,python_to_pure(second)),first.idgen)
 
 @Map( _( Term ) >> _( Term ) )

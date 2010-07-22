@@ -258,7 +258,6 @@ def parse_pure_exp(expr, uidgen=None):
     #Get the string representation of the pure expression
     parsed = ParseTree(str(expr))
     if uidgen:
-        print 'generating UIDs inline'
         parsed.gen_uids(uidgen)
     else:
         print "You better be manually assigning UIDs or else!!!!"
@@ -1014,6 +1013,7 @@ class Base_Symbol(Term):
     def _pure_(self):
         return pure.var(self.symbol)
 
+
 class Greek(Base_Symbol):
     sensitive = True
     def __init__(self,symbol):
@@ -1036,6 +1036,19 @@ class Variable(Base_Symbol):
 
     def _pure_(self):
         return pure.PureSymbol(self.symbol)
+
+#Reference to a user-defined symbol
+class RefSymbol(Variable):
+    assumptions = None
+    bounds = None
+
+    def __init__(self, obj):
+        self.symbol = obj.tex
+        self.latex = '$%s$' % self.symbol
+        self.args = str(self.symbol)
+
+    def _pure_(self):
+        return pure.PureSymbol('ref' + str(obj.index))
 
 class RealVariable(Base_Symbol):
     '''It's like above but with the assumption that it's real'''
@@ -1479,6 +1492,7 @@ class Equation(object):
 
         lst.append({"id": self.id,
                     "type": self.classname,
+                    "toplevel": True,
                     "children": [term.id for term in self.terms]})
 
         for term in self.terms:

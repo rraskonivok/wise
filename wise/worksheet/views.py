@@ -35,7 +35,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.views.decorators.cache import cache_page
 
 from wise.worksheet.forms import LoginForm
-from wise.worksheet.models import Workspace, MathematicalEquation, Cell
+from wise.worksheet.models import Workspace, MathematicalEquation, Cell, Symbol
 
 CACHE_INTERVAL = 30*60 # 5 Minutes
 
@@ -162,6 +162,33 @@ def test(request):
 def home(request):
     workspaces = Workspace.objects.filter(owner=request.user)
     return render_to_response('home.html', {'workspaces': workspaces})
+
+@errors
+@login_required
+def symbols_list(request):
+    symbols = Symbol.objects.filter(owner=request.user)
+    return render_to_response('symbols_list.html', {'symbols': symbols})
+
+symbolslist = '''
+{% for symbol in symbols %}
+    {{ symbol }}
+{% endfor %}
+'''
+
+@errors
+@login_required
+def symbols_request(request):
+    symbols = Symbol.objects.filter(owner=request.user)
+    symbols_html = [mathobjects.RefSymbol(sym).get_html() for sym in symbols]
+
+    lst = template.Template(symbolslist)
+    c = template.Context({'symbols':symbols_html})
+    return HttpResponse(lst.render(c))
+
+@login_required
+def sym(request):
+    symbols = Workspace.objects.filter(owner=request.user)
+    return render_to_response('symbols_list.html', {'symbols': symbols})
 
 @cache_page(CACHE_INTERVAL)
 def palette(request):
