@@ -1362,6 +1362,11 @@ function traverse_lines()
             function(event) {
                 select_term(this); event.stopPropagation() 
             });
+
+    $('#usersymbols *[math-meta-class=term]').click(
+            function(event) {
+                select_term(this); event.stopPropagation() 
+            });
     
     resize_parentheses()
     //Webkit requires that we run this twice
@@ -1655,8 +1660,10 @@ function update_math(object,stack_depth)
 
 function user_symbols() {
 
-    $("#usersymbols").load("/symbol_request");
-    refresh_jsmath();
+    $("#usersymbols").load("/symbol_request", function() {
+        refresh_jsmath($("#usersymbols"));
+        traverse_lines()
+    });
 }
 
 function visualize_tree(tree) {

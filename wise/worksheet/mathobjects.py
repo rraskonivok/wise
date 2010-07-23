@@ -35,6 +35,8 @@ from binascii import crc32
 
 import pure.algebra as pure
 
+from wise.worksheet.models import Symbol
+
 #-------------------------------------------------------------
 # Utilities
 #-------------------------------------------------------------
@@ -254,6 +256,13 @@ def translate_pure(key):
             }
     return translation_table[key]
 
+class PureError(Exception):
+    def __init__(self,expr):
+        self.value = expr
+
+    def __str__(self):
+        return self.value
+
 def parse_pure_exp(expr, uidgen=None):
     #Get the string representation of the pure expression
     parsed = ParseTree(str(expr))
@@ -322,7 +331,7 @@ class Branch(object):
             self.commutative = True
 
         def descend(ob):
-            if type(ob) is str:
+            if type(ob) is str or type(ob) is unicode:
                 return ob
             else:
                 #Yah, there is a serious functional slant to this
@@ -335,7 +344,6 @@ class Branch(object):
             self.args = []
 
         self.parent = parent
-        #print (self.type,hex(hash(self)))
 
     def __repr__(self):
         return 'Branch: %s(%r)' % (self.type,self.args)
@@ -501,20 +509,8 @@ class Branch(object):
             elif type(x) is int:
                 return x
             elif type(x) is type(self):
-                '''create a new class from the Branch type'''
+                #create a new class from the Branch type
                 try:
-                    #print 'Trying to cast to',x.type
-
-                    # TODO we have a way to check whether this object exists now
-
-                    # TODO we could run through each of the
-                    # namspaces instead, maybe that would be a
-                    # little safer
-
-                    #inst = eval(x.type)
-                    #print 'instance located',inst
-
-                    #Descend into another branch 
                     return x.eval_args()
                 except KeyError:
                     raise InternalMathObjectNotFound
@@ -523,8 +519,9 @@ class Branch(object):
                 print 'something strange is being passed'
 
         #See above if you are worried 
+        print 'TYPE',self.type
         obj = apply(eval(self.type),(map(f,self.args)))
-        obj.hash = self.hash
+        obj.hash = self.gethash()
         obj.id = self.id
         obj.idgen = self.idgen
 
@@ -772,11 +769,9 @@ class Term(object):
     # Every interaction between Math Objects requires that these
     # methods exist
 
-    def _sage_(self):
-        '''Returns the Sage equivalent of the object, this should
-        roughly correspond to class in sage and should (if can be
-        avoided) applying any other functions on the inputs'''
-        pass
+    def _pure_(self):
+        raise PureError('No pure representation of %s.' % self.classname)
+        return None
 
     def _latex_(self):
         '''LaTeX representation of the math object, this should
@@ -1005,20 +1000,20 @@ def greek_lookup(s):
 
 class Base_Symbol(Term):
     sensitive = True
+
     def __init__(self,symbol):
-        self.args = symbol
+        self.args = "'%s'" % symbol
         self.symbol = greek_lookup(symbol)
         self.latex = greek_lookup(symbol)
 
     def _pure_(self):
         return pure.var(self.symbol)
 
-
 class Greek(Base_Symbol):
     sensitive = True
     def __init__(self,symbol):
         self.symbol = symbol
-        self.args = symbol
+        self.args = "'%s'" % symbol
         #TODO: Just do a lookup table to avoid having to fall back on sage.latex
         #self.latex = sage.latex(sage.var(symbol))
 
@@ -1043,12 +1038,15 @@ class RefSymbol(Variable):
     bounds = None
 
     def __init__(self, obj):
+        if isinstance(obj, unicode) or isinstance(obj,str):
+            obj = Symbol.objects.get(index=int(obj))
+
         self.symbol = obj.tex
         self.latex = '$%s$' % self.symbol
-        self.args = str(self.symbol)
+        self.args = str(obj.index)
 
     def _pure_(self):
-        return pure.PureSymbol('ref' + str(obj.index))
+        return pure.PureSymbol('ref' + self.args)
 
 class RealVariable(Base_Symbol):
     '''It's like above but with the assumption that it's real'''
@@ -1389,20 +1387,11 @@ class Constant(Term):
 class E(Constant):
     representation = Base_Symbol('e')
 
-    #def _sage_(self):
-    #    return sage.exp(1)
-
 class Pi(Constant):
     representation = Base_Symbol('pi')
 
-    #def _sage_(self):
-    #    return sage.pi
-
 class Khinchin(Constant):
     representation = Base_Symbol('K_0')
-
-    #def _sage_(self):
-    #    return sage.khinchin
 
 def Zero():
     return Numeric(0)
@@ -1450,6 +1439,7 @@ class Equation(object):
     html = template.Template(equation_html)
     id = None
     symbol = "="
+    sortable = True
 
     def __init__(self,lhs=None,rhs=None):
 
@@ -1516,52 +1506,53 @@ class Equation(object):
         self.rhs.rhs.associate_terms()
         self.lhs.lhs.associate_terms()
 
-        s1 = self.lhs.lhs.ui_sortable(self.rhs.rhs)
-        s2 = self.rhs.rhs.ui_sortable(self.lhs.lhs)
+        if self.sortable:
+            s1 = self.lhs.lhs.ui_sortable(self.rhs.rhs)
+            s2 = self.rhs.rhs.ui_sortable(self.lhs.lhs)
 
-        javascript = s1 + s2
+            javascript = s1 + s2
 
-        #If we have an Equation of the form A/B = C/D then we can
-        #drag terms between the numerator and denominator
-        if self.lhs.lhs.has_single_term() and self.rhs.rhs.has_single_term():
-            #TODO: Change these to isinstance
-            if type(self.lhs.lhs.terms[0]) is Fraction and type(self.rhs.rhs.terms[0]) is Fraction:
+            #If we have an Equation of the form A/B = C/D then we can
+            #drag terms between the numerator and denominator
+            if self.lhs.lhs.has_single_term() and self.rhs.rhs.has_single_term():
+                #TODO: Change these to isinstance
+                if type(self.lhs.lhs.terms[0]) is Fraction and type(self.rhs.rhs.terms[0]) is Fraction:
 
-               lfrac = self.lhs.lhs.terms[0]
-               rfrac = self.rhs.rhs.terms[0]
+                   lfrac = self.lhs.lhs.terms[0]
+                   rfrac = self.rhs.rhs.terms[0]
 
-               lden = lfrac.den
-               rden = rfrac.den
+                   lden = lfrac.den
+                   rden = rfrac.den
 
-               lnum = lfrac.num
-               rnum = rfrac.num
+                   lnum = lfrac.num
+                   rnum = rfrac.num
 
-               #lnumm, ldenm = lnum.wrap(Product) , lden.wrap(Product)
-               #rnumm, rdenm = rnum.wrap(Product) , rden.wrap(Product)
+                   #lnumm, ldenm = lnum.wrap(Product) , lden.wrap(Product)
+                   #rnumm, rdenm = rnum.wrap(Product) , rden.wrap(Product)
 
-               if type(lnum) is not Product:
-                   lfrac.num = lfrac.num.wrap(Product)
+                   if type(lnum) is not Product:
+                       lfrac.num = lfrac.num.wrap(Product)
 
-               if type(rnum) is not Product:
-                   rfrac.num = rfrac.num.wrap(Product)
+                   if type(rnum) is not Product:
+                       rfrac.num = rfrac.num.wrap(Product)
 
-               if type(lden) is not Product:
-                   lfrac.den = lfrac.den.wrap(Product)
+                   if type(lden) is not Product:
+                       lfrac.den = lfrac.den.wrap(Product)
 
-               if type(rden) is not Product:
-                   rfrac.den = rfrac.den.wrap(Product)
+                   if type(rden) is not Product:
+                       rfrac.den = rfrac.den.wrap(Product)
 
-               if type(lnum) is Product or type(lnum) is Variable:
-                   javascript += lnum.ui_sortable(rfrac.den)
+                   if type(lnum) is Product or type(lnum) is Variable:
+                       javascript += lnum.ui_sortable(rfrac.den)
 
-               if type(rnum) is Product or type(rnum) is Variable:
-                   javascript += rnum.ui_sortable(lfrac.den)
+                   if type(rnum) is Product or type(rnum) is Variable:
+                       javascript += rnum.ui_sortable(lfrac.den)
 
-               if type(lden) is Product or type(lden) is Variable:
-                   javascript += lden.ui_sortable(rfrac.num)
+                   if type(lden) is Product or type(lden) is Variable:
+                       javascript += lden.ui_sortable(rfrac.num)
 
-               if type(rden) is Product or type(rden) is Variable:
-                   javascript += rden.ui_sortable(lfrac.num)
+                   if type(rden) is Product or type(rden) is Variable:
+                       javascript += rden.ui_sortable(lfrac.num)
 
 
         c = template.Context({
@@ -1618,9 +1609,6 @@ class RHS(Term):
     def _pure_(self):
         return self.rhs._pure_()
 
-    #def _sage_(self):
-    #    return self.rhs._sage_()
-
     def get_html(self):
         self.rhs.group = self.id
         self.rhs.associate_terms()
@@ -1652,8 +1640,12 @@ class LHS(Term):
         self.terms = [self.lhs]
         self.args = [self.lhs]
 
-    #def _sage_(self):
-    #    return self.lhs._sage_()
+    #TODO: we NEED hashes on these, but because the Addition
+    #contiainer is not created with the parser it doesn't get a
+    #hash so we need to figure out a way to do that.
+    #@property
+    #def hash(self):
+    #    pass
 
     def _pure_(self):
         return self.lhs._pure_()
@@ -1770,9 +1762,13 @@ def infix_symbol_html(symbol):
 
 class Definition(Equation):
     symbol = ":="
+    sortable = False
 
     def _pure_(self):
-        return pure.PureRule(self.lhs._pure_(),self.rhs._pure_())
+        if self.lhs.hash != self.rhs.hash:
+            return pure.PureRule(self.lhs._pure_(),self.rhs._pure_())
+        else:
+            print "Definition is infinitely recursive."
 
 #-------------------------------------------------------------
 # Operations

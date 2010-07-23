@@ -62,23 +62,11 @@ def tokval(tok):
 op = (lambda s: some(lambda tok: tok.type == 'OP' and tok.value == s) >> tokval)
 op_ = lambda s: skip(op(s))
 const = lambda x: lambda _: x
-
 makeop = lambda s, f: op(s) >> const(f)
-
-add = makeop('+', operator.add)
-sub = makeop('-', operator.sub)
-mul = makeop('*', operator.mul)
-div = makeop('/', operator.div)
-pow = makeop('**', operator.pow)
-
-unarg = lambda f: lambda x: f(*x)
-eval_expr = unarg(lambda a, f, b: f(a, b))
 
 number = some(lambda tok: tok.type == 'NUMBER') >> tokval
 var = some(lambda tok: tok.type == 'NAME') >> tokval
 string = some(lambda tok: tok.type == 'STRING') >> tokval
-operator = add | sub | mul | div | pow
-expr = (var | number) + many(operator + (var | number | string))
 po = op_('(')
 pc = op_(')')
 

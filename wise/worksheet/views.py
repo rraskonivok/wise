@@ -554,8 +554,9 @@ def remove(request,eq_id):
     sender = sender.eval_args()
 
     new = sender.remove(obj,sender_context)
-    new.idgen = uid
-    new.ensure_id()
+    if new:
+        new.idgen = uid
+        new.ensure_id()
 
     return JSONResponse({'new_html': html(new),
                          'new_json': json_flat(new),

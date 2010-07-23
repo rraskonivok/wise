@@ -50,7 +50,13 @@ def RefreshEq( first ):
 RefreshEq.pretty = 'Refresh'
 
 @Map( _( Definition , Equation ) >> _( None, Equation ) )
-def Reduce( first, second ):
+def ReduceEq( first, second ):
+    rule = python_to_pure(first)
+    print 'new_rule',python_to_pure(first)
+    return 'pass' ,pure_to_python(pure.reduce_with(rule,python_to_pure(second)),first.idgen)
+
+@Map( _( Definition , Term ) >> _( None, Term ) )
+def ReduceTerm( first, second ):
     rule = python_to_pure(first)
     print 'new_rule',python_to_pure(first)
     return 'pass' ,pure_to_python(pure.reduce_with(rule,python_to_pure(second)),first.idgen)
