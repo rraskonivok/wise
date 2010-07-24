@@ -49,6 +49,11 @@ def RefreshEq( first ):
 
 RefreshEq.pretty = 'Refresh'
 
+@Map( _( Equation, Variable ) >> _( Equation ) )
+def IntegrateEq( first, second ):
+    dff = Differential(second)
+    return Equation(Integral(first.lhs.lhs,dff),Integral(first.rhs.rhs,dff))
+
 @Map( _( Definition , Equation ) >> _( None, Equation ) )
 def ReduceEq( first, second ):
     rule = python_to_pure(first)
@@ -63,14 +68,14 @@ def ReduceTerm( first, second ):
 
 @Map( _( Term ) >> _( Term ) )
 def PlusZero( first ):
-    return pure_to_python( pure.pluszero( python_to_pure(first)) )
+    return pure_to_python( pure.addzero( python_to_pure(first)) ,first.idgen)
 
 @Map( _( Term ) >> _( Term ) )
 def Simplify( first ):
     pfirst = python_to_pure(first)
     pfirst.refresh()
     print 'simplified',pure.simp(pfirst)
-    return pure_to_python(pure.simp(pfirst))
+    return pure_to_python(pure.simp(pfirst), first.idgen)
 
 
 mappings = iter_mappings(locals())

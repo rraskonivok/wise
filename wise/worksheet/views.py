@@ -627,6 +627,7 @@ def generate_palette():
                     mathobjects.Variable('x').get_html(),
                     mathobjects.Variable('y').get_html(),
                     mathobjects.Variable('z').get_html(),
+                    mathobjects.IntVariable('xint').get_html(),
                 ]}
 
     trig = {'name': 'Functions', 'type': 'tabular', 'objects': [

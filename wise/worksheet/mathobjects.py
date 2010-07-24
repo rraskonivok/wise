@@ -251,8 +251,14 @@ def translate_pure(key):
     translation_table = {
             'add':Addition,
             'mul':Product,
+            'pow':Power,
+            'integral':Integral,
+            'differential':Differential,
             'rational':Fraction,
             'eq':Equation,
+            'wiseref':RefSymbol,
+            'pi':Pi,
+            'e':E,
             }
     return translation_table[key]
 
@@ -1017,6 +1023,7 @@ class Greek(Base_Symbol):
         #TODO: Just do a lookup table to avoid having to fall back on sage.latex
         #self.latex = sage.latex(sage.var(symbol))
 
+#A free variable
 class Variable(Base_Symbol):
     assumptions = None
     bounds = None
@@ -1026,11 +1033,12 @@ class Variable(Base_Symbol):
         self.latex = '$%s$' % symbol
         self.args = str(symbol)
 
-    #def _sage_(self):
-    #    return sage.var(self.symbol)
-
     def _pure_(self):
         return pure.PureSymbol(self.symbol)
+
+class Wildcard(Variable):
+    def _pure_(self):
+        return pure.PureSymbol('_')
 
 #Reference to a user-defined symbol
 class RefSymbol(Variable):
@@ -1041,12 +1049,21 @@ class RefSymbol(Variable):
         if isinstance(obj, unicode) or isinstance(obj,str):
             obj = Symbol.objects.get(index=int(obj))
 
+        if isinstance(obj, Numeric):
+            obj = Symbol.objects.get(index=obj.number)
+
         self.symbol = obj.tex
         self.latex = '$%s$' % self.symbol
         self.args = str(obj.index)
 
     def _pure_(self):
-        return pure.PureSymbol('ref' + self.args)
+        return pure.ref(pure.PureInt(int(self.args)))
+
+#A variable with a ::int flag restricting it to integers
+class IntVariable(Variable):
+    def _pure_(self):
+        #Yah, this doesn't work
+        return pure.env.eval('%s::int' % self.symbol)
 
 class RealVariable(Base_Symbol):
     '''It's like above but with the assumption that it's real'''
@@ -1220,10 +1237,8 @@ class Power(Term):
         if basetype is Fraction or isinstance(self.base, Operation):
             self.base.show_parenthesis = True
 
-    #def _sage_(self):
-    #    base = self.base._sage_()
-    #    exponent = self.exponent._sage_()
-    #    return sage.operator.pow(base,exponent)
+    def _pure_(self):
+        return pure.powr(self.base._pure_() , self.exponent._pure_())
 
     def get_html(self):
         self.exponent.css_class = 'exponent'
@@ -1387,8 +1402,14 @@ class Constant(Term):
 class E(Constant):
     representation = Base_Symbol('e')
 
+    def _pure_(self):
+        return pure.e()
+
 class Pi(Constant):
     representation = Base_Symbol('pi')
+
+    def _pure_(self):
+        return pure.pi()
 
 class Khinchin(Constant):
     representation = Base_Symbol('K_0')
@@ -2196,9 +2217,8 @@ class Differential(Operation):
         self.operand.group = self.id
         self.terms = [self.operand]
 
-    #def _sage_(self):
-    #    #TODO: Does sage have a class for infinitesimals?
-    #    return self.variable._sage_()
+    def _pure_(self):
+        return pure.differential(self.variable._pure_())
 
 class Integral(Operation):
     ui_style = 'sandwich'
@@ -2218,9 +2238,8 @@ class Integral(Operation):
 
         self.terms = [self.operand, self.tail]
 
-    #def _sage_(self):
-    #    return sage.integral(self.operand._sage_(),
-    #            self.differential._sage_())
+    def _pure_(self):
+        return pure.integral(self.operand._pure_(), self.differential._pure_())
 
 #Differentiation has a slightly different setup than the other
 #prefix operators
