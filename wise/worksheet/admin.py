@@ -1,4 +1,4 @@
-from wise.worksheet.models import MathematicalEquation, Workspace, Cell, Symbol
+from wise.worksheet.models import MathematicalEquation, Workspace, Cell, Symbol, Function
 
 from django.contrib import admin
 
@@ -17,4 +17,5 @@ admin.site.register(Workspace)
 admin.site.register(MathematicalEquation)
 admin.site.register(Cell)
 admin.site.register(Symbol)
+admin.site.register(Function)
 #admin.site.register(MathematicalIdentity)

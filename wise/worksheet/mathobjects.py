@@ -525,7 +525,6 @@ class Branch(object):
                 print 'something strange is being passed'
 
         #See above if you are worried 
-        print 'TYPE',self.type
         obj = apply(eval(self.type),(map(f,self.args)))
         obj.hash = self.gethash()
         obj.id = self.id
@@ -1047,14 +1046,14 @@ class RefSymbol(Variable):
 
     def __init__(self, obj):
         if isinstance(obj, unicode) or isinstance(obj,str):
-            obj = Symbol.objects.get(index=int(obj))
+            obj = Symbol.objects.get(id=int(obj))
 
         if isinstance(obj, Numeric):
-            obj = Symbol.objects.get(index=obj.number)
+            obj = Symbol.objects.get(id=obj.number)
 
         self.symbol = obj.tex
         self.latex = '$%s$' % self.symbol
-        self.args = str(obj.index)
+        self.args = str(obj.id)
 
     def _pure_(self):
         return pure.ref(pure.PureInt(int(self.args)))
@@ -1813,14 +1812,13 @@ class Operation(Term):
     is_commutative = False
     is_anticommutative = False
 
-    def __init__(self,operand):
-        self.operand = operand
-
-        #We should define a class so that we can do substitutions
-        #later... based on whether or not the terms are commutative
-        # ... define a == type
-
-        self.terms = [self.operand]
+    def __init__(self,*operands):
+        if len(operands) > 1:
+            self.terms = list(operands)
+            self.operand = self.terms
+        else:
+            self.operand = operands[0]
+            self.terms = [operands[0]]
 
     def action(self,operand):
         return self.get_html()
@@ -1856,8 +1854,9 @@ class Operation(Term):
 
             return self.html.render(c)
 
-        #"Sandwich" Formatting
-        elif self.ui_style == 'sandwich':
+        #Outfix Formatting
+        #TODO: Change 'sandwich' -> 'outfix'
+        elif self.ui_style == 'outfix':
             self.html = template.Template(operation_html_sandwich)
 
             c = template.Context({
@@ -1905,6 +1904,8 @@ class Operation(Term):
                 'parenthesis': self.show_parenthesis,
                 'class': self.css_class
                 })
+        else:
+            print('Unknown operator class, should be (infix,postfix,prefix,outfix)')
 
         return self.html.render(c)
 

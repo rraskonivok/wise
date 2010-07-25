@@ -20,12 +20,24 @@ class Cell(models.Model):
     def __unicode__(self):
         return self.workspace.name + ('[%s]' % (self.index))
 
-class Symbol(models.Model):
+class Function(models.Model):
     name = models.CharField(max_length=200)
-    index = models.IntegerField(blank=False,null=False)
     timestamp = models.DateTimeField(auto_now=True)
     owner = models.ForeignKey(User)
     public = models.BooleanField()
+    desc = models.CharField(max_length=200)
+    notation = models.CharField(max_length=200)
+    arity = models.IntegerField()
+    symbol1 = models.CharField(max_length=200)
+    symbol2 = models.CharField(max_length=200)
+    symbol3 = models.CharField(max_length=200)
+
+class Symbol(models.Model):
+    name = models.CharField(max_length=200)
+    timestamp = models.DateTimeField(auto_now=True)
+    owner = models.ForeignKey(User)
+    public = models.BooleanField()
+    desc = models.CharField(max_length=200)
 
     tex = models.TextField(max_length=100,blank=False, null=False)
 

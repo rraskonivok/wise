@@ -35,7 +35,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.views.decorators.cache import cache_page
 
 from wise.worksheet.forms import LoginForm
-from wise.worksheet.models import Workspace, MathematicalEquation, Cell, Symbol
+from wise.worksheet.models import Workspace, MathematicalEquation, Cell, Symbol, Function
 
 CACHE_INTERVAL = 30*60 # 5 Minutes
 
@@ -166,13 +166,22 @@ def home(request):
 @errors
 @login_required
 def symbols_list(request):
-    symbols = Symbol.objects.filter(owner=request.user)
+    try:
+        symbols = Symbol.objects.filter(owner=request.user)
+    except ObjectDoesNotExist:
+        pass
+
     return render_to_response('symbols_list.html', {'symbols': symbols})
 
 symbolslist = '''
-{% for symbol in symbols %}
-    {{ symbol }}
+<table style="width: 100%">
+{% for symbol in symbols%}
+    <tr>
+    <td>{{ symbol.0 }}</td>
+    <td>{{ symbol.1 }}</td>
+    <tr>
 {% endfor %}
+</table>
 '''
 
 @errors
@@ -180,15 +189,96 @@ symbolslist = '''
 def symbols_request(request):
     symbols = Symbol.objects.filter(owner=request.user)
     symbols_html = [mathobjects.RefSymbol(sym).get_html() for sym in symbols]
+    descriptions = [sym.desc for sym in symbols]
 
     lst = template.Template(symbolslist)
-    c = template.Context({'symbols':symbols_html})
+    c = template.Context({'symbols':zip(symbols_html,descriptions)})
     return HttpResponse(lst.render(c))
 
 @login_required
-def sym(request):
-    symbols = Workspace.objects.filter(owner=request.user)
-    return render_to_response('symbols_list.html', {'symbols': symbols})
+def sym(request, sym_id):
+
+    try:
+        symbol = Symbol.objects.get(id=sym_id)
+
+        if ( symbol.owner.id != request.user.id ) and not symbol.public:
+            return HttpResponse('You do not have permission to access this symbol.')
+
+    except ObjectDoesNotExist:
+        symbol = None
+    return render_to_response('symbol_edit.html', {'symbol': symbol})
+
+@login_required
+def sym_update(request, sym_id):
+    new = request.GET.get('new')
+
+    name = request.GET.get('name')
+    tex = request.GET.get('tex')
+    desc = request.GET.get('desc')
+    public = request.GET.get('public') is not None
+
+    sym = Symbol.objects.filter(id=sym_id)
+
+    if sym:
+        sym.update(name=name,tex=tex,public=public,desc=desc,owner=request.user)
+    else:
+        Symbol(name=name,tex=tex,public=public,desc=desc,owner=request.user).save()
+
+    return HttpResponseRedirect('/sym')
+
+def fun_list(request):
+    functions = Function.objects.filter(owner=request.user)
+    return render_to_response('fun_list.html', {'functions': functions})
+
+@login_required
+def fun(request, sym_id):
+    try:
+        function = Function.objects.get(id=sym_id)
+
+        if ( function.owner.id != request.user.id ) and not function.public:
+            return HttpResponse('You do not have permission to access this function.')
+
+    except ObjectDoesNotExist:
+        symbol = None
+    return render_to_response('fun_edit.html', {'function': function})
+
+@login_required
+def fun_update(request, sym_id):
+    new = request.GET.get('new')
+    name = request.GET.get('name')
+    tex = request.GET.get('tex')
+    desc = request.GET.get('desc')
+    public = request.GET.get('public') is not None
+
+    sym = Symbol.objects.filter(id=sym_id)
+
+    if sym:
+        sym.update(name=name,tex=tex,public=public,desc=desc,owner=request.user)
+    else:
+        Symbol(name=name,tex=tex,public=public,desc=desc,owner=request.user).save()
+
+    return HttpResponseRedirect('/sym')
+
+@errors
+def preview_function(request):
+    symbol1 = request.POST.get('symbol1')
+    notation = request.POST.get('notation')
+    pnths = request.POST.get('pnths')
+    notation = request.POST.get('notation').lower()
+
+    ph = mathobjects.Placeholder()
+
+    if notation == 'infix':
+        prvw = mathobjects.Operation(ph,ph)
+    else:
+        prvw = mathobjects.Operation(ph)
+
+    prvw.symbol = symbol1
+    prvw.notation = notation
+    prvw.show_parenthesis = pnths is not None
+    prvw.ui_style = notation
+
+    return HttpResponse(html(prvw))
 
 @cache_page(CACHE_INTERVAL)
 def palette(request):

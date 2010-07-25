@@ -25,6 +25,8 @@ from funcparserlib.util import pretty_tree
 import token
 import funcparserlib
 
+#Parsing infix... see http://en.literateprograms.org/Shunting_yard_algorithm_(Python)
+
 class Token(object):
     def __init__(self, code, value, start=(0, 0), stop=(0, 0), line=''):
         self.code = code

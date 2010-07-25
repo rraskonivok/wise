@@ -66,16 +66,20 @@
     </div>
 </div>
 
-<div id="east" class="ui-layout-east">
-    <button onclick="build_tree()">Build Tree</button>
-    <button onclick="visualize_tree()">Build InfoVis Tree</button>
-    <button onclick="user_symbols()">User Symbols</button>
-    <div id="tree">
-        <div id="infovis" style="width: inherit; height: 300px"></div>    
+<div id="east" class="ui-layout-east" style="padding: 0px !important">
+    <div id="rtoolbar">
+        <ul>
+            <li><a href="#tabs-1">Visualize</a></li>
+            <li><a href="/symbol_request" onclick="refresh_jsmath()">User Symbols</a></li>
+        </ul>
+        <div id="tabs-1">
+                <button onclick="build_tree()">Build Tree</button>
+                <button onclick="visualize_tree()">Build InfoVis Tree</button>
+                <div id="tree">
+                    <div id="infovis" style="width: inherit; height: 300px"></div>    
+                </div>
+        </div>
     </div>
-    <div id="usersymbols">
-    </div>
-
 </div>
 
 <div id="error_dialog" title="Error" style="display:none">
@@ -162,8 +166,8 @@ $(document).ready(function () {
 
     //Only show the workspace after all math is rendered
     jsMath.Synchronize(function () {
-        refresh_jsmath()
-        $(".lines").fadeIn('fast')
+        refresh_jsmath();
+        $(".lines").fadeIn('fast');
     });
 });
 
@@ -228,7 +232,6 @@ function init()
 
         //Make the palette sections collapsable
         $('#math_palette h3').bind('click',function() {
-                $(this).next().toggle();
                 return false
         }).next().hide();
 
@@ -241,6 +244,14 @@ function init()
         //Make the math terms interactive
         handle_palette();
     }});
+
+    //Handle the right toolbar
+    $('#rtoolbar').tabs({
+        load: function() {
+            refresh_jsmath($("#rtoolbar"));
+            traverse_lines()
+        }
+    });
 
     /*
     $('#math_palette').addClass('ui-accordion ui-widget ui-helper-reset ui-accordion-icons')

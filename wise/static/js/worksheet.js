@@ -229,6 +229,10 @@ function nested_json(T) {
 
 function merge_json_to_tree(old_node, json_input) {
    var newtree = build_tree_from_json(json_input); 
+   if(!old_node) {
+        error('Could not attach branch');
+        return;
+   }
    old_node.swapNode(newtree.root);
 
     //Swap out a node in a tree with an expression created from
@@ -901,15 +905,13 @@ function apply_transform(transform,selections)
                     obj.remove();
                 }
                 else if(data.new_html[i] == 'pass') {
-                    console.log("Doing nothing");
+                    //console.log("Doing nothing");
                 }
                 else if(data.new_html[i] == 'delete') {
-                    console.log("Deleting - at some point in the future");
+                    //console.log("Deleting - at some point in the future");
                 }
                 else
                 {
-                    console.log('iteration');
-                    console.log(data.new_json[i][0].type);
                     toplevel = (data.new_json[i][0].type)
                     if(toplevel == 'Definition' | toplevel == 'Equation') {
                         build_tree_from_json(data.new_json[i])
@@ -1363,7 +1365,7 @@ function traverse_lines()
                 select_term(this); event.stopPropagation() 
             });
 
-    $('#usersymbols *[math-meta-class=term]').click(
+    $('#rtoolbar *[math-meta-class=term]').click(
             function(event) {
                 select_term(this); event.stopPropagation() 
             });

@@ -134,7 +134,7 @@
 </head>
 <body onLoad="init();">
     <div id="workspaces">
-    <h1>Symbols</h1>
+    <h1>Functions</h1>
         <div id="menu" class="ui-widget-header ui-corner-all">
             <a id="new" href="0/?new=true">New Symbol</a>
             <button id="delete" onClick="show_delete_workspace()">Delete Symbol</button>
@@ -144,24 +144,20 @@
         <table>
             <tr>
                 <th>Name</th>
-                <th>TeX Representation</th>
                 <th>Date Modified</th>
                 <th>Public</th>
             </tr>
-        {% for symbol in symbols %}
+        {% for function in functions %}
             <tr>
                 <td>
                     <input type="checkbox" name="{{symbol.id}}"/>
-                    <a href="/sym/{{ symbol.id }}">{{ symbol.name }}</a>
+                    <a href="/fun/{{ function.id }}">{{ function.name }}</a>
                 </td>
                 <td>
-                    <pre>{{ symbol.tex }}</pre>
+                    {{ function.timestamp|date:"l d" }}
                 </td>
                 <td>
-                    {{ symbol.timestamp|date:"l d" }}
-                </td>
-                <td>
-                    {{ symbol.public|yesno|title }}
+                    {{ function.public|yesno|title }}
                 </td>
             </tr>
         {% endfor %}

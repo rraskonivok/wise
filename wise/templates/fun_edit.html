@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+ <title>Home Page</title>
+ <link rel="stylesheet" type="text/css" href="/static/style.css" />
+ <link rel="stylesheet" type="text/css" href="/static/ui/ui.css" />
+ <script src="/static/jquery.js" type="text/javascript"></script>
+ <script src="/static/jquery-ui.js" type="text/javascript"></script>
+ <script src="/static/tablesearch.js" type="text/javascript"></script>
+ <script src="/static/jsMath/easy/load.js"></script>
+ <style>
+     #workspaces {
+        margin-left: auto;
+        margin-right: auto;
+        width: 95%;
+     }
+
+    #menu {
+        width: 100%;
+        height: 25px;
+    }
+
+    table {
+        font-size: 12pt;
+    }
+
+    a {
+        text-decoration: none;
+        color: black;
+    }
+
+    a:visited {
+       color: inherit; 
+    }
+
+    a:hover {
+        border-bottom: 1px dashed black;
+    }
+
+    td {
+        padding: 0px;
+        margin: 0px;
+    }
+
+    tr {
+        padding: 0px;
+        margin: 0px;
+        border-spacing: 0px 0px;
+        border-collapse:separate; 
+    }
+
+    td {
+        padding-right: 25px;
+        padding-top: 2px;
+        padding-bottom: 2px;
+    }
+
+    td > * {
+        padding-left: 10px;
+    }
+
+    .ui-icon {
+        float: left;
+    }
+
+    #preview {
+        border: 1px inset black;
+        min-width: 100px;
+        min-height: 50px;
+        padding: 10%;
+    }
+
+    #preview .typeset {
+    }
+
+    #symbolform {
+    }
+ </style>
+ <script type="text/javascript">
+    function init()
+    {
+    };
+
+    $(document).ready(function () {
+        init();
+
+        //Only show the workspace after all math is rendered
+        jsMath.Synchronize(function () {
+            refresh_jsmath()
+            $(".lines").fadeIn('fast')
+        });
+    });
+
+    function refresh_jsmath(element)
+    {
+        //Refresh math for a specific element
+        if(element)
+        {
+            //Toggling visiblity prevents the underlying TeX from
+            //showing
+            element.css('visibility','hidden')
+            jsMath.ConvertTeX(element[0])
+            jsMath.ProcessBeforeShowing(element[0])
+            $(function() { element.css('visibility','visible') })
+        }
+        //Refresh math Globally, shouldn't be called too much because
+        //it bogs down the browser
+        else
+        {
+            jsMath.ConvertTeX()
+            jsMath.ProcessBeforeShowing()
+        }
+    }
+    function preview() {
+        var tex = $('#symbol1').val();
+        $.post('/preview_function/',$('#form_new_function').serialize(),function(response) {
+                $("#preview").html(response);
+                refresh_jsmath();
+        });
+    }
+ </script>
+</head>
+<body onLoad="init();">
+    <div id="workspaces">
+    <h1>Functions</h1>
+        <div id="menu" class="ui-widget-header ui-corner-all">
+            <button id="delete" onClick="show_delete_workspace()">Delete Symbol</button>
+            <input type="text" id="search" class="search" style="float:right">
+        </div>
+    <form id="form_new_function" action="update/" method="GET">
+            <table id="symbolform">
+                <tr>
+                    <td style="vertical-align: top;">
+                        <div id="preview">$$$$</div>
+                    </td>
+                    <td>
+                    <table>
+                        <tr>
+                            <td>Name</td>
+                            <td><input type="text" name="name" value="{{symbol.name}}"/></td>
+                        </tr>
+                        <tr>
+                            <td>Symbol 1</td>
+                            <td><input id="symbol1" type="text" name="symbol1" value="{{symbol.tex}}"/></td>
+                        </tr>
+                        <tr>
+                            <td>Symbol 2</td>
+                            <td><input id="symbol2" type="text" name="symbol2" value="{{symbol.tex}}"/></td>
+                        </tr>
+                        <tr>
+                            <td>Symbol 3</td>
+                            <td><input id="symbol3" type="text" name="symbol3" value="{{symbol.tex}}"/></td>
+                        </tr>
+                        <tr>
+                            <td>Arity</td>
+                            <td><input id="arity" type="text"/><input type="checkbox" name="nary"> n-ary</td>
+                        </tr>
+                        <tr>
+                            <td>Force Parenthesis</td>
+                            <td><input type="checkbox" name="pnths"></td>
+                        </tr>
+                        <tr>
+                            <td>Notation Type</td>
+                            <td>
+                                <select name="notation"> 
+                                    <option>Prefix</option>
+                                    <option>Infix</option>
+                                    <option>Postfix</option>
+                                    <option>Outfix</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                    <input type="submit" name="Commit Changes" style="float: right">
+            </td>
+            </tr>
+        </table>
+    </form>
+    <button style="float: right" onclick="preview();">Preview</button>
+    <a href="javascript:preview();">Preview</a>
+    <hr/>
+</body>
+</html>
