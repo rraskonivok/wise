@@ -39,7 +39,7 @@ urlpatterns = patterns('',
      (r'^fun/$', 'wise.worksheet.views.fun_list'),
      (r'^fun/(?P<sym_id>\d+)/$', 'wise.worksheet.views.fun'),
      (r'^fun/(?P<sym_id>\d+)/update/$', 'wise.worksheet.views.sym_update'),
-     (r'^fun_request/$', 'wise.worksheet.views.symbols_request'),
+     (r'^functions_request/$', 'wise.worksheet.views.functions_request'),
      (r'^preview_function/$', 'wise.worksheet.views.preview_function'),
 
      #Uncomment the next line to enable the admin:

@@ -429,6 +429,11 @@ selection.count = 0;
 selection.objs = {};
 selection.__lst = [];
 
+//For future reference Chrom(ium) and Firefox handle insertion by
+//differently. Firefox (sanely) just pushes new elements at the
+//end of the hash table while Chromium presorts them. This is an
+//issue since we need them to be ordered for when we build __lst.
+//Fix this at some point.
 selection.add = function (obj) {
     this.objs[obj.id()] = obj;
     this.count += 1; 
@@ -466,6 +471,7 @@ selection.nth = function(n) {
     if(this.__lst.length == 0) {
         this.list();
     }
+    this.list();
     var nth = this.__lst[n];
 
     //We do this so that selection.nth(0).exists will return
@@ -492,7 +498,7 @@ function clear_selection()
     $('.selected').removeClass('selected');
     $('#options').hide();
     $('#selectionlist').fadeIn();
-    selection.clear()
+    selection.clear();
 }
 
 function select_term(object)
@@ -588,9 +594,11 @@ function select_term(object)
     //Bind to select object command
     }
     
-    if(selection.count == 2 && (selection.nth(0)).attr('math-type') == 'Placeholder')
+    console.log(selection.nth(0).attr('math-type'));
+    console.log(selection.nth(1).attr('math-type'));
+    if(selection.count == 2 && selection.nth(0).attr('math-type') == 'Placeholder')
     {
-        apply_transform('PlaceholderSubstitute')
+        apply_transform('PlaceholderSubstitute');
     }
 }
 
@@ -673,11 +681,6 @@ function connect_to_every_sortable(object)
     });
 }
 */
-
-function reset_selections()
-{
-    $().live('li[math-meta-class=term]',function(object){select_term(this)});
-}
 
 function fade_and_destroy(object)
 {
@@ -1349,6 +1352,8 @@ function traverse_lines()
     //containing their math-type
     //$('#workspace *[title]').tooltip({track:true});
     $('#workspace *[math-meta-class=term]').unbind('click');
+    $('#palette *[math-meta-class=term]').unbind('click');
+    $('#rtoolbar *[math-meta-class=term]').unbind('click');
 
     /*$('#workspace *[title]').simpletip(
             {fixed:false,
@@ -1381,10 +1386,10 @@ function handle_palette()
 {
 
     //$('#palette *[title]').tooltip({track:true});
-    $('#palette *[math-meta-class=term]').not('.drag_placeholder').click(
-            function(event) {
-                select_term(this); event.stopPropagation() 
-            });
+    //$('#palette *[math-meta-class=term]').click(
+    //        function(event) {
+    //            select_term(this); event.stopPropagation() 
+    //        });
 
     //Prevent subelements of math elements in the palette from
     //being selected
@@ -1658,14 +1663,6 @@ function update_math(object,stack_depth)
         group = $('#'+object.attr('group'));
         update_math(group,stack_depth)
     }
-}
-
-function user_symbols() {
-
-    $("#usersymbols").load("/symbol_request", function() {
-        refresh_jsmath($("#usersymbols"));
-        traverse_lines()
-    });
 }
 
 function visualize_tree(tree) {

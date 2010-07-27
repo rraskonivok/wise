@@ -173,6 +173,29 @@ def symbols_list(request):
 
     return render_to_response('symbols_list.html', {'symbols': symbols})
 
+functionslist = '''
+<table style="width: 100%">
+{% for function in functions%}
+    <tr>
+    <td>{{ function.0 }}</td>
+    <td>{{ function.1 }}</td>
+    <tr>
+{% endfor %}
+</table>
+'''
+
+@errors
+@login_required
+def functions_request(request):
+    ph = mathobjects.Placeholder()
+    functions = Function.objects.filter(owner=request.user)
+    functions_html = [mathobjects.RefOperator(fun,ph).get_html() for fun in functions]
+    descriptions = [fun.desc for fun in functions]
+
+    lst = template.Template(functionslist)
+    c = template.Context({'functions':zip(functions_html,descriptions)})
+    return HttpResponse(lst.render(c))
+
 symbolslist = '''
 <table style="width: 100%">
 {% for symbol in symbols%}
@@ -265,13 +288,19 @@ def preview_function(request):
     notation = request.POST.get('notation')
     pnths = request.POST.get('pnths')
     notation = request.POST.get('notation').lower()
+    arity = request.POST.get('arity')
+
+    if not arity:
+        arity = 1
+    else:
+        arity = int(arity)
 
     ph = mathobjects.Placeholder()
 
     if notation == 'infix':
         prvw = mathobjects.Operation(ph,ph)
     else:
-        prvw = mathobjects.Operation(ph)
+        prvw = mathobjects.Operation(*([ph]*arity))
 
     prvw.symbol = symbol1
     prvw.notation = notation

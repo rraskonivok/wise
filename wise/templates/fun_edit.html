@@ -80,6 +80,7 @@
  <script type="text/javascript">
     function init()
     {
+        preview();
     };
 
     $(document).ready(function () {
@@ -138,11 +139,11 @@
                     <table>
                         <tr>
                             <td>Name</td>
-                            <td><input type="text" name="name" value="{{symbol.name}}"/></td>
+                            <td><input type="text" name="name" value="{{function.name}}"/></td>
                         </tr>
                         <tr>
                             <td>Symbol 1</td>
-                            <td><input id="symbol1" type="text" name="symbol1" value="{{symbol.tex}}"/></td>
+                            <td><input id="symbol1" type="text" name="symbol1" value="{{function.symbol1}}"/></td>
                         </tr>
                         <tr>
                             <td>Symbol 2</td>
@@ -154,7 +155,7 @@
                         </tr>
                         <tr>
                             <td>Arity</td>
-                            <td><input id="arity" type="text"/><input type="checkbox" name="nary"> n-ary</td>
+                            <td><input id="arity" type="text" name="arity" value="{{function.arity}}"/><input type="checkbox" name="nary"> n-ary</td>
                         </tr>
                         <tr>
                             <td>Force Parenthesis</td>

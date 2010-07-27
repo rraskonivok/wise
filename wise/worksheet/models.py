@@ -32,6 +32,9 @@ class Function(models.Model):
     symbol2 = models.CharField(max_length=200)
     symbol3 = models.CharField(max_length=200)
 
+    def __unicode__(self):
+        return self.name
+
 class Symbol(models.Model):
     name = models.CharField(max_length=200)
     timestamp = models.DateTimeField(auto_now=True)
@@ -54,7 +57,7 @@ class Symbol(models.Model):
     complex = models.BooleanField()
 
     def __unicode__(self):
-        return self.tex
+        return self.name
 
 class MathematicalEquation(models.Model):
     cell = models.ForeignKey(Cell,blank=False,null=False)

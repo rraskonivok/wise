@@ -44,7 +44,7 @@
         <div id="vertslider" style="width: 150px"></div>Vertical Term Spacing<br/>
         <div id="switcher"></div>
 </div>
-
+_
 <div class="center ui-layout-center">
     <div id="workspace">
         <div id="cmd_input" style="display:none" >
@@ -62,21 +62,21 @@
 </div>
 
 <div id="palette" class="ui-layout-west">
-    <div id="math_palette">
-    </div>
+    <div id="math_palette"> </div>
 </div>
 
 <div id="east" class="ui-layout-east" style="padding: 0px !important">
     <div id="rtoolbar">
         <ul>
             <li><a href="#tabs-1">Visualize</a></li>
-            <li><a href="/symbol_request" onclick="refresh_jsmath()">User Symbols</a></li>
+            <li><a href="/functions_request">Functions</a></li>
+            <li><a href="/symbol_request">Symbols</a></li>
         </ul>
         <div id="tabs-1">
                 <button onclick="build_tree()">Build Tree</button>
                 <button onclick="visualize_tree()">Build InfoVis Tree</button>
                 <div id="tree">
-                    <div id="infovis" style="width: inherit; height: 300px"></div>    
+                    <div id="infovis" style="width: inherit; height: 300px"></div>
                 </div>
         </div>
     </div>
@@ -232,6 +232,7 @@ function init()
 
         //Make the palette sections collapsable
         $('#math_palette h3').bind('click',function() {
+                $(this).next().toggle();
                 return false
         }).next().hide();
 

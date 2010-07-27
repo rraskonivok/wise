@@ -35,7 +35,7 @@ from binascii import crc32
 
 import pure.algebra as pure
 
-from wise.worksheet.models import Symbol
+from wise.worksheet.models import Symbol, Function
 
 #-------------------------------------------------------------
 # Utilities
@@ -119,135 +119,7 @@ class NoWrapper(Exception):
     def __str__(self):
         return self.value
 
-#from sage.functions import trig
-#from sage.functions import log
-#from sage.symbolic import constants
-#from sage import symbolic
-
-#Longterm Goal: Recursive descent isn't the fastest way to do
-#this find a better way
-
-# We could just walk the parse tree casting as we go along.
-
-#ExpressionIterator may be a way to do this faster
-
-#def parse_sage_exp(expr):
-#
-#    if type(expr) is sage.Expression:
-#        operator = expr.operator()
-#        operands = expr.operands()
-#
-#        #Symbols
-#        if expr._is_symbol():
-#            return Variable(str(expr))
-#
-#        #Rational Numbers
-#
-#        #There has to be an less ugly way to check if a
-#        #number is rational or not
-#        elif bool(expr.denominator() != 1):
-#            den = parse_sage_exp(expr.denominator())
-#            return Fraction(num,den)
-#
-#        #Numbers
-#
-#        #Constants
-#        elif expr._is_constant():
-#            pyo = expr.pyobject()
-#            if type(pyo) is constants.Pi:
-#                return Pi('pi')
-#
-#        elif expr._is_numeric():
-#            if expr.is_zero():
-#                return Zero()
-#
-#            if expr<0:
-#                expr = sage.operator.abs(expr)
-#                return Negate(Numeric(str(expr)))
-#            return Numeric(str(expr))
-#
-#        #Relational Structures (i.e. Equations, Inequalities...)
-#        elif expr.is_relational():
-#            lhs = LHS(parse_sage_exp(expr.lhs()))
-#            rhs = RHS(parse_sage_exp(expr.rhs()))
-#            return Equation(lhs,rhs)
-#
-#        #Basic Algebraic Structures
-#        elif operator is sage.operator.add:
-#            return apply(Addition,map(parse_sage_exp,operands))
-#
-#        elif operator is sage.operator.mul:
-#            if operands[-1] == -1:
-#                return Negate(apply(Product,map(parse_sage_exp,operands[0:-1])))
-#            return apply(Product,map(parse_sage_exp,operands))
-#
-#        elif operator is sage.operator.div:
-#            return apply(Fraction,map(parse_sage_exp,operands))
-#
-#        elif operator is sage.operator.pow:
-#            if operands[1] == -1:
-#                return apply(Fraction,[Numeric(1),parse_sage_exp(operands[0])])
-#            if operands[1] < -1:
-#                nexp = sage.operator.abs(operands[1])
-#                #Convert this into a Fraction
-#                return apply(Fraction,[Numeric(1),parse_sage_exp(operands[0])])
-#            return apply(Power,map(parse_sage_exp,operands))
-#
-#        elif operator is sage.operator.neg:
-#            return apply(Negate,map(parse_sage_exp,operands))
-#
-#        #Trigonometric Functions
-#        elif operator is trig.cos:
-#            return apply(Cosine,map(parse_sage_exp,operands))
-#
-#        elif operator is trig.sin:
-#            return apply(Sine,map(parse_sage_exp,operands))
-#
-#        elif operator is trig.tan:
-#            return apply(Tangent,map(parse_sage_exp,operands))
-#
-#        elif operator is trig.sec:
-#            return apply(Secant,map(parse_sage_exp,operands))
-#
-#        elif operator is trig.csc:
-#            return apply(Cosecant,map(parse_sage_exp,operands))
-#
-#        elif operator is trig.cot:
-#            return apply(Cotangent,map(parse_sage_exp,operands))
-#
-#        #Exponential & Logarithms
-#
-#        elif operator is log.ln:
-#            return apply(Log,map(parse_sage_exp,operands))
-#
-#        elif operator is log.exp and operands == [1]:
-#            return E()
-#
-#        elif operator is symbolic.operators.FDerivativeOperator:
-#            return apply(FDiff,map(parse_sage_exp,operands))
-#
-#        elif isinstance(operator,symbolic.function.SymbolicFunction):
-#            return FreeFunction(operator.name(),Variable(str(operands[0])))
-#            return Variable(str(operands[0]))
-#
-#        elif type(operator) is symbolic.operators.FDerivativeOperator:
-#            arg1 = parse_sage_exp(operator.function())
-#            arg2 = parse_sage_exp(operands[0])
-#            return FDiff(arg2,arg1)
-#
-#    elif type(expr) is sage.Integer:
-#        if expr<0:
-#            expr = sage.operator.abs(expr)
-#            return Negate(Numeric(str(expr)))
-#        return Numeric(str(expr))
-#
-#    elif isinstance(expr,symbolic.function.SymbolicFunction):
-#        return Variable(expr.name())
-#
-#    raise NoWrapper(expr)
-
 def translate_pure(key):
-    #TODO: move outside so we don't init it on every pass
     translation_table = {
             'add':Addition,
             'mul':Product,
@@ -260,6 +132,9 @@ def translate_pure(key):
             'pi':Pi,
             'e':E,
             }
+    if 'WiseOp' in key:
+        print 'Abstract operator'
+        print key[5::]
     return translation_table[key]
 
 class PureError(Exception):
@@ -524,11 +399,16 @@ class Branch(object):
             else:
                 print 'something strange is being passed'
 
-        #See above if you are worried 
-        obj = apply(eval(self.type),(map(f,self.args)))
-        obj.hash = self.gethash()
-        obj.id = self.id
-        obj.idgen = self.idgen
+        #Ugly hack to pass database indices
+        if '__' in self.type:
+            ref,id = self.type.split('__')
+            self.args.insert(0,id)
+            obj = apply(eval(ref),(map(f,self.args)))
+        else:
+            obj = apply(eval(self.type),(map(f,self.args)))
+            obj.hash = self.gethash()
+            obj.id = self.id
+            obj.idgen = self.idgen
 
         return obj
 
@@ -1919,20 +1799,29 @@ class Operation(Term):
         if len(self.terms) == 1:
             return True
 
-class Unary_Operator(Term):
-    arity = 1
-    pass
+class RefOperator(Operation):
+    def __init__(self, obj, *operands):
+        if isinstance(obj, unicode) or isinstance(obj,str):
+            obj = Function.objects.get(id=int(obj))
 
-class Binary_Operator(Term):
-    arity = 2
-    pass
+        if isinstance(obj, Numeric):
+            obj = Function.objects.get(id=obj.number)
 
-class Ternary_Operator(Term):
-    arity = 3
-    pass
+        if len(operands) > 1:
+            self.terms = list(operands)
+            self.operand = self.terms
+        else:
+            self.operand = operands[0]
+            self.terms = [operands[0]]
 
-class Nary_Operator(Term):
-    pass
+        self.symbol = obj.symbol1
+        self.ui_style = obj.notation
+        self.index = obj.id
+      #  self.id = obj.id
+
+    @property
+    def classname(self):
+        return 'RefOperator__%d' % self.index
 
 class Gradient(Operation):
     ui_style = 'prefix'
@@ -2222,7 +2111,7 @@ class Differential(Operation):
         return pure.differential(self.variable._pure_())
 
 class Integral(Operation):
-    ui_style = 'sandwich'
+    ui_style = 'outfix'
     symbol = '\\int'
     show_parenthesis = False
 
