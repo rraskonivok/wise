@@ -75,6 +75,7 @@ _
         <div id="tabs-1">
                 <button onclick="build_tree()">Build Tree</button>
                 <button onclick="visualize_tree()">Build InfoVis Tree</button>
+                <button onclick="new_symbol()">New Symbol</button>
                 <div id="tree">
                     <div id="infovis" style="width: inherit; height: 300px"></div>
                 </div>
@@ -107,6 +108,8 @@ _
             title="Transformation">New</button>
     </div>
 </div>
+
+<div id="new_symbol" title="New Symbol" style="display:none"></div>
 
  <script src="/static/keys.js" type="text/javascript"></script>
  <script src="/static/simpletip.js" type="text/javascript"></script>
@@ -250,7 +253,7 @@ function init()
     $('#rtoolbar').tabs({
         load: function() {
             refresh_jsmath($("#rtoolbar"));
-            traverse_lines()
+            traverse_lines();
         }
     });
 

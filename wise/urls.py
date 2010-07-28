@@ -32,13 +32,13 @@ urlpatterns = patterns('',
      #Symbols
      (r'^sym/$', 'wise.worksheet.views.symbols_list'),
      (r'^sym/(?P<sym_id>\d+)/$', 'wise.worksheet.views.sym'),
-     (r'^sym/(?P<sym_id>\d+)/update/$', 'wise.worksheet.views.sym_update'),
+     (r'^sym/new/$', 'wise.worksheet.views.sym_update'),
      (r'^symbol_request/$', 'wise.worksheet.views.symbols_request'),
 
-     #Symbols
+     #Functions
      (r'^fun/$', 'wise.worksheet.views.fun_list'),
      (r'^fun/(?P<sym_id>\d+)/$', 'wise.worksheet.views.fun'),
-     (r'^fun/(?P<sym_id>\d+)/update/$', 'wise.worksheet.views.sym_update'),
+     (r'^fun/new/$', 'wise.worksheet.views.fun_update'),
      (r'^functions_request/$', 'wise.worksheet.views.functions_request'),
      (r'^preview_function/$', 'wise.worksheet.views.preview_function'),
 

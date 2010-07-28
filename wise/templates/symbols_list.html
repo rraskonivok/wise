@@ -8,6 +8,7 @@
  <script src="/static/jquery.js" type="text/javascript"></script>
  <script src="/static/jquery-ui.js" type="text/javascript"></script>
  <script src="/static/tablesearch.js" type="text/javascript"></script>
+ <script src="/static/jsMath/easy/load.js"></script>
  <style>
      #workspaces {
         margin-left: auto;
@@ -62,6 +63,13 @@
     .ui-icon {
         float: left;
     }
+
+    #preview {
+        padding: 40px;
+    }
+
+    #new_symbol {
+    }
  </style>
  <script type="text/javascript">
     function init()
@@ -112,13 +120,24 @@
         "json");
     }
 
-    function new_workspace()
+    function new_symbol()
     {
-        request = $("#form_new_workspace").serializeArray()
-        $.post("new_workspace/", request,
-           function(data){
-           },
-        "json");
+        $.post('/sym/0/?new=true', function(response) {
+            $('#new_symbol').html(response);
+            $("#new_symbol").dialog({
+                modal: true,
+                resizable: false,
+                position: 'center'
+            });
+            refresh_jsmath();
+            $( "#new_symbol" ).dialog( "option", "width", 520 );
+        });
+    }
+
+    function preview() {
+        var tex = $('#texinput').val();
+        $('#preview').html('$$' + tex + '$$');
+        refresh_jsmath();
     }
 
     function yesno(func,message)
@@ -130,14 +149,35 @@
             position: 'center',
         }).html(message)
     }
+
+    function refresh_jsmath(element)
+    {
+        //Refresh math for a specific element
+        if(element)
+        {
+            //Toggling visiblity prevents the underlying TeX from
+            //showing
+            element.css('visibility','hidden')
+            jsMath.ConvertTeX(element[0])
+            jsMath.ProcessBeforeShowing(element[0])
+            $(function() { element.css('visibility','visible') })
+        }
+        //Refresh math Globally, shouldn't be called too much because
+        //it bogs down the browser
+        else
+        {
+            jsMath.ConvertTeX()
+            jsMath.ProcessBeforeShowing()
+        }
+    }
  </script>
 </head>
 <body onLoad="init();">
     <div id="workspaces">
     <h1>Symbols</h1>
         <div id="menu" class="ui-widget-header ui-corner-all">
-            <a id="new" href="0/?new=true">New Symbol</a>
-            <button id="delete" onClick="show_delete_workspace()">Delete Symbol</button>
+            <button id="new" onClick="new_symbol()">New Symbol</button>
+            <button id="delete" onClick="show_delete_symbol()">Delete Symbol</button>
             <input type="text" id="search" class="search" style="float:right">
         </div>
     <form id="workspace_list">
@@ -148,23 +188,23 @@
                 <th>Date Modified</th>
                 <th>Public</th>
             </tr>
-        {% for symbol in symbols %}
-            <tr>
-                <td>
-                    <input type="checkbox" name="{{symbol.id}}"/>
-                    <a href="/sym/{{ symbol.id }}">{{ symbol.name }}</a>
-                </td>
-                <td>
-                    <pre>{{ symbol.tex }}</pre>
-                </td>
-                <td>
-                    {{ symbol.timestamp|date:"l d" }}
-                </td>
-                <td>
-                    {{ symbol.public|yesno|title }}
-                </td>
-            </tr>
-        {% endfor %}
+            {% for symbol in symbols %}
+                <tr>
+                    <td>
+                        <input type="checkbox" name="{{symbol.id}}"/>
+                        <a href="/sym/{{ symbol.id }}">{{ symbol.name }}</a>
+                    </td>
+                    <td>
+                        <pre>{{ symbol.tex }}</pre>
+                    </td>
+                    <td>
+                        {{ symbol.timestamp|date:"l d" }}
+                    </td>
+                    <td>
+                        {{ symbol.public|yesno|title }}
+                    </td>
+                </tr>
+            {% endfor %}
         </table>
     </form>
     </div>
@@ -178,29 +218,8 @@
         </form>
     </div>
 
-    <div id="sagecode" title="Name" style="display:none">
-        <form>
-            <!-- Run this through sage_parse_exp -->
-            Sage Expression:<textarea></textarea>
-        </form>
-    </div>
-
-    <div id="new_workspace" title="New Symbol" style="display:none">
-        <form id="form_new_workspace">
-            Name: <input type="text" name="name"/><br/>
-            TeX: <input type="text" name="tex"/><br/>
-            <input type="checkbox" value="numeric">Is Numeric?<br/>
-            <input type="checkbox" value="zero">Is Zero?<br/>
-            <input type="checkbox" value="positive">Is Positive<br/>
-            <input type="checkbox" value="negative">Is Negative<br/>
-            <input type="checkbox" value="integer">Is Integer<br/>
-            <input type="checkbox" value="even">Is Even<br/>
-            <input type="checkbox" value="odd">Is Odd<br/>
-            <input type="checkbox" value="prime">Is Prime<br/>
-            <input type="checkbox" value="rational">Is Rational<br/>
-            <input type="checkbox" value="real">Is Real<br/>
-            <input type="checkbox" value="complex">Is Complex<br/>
-        </form>
+    <div id="new_symbol" title="New Symbol" style="display:none">
+        $$$$
     </div>
     
 </body>

@@ -2084,3 +2084,27 @@ function add_after(obj, code)
     clear_lookups()
 }
 
+function preview() {
+    var tex = $('#texinput').val();
+    $('#preview').html('$$' + tex + '$$');
+    refresh_jsmath();
+}
+
+function new_symbol()
+{
+    $.post('/sym/0/?new=true', function(response) {
+        $('#new_symbol').html(response);
+        $("#new_symbol").dialog({
+            modal: true,
+            resizable: false,
+            position: 'center'
+        });
+        refresh_jsmath();
+        $('#form_new_symbol').submit(function() {
+            shareData = $(this).serialize(); 
+            $.post('/sym/new/',shareData);
+            return false;
+        });
+    $("#new_symbol").dialog( "option", "width", 520 );
+    });
+}

@@ -129,12 +129,10 @@ def translate_pure(key):
             'rational':Fraction,
             'eq':Equation,
             'wiseref':RefSymbol,
+            'wiserefop':RefOperator,
             'pi':Pi,
             'e':E,
             }
-    if 'WiseOp' in key:
-        print 'Abstract operator'
-        print key[5::]
     return translation_table[key]
 
 class PureError(Exception):
@@ -1703,9 +1701,6 @@ class Operation(Term):
     def action(self,operand):
         return self.get_html()
 
-#    def propogate(self):
-#        return self.get_html()
-
     def get_html(self):
         self.associate_terms()
 
@@ -1817,11 +1812,14 @@ class RefOperator(Operation):
         self.symbol = obj.symbol1
         self.ui_style = obj.notation
         self.index = obj.id
-      #  self.id = obj.id
 
     @property
     def classname(self):
         return 'RefOperator__%d' % self.index
+
+    def _pure_(self):
+        args = [o._pure_() for o in self.terms]
+        return pure.refop(pure.PureInt(int(self.index)))(*args)
 
 class Gradient(Operation):
     ui_style = 'prefix'

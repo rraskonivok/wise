@@ -232,13 +232,13 @@ def sym(request, sym_id):
     return render_to_response('symbol_edit.html', {'symbol': symbol})
 
 @login_required
-def sym_update(request, sym_id):
-    new = request.GET.get('new')
+def sym_update(request):
+    sym_id = request.POST.get('sym_id')
 
-    name = request.GET.get('name')
-    tex = request.GET.get('tex')
-    desc = request.GET.get('desc')
-    public = request.GET.get('public') is not None
+    name = request.POST.get('name')
+    tex = request.POST.get('tex')
+    desc = request.POST.get('desc')
+    public = request.POST.get('public') is not None
 
     sym = Symbol.objects.filter(id=sym_id)
 
@@ -262,7 +262,7 @@ def fun(request, sym_id):
             return HttpResponse('You do not have permission to access this function.')
 
     except ObjectDoesNotExist:
-        symbol = None
+        function = None
     return render_to_response('fun_edit.html', {'function': function})
 
 @login_required
