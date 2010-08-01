@@ -126,12 +126,17 @@ def translate_pure(key):
             'pow':Power,
             'integral':Integral,
             'differential':Differential,
+            'diff':Diff,
+            'Neg':Negate,
             'rational':Fraction,
             'eq':Equation,
             'wiseref':RefSymbol,
             'wiserefop':RefOperator,
             'pi':Pi,
             'e':E,
+            'Sin':Sine,
+            'Cos':Cosine,
+            'Tan':Tangent,
             }
     return translation_table[key]
 
@@ -376,7 +381,7 @@ class Branch(object):
         #Evalute by descent
         def f(x):
             #print 'TYPE IS',x
-            if (type(x) is str) or (type(x) is unicode):
+            if isinstance(x,unicode) or isinstance(x,str):
                 # The two special cases where a string in the
                 # parse tree is not a string
                 if x == 'Placeholder':
@@ -385,9 +390,9 @@ class Branch(object):
                     return Empty()
                 else:
                     return x
-            elif type(x) is int:
+            elif isinstance(x,int):
                 return x
-            elif type(x) is type(self):
+            elif isinstance(x,Branch):
                 #create a new class from the Branch type
                 try:
                     return x.eval_args()
@@ -402,11 +407,16 @@ class Branch(object):
             ref,id = self.type.split('__')
             self.args.insert(0,id)
             obj = apply(eval(ref),(map(f,self.args)))
+            obj.hash = self.gethash()
+            obj.idgen = self.idgen
         else:
             obj = apply(eval(self.type),(map(f,self.args)))
             obj.hash = self.gethash()
             obj.id = self.id
             obj.idgen = self.idgen
+
+        if hasattr(obj,'side') and (obj.side is not None):
+            obj.set_side(obj.side)
 
         return obj
 
@@ -641,6 +651,8 @@ class Term(object):
 
     _is_constant = False
     idgen = None
+    parent = None
+    side = None
 
     def __init__(self,*ex):
         print 'Anonymous Term was caught with arguments',ex
@@ -689,6 +701,14 @@ class Term(object):
         #Terms with special arguments
         else:
             return '(' + self.classname + ' ' + str(self.args) + ')'
+
+    def __repr__(self):
+         return self.get_math()
+
+    def set_side(self, side):
+        for term in self.terms:
+            term.side = side
+            term.set_side(side)
 
     #############################################################
 
@@ -815,6 +835,7 @@ class Term(object):
         self.javascript = make_sortable(self,other).get_html()
         return self.get_javascript()
 
+
 class PlaceholderInExpression(Exception):
     def __init__(self):
         self.value = 'A Placeholder was found in the equation and cannot be evaluated'
@@ -912,6 +933,24 @@ class Variable(Base_Symbol):
 
     def _pure_(self):
         return pure.PureSymbol(self.symbol)
+
+#Free abstract function (of a single variable at this time)
+class AbstractFunction(Base_Symbol):
+    assumptions = None
+    bounds = None
+
+    def __init__(self,symbol):
+        self.symbol = symbol
+        self.latex = '$%s(u)$' % symbol
+        self.args = str(symbol)
+
+    def _pure_(self):
+        #LHS
+        if self.side is 0:
+            return pure.PureSymbol(self.symbol + '@_')(pure.PureSymbol('u'))
+        #RHS
+        else:
+            return pure.PureSymbol(self.symbol)(pure.PureSymbol('u'))
 
 class Wildcard(Variable):
     def _pure_(self):
@@ -1338,6 +1377,8 @@ class Equation(object):
     id = None
     symbol = "="
     sortable = True
+    parent = None
+    side = None
 
     def __init__(self,lhs=None,rhs=None):
 
@@ -1364,6 +1405,9 @@ class Equation(object):
         l1 =' '.join([self.classname, self.lhs.get_math(), self.rhs.get_math()])
         return ''.join(['(',l1,')'])
 
+    def __repr__(self):
+         return self.math
+
     def _pure_(self):
         return pure.eq(self.lhs._pure_(),self.rhs._pure_())
 
@@ -1371,8 +1415,10 @@ class Equation(object):
     def classname(self):
         return self.__class__.__name__
 
-    #def _sage_(self):
-    #    return self.lhs._sage_() == self.rhs._sage_()
+    def set_side(self, side):
+        for term in self.temrms:
+            term.side = side
+            term.set_side(side)
 
     def json_flat(self,lst=None):
         if not lst:
@@ -1503,6 +1549,9 @@ class RHS(Term):
         self.rhs = Addition(*terms)
         self.terms = [self.rhs]
         self.args = [self.rhs]
+        self.side = 1
+        self.rhs.side = 1
+        self.rhs.parent = self
 
     def _pure_(self):
         return self.rhs._pure_()
@@ -1537,6 +1586,9 @@ class LHS(Term):
         self.lhs = Addition(*terms)
         self.terms = [self.lhs]
         self.args = [self.lhs]
+        self.side = 0
+        self.lhs.side = 0
+        self.lhs.parent = self
 
     #TODO: we NEED hashes on these, but because the Addition
     #contiainer is not created with the parser it doesn't get a
@@ -1965,8 +2017,8 @@ class Sine(Operation):
         self.operand.group = self.id
         self.terms = [self.operand]
 
-    #def _sage_(self):
-    #   return sage.sin(self.operand._sage_())
+    def _pure_(self):
+       return pure.sin(self.operand._pure_())
 
 class Cosine(Operation):
     ui_style = 'prefix'
@@ -1978,8 +2030,8 @@ class Cosine(Operation):
         self.operand.group = self.id
         self.terms = [self.operand]
 
-    #def _sage_(self):
-    #   return sage.cos(self.operand._sage_())
+    def _pure_(self):
+       return pure.cos(self.operand._pure_())
 
 class Tangent(Operation):
     ui_style = 'prefix'
@@ -1991,8 +2043,8 @@ class Tangent(Operation):
         self.operand.group = self.id
         self.terms = [self.operand]
 
-    #def _sage_(self):
-    #   return sage.tan(self.operand._sage_())
+    def _pure_(self):
+       return pure.tan(self.operand._pure_())
 
 class Secant(Operation):
     ui_style = 'prefix'
@@ -2004,8 +2056,8 @@ class Secant(Operation):
         self.operand.group = self.id
         self.terms = [self.operand]
 
-    #def _sage_(self):
-    #   return sage.sec(self.operand._sage_())
+    def _pure_(self):
+       return pure.sec(self.operand._pure_())
 
 class Cosecant(Operation):
     ui_style = 'prefix'
@@ -2017,8 +2069,8 @@ class Cosecant(Operation):
         self.operand.group = self.id
         self.terms = [self.operand]
 
-    #def _sage_(self):
-    #   return sage.csc(self.operand._sage_())
+    def _pure_(self):
+       return pure.csc(self.operand._pure_())
 
 class Cotangent(Operation):
     ui_style = 'prefix'
@@ -2030,8 +2082,8 @@ class Cotangent(Operation):
         self.operand.group = self.id
         self.terms = [self.operand]
 
-    #def _sage_(self):
-    #   return sage.cot(self.operand._sage_())
+    def _pure_(self):
+       return pure.cot(self.operand._pure_())
 
 class Negate(Operation):
     ui_style = 'prefix'
@@ -2047,8 +2099,8 @@ class Negate(Operation):
         if type(self.operand) is Addition:
             self.show_parenthesis = True
 
-    #def _sage_(self):
-    #    return sage.operator.neg(self.operand._sage_())
+    def _pure_(self):
+       return pure.neg(self.operand._pure_())
 
     @fallback(Term.combine_fallback)
     def combine(self,other,context):
@@ -2172,11 +2224,11 @@ class Diff(Operation):
         self.differential = differential
         self.terms = [self.differential, self.operand]
 
-    #def _sage_(self):
-    #    return sage.diff(
-    #               self.operand._sage_(),
-    #               self.differential._sage_()
-    #           )
+    def _pure_(self):
+        return pure.diff(
+                   self.operand._pure_(),
+                   self.differential._pure_()
+               )
 
     def get_html(self):
         self.html = template.Template(diff_html)

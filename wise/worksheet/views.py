@@ -729,6 +729,7 @@ palette_template = '''
 {% endfor %}
 '''
 
+@errors
 def generate_palette():
     #TODO Be able to include snippts of html as widgets in the
     #palette
@@ -742,12 +743,19 @@ def generate_palette():
                     mathobjects.Khinchin().get_html(),
                 ]}
 
-    variables = {'name': 'Variables', 'type': 'array', 'objects': [
-                    mathobjects.Variable('x').get_html(),
-                    mathobjects.Variable('y').get_html(),
-                    mathobjects.Variable('z').get_html(),
-                    mathobjects.IntVariable('xint').get_html(),
+    import string
+    lettervariables = [mathobjects.Variable(letter).get_html() for letter in string.lowercase]
+
+    patternmatching = {'name': 'Pattern Matching', 'type': 'array', 'objects': [
+#                    mathobjects.Variable('x').get_html(),
+#                    mathobjects.Variable('y').get_html(),
+#                    mathobjects.Variable('z').get_html(),
+                    mathobjects.AbstractFunction('f').get_html(),
+                    mathobjects.Variable('u').get_html(),
+#                    mathobjects.IntVariable('xint').get_html(),
                 ]}
+
+    variables = {'name': 'Variables', 'type': 'array', 'objects': lettervariables }
 
     trig = {'name': 'Functions', 'type': 'tabular', 'objects': [
                     ('Sine', mathobjects.Sine(Placeholder()).get_html()),
@@ -780,7 +788,7 @@ def generate_palette():
                     ('Length', mathobjects.Length(Placeholder()).get_html()),
                 ]}
 
-    palette = [trig,variables,operations,numbers,physics,constants]
+    palette = [trig,variables,operations,numbers,physics,constants, patternmatching]
 
     interface_ui = template.Template(palette_template)
     c = template.Context({'palette':palette})

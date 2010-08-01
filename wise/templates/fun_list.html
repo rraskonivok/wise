@@ -63,6 +63,14 @@
     .ui-icon {
         float: left;
     }
+
+    #preview {
+        overflow: hidden;
+        width: 100%;
+        text-align: center;
+        min-height: 20px;
+        border: 2px solid #ccc;
+    }
  </style>
  <script type="text/javascript">
     function init()
@@ -94,7 +102,7 @@
             $('#new_function').html(response);
             $("#new_function").dialog({
                 modal: true,
-                resizable: false,
+                resizable: true,
                 position: 'center'
             });
             refresh_jsmath();
