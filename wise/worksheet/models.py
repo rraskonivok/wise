@@ -7,11 +7,24 @@ class Workspace(models.Model):
     owner = models.ForeignKey(User)
     public = models.BooleanField()
 
-    #The workspace should have a number of EXPORTABLE equations which are higlighted in yellow, these
-    #can be pulled into other workspaces and inserted and quered in lookup_identities via sim hashes
+    def __unicode__(self):
+        return self.name
+
+class RuleSet(models.Model):
+    name = models.CharField(max_length=200)
+    owner = models.ForeignKey(User)
 
     def __unicode__(self):
         return self.name
+
+#Be able to specify order of rules
+class Rule(models.Model):
+    pure = models.TextField(max_length=10000,blank=False, null=False)
+    sexp = models.TextField(max_length=10000,blank=False, null=False)
+    set = models.ForeignKey(RuleSet, primary_key=True, blank=False,null=False)
+
+    def __unicode__(self):
+        return str(self.set) + ' ' + self.sexp[0:25]
 
 class Cell(models.Model):
     workspace = models.ForeignKey(Workspace, primary_key=True, blank=False,null=False)

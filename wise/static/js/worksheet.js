@@ -842,7 +842,7 @@ function lookup_transform()
 
     //data.context = context
 
-    $.post("lookup_transform/",data, function(data)
+    $.post("/cmds/lookup_transform/",data, function(data)
         {
             if (data.empty) {
                 notify('No transforms found for given objects');
@@ -883,7 +883,7 @@ function apply_transform(transform,selections)
         data.selections = selections
     }
 
-    $.post("apply_transform/", data,
+    $.post("/cmds/apply_transform/", data,
         function(data){
 
             if(data.error)
@@ -984,7 +984,7 @@ function receive(ui,receiver,group_id)
         namespace_index: NAMESPACE_INDEX
     }
 
-    $.post("receive/", data,
+    $.post("/cmds/receive/", data,
            function(data){
 
             if(data.error) {
@@ -1038,7 +1038,7 @@ function remove(ui,removed)
         namespace_index: NAMESPACE_INDEX
     }
 
-    $.post("remove/", data,
+    $.post("/cmds/remove/", data,
            function(data){
                 if(data.error) {
                     error(data.error)
@@ -1081,7 +1081,7 @@ function combine(first,second,context)
     group_id = container.attr('id')
     group_id_cache = String(group_id)
 
-    $.post("combine/", data,
+    $.post("/cmds/combine/", data,
            function(data){
 
                 if(data.error)
@@ -1130,12 +1130,13 @@ function combine(first,second,context)
         "json");
 }
 
-function new_inline(){
+function new_line(type){
     data = {}
     data.namespace_index = NAMESPACE_INDEX;
     data.cell_index = CELL_INDEX;
+    data.type = type
 
-    $.post("new_inline/", data ,
+    $.post("/cmds/new_line/", data ,
         function(data){
             if(data.error) {
                 error(data.error)
@@ -2008,7 +2009,7 @@ function replace_manually(obj, code)
     data.second = code
     data.transform = 'Replace'
 
-    $.post("apply_transform/", data,
+    $.post("/cmds/apply_transform/", data,
         function(data){
 
             if(data.error)
@@ -2055,7 +2056,7 @@ function add_after(obj, code)
     data.second = code
     data.transform = 'Replace'
 
-    $.post("apply_transform/", data,
+    $.post("/cmds/apply_transform/", data,
         function(data){
 
             if(data.error)

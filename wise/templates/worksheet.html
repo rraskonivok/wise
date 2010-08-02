@@ -104,8 +104,11 @@ _
             onclick="javascript:toggle_sageinput()"
             title="Transformation">Sage</button>
         <button class="ui-widget"
-            onclick="javascript:new_inline()"
-            title="Transformation">New</button>
+            onclick="javascript:new_line('eq')"
+            title="Transformation">New Equation</button>
+        <button class="ui-widget"
+            onclick="javascript:new_line('def')"
+            title="Transformation">New Definition</button>
     </div>
 </div>
 
@@ -140,7 +143,7 @@ _
 // DOM
 var NAMESPACE_INDEX = {{ namespace_index }};
 
-// Count of how many cells are in tehe workspace
+// Count of how many cells are in the workspace
 var CELL_INDEX = {{ cell_index }};
 
 // Raw json sent from the server when the page
@@ -201,7 +204,7 @@ function init()
         .bind('keydown', 'del', function() {remove_element()})
         .bind('keydown', 'esc', function() {clear_selection()})
         .bind('keydown', 'r', function() {refresh_jsmath()})
-        .bind('keydown', 'o', function() {new_inline()})
+        .bind('keydown', 'o', function() {new_line()})
         .bind('keydown', 'tab', function() {next_placeholder()})
         .bind('keydown', 's', function() {show_cmd()}
     )

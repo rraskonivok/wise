@@ -15,19 +15,27 @@ urlpatterns = patterns('',
      #Worksheet
      (r'^ws/(?P<eq_id>\d+)/$', 'wise.worksheet.views.ws'),
      (r'^palette/$', 'wise.worksheet.views.palette'),
-     (r'^ws/(?P<eq_id>\d+)/receive/$', 'wise.worksheet.views.receive'),
-     (r'^ws/(?P<eq_id>\d+)/remove/$', 'wise.worksheet.views.remove'),
-     (r'^ws/(?P<eq_id>\d+)/lookup_transform/$', 'wise.worksheet.views.lookup_transform'),
-     (r'^ws/(?P<eq_id>\d+)/apply_transform/$', 'wise.worksheet.views.apply_transform'),
-     (r'^ws/(?P<eq_id>\d+)/save_workspace/$', 'wise.worksheet.views.save_workspace'),
-     (r'^ws/(?P<eq_id>\d+)/sage_parse/$', 'wise.worksheet.views.sage_parse'),
-     (r'^ws/(?P<eq_id>\d+)/sage_inline/$', 'wise.worksheet.views.sage_inline'),
-     (r'^ws/(?P<eq_id>\d+)/new_inline/$', 'wise.worksheet.views.new_inline'),
-     (r'^ws/(?P<eq_id>\d+)/json_tree/$', 'wise.worksheet.views.json_tree'),
      (r'^new_workspace/$', 'wise.worksheet.views.new_workspace'),
      (r'^del_workspace/$', 'wise.worksheet.views.del_workspace'),
-     (r'^ws/(?P<eq_id>\d+)/combine/$', 'wise.worksheet.views.combine'),
      (r'^new/$', 'wise.worksheet.views.new'),
+
+     #Worksheet Commands
+     (r'^cmds/new_line/$', 'wise.worksheet.views.new_line'),
+     (r'^cmds/receive/$', 'wise.worksheet.views.receive'),
+     (r'^cmds/remove/$', 'wise.worksheet.views.remove'),
+     (r'^cmds/lookup_transform/$', 'wise.worksheet.views.lookup_transform'),
+     (r'^cmds/apply_transform/$', 'wise.worksheet.views.apply_transform'),
+     (r'^cmds/save_workspace/$', 'wise.worksheet.views.save_workspace'),
+     (r'^cmds/sage_parse/$', 'wise.worksheet.views.sage_parse'),
+     (r'^cmds/sage_inline/$', 'wise.worksheet.views.sage_inline'),
+     (r'^cmds/json_tree/$', 'wise.worksheet.views.json_tree'),
+     (r'^cmds/combine/$', 'wise.worksheet.views.combine'),
+
+     #Rules
+     (r'^rule/$', 'wise.worksheet.views.rules_list'),
+     (r'^rule/(?P<rule_id>\d+)/$', 'wise.worksheet.views.rule'),
+     (r'^rule/new/$', 'wise.worksheet.views.sym_update'),
+     (r'^rule_request/$', 'wise.worksheet.views.symbols_request'),
 
      #Symbols
      (r'^sym/$', 'wise.worksheet.views.symbols_list'),

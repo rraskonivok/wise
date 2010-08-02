@@ -35,7 +35,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.views.decorators.cache import cache_page
 
 from wise.worksheet.forms import LoginForm
-from wise.worksheet.models import Workspace, MathematicalEquation, Cell, Symbol, Function
+from wise.worksheet.models import Workspace, MathematicalEquation, Cell, Symbol, Function, Rule, RuleSet
 
 CACHE_INTERVAL = 30*60 # 5 Minutes
 
@@ -163,60 +163,66 @@ def home(request):
     workspaces = Workspace.objects.filter(owner=request.user)
     return render_to_response('home.html', {'workspaces': workspaces})
 
+
+#---------------------------
+# Rules --------------------
+#---------------------------
+
 @errors
 @login_required
-def symbols_list(request):
+def rules_list(request):
     try:
-        symbols = Symbol.objects.filter(owner=request.user)
+        rulesets = RuleSet.objects.filter(owner=request.user)
     except ObjectDoesNotExist:
         pass
 
-    return render_to_response('symbols_list.html', {'symbols': symbols})
+    return render_to_response('rules.html', {'rulesets': rulesets})
 
-functionslist = '''
-<table style="width: 100%">
-{% for function in functions%}
-    <tr>
-    <td>{{ function.0 }}</td>
-    <td>{{ function.1 }}</td>
-    <tr>
-{% endfor %}
-</table>
-'''
-
-@errors
 @login_required
-def functions_request(request):
-    ph = mathobjects.Placeholder()
-    functions = Function.objects.filter(owner=request.user)
-    functions_html = [mathobjects.RefOperator(fun,ph).get_html() for fun in functions]
-    descriptions = [fun.desc for fun in functions]
-
-    lst = template.Template(functionslist)
-    c = template.Context({'functions':zip(functions_html,descriptions)})
-    return HttpResponse(lst.render(c))
-
-symbolslist = '''
-<table style="width: 100%">
-{% for symbol in symbols%}
-    <tr>
-    <td>{{ symbol.0 }}</td>
-    <td>{{ symbol.1 }}</td>
-    <tr>
-{% endfor %}
-</table>
-'''
-
 @errors
-@login_required
-def symbols_request(request):
-    symbols = Symbol.objects.filter(owner=request.user)
-    symbols_html = [mathobjects.RefSymbol(sym).get_html() for sym in symbols]
-    descriptions = [sym.desc for sym in symbols]
+def rule(request, rule_id):
+    ruleset = RuleSet.objects.get(id=rule_id)
 
-    lst = template.Template(symbolslist)
-    c = template.Context({'symbols':zip(symbols_html,descriptions)})
-    return HttpResponse(lst.render(c))
+    if ( ruleset.owner.id != request.user.id ):
+        return HttpResponse('You do not have permission to access this worksheet.')
+
+    try:
+        rules = Rule.objects.filter(set=rule_id)
+    except ObjectDoesNotExist:
+        return HttpResponse('No rules found in ruleset.')
+
+    uid = uidgen()
+
+    json_cells = []
+    html_cells = []
+
+    json_cell = []
+    html_eq = []
+
+    for rule in rules:
+        eqtext = unencode(rule.sexp)
+        tree = mathobjects.ParseTree(eqtext)
+        tree.gen_uids(uid)
+
+        etree = tree.eval_args()
+        html_eq.append(html(etree))
+        json_cell.append(etree.json_flat())
+
+    html_cells.append(cellify(''.join(html_eq),0))
+    json_cells.append(json_cell)
+
+    return render_to_response('worksheet.html', {
+        'title': ruleset.name,
+        'equations': html_cells,
+        'username': request.user.username,
+        'namespace_index': uid.next()[3:],
+        'cell_index': 1,
+        'json_cells': json.dumps(json_cells),
+        })
+
+#---------------------------
+# Symbols ------------------
+#---------------------------
 
 @login_required
 def sym(request, sym_id):
@@ -248,6 +254,65 @@ def sym_update(request):
         Symbol(name=name,tex=tex,public=public,desc=desc,owner=request.user).save()
 
     return HttpResponseRedirect('/sym')
+
+@errors
+@login_required
+def symbols_list(request):
+    try:
+        symbols = Symbol.objects.filter(owner=request.user)
+    except ObjectDoesNotExist:
+        pass
+
+    return render_to_response('symbols_list.html', {'symbols': symbols})
+
+symbolslist = '''
+<table style="width: 100%">
+{% for symbol in symbols%}
+    <tr>
+    <td>{{ symbol.0 }}</td>
+    <td>{{ symbol.1 }}</td>
+    <tr>
+{% endfor %}
+</table>
+'''
+
+@errors
+@login_required
+def symbols_request(request):
+    symbols = Symbol.objects.filter(owner=request.user)
+    symbols_html = [mathobjects.RefSymbol(sym).get_html() for sym in symbols]
+    descriptions = [sym.desc for sym in symbols]
+
+    lst = template.Template(symbolslist)
+    c = template.Context({'symbols':zip(symbols_html,descriptions)})
+    return HttpResponse(lst.render(c))
+
+#---------------------------
+# Functions ----------------
+#---------------------------
+
+functionslist = '''
+<table style="width: 100%">
+{% for function in functions%}
+    <tr>
+    <td>{{ function.0 }}</td>
+    <td>{{ function.1 }}</td>
+    <tr>
+{% endfor %}
+</table>
+'''
+
+@errors
+@login_required
+def functions_request(request):
+    ph = mathobjects.Placeholder()
+    functions = Function.objects.filter(owner=request.user)
+    functions_html = [mathobjects.RefOperator(fun,ph).get_html() for fun in functions]
+    descriptions = [fun.desc for fun in functions]
+
+    lst = template.Template(functionslist)
+    c = template.Context({'functions':zip(functions_html,descriptions)})
+    return HttpResponse(lst.render(c))
 
 def fun_list(request):
     functions = Function.objects.filter(owner=request.user)
@@ -436,9 +501,8 @@ def json_tree(request, eq_id):
 @login_required
 @errors
 @cache_page(CACHE_INTERVAL)
-def lookup_transform(request, eq_id):
+def lookup_transform(request):
     typs = tuple(request.POST.getlist('selections[]'))
-    #print [i for i in mathobjects.algebra.mappings]
 
     def str_to_mathtype(typ):
         return mathobjects.__dict__[typ]
@@ -465,7 +529,7 @@ def lookup_transform(request, eq_id):
 @login_required
 @errors
 @cache_page(CACHE_INTERVAL)
-def combine(request,eq_id):
+def combine(request):
     first = unencode( request.POST.get('first') )
     second = unencode( request.POST.get('second') )
     context = unencode( request.POST.get('context') )
@@ -507,7 +571,7 @@ def new(request):
 
 @login_required
 @errors
-def apply_transform(request,eq_id):
+def apply_transform(request):
     code = tuple(request.POST.getlist('selections[]'))
     transform = unencode( request.POST.get('transform') )
     namespace_index = int( request.POST.get('namespace_index') )
@@ -613,7 +677,7 @@ def new_workspace(request):
 @login_required
 @errors
 @cache_page(CACHE_INTERVAL)
-def receive(request,eq_id):
+def receive(request):
     obj = unencode( request.POST.get(u'obj') )
     obj_type = unencode( request.POST.get('obj_type') )
 
@@ -651,7 +715,7 @@ def receive(request,eq_id):
 @login_required
 @errors
 @cache_page(CACHE_INTERVAL)
-def remove(request,eq_id):
+def remove(request):
     obj = unencode( request.POST.get(u'obj') )
     obj_type = unencode( request.POST.get('obj_type') )
 
@@ -684,15 +748,22 @@ def remove(request,eq_id):
 @login_required
 @errors
 @cache_page(CACHE_INTERVAL)
-def new_inline(request, eq_id):
+def new_line(request):
     namespace_index = int( request.POST.get('namespace_index') )
     cell_index = int( request.POST.get('cell_index') )
+    newtype = request.POST.get('type')
 
     uid = uidgen(namespace_index)
+    print 'NEW TYPE', newtype
 
     # TODO we should do this without parsing, this is really slow
     # and inefficent
-    new = parse('(Definition (LHS (Placeholder )) (RHS (Placeholder )))',uid)
+    if newtype == u'def':
+        new = parse('(Definition (LHS (Placeholder )) (RHS (Placeholder )))',uid)
+    elif newtype == u'eq':
+        new = parse('(Equation (LHS (Placeholder )) (RHS (Placeholder )))',uid)
+    else:
+        error('invalid type of inline')
     newline_html = cellify(html(new),cell_index+1)
 
     return JSONResponse({'new_html': newline_html,

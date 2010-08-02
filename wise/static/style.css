@@ -284,6 +284,7 @@ input.search {
 .cell {
     width: 100%;
     border-right: 5px solid red;
+    padding-bottom: 15px;
 }
 
 .cell table {
