@@ -187,7 +187,7 @@ def rule(request, rule_id):
         return HttpResponse('You do not have permission to access this worksheet.')
 
     try:
-        rules = Rule.objects.filter(set=rule_id)
+        rules = Rule.objects.filter(set=rule_id).order_by('index')
     except ObjectDoesNotExist:
         return HttpResponse('No rules found in ruleset.')
 
@@ -219,6 +219,61 @@ def rule(request, rule_id):
         'cell_index': 1,
         'json_cells': json.dumps(json_cells),
         })
+
+ruleslist = '''
+<table style="width: 100%">
+{% for rule in rules%}
+    <tr>
+    <td><a href="javascript:apply_rule({{rule.id}});">{{ rule.name }}</a></td>
+    <td></td>
+    <tr>
+{% endfor %}
+</table>
+'''
+
+@errors
+@login_required
+def apply_rule(request):
+    code = tuple(request.POST.getlist('selections[]'))
+    rule_id = int( request.POST.get('id') )
+    namespace_index = int( request.POST.get('namespace_index') )
+
+    uid = uidgen(namespace_index)
+
+    args = [parse(cde, uid) for cde in code]
+    transform = mathobjects.algebra.ReduceWithRules
+
+    #Ugly hack to allow us to pass the uid generator and use it
+    # in the middle of a transformation in case we need to
+    # generate a whole new batch of uids (like when converting
+    # pure <-> python ).
+    for arg in args:
+        arg.idgen = uid
+
+    rs = RuleSet.objects.get(id=rule_id)
+    rules = Rule.objects.filter(set=rs)
+    rule_strings = [rule.pure for rule in rules]
+
+    new = transform(rule_strings,args[0])
+
+    new.idgen = uid
+    new.ensure_id()
+
+    new_html = [html(new)]
+    new_json = [json_flat(new)]
+
+    return JSONResponse({'new_html': new_html,
+                         'new_json': new_json,
+                         'namespace_index': uid.next()[3:]})
+
+@errors
+@login_required
+def rules_request(request):
+    rules = RuleSet.objects.filter(owner=request.user)
+
+    lst = template.Template(ruleslist)
+    c = template.Context({'rules':rules})
+    return HttpResponse(lst.render(c))
 
 #---------------------------
 # Symbols ------------------
@@ -629,19 +684,44 @@ def save_workspace(request,eq_id):
     except ObjectDoesNotExist:
         return HttpResponse(json.dumps({'error':'Workspace is missing'}))
 
-    eqs = MathematicalEquation.objects.filter(workspace=eq_id)
+    cells = Cell.objects.filter(workspace=eq_id)
 
-    #Delete old elements in the workspace
-    data = {}
-    for eq in eqs:
-        eq.delete()
+    for cell in cells:
+        cell.delete()
 
     #TODO this is crazy dangerous
     indexes = len(request.POST)
 
     for i in xrange(indexes):
+        newcell = Cell(workspace=workspace,index=0)
+        newcell.save()
         math = request.POST.get(str(i))
-        MathematicalEquation(code=math, workspace=workspace).save()
+        MathematicalEquation(code=math, cell=newcell).save()
+
+    return HttpResponse(json.dumps({'success': True}))
+
+@login_required
+@errors
+def save_ruleset(request,rule_id):
+    try:
+        ruleset = RuleSet.objects.get(id=rule_id)
+    except ObjectDoesNotExist:
+        return HttpResponse(json.dumps({'error':'Rule Set is missing'}))
+
+    rules = Rule.objects.filter(set=rule_id)
+
+    for rule in rules:
+        rule.delete()
+
+    #TODO this is crazy dangerous
+    indexes = len(request.POST)
+    uid = uidgen()
+
+    for i in xrange(indexes):
+        math = request.POST.get(str(i))
+        pure = parse(math,uid)._pure_()
+        newrule = Rule(sexp=math, pure=pure, set=ruleset, index=i)
+        newrule.save()
 
     return HttpResponse(json.dumps({'success': True}))
 
@@ -818,12 +898,8 @@ def generate_palette():
     lettervariables = [mathobjects.Variable(letter).get_html() for letter in string.lowercase]
 
     patternmatching = {'name': 'Pattern Matching', 'type': 'array', 'objects': [
-#                    mathobjects.Variable('x').get_html(),
-#                    mathobjects.Variable('y').get_html(),
-#                    mathobjects.Variable('z').get_html(),
                     mathobjects.AbstractFunction('f').get_html(),
                     mathobjects.Variable('u').get_html(),
-#                    mathobjects.IntVariable('xint').get_html(),
                 ]}
 
     variables = {'name': 'Variables', 'type': 'array', 'objects': lettervariables }

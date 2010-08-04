@@ -66,6 +66,11 @@ def Reduce2Eq( rule1, rule2, second ):
     rule2p = python_to_pure(rule2)
     return 'pass' ,'pass', pure_to_python(pure.reduce_with_list([rule1p,rule2p],python_to_pure(second)),rule1.idgen)
 
+def ReduceWithRules( rules, expr ):
+    pexpr = python_to_pure(expr)
+    print rules
+    return pure_to_python(pure.reduce_with_pure_rules(rules, python_to_pure(expr)),expr.idgen)
+
 @Map( _( Definition , Term ) >> _( None, Term ) )
 def ReduceTerm( first, second ):
     rule = python_to_pure(first)

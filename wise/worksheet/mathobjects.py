@@ -1365,6 +1365,7 @@ equation_html = '''
     <td>{{lhs}}</td>
     <td><span class="equalsign">$${{symbol}}$$</span></td>
     <td>{{rhs}}</td>
+    <td class="flushright"><div contenteditable=true class="annotation"></div></td>
 
     </tr>
 '''

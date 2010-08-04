@@ -71,6 +71,7 @@ _
             <li><a href="#tabs-1">Visualize</a></li>
             <li><a href="/functions_request">Functions</a></li>
             <li><a href="/symbol_request">Symbols</a></li>
+            <li><a href="/rule_request">Rules</a></li>
         </ul>
         <div id="tabs-1">
                 <button onclick="build_tree()">Build Tree</button>
@@ -187,7 +188,7 @@ function init()
 
     layout = $('body').layout({ 
         applyDefaultStyles: true,
-        east__minSize: 300,
+        east__minSize: 350,
         west__minSize: 300,
         //east__onresize:	function () { $("#math_palette").accordion("resize"); },
         north__resizable: false,

@@ -869,6 +869,84 @@ function lookup_transform()
         } ,'json')
 }
 
+function apply_rule(id,selections) {
+    var data = {}
+    data.id = id
+    data.namespace_index = NAMESPACE_INDEX;
+
+    if(selections == null) {
+        //Fetch the math for each of the selections
+        data.selections = selection.list_prop('math')
+    }
+    else { 
+        data.selections = selections
+    }
+
+    $.post("/cmds/apply_rule/", data,
+        function(data){
+
+            if(data.error)
+            {
+                error(data.error)
+                $('#selectionlist').fadeIn();
+                clear_selection()
+                return
+            }
+
+            //Iterate over the elements in the image of the
+            //transformation, attempt to map them 1:1 with the
+            //elements in the domain. Elements mapped to 'null'
+            //are deleted.
+            for(var i=0; i<data.new_html.length; i++)
+            {
+                obj = selection.nth(i)
+                group_id = obj.attr('group');
+                group_id_cache = String(group_id)
+
+                if (data.new_html[i] == null) {
+                    obj.remove();
+                }
+                else if(data.new_html[i] == 'pass') {
+                    //console.log("Doing nothing");
+                }
+                else if(data.new_html[i] == 'delete') {
+                    //console.log("Deleting - at some point in the future");
+                }
+                else
+                {
+                    toplevel = (data.new_json[i][0].type)
+                    if(toplevel == 'Definition' | toplevel == 'Equation') {
+                        build_tree_from_json(data.new_json[i])
+                        //merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
+                        nsym = obj.replace(data.new_html[i]);
+                        //nsym.attr('group',group_id_cache);
+                        refresh_jsmath($(nsym))
+                    } else {
+                        merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
+                        nsym = obj.replace(data.new_html[i]);
+                        nsym.attr('group',group_id_cache);
+                        refresh_jsmath($(nsym))
+                    }
+                    update(get_container(nsym))
+                    //Check to see if the uid assigning failed
+                    if(nsym.find('#None').length > 0) {
+                        error("Warning: some elements do not have uids");
+                    }
+                }
+            }
+            
+            NAMESPACE_INDEX = data.namespace_index;
+
+            clear_selection()
+            traverse_lines();
+            //update(get_container(obj))
+        },
+        "json");
+
+    cleanup_ajax_scripts()
+    clear_lookups()
+}
+
 function apply_transform(transform,selections)
 {
     var data = {}
@@ -1173,24 +1251,26 @@ function save_workspace()
     i = 0
 
     //TODO: Remove $.each
-    $.each($("tr.equation"),
+    $.each($("tr[toplevel='true']",'#workspace'),
         function(obj)
         { 
-                data[i] = $(this).attr('math')
-                i += 1
+                data[i] = $(this).attr('math');
+                i += 1;
         })
 
     //Flash the border to indicate we've saved.
     $('#workspace').animate({ border: "5px solid red" }, 300);
     $('#workspace').animate({ border: "0px solid black" }, 300);
 
-    $.post("save_workspace/", data ,
+    console.log(data);
+
+    $.post("save/", data ,
         function(data){
             if(data.error) {
                 error(data.error)
             }
             if(data.success) {
-                error('Succesfully saved workspace.')
+                error('Save succesfull.')
             }
         } ,'json')
 }

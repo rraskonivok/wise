@@ -17,17 +17,21 @@ class RuleSet(models.Model):
     def __unicode__(self):
         return self.name
 
-#Be able to specify order of rules
 class Rule(models.Model):
     pure = models.TextField(max_length=10000,blank=False, null=False)
+    # Should allow for a blob of pure code which does not
+    # neccesarily translate into internal code, for more
+    # complicated things we wish to write only in pure.
     sexp = models.TextField(max_length=10000,blank=False, null=False)
-    set = models.ForeignKey(RuleSet, primary_key=True, blank=False,null=False)
+    set = models.ForeignKey(RuleSet, blank=False, null=False)
+    index = models.IntegerField(blank=False,null=False)
 
     def __unicode__(self):
         return str(self.set) + ' ' + self.sexp[0:25]
 
 class Cell(models.Model):
     workspace = models.ForeignKey(Workspace, primary_key=True, blank=False,null=False)
+    #TODO: Remove this
     index = models.IntegerField(blank=False,null=False)
 
     def __unicode__(self):

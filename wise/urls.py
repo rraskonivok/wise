@@ -14,6 +14,7 @@ urlpatterns = patterns('',
 
      #Worksheet
      (r'^ws/(?P<eq_id>\d+)/$', 'wise.worksheet.views.ws'),
+     (r'^ws/(?P<eq_id>\d+)/save/$', 'wise.worksheet.views.save_workspace'),
      (r'^palette/$', 'wise.worksheet.views.palette'),
      (r'^new_workspace/$', 'wise.worksheet.views.new_workspace'),
      (r'^del_workspace/$', 'wise.worksheet.views.del_workspace'),
@@ -24,8 +25,8 @@ urlpatterns = patterns('',
      (r'^cmds/receive/$', 'wise.worksheet.views.receive'),
      (r'^cmds/remove/$', 'wise.worksheet.views.remove'),
      (r'^cmds/lookup_transform/$', 'wise.worksheet.views.lookup_transform'),
+     (r'^cmds/apply_rule/$', 'wise.worksheet.views.apply_rule'),
      (r'^cmds/apply_transform/$', 'wise.worksheet.views.apply_transform'),
-     (r'^cmds/save_workspace/$', 'wise.worksheet.views.save_workspace'),
      (r'^cmds/sage_parse/$', 'wise.worksheet.views.sage_parse'),
      (r'^cmds/sage_inline/$', 'wise.worksheet.views.sage_inline'),
      (r'^cmds/json_tree/$', 'wise.worksheet.views.json_tree'),
@@ -34,8 +35,9 @@ urlpatterns = patterns('',
      #Rules
      (r'^rule/$', 'wise.worksheet.views.rules_list'),
      (r'^rule/(?P<rule_id>\d+)/$', 'wise.worksheet.views.rule'),
+     (r'^rule/(?P<rule_id>\d+)/save/$', 'wise.worksheet.views.save_ruleset'),
      (r'^rule/new/$', 'wise.worksheet.views.sym_update'),
-     (r'^rule_request/$', 'wise.worksheet.views.symbols_request'),
+     (r'^rule_request/$', 'wise.worksheet.views.rules_request'),
 
      #Symbols
      (r'^sym/$', 'wise.worksheet.views.symbols_list'),
