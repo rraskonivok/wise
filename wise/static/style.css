@@ -285,7 +285,7 @@ input.search {
 }
 
 .ui-state-highlight {
-    background-color: red;
+    padding: 5px;
 }
 
 .selected {

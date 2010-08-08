@@ -1826,10 +1826,10 @@ function visualize_tree(tree) {
             };
 
             $(label).bind('mouseover', function() {
-                node.data.dom.css('background-color','blue');
+                node.data.dom.addClass('ui-state-highlight');
             })
             $(label).bind('mouseout', function() {
-                node.data.dom.css('background-color','inherit');
+                node.data.dom.removeClass('ui-state-highlight');
             })
             var style = label.style;
             style.width = 60 + 'px';

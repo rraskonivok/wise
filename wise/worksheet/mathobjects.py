@@ -81,6 +81,9 @@ def html(*objs):
 
     return ''.join(new_html)
 
+def purify(obj):
+    return obj._pure_()
+
 def pairs(list):
     for i in range(len(list) - 1):
         yield (list[i],list[i+1])
@@ -109,12 +112,12 @@ class crcdigest(object):
         return hex(self.hash)
 
 #-------------------------------------------------------------
-# Sage Wrapper
+# Pure Wrapper
 #-------------------------------------------------------------
 
 class NoWrapper(Exception):
     def __init__(self,expr):
-        self.value = 'Unable to cast Sage Type to Internal: %s :: %s' % (expr , str(type(expr)))
+        self.value = 'Unable to cast Pure Type to Internal: %s :: %s' % (expr , str(type(expr)))
 
     def __str__(self):
         return self.value
@@ -138,7 +141,10 @@ def translate_pure(key):
             'Cos':Cosine,
             'Tan':Tangent,
             }
-    return translation_table[key]
+    try:
+        return translation_table[key]
+    except KeyError:
+        raise NoWrapper()
 
 class PureError(Exception):
     def __init__(self,expr):
@@ -159,9 +165,12 @@ def parse_pure_exp(expr, uidgen=None):
 
 #Convenience wrappers with more obvious names...
 def pure_to_python(obj,uidgen=None):
+    '''Maps a set of Pure objects (as translated by the Cython
+    wrapper into internal Python objects'''
     return parse_pure_exp(obj,uidgen)
 
 def python_to_pure(obj):
+    '''Maps internal Python objects into their pure equivelents'''
     return obj._pure_()
 
 #-------------------------------------------------------------
@@ -176,18 +185,11 @@ def python_to_pure(obj):
 # Create our parse tree structure, the Branch object simply holds
 # the arguments before they are evaluated into internal Math
 # objects
-# 
-# Calling Sage or casting into Internal objects is expensive and
-# so we try and do as much as we can with the syntax tree before
-# casting.
 
 class InternalMathObjectNotFound(Exception):
     pass
 
-
 class Branch(object):
-    # I believe this is a type of Hash tree, 
-    # http://en.wikipedia.org/wiki/Hash_tree
     #                                                             
     #         O            The hash of a non-terminal node is 
     #        / \           hash of its children's hashes.
@@ -316,14 +318,14 @@ class Branch(object):
 
     def walk(self):
         for i in self.args:
-            if type(i) is type(self):
+            if isinstance(i,Branch):
                 for j in i.walk():
                     yield j
                 yield i
 
     def walk_all(self):
         for i in self.args:
-            if type(i) is type(self):
+            if isinstance(i,Branch):
                 for j in i.walk():
                     yield j
                 yield i
@@ -332,7 +334,7 @@ class Branch(object):
 
     def walk_args(self):
         for i in self.args:
-            if type(i) is type(self):
+            if isinstance(i,Branch):
                 for j in i.walk():
                     yield j
             else:
@@ -340,7 +342,7 @@ class Branch(object):
 
     def json(self):
         def f(x):
-            if type(x) is type(self):
+            if isinstance(x,Branch):
 
                 i = x.json()
                 return i
@@ -354,7 +356,7 @@ class Branch(object):
             lst = []
 
         def f(x):
-            if type(x) is type(self):
+            if isinstance(x,Branch):
                 i = x.json_flat(lst)
                 return i
             else:
@@ -374,13 +376,12 @@ class Branch(object):
 
         # We call the evil eval a couple of times but it's OK
         # because any arguments are previously run through the
-        # math syntax parser and if the user tries to inject
+        # sexp parser and if the user tries to inject
         # anything other than (Equation ...)  it will throw an
         # error and not reach this point anyways.
 
-        #Evalute by descent
+        # Recursive descent
         def f(x):
-            #print 'TYPE IS',x
             if isinstance(x,unicode) or isinstance(x,str):
                 # The two special cases where a string in the
                 # parse tree is not a string
@@ -525,7 +526,7 @@ class prototype_dict(dict):
 
     '''
 
-    def __str__(self):
+    def __repr__(self):
         s = ''
         for key,value in super(prototype_dict,self).iteritems():
             s += ' %s: %s,' % (key,value)
@@ -547,19 +548,12 @@ class make_sortable(object):
     '''Wrapper to produce the jquery command to make ui elements
     sortable/connected'''
 
-    '''I'm thinking we should make a LOGGER... it should log the
-    swapping of position of elements and record it in plain tex
-    .... the same thing we applying functions ... allow user to
-    change level of verbosity (omit basic algebra) and let the
-    user merge lines of logs'''
-
     sortable_object = None
     connectWith = None
     cancel = '".ui-state-disabled"'
     helper = "'clone'"
     tolerance = '"pointer"'
     placeholder = '"helper"'
-    #create a bind() method for these to connect to python methods
     onout = None
     onupdate = 'function(event,ui) { update($(this)); }'
     onreceive = 'function(event,ui) { receive(ui,$(this),group_id); }'
@@ -595,7 +589,7 @@ class make_sortable(object):
                                   'receive': self.onreceive,
                                   'remove': self.onremove,
                                   'cancel': self.cancel,
-                                  #Rever is cool but buggy
+                                  #Revert is cool but buggy
                                   #'revert': 'true',
                                   #'deactivate': self.onupdate,
                                   'forcePlaceholderSize': self.forcePlaceholderSize})
@@ -652,7 +646,7 @@ class Term(object):
     _is_constant = False
     idgen = None
     parent = None
-    side = None
+    side = None # 0 if on LHS, 1 if on RHS
 
     def __init__(self,*ex):
         print 'Anonymous Term was caught with arguments',ex
@@ -666,12 +660,9 @@ class Term(object):
 
     def _pure_(self):
         raise PureError('No pure representation of %s.' % self.classname)
-        return None
 
     def _latex_(self):
-        '''LaTeX representation of the math object, this should
-        only be used for export and shouldn't be called
-        internally'''
+        raise PureError('No LaTeX representation of %s.' % self.classname)
 
     def get_html(self):
         c = template.Context({
@@ -690,7 +681,7 @@ class Term(object):
             return self.html.render(c)
 
     def get_math(self):
-        '''This generates the math that is parsable on the Javascript side'''
+        '''This generates the sexp that is parsable on the Javascript side'''
 
         #Container-type Objects, Example: (Addition 1 2 3)
         if len(self.terms) > 1:
@@ -698,7 +689,7 @@ class Term(object):
         #Term-type Objects Example: (Numeric 3)
         elif len(self.terms) == 1:
             return '(' + self.classname + ' ' + self.terms[0].get_math() + ')'
-        #Terms with special arguments
+        #Terms with primitve arguments (no nested sexp)
         else:
             return '(' + self.classname + ' ' + str(self.args) + ')'
 
@@ -818,13 +809,8 @@ class Term(object):
         pass
 
     def ui_id(self):
-        '''returns the jquery code to reference to the html tag'''
-        return '$("body").find("#%s")' % (self.id)
-
-    def ui_bind(self):
-        #bind a javscript level event (down,transfer list) to a
-        #python side method of the object (i.e. divide, negate)...
-        pass
+        '''Returns the jquery code to reference to the html tag'''
+        return '$("#workspace").find("#%s")' % (self.id)
 
     def ui_sortable(self,other=None):
         self.ensure_id()
@@ -846,9 +832,7 @@ class PlaceholderInExpression(Exception):
 placeholder_html = '''<span id="{{id}}" class="{{class}}{{sensitive}} drag_placeholder term" math="{{math}}" math-type="{{type}}" title="{{type}}" math-meta-class="term" group="{{group}}"></span>'''
 
 class Placeholder(Term):
-    '''A term that instantly gets removed when it's combined with
-    anything else and anything can be substituted in for it
-    during equation construction'''
+    '''A placeholder for substitution'''
 
     sensitive = False
     html = template.Template(placeholder_html)
@@ -856,7 +840,7 @@ class Placeholder(Term):
     def __init__(self):
         self.latex = '$\\text{Placeholder}$'
 
-    def _sage_(self):
+    def _pure_(self):
         raise PlaceholderInExpression()
 
     def get_math(self):
@@ -869,9 +853,6 @@ class Empty(Term):
 
     def get_math(self):
         return 'Empty'
-
-    #def _sage_(self):
-    #    return sage.var('P')
 
     def combine(self,other,context):
         return other.get_html()
@@ -897,9 +878,9 @@ greek_alphabet = {
         }
 
 def greek_lookup(s):
-    if s in greek_alphabet:
+    try:
         return greek_alphabet[s]
-    else:
+    except KeyError:
         return s
 
 class Base_Symbol(Term):
@@ -918,8 +899,6 @@ class Greek(Base_Symbol):
     def __init__(self,symbol):
         self.symbol = symbol
         self.args = "'%s'" % symbol
-        #TODO: Just do a lookup table to avoid having to fall back on sage.latex
-        #self.latex = sage.latex(sage.var(symbol))
 
 #A free variable
 class Variable(Base_Symbol):
@@ -935,7 +914,7 @@ class Variable(Base_Symbol):
         return pure.PureSymbol(self.symbol)
 
 #Free abstract function (of a single variable at this time)
-class AbstractFunction(Base_Symbol):
+class FreeFunction(Base_Symbol):
     assumptions = None
     bounds = None
 
@@ -989,39 +968,6 @@ class Unit(Term):
     def __init__(self,symbol):
         self.symbol = symbol
         self.args = str(symbol)
-        #self.latex = sage.latex(symbol)
-    #def _sage_(self):
-    #    import sympy.physics.units as units
-    #    return sage.var(self.symbol)
-    #    if self.symbol in dir(locals()['units']):
-    #        unit = eval('units.'+self.symbol)
-    #        return unit
-    #    else:
-    #        return sage.var(self.symbol)
-
-    def get_sympy(self):
-        import sympy.physics.units as units
-        #Check if the units exists in sympy to prevent injection attacks
-        if self.symbol in dir(locals()['units']):
-            unit = eval('units.'+self.symbol)
-            print 'unit',unit
-            return unit
-
-    def convert(self,other):
-        '''Try to resolve the constant we need to multiply the constant by to
-        convert one unit into another'''
-
-        dv = self.get_sympy()/other.get_sympy()
-        # Returns a set of units in the resultant division, if the
-        # result is dimensionless => units resolve
-        atoms = dv.atoms()
-        if len(atoms) == 1:
-            factor = atoms.pop()
-            print factor
-            return factor
-
-            #TOOD: raise an error
-            return false
 
 physical_html = '''
 
@@ -1047,9 +993,7 @@ class Physical_Quantity(Base_Symbol):
         self.quantity.group = self.id
         self.unit = units
         self.unit.group = self.id
-
-    #def _sage_(self):
-    #    return self.quantity._sage_() * self.unit._sage_()
+        self.terms = [quantity,units]
 
     def get_html(self):
 
@@ -1089,17 +1033,6 @@ class Physical_Quantity(Base_Symbol):
                     combined.show_parenthesis = True
                     return Length(combined).get_html()
 
-    def convert_unit(self,other):
-        '''Scale the quantity by the necessary factor needed to convert between unit systems
-
-        a = Numeric(3)
-        Length(a,Unit('km')).convert_unit(Unit('m')) # Length('3000',Unit('m'))
-
-        '''
-        factor = self.unit.convert(other)
-        self.quantity = Product(Numeric(factor),self.quantity)
-        self.unit = other
-
 class Length(Physical_Quantity):
     def __init__(self,quantity,unit=Unit('m')):
         self.quantity = quantity
@@ -1127,13 +1060,15 @@ class Mass(Physical_Quantity):
 
         self.terms = [quantity,unit]
 
-class Velocity(Physical_Quantity):
-    def __init__(self,quantity,unit=Unit('ms')):
+class Time(Physical_Quantity):
+    def __init__(self,quantity,unit=Unit('s')):
         self.quantity = quantity
+        self.quantity.group = self.id
         self.unit = unit
-        self.terms = [quantity,self.unit]
+        self.unit.group = self.id
 
-#TODO Fix ugliness
+        self.terms = [quantity,unit]
+
 power_html = '''<span id="{{id}}" group="{{group}}" class="term {{class}}{{sensitive}}" math-type="{{type}}" math-meta-class="term" math="{{math}}">
     <span class="base">{{base}}</span>
     <sup><span class="exponent">{{exponent}}</span></sup>
@@ -1196,10 +1131,6 @@ class Fraction(Term):
         self.den = den
         self.den.css_class = 'middle'
         self.terms = [num,den]
-
-    #def _sage_(self):
-    #    return self.num._sage_() / self.den._sage_()
-    #    return sage.Rational((self.num._sage_() , self.den._sage_()))
 
     def _pure_(self):
        return pure.rational(self.num._pure_(), self.den._pure_())
@@ -1654,7 +1585,7 @@ operation_html_prefix = '''
 </span>
 '''
 
-operation_html_sandwich = '''
+operation_html_outfix = '''
     <span id="{{id}}" math-meta-class="term" class="container {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
     <span class="operator" math-type="operator" math-meta-class="operator" group="{{id}}" title="{{type}}">$${{symbol}}$$</span>
 
@@ -1783,9 +1714,8 @@ class Operation(Term):
             return self.html.render(c)
 
         #Outfix Formatting
-        #TODO: Change 'sandwich' -> 'outfix'
         elif self.ui_style == 'outfix':
-            self.html = template.Template(operation_html_sandwich)
+            self.html = template.Template(operation_html_outfix)
 
             c = template.Context({
                 'id': self.id,
@@ -1884,10 +1814,6 @@ class Gradient(Operation):
         self.operand.group = self.id
         self.terms = [self.operand]
 
-    #def _sage_(self):
-    #    #TODO
-    #    return sage.var('z')
-
 class Addition(Operation):
     ui_style = 'infix'
     symbol = '+'
@@ -1903,16 +1829,12 @@ class Addition(Operation):
                 self.terms = terms[0].terms
 
         self.operand = self.terms
+        make_sortable(self)
 
     def __add__(self,other):
         if type(other) is Addition:
             self.terms.extend(other.terms)
             return self
-
-    #def _sage_(self):
-    #    #Get Sage objects for each term
-    #       sterms = map(lambda o: o._sage_() , self.terms)
-    #       return reduce(sage.operator.add, sterms)
 
     def _pure_(self):
         # There is some ambiguity here since we often use an
@@ -1975,26 +1897,6 @@ class Product(Operation):
            pterms = map(lambda o: o._pure_() , self.terms)
            return pure.mul(*pterms)
 
-    #def _sage_(self):
-    #    #Get Sage objects for each term
-    #   sterms = map(lambda o: o._sage_() , self.terms)
-    #   return reduce(sage.operator.mul, sterms)
-
-class FreeFunction(Operation):
-    ui_style = 'prefix'
-    show_parenthesis = True
-
-    def __init__(self,symbol,operand):
-        if symbol is not Base_Symbol:
-            symbol = Base_Symbol(symbol)
-        self.symbol = symbol.symbol
-        self.operand = operand
-        self.operand.group = self.id
-        self.terms = [symbol,self.operand]
-
-    #def _sage_(self):
-    #   return sage.sin(self.operand._sage_())
-
 class Log(Operation):
     ui_style = 'prefix'
     symbol = '\\log'
@@ -2005,12 +1907,8 @@ class Log(Operation):
         self.operand.group = self.id
         self.terms = [self.operand]
 
-    #def _sage_(self):
-    #   return sage.log(self.operand._sage_())
-
-class Sine(Operation):
+class TrigFunction(Operation):
     ui_style = 'prefix'
-    symbol = '\\sin'
     show_parenthesis = True
 
     def __init__(self,operand):
@@ -2021,70 +1919,41 @@ class Sine(Operation):
     def _pure_(self):
        return pure.sin(self.operand._pure_())
 
+class Sine(TrigFunction):
+    symbol = '\\sin'
+
 class Cosine(Operation):
-    ui_style = 'prefix'
     symbol = '\\cos'
-    show_parenthesis = True
-
-    def __init__(self,operand):
-        self.operand = operand
-        self.operand.group = self.id
-        self.terms = [self.operand]
-
-    def _pure_(self):
-       return pure.cos(self.operand._pure_())
 
 class Tangent(Operation):
-    ui_style = 'prefix'
     symbol = '\\tan'
-    show_parenthesis = True
-
-    def __init__(self,operand):
-        self.operand = operand
-        self.operand.group = self.id
-        self.terms = [self.operand]
-
-    def _pure_(self):
-       return pure.tan(self.operand._pure_())
 
 class Secant(Operation):
-    ui_style = 'prefix'
     symbol = '\\sec'
-    show_parenthesis = True
-
-    def __init__(self,operand):
-        self.operand = operand
-        self.operand.group = self.id
-        self.terms = [self.operand]
-
-    def _pure_(self):
-       return pure.sec(self.operand._pure_())
 
 class Cosecant(Operation):
-    ui_style = 'prefix'
     symbol = '\\csc'
-    show_parenthesis = True
-
-    def __init__(self,operand):
-        self.operand = operand
-        self.operand.group = self.id
-        self.terms = [self.operand]
-
-    def _pure_(self):
-       return pure.csc(self.operand._pure_())
 
 class Cotangent(Operation):
-    ui_style = 'prefix'
     symbol = '\\cot'
-    show_parenthesis = True
 
-    def __init__(self,operand):
-        self.operand = operand
-        self.operand.group = self.id
-        self.terms = [self.operand]
+class Sinh(Operation):
+    symbol = '\\sinh'
 
-    def _pure_(self):
-       return pure.cot(self.operand._pure_())
+class Cosh(Operation):
+    symbol = '\\cosh'
+
+class Tanh(Operation):
+    symbol = '\\tanh'
+
+class Sech(Operation):
+    symbol = '\\sech'
+
+class Csch(Operation):
+    symbol = '\\csch'
+
+class Coth(Operation):
+    symbol = '\\coth'
 
 class Negate(Operation):
     ui_style = 'prefix'
@@ -2128,12 +1997,6 @@ class Wedge(Operation):
             term.group = self.id
         self.operand = self.terms
     #    self.ui_sortable()
-
-    #def _sage_(self):
-    #    #Get Sage objects for each term
-    #    #TODO, this should be a wedge product
-    #    sterms = map(lambda o: o._sage_() , self.terms)
-    #    return sage.operator.add(*sterms)
 
 class Laplacian(Operation):
     ui_style = 'prefix'
@@ -2349,26 +2212,6 @@ class FDiff(Operation):
         self.differential.group = self.id
 
         self.terms = [self.differential, self.operand]
-
-    #def _sage_(self):
-    #    expr = self.operand._sage_()
-    #    vrs = expr.variables()
-
-    #    d = self.differential._sage_().variables()
-
-    #    # Symmetric difference between the two sets
-    #    fncs = set(vrs) - set(d)
-
-    #    #Assume all variables are functions of the differential
-    #    #variable
-
-    #    # This produces objects in the global namespace uses
-    #    # function_factory
-    #    subs = map(lambda x: x==sage.function(str(x))(d[0]) ,fncs)
-    #    for sub in subs:
-    #        expr = expr.subs(sub)
-
-    #    return sage.diff(expr, self.differential._sage_())
 
     def get_html(self):
         self.html = template.Template(fdiff_html)

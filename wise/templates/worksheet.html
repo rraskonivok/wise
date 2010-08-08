@@ -13,8 +13,10 @@
 
     <div id="header" class="ui-widget-header ui-layout-north">
         <span class="left"><b>Worksheet:</b> {{title|title}}</span>
+        <input type="checkbox" id="reordertoggle" /><label
+            for="reordertoggle">Reorder</label> | 
         <input type="checkbox" id="hovertoggle" /><label
-            for="hovertoggle">Toggle</label> | 
+            for="hovertoggle">Selection Highlight</label> | 
         <span class="right">
 
             {{username}} |
@@ -210,7 +212,7 @@ function init()
         .bind('keydown', 's', function() {show_cmd()}
     )
 
-    $("#hovertoggle").button();
+    //$("#hovertoggle").button();
     bind_hover_toggle();
 
     //JIT Canvas
@@ -270,6 +272,10 @@ function init()
     //Make buttons pretty
     $('.equation button').parent().buttonset();
     $('#cmdbuttons button').parent().buttonset();
+
+    $(".lines tbody").sortable({
+        //handle: '.hand',
+    }).disableSelection();
 
     //refresh_jsmath()
     traverse_lines();

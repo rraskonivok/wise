@@ -251,7 +251,7 @@ def apply_rule(request):
         arg.idgen = uid
 
     rs = RuleSet.objects.get(id=rule_id)
-    rules = Rule.objects.filter(set=rs)
+    rules = Rule.objects.filter(set=rs).order_by('index')
     rule_strings = [rule.pure for rule in rules]
 
     new = transform(rule_strings,args[0])
@@ -898,7 +898,7 @@ def generate_palette():
     lettervariables = [mathobjects.Variable(letter).get_html() for letter in string.lowercase]
 
     patternmatching = {'name': 'Pattern Matching', 'type': 'array', 'objects': [
-                    mathobjects.AbstractFunction('f').get_html(),
+                    mathobjects.FreeFunction('f').get_html(),
                     mathobjects.Variable('u').get_html(),
                 ]}
 
