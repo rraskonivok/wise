@@ -920,6 +920,8 @@ def generate_palette():
                     ('Product', mathobjects.Product(*[Placeholder(),Placeholder()]).get_html()),
                     ('Fraction', mathobjects.Fraction(Placeholder(),Placeholder()).get_html()),
                     ('Power', mathobjects.Power(Placeholder(),Placeholder()).get_html()),
+                    ('Abs', mathobjects.Abs(Placeholder()).get_html()),
+                    ('Dagger', mathobjects.Dagger(Placeholder()).get_html()),
                     ('Wedge', mathobjects.Wedge(Placeholder(),Placeholder()).get_html()),
                     ('Integral', mathobjects.Integral(Placeholder(),mathobjects.Differential(Placeholder())).get_html()),
                     ('Partial Derivative', mathobjects.Diff(Placeholder(),Placeholder()).get_html()),

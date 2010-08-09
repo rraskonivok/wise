@@ -932,6 +932,9 @@ function apply_rule(id,selections) {
                     if(nsym.find('#None').length > 0) {
                         error("Warning: some elements do not have uids");
                     }
+                    if(nsym.find('[group="None"]').length > 0) {
+                        error("Warning: orphaned elements");
+                    }
                 }
             }
             

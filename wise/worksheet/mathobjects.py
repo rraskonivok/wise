@@ -868,6 +868,33 @@ class Text(Term):
     def __init__(self,text):
         self.latex = '\\text{' + text + '}'
 
+tex_template = '''
+<span class="operator" math-type="operator" math-meta-class="operator" group="{{group}}" title="{{type}}">$${{tex}}$$</span>
+'''
+
+class PureBlob(Term):
+    '''Pure code with no internal representation, Pure Blob'''
+    def __init__(self):
+        pass
+
+    def get_html(self):
+        return '''<img src="pure.png"/>'''
+
+class Tex(object):
+    '''LaTeX sugar for operators'''
+    tex = None
+
+    def __init__(self,tex):
+        self.tex = tex
+
+    def get_html(self):
+        c = template.Context({
+            'group': self.group,
+            'type': 'Tex',
+            'tex': self.tex})
+
+        return template.Template(tex_template).render(c)
+
 greek_alphabet = {
         'alpha': '\\alpha',
         'beta': '\\beta',
@@ -1149,7 +1176,6 @@ class Fraction(Term):
             })
 
         return self.html.render(c)
-
 
     @fallback(Term.combine_fallback)
     def combine(self,other,context):
@@ -1587,7 +1613,8 @@ operation_html_prefix = '''
 
 operation_html_outfix = '''
     <span id="{{id}}" math-meta-class="term" class="container {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
-    <span class="operator" math-type="operator" math-meta-class="operator" group="{{id}}" title="{{type}}">$${{symbol}}$$</span>
+
+    {{symbol1}}
 
     {% if parenthesis %}
     <span class="ui-state-disabled pnths left">
@@ -1605,7 +1632,8 @@ operation_html_outfix = '''
     </span>
     {% endif %}
 
-    {{tail}}
+    {{symbol2}}
+
     </span>
 '''
 
@@ -1637,6 +1665,58 @@ operation_html_infix = '''
     {% endif %}
     </span>
     {{jscript}}
+'''
+
+operation_html_sup = '''
+<span id="{{id}}" math-meta-class="term" class="container {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
+
+    {% if parenthesis %}
+    <span class="ui-state-disabled pnths left">
+       &Ograve;
+    </span>
+    {% endif %}
+
+    <span class="">
+    {{operand}}
+    </span>
+
+    <sup>
+    {{symbol1}}
+    </sup>
+
+    {% if parenthesis %}
+    <span class="ui-state-disabled pnths right">
+       &Oacute;
+    </span>
+    {% endif %}
+
+</span>
+'''
+
+operation_html_sub = '''
+<span id="{{id}}" math-meta-class="term" class="container {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
+
+    {% if parenthesis %}
+    <span class="ui-state-disabled pnths left">
+       &Ograve;
+    </span>
+    {% endif %}
+
+    <span class="">
+    {{operand}}
+    </span>
+
+    <sub>
+    {{symbol1}}
+    </sub>
+
+    {% if parenthesis %}
+    <span class="ui-state-disabled pnths right">
+       &Oacute;
+    </span>
+    {% endif %}
+
+</span>
 '''
 
 def infix_symbol_html(symbol):
@@ -1723,8 +1803,8 @@ class Operation(Term):
                 'type': self.classname,
                 'group': self.group,
                 'operand': self.operand.get_html(),
-                'symbol': self.symbol,
-                'tail': self.tail.get_html(),
+                'symbol1': self.symbol1.get_html(),
+                'symbol2': self.symbol2.get_html(),
                 'parenthesis': self.show_parenthesis
                 })
 
@@ -1759,6 +1839,42 @@ class Operation(Term):
                 'group': self.group,
                 'operand': self.operand.get_html(),
                 'symbol': self.symbol,
+                'parenthesis': self.show_parenthesis,
+                'class': self.css_class
+                })
+
+        #Superscript Formatting
+        elif self.ui_style == 'sup':
+            self.html = template.Template(operation_html_sup)
+
+            if not self.css_class:
+                self.css_class = 'middle'
+
+            c = template.Context({
+                'id': self.id,
+                'math': self.get_math(),
+                'type': self.classname,
+                'group': self.group,
+                'operand': self.operand.get_html(),
+                'symbol1': self.symbol1.get_html(),
+                'parenthesis': self.show_parenthesis,
+                'class': self.css_class
+                })
+
+        #Subscript Formatting
+        elif self.ui_style == 'sub':
+            self.html = template.Template(operation_html_sub)
+
+            if not self.css_class:
+                self.css_class = 'middle'
+
+            c = template.Context({
+                'id': self.id,
+                'math': self.get_math(),
+                'type': self.classname,
+                'group': self.group,
+                'operand': self.operand.get_html(),
+                'symbol1': self.symbol1.get_html(),
                 'parenthesis': self.show_parenthesis,
                 'class': self.css_class
                 })
@@ -1910,49 +2026,65 @@ class Log(Operation):
 class TrigFunction(Operation):
     ui_style = 'prefix'
     show_parenthesis = True
+    css_class = 'baseline'
 
     def __init__(self,operand):
         self.operand = operand
         self.operand.group = self.id
         self.terms = [self.operand]
 
-    def _pure_(self):
-       return pure.sin(self.operand._pure_())
-
 class Sine(TrigFunction):
     symbol = '\\sin'
 
-class Cosine(Operation):
+    def _pure_(self):
+       return pure.sin(self.operand._pure_())
+
+class Cosine(TrigFunction):
     symbol = '\\cos'
 
-class Tangent(Operation):
+    def _pure_(self):
+       return pure.cos(self.operand._pure_())
+
+class Tangent(TrigFunction):
     symbol = '\\tan'
 
-class Secant(Operation):
+    def _pure_(self):
+       return pure.tan(self.operand._pure_())
+
+class Secant(TrigFunction):
     symbol = '\\sec'
 
-class Cosecant(Operation):
+    def _pure_(self):
+       return pure.sec(self.operand._pure_())
+
+class Cosecant(TrigFunction):
     symbol = '\\csc'
 
-class Cotangent(Operation):
+    def _pure_(self):
+       return pure.csc(self.operand._pure_())
+
+class Cotangent(TrigFunction):
     symbol = '\\cot'
 
-class Sinh(Operation):
+    def _pure_(self):
+       return pure.cot(self.operand._pure_())
+
+class Sinh(TrigFunction):
     symbol = '\\sinh'
 
-class Cosh(Operation):
+class Cosh(TrigFunction):
     symbol = '\\cosh'
 
-class Tanh(Operation):
+class Tanh(TrigFunction):
     symbol = '\\tanh'
 
-class Sech(Operation):
+class Sech(TrigFunction):
     symbol = '\\sech'
 
-class Csch(Operation):
+class Csch(TrigFunction):
     symbol = '\\csch'
 
-class Coth(Operation):
+class Coth(TrigFunction):
     symbol = '\\coth'
 
 class Negate(Operation):
@@ -1982,9 +2114,6 @@ class Negate(Operation):
 
     def negate(self):
         return self.operand
-
-#    def propogate(self):
-#        return self.get_html()
 
 class Wedge(Operation):
     ui_style = 'infix'
@@ -2024,9 +2153,20 @@ class Differential(Operation):
     def _pure_(self):
         return pure.differential(self.variable._pure_())
 
+class Dagger(Operation):
+    ui_style = 'sup'
+    symbol1 = Tex('\\dagger')
+
+    def __init__(self,operand):
+        self.operand = operand
+        self.operand.group = self.id
+        self.symbol1.group = self.id
+
+        self.terms = [self.operand]
+
 class Integral(Operation):
     ui_style = 'outfix'
-    symbol = '\\int'
+    symbol1 = Tex('\\int')
     show_parenthesis = False
 
     def __init__(self,operand,differential):
@@ -2038,12 +2178,29 @@ class Integral(Operation):
         self.differential.css_class = 'baseline'
 
         # The trailing differential dX
-        self.tail = self.differential
+        self.symbol1.group = self.id
+        self.symbol2 = self.differential
 
-        self.terms = [self.operand, self.tail]
+        self.terms = [self.operand, self.differential]
 
     def _pure_(self):
         return pure.integral(self.operand._pure_(), self.differential._pure_())
+
+class Abs(Operation):
+    ui_style = 'outfix'
+    symbol1 = Tex('|')
+    symbol2 = Tex('|')
+
+    def __init__(self, operand):
+        self.operand = operand
+        self.operand.group = self.id
+
+        self.symbol1.group = self.id
+        self.symbol2.group = self.id
+        self.terms = [self.operand]
+
+    def _pure_(self):
+        return pure.abs(self.operand._pure_())
 
 #Differentiation has a slightly different setup than the other
 #prefix operators

@@ -163,6 +163,11 @@ body {
     display: inline-block;
 }
 
+.baseline {
+    vertical-align: baseline;
+    display: inline;
+}
+
 .fraction {
     height: inherit;
     vertical-align: middle;
