@@ -84,6 +84,18 @@
             icons: {primary: 'ui-icon-print'},
          });
 
+         $('#symbols').button({
+            icons: {primary: 'ui-icon-note'},
+         })
+
+         $('#funs').button({
+            icons: {primary: 'ui-icon-note'},
+         })
+
+         $('#rules').button({
+            icons: {primary: 'ui-icon-note'},
+         })
+
         $('input#search').quicksearch('table tbody tr');
      };
      
@@ -141,9 +153,9 @@
             <button id="copy">Duplicate Workspace</button>
             <button id="export">Export LaTeX</button>
             <input type="text" id="search" class="search" style="float:right">
-            <a href="/sym">Symbols</a>
-            <a href="/fun">Functions</a>
-            <a href="/rule">Rules</a>
+            <button id="symbols" onclick="window.location.href='/sym'">Symbols</button>
+            <button id="funs" onclick="window.location.href='/fun'">Functions</button>
+            <button id="rules" onclick="window.location.href='/rule'">Rules</button>
         </div>
     <form id="workspace_list">
         <table>

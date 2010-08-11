@@ -1257,7 +1257,7 @@ function save_workspace()
     $.each($("tr[toplevel='true']",'#workspace'),
         function(obj)
         { 
-                data[i] = $(this).attr('math');
+                data[i] = [$(this).attr('math'), $(this).find('.annotation').text()];
                 i += 1;
         })
 
@@ -2023,7 +2023,7 @@ function remove_element()
     var placeholder = selection.nth(0)
     var container = get_container(placeholder)
 
-    if(placeholder.node().depth == 1)
+    if(placeholder.node().depth == 1 && selection.__lst.length == 1)
     {
         NODES[placeholder.id()].delNode();
         placeholder.remove()

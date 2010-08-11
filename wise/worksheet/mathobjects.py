@@ -1322,7 +1322,8 @@ equation_html = '''
     <td>{{lhs}}</td>
     <td><span class="equalsign">$${{symbol}}$$</span></td>
     <td>{{rhs}}</td>
-    <td class="flushright"><div contenteditable=true class="annotation"></div></td>
+    <td class="guard">{{guard}}</td>
+    <td class="annotation"><div contenteditable=true>{{annotation}}</div></td>
 
     </tr>
 '''
@@ -1337,6 +1338,7 @@ class Equation(object):
     sortable = True
     parent = None
     side = None
+    annotation = ''
 
     def __init__(self,lhs=None,rhs=None):
 
@@ -1464,6 +1466,7 @@ class Equation(object):
             'math': self.math,
             'lhs': self.lhs.get_html(),
             'rhs': self.rhs.get_html(),
+            'annotation': self.annotation,
             'symbol': self.symbol,
             'classname': self.classname
             })
@@ -1815,7 +1818,7 @@ class Operation(Term):
             self.html = template.Template(operation_html_prefix)
 
             if not self.css_class:
-                self.css_class = 'middle'
+                self.css_class = 'baseline'
 
             c = template.Context({
                 'id': self.id,
@@ -2154,8 +2157,8 @@ class Differential(Operation):
         return pure.differential(self.variable._pure_())
 
 class Dagger(Operation):
-    ui_style = 'sup'
-    symbol1 = Tex('\\dagger')
+    ui_style = 'sub'
+    symbol1 = Tex('x')
 
     def __init__(self,operand):
         self.operand = operand

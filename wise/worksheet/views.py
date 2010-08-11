@@ -205,6 +205,7 @@ def rule(request, rule_id):
         tree.gen_uids(uid)
 
         etree = tree.eval_args()
+        etree.annotation = rule.annotation
         html_eq.append(html(etree))
         json_cell.append(etree.json_flat())
 
@@ -504,23 +505,14 @@ def ws(request, eq_id):
             return HttpResponse('Cell is empty.')
 
         for eq in eqs:
-            eqtext = unencode(eq.code)
+            eqtext = eq.code
             tree = mathobjects.ParseTree(eqtext)
             tree.gen_uids(uid)
 
-            #For debugging... 
-            if debug_parse_tree:
-                pretty_tree = mathobjects.pretty(tree)
-                etree = tree.eval_args()
-                print etree._sage_()
-
-                tree = '<pre>%s</pre>' % pretty_tree
-                outputs += tree
-
-            else:
-                etree = tree.eval_args()
-                html_eq.append(html(etree))
-                json_cell.append(etree.json_flat())
+            etree = tree.eval_args()
+            etree.annotation = eq.annotation
+            html_eq.append(html(etree))
+            json_cell.append(etree.json_flat())
 
         #This is stupid unintuitive syntax
         html_cells.append(cellify(''.join(html_eq),index))
@@ -611,19 +603,6 @@ def combine(request):
                          'new_json': new_json,
                          'namespace_index': uid.next()[3:]})
 
-@errors
-def unserialize(string):
-    string = unencode(string)
-    a = string.split('&')
-    d = {}
-    for i in a:
-        b = i.split('=')
-        d[unencode(b[0])] = unencode(b[1])
-    return d
-
-def new(request):
-    pass
-
 @login_required
 @errors
 def apply_transform(request):
@@ -695,8 +674,12 @@ def save_workspace(request,eq_id):
     for i in xrange(indexes):
         newcell = Cell(workspace=workspace,index=0)
         newcell.save()
-        math = request.POST.get(str(i))
-        MathematicalEquation(code=math, cell=newcell).save()
+        #Querydicts are not standard dicts... keep repeating this
+        math, annotation = request.POST.getlist(''.join([str(i),'[]']))
+        MathematicalEquation(code=math, 
+                annotation=annotation, 
+                cell=newcell,
+                index=i).save()
 
     return HttpResponse(json.dumps({'success': True}))
 
@@ -718,10 +701,14 @@ def save_ruleset(request,rule_id):
     uid = uidgen()
 
     for i in xrange(indexes):
-        math = request.POST.get(str(i))
+        math, annotation = request.POST.getlist(''.join([str(i),'[]']))
         pure = parse(math,uid)._pure_()
-        newrule = Rule(sexp=math, pure=pure, set=ruleset, index=i)
-        newrule.save()
+
+        newrule = Rule(sexp=math, 
+                pure=pure,
+                annotation=annotation,
+                set=ruleset,
+                index=i).save()
 
     return HttpResponse(json.dumps({'success': True}))
 

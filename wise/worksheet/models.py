@@ -25,6 +25,7 @@ class Rule(models.Model):
     sexp = models.TextField(max_length=10000,blank=False, null=False)
     set = models.ForeignKey(RuleSet, blank=False, null=False)
     index = models.IntegerField(blank=False,null=False)
+    annotation = models.TextField(max_length=100)
 
     def __unicode__(self):
         return str(self.set) + ' ' + self.sexp[0:25]
@@ -79,8 +80,8 @@ class Symbol(models.Model):
 class MathematicalEquation(models.Model):
     cell = models.ForeignKey(Cell,blank=False,null=False)
     code = models.TextField(max_length=10000,blank=False, null=False)
-    followsfrom = models.OneToOneField('self',null=True,blank=True)
-    followsby = models.CharField(max_length=200,null=True,blank=True)
+    annotation = models.TextField(max_length=100)
+    index = models.IntegerField(blank=False,null=False)
 
     def __unicode__(self):
         return self.cell.workspace.name + ('[%s] -- %s' %
