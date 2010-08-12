@@ -18,7 +18,6 @@ urlpatterns = patterns('',
      (r'^palette/$', 'wise.worksheet.views.palette'),
      (r'^new_workspace/$', 'wise.worksheet.views.new_workspace'),
      (r'^del_workspace/$', 'wise.worksheet.views.del_workspace'),
-     (r'^new/$', 'wise.worksheet.views.new'),
 
      #Worksheet Commands
      (r'^cmds/new_line/$', 'wise.worksheet.views.new_line'),

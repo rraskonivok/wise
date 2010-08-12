@@ -16,7 +16,7 @@
         <input type="checkbox" id="reordertoggle" /><label
             for="reordertoggle">Reorder</label> | 
         <input type="checkbox" id="newlinetoggle" /><label
-            for="reordertoggle">New Lines</label> | 
+            for="newlinetoggle">New Lines</label> | 
         <input type="checkbox" id="hovertoggle" /><label
             for="hovertoggle">Selection Highlight</label> | 
         <span class="right">
@@ -78,8 +78,7 @@ _
             <li><a href="/rule_request">Rules</a></li>
         </ul>
         <div id="tabs-1">
-                <button onclick="build_tree()">Build Tree</button>
-                <button onclick="visualize_tree()">Build InfoVis Tree</button>
+                <button onclick="visualize_tree()">Build Tree</button>
                 <button onclick="new_symbol()">New Symbol</button>
                 <div id="tree">
                     <div id="infovis" style="width: inherit; height: 300px"></div>
@@ -264,11 +263,10 @@ function init()
         }
     });
 
-    /*
-    $('#math_palette').addClass('ui-accordion ui-widget ui-helper-reset ui-accordion-icons')
-    $('#math_palette h3').addClass('ui-accordion-header ui-helper-reset ui-state-default')
-    $('#math_palette div').addClass('ui-accordion-content ui-helper-reset ui-widget-content')
-    */
+	$('.ruletoplevel .expand').click(function() {
+		$(this).next().toggle();
+		return false;
+	}).next().hide();
 
     //Make buttons pretty
     $('.equation button').parent().buttonset();

@@ -869,9 +869,10 @@ function lookup_transform()
         } ,'json')
 }
 
-function apply_rule(id,selections) {
+function apply_rule(set_id, rule_id, selections) {
     var data = {}
-    data.id = id
+    data.set_id = set_id
+    data.rule_id = rule_id
     data.namespace_index = NAMESPACE_INDEX;
 
     if(selections == null) {
@@ -1259,7 +1260,7 @@ function save_workspace()
         { 
                 data[i] = [$(this).attr('math'), $(this).find('.annotation').text()];
                 i += 1;
-        })
+        });
 
     //Flash the border to indicate we've saved.
     $('#workspace').animate({ border: "5px solid red" }, 300);
@@ -1430,6 +1431,7 @@ function are_siblings(first,second)
     return (get_common_context(first,second) != null)
 }
 
+//TODO: Move this to inline JS in worksheet.html
 function traverse_lines()
 {
     //All elements with a [title] attribute show tooltips
@@ -1458,6 +1460,11 @@ function traverse_lines()
             function(event) {
                 select_term(this); event.stopPropagation() 
             });
+
+	$('.expand').click(function() {
+		$(this).next().toggle();
+		return false;
+	}).next().hide();
     
     resize_parentheses()
     //Webkit requires that we run this twice

@@ -221,22 +221,21 @@ def rule(request, rule_id):
         'json_cells': json.dumps(json_cells),
         })
 
-ruleslist = '''
-<table style="width: 100%">
-{% for rule in rules%}
-    <tr>
-    <td><a href="javascript:apply_rule({{rule.id}});">{{ rule.name }}</a></td>
-    <td></td>
-    <tr>
-{% endfor %}
-</table>
-'''
 
 @errors
 @login_required
 def apply_rule(request):
     code = tuple(request.POST.getlist('selections[]'))
-    rule_id = int( request.POST.get('id') )
+    set_id = int( request.POST.get('set_id') )
+    rule_id = request.POST.get('rule_id')
+
+    print rule_id, rule_id == 'null', rule_id == u'null'
+
+    if rule_id != 'null':
+        rule_id = int(rule_id)
+    else:
+        rule_id = None
+
     namespace_index = int( request.POST.get('namespace_index') )
 
     uid = uidgen(namespace_index)
@@ -251,9 +250,17 @@ def apply_rule(request):
     for arg in args:
         arg.idgen = uid
 
-    rs = RuleSet.objects.get(id=rule_id)
-    rules = Rule.objects.filter(set=rs).order_by('index')
-    rule_strings = [rule.pure for rule in rules]
+
+    #Apply a specific rule
+    if rule_id:
+        rule = Rule.objects.get(id=rule_id)
+        rule_strings = [rule.pure]
+
+    #Apply all rules in the ruleset
+    else:
+        rs = RuleSet.objects.get(id=set_id)
+        rules = Rule.objects.filter(set=rs).order_by('index')
+        rule_strings = [rule.pure for rule in rules]
 
     new = transform(rule_strings,args[0])
 
@@ -267,13 +274,32 @@ def apply_rule(request):
                          'new_json': new_json,
                          'namespace_index': uid.next()[3:]})
 
+ruleslist = '''
+<ul>
+{% for rule in rules%}
+    <li><a class='ruletoplevel' href="javascript:apply_rule({{rule.0.id}},null);">{{ rule.0.name }}</a>
+        <a class='expand'>[+]</a>
+        <ul style="display: none">
+        {% for subrule in rule.1 %}
+            <li><a href="javascript:apply_rule({{rule.0.id}},{{subrule.id}});">{{ subrule.annotation }}</a></li>
+        {% endfor %}
+        </ul>
+    </li>
+{% endfor %}
+</ul>
+'''
+
 @errors
 @login_required
 def rules_request(request):
-    rules = RuleSet.objects.filter(owner=request.user)
+    ruleset = RuleSet.objects.filter(owner=request.user)
+    subrules = []
+
+    for rs in ruleset:
+        subrules.append(Rule.objects.filter(set=rs).order_by('index'))
 
     lst = template.Template(ruleslist)
-    c = template.Context({'rules':rules})
+    c = template.Context({'rules':zip(ruleset,subrules)})
     return HttpResponse(lst.render(c))
 
 #---------------------------
@@ -430,7 +456,7 @@ def preview_function(request):
 
     return HttpResponse(html(prvw))
 
-@cache_page(CACHE_INTERVAL)
+#@cache_page(CACHE_INTERVAL)
 def palette(request):
     return generate_palette()
 
@@ -489,7 +515,6 @@ def ws(request, eq_id):
     except ObjectDoesNotExist:
         return HttpResponse('No cells found in worksheet')
 
-    debug_parse_tree = request.GET.get('tree')
     uid = uidgen()
 
     json_cells = []
@@ -500,7 +525,7 @@ def ws(request, eq_id):
         html_eq = []
 
         try:
-            eqs = MathematicalEquation.objects.filter(cell=cell)
+            eqs = MathematicalEquation.objects.filter(cell=cell).order_by('index')
         except ObjectDoesNotExist:
             return HttpResponse('Cell is empty.')
 
@@ -518,17 +543,14 @@ def ws(request, eq_id):
         html_cells.append(cellify(''.join(html_eq),index))
         json_cells.append(json_cell)
 
-    if debug_parse_tree:
-        return HttpResponse( outputs )
-    else:
-        return render_to_response('worksheet.html', {
-            'title': ws.name,
-            'equations': html_cells,
-            'username': request.user.username,
-            'namespace_index': uid.next()[3:],
-            'cell_index': len(cells),
-            'json_cells': json.dumps(json_cells),
-            })
+    return render_to_response('worksheet.html', {
+        'title': ws.name,
+        'equations': html_cells,
+        'username': request.user.username,
+        'namespace_index': uid.next()[3:],
+        'cell_index': len(cells),
+        'json_cells': json.dumps(json_cells),
+        })
 
 @errors
 def json_tree(request, eq_id):
