@@ -168,8 +168,8 @@ def home(request):
 # Rules --------------------
 #---------------------------
 
-@errors
 @login_required
+@errors
 def rules_list(request):
     try:
         rulesets = RuleSet.objects.filter(owner=request.user)
@@ -205,7 +205,12 @@ def rule(request, rule_id):
         tree.gen_uids(uid)
 
         etree = tree.eval_args()
+
+        #Copy rule attributes from database
         etree.annotation = rule.annotation
+        etree.public = rule.public
+        etree.confluent = rule.confluent
+
         html_eq.append(html(etree))
         json_cell.append(etree.json_flat())
 
@@ -259,7 +264,7 @@ def apply_rule(request):
     #Apply all rules in the ruleset
     else:
         rs = RuleSet.objects.get(id=set_id)
-        rules = Rule.objects.filter(set=rs).order_by('index')
+        rules = Rule.objects.filter(set=rs,confluent=True).order_by('index')
         rule_strings = [rule.pure for rule in rules]
 
     new = transform(rule_strings,args[0])
@@ -275,19 +280,22 @@ def apply_rule(request):
                          'namespace_index': uid.next()[3:]})
 
 ruleslist = '''
+{% load custom_tags %}
 <ul>
 {% for rule in rules%}
     <li><a class='ruletoplevel' href="javascript:apply_rule({{rule.0.id}},null);">{{ rule.0.name }}</a>
         <a class='expand'>[+]</a>
         <ul style="display: none">
         {% for subrule in rule.1 %}
-            <li><a href="javascript:apply_rule({{rule.0.id}},{{subrule.id}});">{{ subrule.annotation }}</a></li>
+            <li><a
+            href="javascript:apply_rule({{rule.0.id}},{{subrule.id}});">{{ subrule.annotation|brak2tex }}</a></li>
         {% endfor %}
         </ul>
     </li>
 {% endfor %}
 </ul>
 '''
+
 
 @errors
 @login_required
@@ -296,7 +304,8 @@ def rules_request(request):
     subrules = []
 
     for rs in ruleset:
-        subrules.append(Rule.objects.filter(set=rs).order_by('index'))
+        rss = Rule.objects.filter(set=rs,public=True).order_by('index')
+        subrules.append(rss)
 
     lst = template.Template(ruleslist)
     c = template.Context({'rules':zip(ruleset,subrules)})
@@ -698,8 +707,10 @@ def save_workspace(request,eq_id):
         newcell.save()
         #Querydicts are not standard dicts... keep repeating this
         math, annotation = request.POST.getlist(''.join([str(i),'[]']))
-        MathematicalEquation(code=math, 
-                annotation=annotation, 
+
+        #TODO: Do some fancy string parsing to transform [[ x^2 ]] -> $$ x^2 $$
+        MathematicalEquation(code=math,
+                annotation=annotation,
                 cell=newcell,
                 index=i).save()
 
@@ -723,13 +734,20 @@ def save_ruleset(request,rule_id):
     uid = uidgen()
 
     for i in xrange(indexes):
-        math, annotation = request.POST.getlist(''.join([str(i),'[]']))
+        math, annotation, is_confluent, is_public = request.POST.getlist(''.join([str(i),'[]']))
         pure = parse(math,uid)._pure_()
 
-        newrule = Rule(sexp=math, 
+        is_confluent = (is_confluent == '1')
+        is_public = (is_public == '1')
+
+        print is_confluent, is_public
+
+        newrule = Rule(sexp=math,
                 pure=pure,
                 annotation=annotation,
                 set=ruleset,
+                public=is_public,
+                confluent=is_confluent,
                 index=i).save()
 
     return HttpResponse(json.dumps({'success': True}))
@@ -838,7 +856,13 @@ def remove(request):
 @errors
 @cache_page(CACHE_INTERVAL)
 def new_line(request):
-    namespace_index = int( request.POST.get('namespace_index') )
+    namespace_index = request.POST.get('namespace_index')
+
+    if not namespace_index:
+        namespace_index = 0
+    else:
+        namespace_index = int(namespace_index)
+
     cell_index = int( request.POST.get('cell_index') )
     newtype = request.POST.get('type')
 
@@ -883,6 +907,9 @@ palette_template = '''
         {% endifequal %}
 
         {% ifequal group.type 'widget' %}
+            <div id="widget_preview{{forloop.counter}}"></div>
+            <textarea></textarea><br/>
+            <a href="javascript:widget_call('{{ group.url }}',{{forloop.counter}})">Create</a>
         {% endifequal %}
 
     </div>
@@ -912,6 +939,7 @@ def generate_palette():
                 ]}
 
     variables = {'name': 'Variables', 'type': 'array', 'objects': lettervariables }
+    customvariables = {'name': 'Custom', 'type': 'widget', 'url': 'customvariable'}
 
     trig = {'name': 'Functions', 'type': 'tabular', 'objects': [
                     ('Sine', mathobjects.Sine(Placeholder()).get_html()),
@@ -946,7 +974,8 @@ def generate_palette():
                     ('Length', mathobjects.Length(Placeholder()).get_html()),
                 ]}
 
-    palette = [trig,variables,operations,numbers,physics,constants, patternmatching]
+    palette = [trig,variables,operations,numbers,physics,constants,
+            patternmatching, customvariables]
 
     interface_ui = template.Template(palette_template)
     c = template.Context({'palette':palette})

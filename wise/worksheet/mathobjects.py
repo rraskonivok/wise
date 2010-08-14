@@ -868,8 +868,11 @@ class Text(Term):
     def __init__(self,text):
         self.latex = '\\text{' + text + '}'
 
-tex_template = '''
-<span class="operator" math-type="operator" math-meta-class="operator" group="{{group}}" title="{{type}}">$${{tex}}$$</span>
+pureblob_template = '''
+<div>
+<img src="/static/pure.png" style="vertical-align: middle"/>
+Pure Blob - <em>{{annotation}}
+</div>
 '''
 
 class PureBlob(Term):
@@ -878,7 +881,13 @@ class PureBlob(Term):
         pass
 
     def get_html(self):
-        return '''<img src="pure.png"/>'''
+        c = template.Context({'annotation': self.annotation})
+
+        return template.Template(pureblob_template).render(c)
+
+tex_template = '''
+<span class="operator" math-type="operator" math-meta-class="operator" group="{{group}}" title="{{type}}">$${{tex}}$$</span>
+'''
 
 class Tex(object):
     '''LaTeX sugar for operators'''
@@ -1725,15 +1734,76 @@ operation_html_sub = '''
 def infix_symbol_html(symbol):
     return '''<span class="ui-state-disabled infix term" math-type='infix' math-meta-class='sugar'>$${{%s}}$$</span>''' % symbol
 
+definition_html = '''
+    <tr id="{{id}}" class="equation" math="{{math}}"
+    math-type="{{classname}}" toplevel="true" data-confluent="{{confluent}}" data-public="{{public}}">
+
+    <td>
+        <button class="ui-icon ui-icon-transferthick-e-w"
+        onclick="apply_transform('ReverseDef',get_equation(this))">{{lhs_id}}</button>
+        <button class="ui-icon ui-icon-arrow-4" onclick="select_term(get_equation(this))">{{id}}</button>
+        <button class="confluence 
+        {% if confluent %} 
+        ui-icon ui-icon-bullet
+        {% else %}
+        ui-icon ui-icon-radio-off
+        {% endif %}
+        " onclick="toggle_confluence(get_equation(this))">{{id}}</button>
+    </td>
+    <td>{{lhs}}</td>
+    <td><span class="equalsign">$${{symbol}}$$</span></td>
+    <td>{{rhs}}</td>
+    <td class="guard">{{guard}}</td>
+    <td class="annotation"><div contenteditable=true>{{annotation}}</div></td>
+
+    </tr>
+'''
+
 class Definition(Equation):
     symbol = ":="
     sortable = False
+    html = template.Template(definition_html)
+    confluent = True
+    public = True
 
     def _pure_(self):
         if self.lhs.hash != self.rhs.hash:
             return pure.PureRule(self.lhs._pure_(),self.rhs._pure_())
         else:
             print "Definition is infinitely recursive."
+
+    def get_html(self):
+
+        self.rhs.id = self.idgen.next()
+        self.lhs.id = self.idgen.next()
+
+        self.rhs.group = self.id
+        self.lhs.group = self.id
+
+        self.lhs.javascript = None
+        self.rhs.javascript = None
+
+        self.rhs.rhs.id = self.idgen.next()
+        self.lhs.lhs.id = self.idgen.next()
+
+        self.rhs.rhs.associate_terms()
+        self.lhs.lhs.associate_terms()
+
+        c = template.Context({
+            'id': self.id,
+            'rhs_id': self.rhs.id,
+            'lhs_id': self.lhs.id,
+            'math': self.math,
+            'lhs': self.lhs.get_html(),
+            'rhs': self.rhs.get_html(),
+            'annotation': self.annotation,
+            'symbol': self.symbol,
+            'confluent': int(self.confluent),
+            'public': self.public,
+            'classname': self.classname
+            })
+
+        return self.html.render(c)
 
 #-------------------------------------------------------------
 # Operations

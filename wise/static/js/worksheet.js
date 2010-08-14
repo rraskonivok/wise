@@ -1258,7 +1258,7 @@ function save_workspace()
     $.each($("tr[toplevel='true']",'#workspace'),
         function(obj)
         { 
-                data[i] = [$(this).attr('math'), $(this).find('.annotation').text()];
+            data[i] = [$(this).attr('math'), $(this).find('.annotation').text(), $(this).attr('data-confluent'), $(this).attr('data-public')];
                 i += 1;
         });
 
@@ -1461,10 +1461,6 @@ function traverse_lines()
                 select_term(this); event.stopPropagation() 
             });
 
-	$('.expand').click(function() {
-		$(this).next().toggle();
-		return false;
-	}).next().hide();
     
     resize_parentheses()
     //Webkit requires that we run this twice
@@ -1680,6 +1676,18 @@ function update(object)
             //check_combinations(object);
             update_math(object);
         }
+    }
+}
+
+function toggle_confluence(obj) {
+    if(obj.attr('data-confluent') == 0) {
+        obj.attr('data-confluent',1)
+        obj.find('.confluence').addClass('ui-icon-bullet')
+        obj.find('.confluence').removeClass('ui-icon-radio-off')
+    } else {
+        obj.attr('data-confluent',0)
+        obj.find('.confluence').addClass('ui-icon-radio-off')
+        obj.find('.confluence').removeClass('ui-icon-bullet')
     }
 }
 

@@ -26,6 +26,8 @@ class Rule(models.Model):
     set = models.ForeignKey(RuleSet, blank=False, null=False)
     index = models.IntegerField(blank=False,null=False)
     annotation = models.TextField(max_length=100)
+    confluent = models.BooleanField(blank=False, null=False)
+    public = models.BooleanField(blank=False, null=False)
 
     def __unicode__(self):
         return str(self.set) + ' ' + self.sexp[0:25]
