@@ -1,4 +1,8 @@
 *.svn
 *.pyc
 *.swp
+*.so
+*.o
+*.tmp
+*.json
 wise/static/jsMath/fonts

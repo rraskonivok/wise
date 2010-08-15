@@ -11,7 +11,7 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-#Set your database information here
+# Set your database information here
 
 DATABASE_ENGINE = 'mysql'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
 DATABASE_NAME = 'django'             # Or path to database file if using sqlite3.
@@ -20,6 +20,7 @@ DATABASE_PASSWORD = 'django'         # Not used with sqlite3.
 DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
 DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
 
+# Change to your desired cache
 CACHE_BACKEND = 'db://cache'
 
 TIME_ZONE = 'America/Chicago'
@@ -42,7 +43,6 @@ SECRET_KEY = 'changeme'
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.load_template_source',
     'django.template.loaders.app_directories.load_template_source',
-#     'django.template.loaders.eggs.load_template_source',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -64,5 +64,8 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.admin',
     'wise.worksheet',
+    # Gunicorn needs to be installed in site-packages or dropped
+    # into the same directory as this file, if you can't run
+    # ' import gunicorn ' form this directory then it will fail
     'gunicorn',
 )
