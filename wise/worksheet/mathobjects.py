@@ -1740,7 +1740,7 @@ operation_html_latex = '''
     </span>
     {% endif %}
 
-    <span class="">
+    <span class="{{class}}">
     {{operand}}
     </span>
 
@@ -1909,8 +1909,8 @@ class Operation(Term):
         elif self.ui_style == 'prefix':
             self.html = template.Template(operation_html_prefix)
 
-            if not self.css_class:
-                self.css_class = 'baseline'
+            #if not self.css_class:
+            #    self.css_class = 'baseline'
 
             c = template.Context({
                 'id': self.id,
@@ -1977,11 +1977,8 @@ class Operation(Term):
         elif self.ui_style == 'latex':
             self.html = template.Template(operation_html_latex)
 
-            if not self.css_class:
-                self.css_class = 'middle'
-
             if hasattr(self.operand,'symbol'):
-                self.operand.latex = "\\vec{%s}" % self.operand.symbol
+                self.operand.latex = "%s{%s}" % (self.symbol1, self.operand.symbol)
 
             c = template.Context({
                 'id': self.id,
@@ -2147,8 +2144,12 @@ class TrigFunction(Operation):
         self.operand.group = self.id
         self.terms = [self.operand]
 
-class Sine(TrigFunction):
+class Vector(Operation):
     ui_style = 'latex'
+    symbol1 = '\\vec'
+
+class Sine(TrigFunction):
+    ui_style = 'prefix'
     symbol = '\\sin'
 
     def _pure_(self):
@@ -2241,6 +2242,28 @@ class Wedge(Operation):
             term.group = self.id
         self.operand = self.terms
     #    self.ui_sortable()
+
+class Dot(Operation):
+    ui_style = 'infix'
+    symbol = '\\cdot'
+    show_parenthesis = True
+
+    def __init__(self,*terms):
+        self.terms = list(terms)
+        for term in self.terms:
+            term.group = self.id
+        self.operand = self.terms
+
+class Cross(Operation):
+    ui_style = 'infix'
+    symbol = '\\times'
+    show_parenthesis = True
+
+    def __init__(self,*terms):
+        self.terms = list(terms)
+        for term in self.terms:
+            term.group = self.id
+        self.operand = self.terms
 
 class Laplacian(Operation):
     ui_style = 'prefix'

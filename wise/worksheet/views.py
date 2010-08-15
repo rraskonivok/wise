@@ -960,6 +960,8 @@ def generate_palette():
                     ('Abs', mathobjects.Abs(Placeholder()).get_html()),
                     ('Dagger', mathobjects.Dagger(Placeholder()).get_html()),
                     ('Wedge', mathobjects.Wedge(Placeholder(),Placeholder()).get_html()),
+                    ('Dot Product', mathobjects.Dot(Placeholder(),Placeholder()).get_html()),
+                    ('Cross Product', mathobjects.Cross(Placeholder(),Placeholder()).get_html()),
                     ('Integral', mathobjects.Integral(Placeholder(),mathobjects.Differential(Placeholder())).get_html()),
                     ('Partial Derivative', mathobjects.Diff(Placeholder(),Placeholder()).get_html()),
                     ('Derivative', mathobjects.FDiff(Placeholder(),Placeholder()).get_html()),
@@ -972,6 +974,7 @@ def generate_palette():
 
     physics = {'name': 'Physics', 'type': 'tabular', 'objects': [
                     ('Length', mathobjects.Length(Placeholder()).get_html()),
+                    ('Vector', mathobjects.Vector(Placeholder()).get_html()),
                 ]}
 
     palette = [trig,variables,operations,numbers,physics,constants,
