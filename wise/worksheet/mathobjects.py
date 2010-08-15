@@ -1731,6 +1731,28 @@ operation_html_sub = '''
 </span>
 '''
 
+operation_html_latex = '''
+<span id="{{id}}" math-meta-class="term" class="container {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
+
+    {% if parenthesis %}
+    <span class="ui-state-disabled pnths left">
+       &Ograve;
+    </span>
+    {% endif %}
+
+    <span class="">
+    {{operand}}
+    </span>
+
+    {% if parenthesis %}
+    <span class="ui-state-disabled pnths right">
+       &Oacute;
+    </span>
+    {% endif %}
+
+</span>
+'''
+
 def infix_symbol_html(symbol):
     return '''<span class="ui-state-disabled infix term" math-type='infix' math-meta-class='sugar'>$${{%s}}$$</span>''' % symbol
 
@@ -1951,6 +1973,25 @@ class Operation(Term):
                 'parenthesis': self.show_parenthesis,
                 'class': self.css_class
                 })
+        #Subscript Formatting
+        elif self.ui_style == 'latex':
+            self.html = template.Template(operation_html_latex)
+
+            if not self.css_class:
+                self.css_class = 'middle'
+
+            if hasattr(self.operand,'symbol'):
+                self.operand.latex = "\\vec{%s}" % self.operand.symbol
+
+            c = template.Context({
+                'id': self.id,
+                'math': self.get_math(),
+                'type': self.classname,
+                'group': self.group,
+                'operand': self.operand.get_html(),
+                'parenthesis': self.show_parenthesis,
+                'class': self.css_class
+                })
         else:
             print('Unknown operator class, should be (infix,postfix,prefix,outfix)')
 
@@ -2107,6 +2148,7 @@ class TrigFunction(Operation):
         self.terms = [self.operand]
 
 class Sine(TrigFunction):
+    ui_style = 'latex'
     symbol = '\\sin'
 
     def _pure_(self):

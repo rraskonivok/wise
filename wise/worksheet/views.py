@@ -746,7 +746,7 @@ def save_ruleset(request,rule_id):
                 pure=pure,
                 annotation=annotation,
                 set=ruleset,
-                public=is_public,
+                public=True,
                 confluent=is_confluent,
                 index=i).save()
 
