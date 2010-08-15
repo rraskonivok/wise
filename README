@@ -1,9 +1,18 @@
-This is WISE. 
+--------------------------------------------------------------
+
+Wise
+Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+Licensed under the AGPLv3.
+
+--------------------------------------------------------------
+
+This is WISE. It is an experimental math interface and simple
+computer algebra system based on term rewriting.
 
 It is *very* much alpha at this time but if you want to play
 with it I reccomend you do so on Linux. I have not tested it on
 any distro but Arch Linux but there shouldn't be any hurdles to
-running it on any other distro. Some instructions
+running it on any other distro. Some instructions:
 
 1)  You'll need to install pure which depends on.
     
@@ -31,4 +40,5 @@ running it on any other distro. Some instructions
         http://gunicorn.org/
 
 4)  Run python manage.py run_gunicorn and point your browser to
-    localhost:8000 .
+    localhost:8000 . I see best performance in Chromium based
+    browsers but Firefox works fine.
