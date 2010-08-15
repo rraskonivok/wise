@@ -1,0 +1,24 @@
+using math;
+using set;
+
+//export PURE_INCLUDE=worksheet::pure
+
+// -------------
+// Basic properties
+// -------------
+
+is_numeric;
+is_zero;
+is_positive;
+is_negative;
+is_integer;
+is_pos_integer;
+is_nonneg_integer;
+is_even;
+is_odd;
+is_prime;
+is_rational;
+is_real;
+is_complex;
+
+neg x = Neg x;

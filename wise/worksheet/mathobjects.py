@@ -33,7 +33,7 @@ import parser
 from hashlib import sha1
 from binascii import crc32
 
-import pure.algebra as pure
+import pure.base as pure
 
 from wise.worksheet.models import Symbol, Function
 
@@ -144,7 +144,7 @@ def translate_pure(key):
     try:
         return translation_table[key]
     except KeyError:
-        raise NoWrapper()
+        raise NoWrapper(key)
 
 class PureError(Exception):
     def __init__(self,expr):
@@ -804,9 +804,8 @@ class Term(object):
                 result = self.get_html() + infix_symbol_html(Wedge.symbol) +  other.get_html()
                 return result,[self,other]
 
-    @fallback(combine_fallback)
     def combine(self,other,context):
-        pass
+        return self.combine_fallback(other,context)
 
     def ui_id(self):
         '''Returns the jquery code to reference to the html tag'''
@@ -1252,10 +1251,11 @@ class Numeric(Term):
     def combine(self,other,context):
         if context == 'Addition':
             if self.is_zero():
-                return other.get_html()
-
+                result = other.get_html()
+                return result,[self,other]
             elif isinstance(other,Numeric):
-                return Numeric(self.number + other.number).get_html()
+                result = Numeric(self.number + other.number).get_html()
+                return result,[self,other]
 
         elif context == 'Product':
             if isinstance(other,Numeric):
@@ -1272,7 +1272,6 @@ class Numeric(Term):
                     return self.get_html()
 
 #Constants should be able to be represented by multiple symbols
-
 class Constant(Term):
     sensitive = True
     representation = None
