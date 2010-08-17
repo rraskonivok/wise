@@ -4,6 +4,7 @@ import os
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+LOG_FILE = 'session.log'
 
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),

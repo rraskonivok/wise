@@ -1,8 +1,6 @@
 using math;
 using set;
 
-//export PURE_INCLUDE=worksheet::pure
-
 // -------------
 // Basic properties
 // -------------

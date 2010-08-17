@@ -19,10 +19,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import traceback
 import parser
 import mathobjects
+
+from logger import debug
+
 from decorator import decorator
 
 from django import template
 
+from django.conf import settings
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseRedirect, Http404
@@ -47,7 +51,11 @@ def errors(f):
         except Exception,e:
             print e
             print traceback.print_exc()
-            return HttpResponse(json.dumps({'error': str(e)}))
+
+            if settings.DEBUG:
+                return HttpResponse(json.dumps({'error': str(e)}))
+            else:
+                return HttpResponse(json.dumps({'error': 'A server-side error occured'}))
     return wrapper
 
 #Strip unicode
@@ -163,6 +171,28 @@ def home(request):
     workspaces = Workspace.objects.filter(owner=request.user)
     return render_to_response('home.html', {'workspaces': workspaces})
 
+log_page = '''
+<html>
+<head>
+</head>
+<body onLoad="window.location='#bottom';">
+{{log|safe}}
+<a name="bottom">
+</body>
+<script language="javascript">
+    setTimeout("location.reload(true);",2000);
+    window.location='#bottom';
+</script>
+</html>
+'''
+
+def log(request):
+    log = open('session.log').read()
+    log_html = log.replace("\n","<br />\n")
+
+    lst = template.Template(log_page)
+    c = template.Context({'log':log_html})
+    return HttpResponse(lst.render(c))
 
 #---------------------------
 # Rules --------------------
@@ -234,13 +264,12 @@ def apply_rule(request):
     set_id = int( request.POST.get('set_id') )
     rule_id = request.POST.get('rule_id')
 
-    print rule_id, rule_id == 'null', rule_id == u'null'
-
     if rule_id != 'null':
         rule_id = int(rule_id)
     else:
         rule_id = None
 
+    debug(code)
     namespace_index = int( request.POST.get('namespace_index') )
 
     uid = uidgen(namespace_index)

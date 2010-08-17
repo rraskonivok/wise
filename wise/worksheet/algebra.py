@@ -16,6 +16,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+from logger import debug
+
 from library_utils import *
 from library_utils import _
 
@@ -68,8 +70,10 @@ def Reduce2Eq( rule1, rule2, second ):
 
 def ReduceWithRules( rules, expr ):
     pexpr = python_to_pure(expr)
-    print rules
-    return pure_to_python(pure.reduce_with_pure_rules(rules, python_to_pure(expr)),expr.idgen)
+    #print rules
+    pure_expr = pure.reduce_with_pure_rules(rules, python_to_pure(expr))
+    debug(str(pexpr) + ' ----> ' + str(pure_expr))
+    return pure_to_python(pure_expr,expr.idgen)
 
 @Map( _( Definition , Term ) >> _( None, Term ) )
 def ReduceTerm( first, second ):

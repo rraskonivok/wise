@@ -18,6 +18,20 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#Look into the Pure (haha) rendering language
+#http://beebole.com/pure/
+# I think this is the solution for giving the user the ability to
+# create custom objects client-side
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 #For error reporting
 import traceback
 
@@ -117,30 +131,39 @@ class crcdigest(object):
 
 class NoWrapper(Exception):
     def __init__(self,expr):
-        self.value = 'Unable to cast Pure Type to Internal: %s :: %s' % (expr , str(type(expr)))
+        self.value = "No translation for %s" % expr
 
     def __str__(self):
         return self.value
 
+translation_table = {}
+
+def generate_translation(root):
+    if root.pure:
+        print 'Building Python translation pair: ( %s , %s )' % (root.pure, root)
+        translation_table[root.pure] = root
+
+    for cls in root.__subclasses__():
+        if cls.pure:
+            if not cls.pure in translation_table:
+                translation_table[cls.pure] = cls
+        generate_translation(cls)
+
+active_objects = {}
+
+def generate_pure_objects(root):
+    if root.pure:
+        print 'Building Cython symbol for ... ', root.pure
+        root.po = pure.PureSymbol(root.pure)
+
+    for cls in root.__subclasses__():
+        #if cls.pure:
+        #    print 'Building Cython symbol for ... ', cls.pure
+        #    cls.po = pure.PureSymbol(cls.pure)
+
+        generate_pure_objects(cls)
+
 def translate_pure(key):
-    translation_table = {
-            'add':Addition,
-            'mul':Product,
-            'pow':Power,
-            'integral':Integral,
-            'differential':Differential,
-            'diff':Diff,
-            'Neg':Negate,
-            'rational':Fraction,
-            'eq':Equation,
-            'wiseref':RefSymbol,
-            'wiserefop':RefOperator,
-            'pi':Pi,
-            'e':E,
-            'Sin':Sine,
-            'Cos':Cosine,
-            'Tan':Tangent,
-            }
     try:
         return translation_table[key]
     except KeyError:
@@ -433,6 +456,8 @@ class Branch(object):
             if isinstance(x,str):
                 if x.isdigit():
                     obj = Numeric(x)
+                elif x in translation_table:
+                    obj = translate_pure(x)()
                 else:
                     obj = Variable(x)
                 obj.idgen = self.idgen
@@ -647,6 +672,8 @@ class Term(object):
     idgen = None
     parent = None
     side = None # 0 if on LHS, 1 if on RHS
+    pure = None # The symbol used in pure expression
+    po = None   # Reference to the type of object
 
     def __init__(self,*ex):
         print 'Anonymous Term was caught with arguments',ex
@@ -835,6 +862,7 @@ class Placeholder(Term):
 
     sensitive = False
     html = template.Template(placeholder_html)
+    pure = 'ph'
 
     def __init__(self):
         self.latex = '$\\text{Placeholder}$'
@@ -1077,15 +1105,6 @@ class Length(Physical_Quantity):
 
         self.terms = [quantity,unit]
 
-class Momentum(Physical_Quantity):
-    def __init__(self,quantity,unit=Unit('N')):
-        self.quantity = quantity
-        self.quantity.group = self.id
-        self.unit = unit
-        self.unit.group = self.id
-
-        self.terms = [quantity,unit]
-
 class Mass(Physical_Quantity):
     def __init__(self,quantity,unit=Unit('kg')):
         self.quantity = quantity
@@ -1104,43 +1123,6 @@ class Time(Physical_Quantity):
 
         self.terms = [quantity,unit]
 
-power_html = '''<span id="{{id}}" group="{{group}}" class="term {{class}}{{sensitive}}" math-type="{{type}}" math-meta-class="term" math="{{math}}">
-    <span class="base">{{base}}</span>
-    <sup><span class="exponent">{{exponent}}</span></sup>
-</span>
-'''
-
-class Power(Term):
-    type = 'power'
-    sensitive = True
-    html = template.Template(power_html)
-
-    def __init__(self,base,exponent):
-        self.base = base
-        self.exponent = exponent
-        self.terms = [self.base, self.exponent]
-        basetype = type(self.base)
-        if basetype is Fraction or isinstance(self.base, Operation):
-            self.base.show_parenthesis = True
-
-    def _pure_(self):
-        return pure.powr(self.base._pure_() , self.exponent._pure_())
-
-    def get_html(self):
-        self.exponent.css_class = 'exponent'
-        self.exponent.group = self.id
-        self.base.css_class = 'exponent'
-        self.base.group = self.id
-
-        c = template.Context({
-            'id': self.id,
-            'math': self.get_math(),
-            'group': self.group,
-            'base': self.base.get_html(),
-            'type': self.classname,
-            'exponent': self.exponent.get_html() })
-
-        return self.html.render(c)
 
 fraction_html = '''
 <span id="{{id}}" class="fraction container" math-meta-class="term" math-type="{{type}}" math="{{ math }}" group="{{group}}">
@@ -1209,7 +1191,6 @@ class Numeric(Term):
     type = 'numeric'
     sensitive = True
     html = template.Template(numeric_html)
-
     _is_constant = True
 
     def __init__(self,number):
@@ -1288,9 +1269,10 @@ class E(Constant):
 
 class Pi(Constant):
     representation = Base_Symbol('pi')
+    pure = 'Pi'
 
     def _pure_(self):
-        return pure.pi()
+        return self.po()
 
 class Khinchin(Constant):
     representation = Base_Symbol('K_0')
@@ -1347,6 +1329,8 @@ class Equation(object):
     parent = None
     side = None
     annotation = ''
+    pure = 'eq'
+    po = None
 
     def __init__(self,lhs=None,rhs=None):
 
@@ -1377,7 +1361,7 @@ class Equation(object):
          return self.math
 
     def _pure_(self):
-        return pure.eq(self.lhs._pure_(),self.rhs._pure_())
+        return self.po(self.lhs._pure_(),self.rhs._pure_())
 
     @property
     def classname(self):
@@ -1786,6 +1770,7 @@ class Definition(Equation):
     html = template.Template(definition_html)
     confluent = True
     public = True
+    pure = None
 
     def _pure_(self):
         if self.lhs.hash != self.rhs.hash:
@@ -2044,6 +2029,7 @@ class Addition(Operation):
     ui_style = 'infix'
     symbol = '+'
     show_parenthesis = False
+    pure = 'add'
 
     def __init__(self,*terms):
         self.terms = list(terms)
@@ -2071,7 +2057,7 @@ class Addition(Operation):
            return self.terms[0]._pure_()
        else:
            pterms = map(lambda o: o._pure_() , self.terms)
-           return pure.add(*pterms)
+           return self.po(*pterms)
 
     def receive(self,obj,receiver_context,sender_type,sender_context,new_position):
         #If an object is dragged between sides of the equation negate the object
@@ -2093,19 +2079,17 @@ class Product(Operation):
     ui_style = 'infix'
     symbol = '\\cdot'
     show_parenthesis = False
+    pure = 'mul'
 
     def __init__(self,*terms):
         self.terms = list(terms)
-
-        #Pull constants out front
-        #sorts by truth value with True's ordered first
-        self.terms = sorted(self.terms, key=lambda term: not term._is_constant)
 
         for term in self.terms:
             term.group = self.id
             if type(term) is Addition:
                 term.show_parenthesis = True
         self.operand = self.terms
+        make_sortable(self)
         #self.ui_sortable()
 
     def remove(self,obj,remove_context):
@@ -2113,20 +2097,56 @@ class Product(Operation):
             return One()
 
     def _pure_(self):
-        # There is some ambiguity here since we often use an
-        # addition operator of arity=1 to make UI magic happen
-        # clientside, but we just eliminiate it when converting
-        # into a expression
        if len(self.terms) == 1:
            return self.terms[0]._pure_()
        else:
            pterms = map(lambda o: o._pure_() , self.terms)
-           return pure.mul(*pterms)
+           return self.po(*pterms)
+
+power_html = '''<span id="{{id}}" group="{{group}}" class="term {{class}}{{sensitive}}" math-type="{{type}}" math-meta-class="term" math="{{math}}">
+    <span class="base">{{base}}</span>
+    <sup><span class="exponent">{{exponent}}</span></sup>
+</span>
+'''
+
+class Power(Operation):
+    sensitive = True
+    html = template.Template(power_html)
+    pure = 'powr'
+
+    def __init__(self,base,exponent):
+        self.base = base
+        self.exponent = exponent
+        self.terms = [self.base, self.exponent]
+        basetype = type(self.base)
+        if basetype is Fraction or isinstance(self.base, Operation):
+            self.base.show_parenthesis = True
+        make_sortable(self)
+
+    def _pure_(self):
+        return self.po(self.base._pure_() , self.exponent._pure_())
+
+    def get_html(self):
+        self.exponent.css_class = 'exponent'
+        self.exponent.group = self.id
+        self.base.css_class = 'exponent'
+        self.base.group = self.id
+
+        c = template.Context({
+            'id': self.id,
+            'math': self.get_math(),
+            'group': self.group,
+            'base': self.base.get_html(),
+            'type': self.classname,
+            'exponent': self.exponent.get_html() })
+
+        return self.html.render(c)
 
 class Log(Operation):
     ui_style = 'prefix'
     symbol = '\\log'
     show_parenthesis = True
+    pure = 'log'
 
     def __init__(self,operand):
         self.operand = operand
@@ -2143,19 +2163,29 @@ class TrigFunction(Operation):
         self.operand.group = self.id
         self.terms = [self.operand]
 
+    def _pure_(self):
+        return self.po(purify(self.operand))
+
 class Vector(Operation):
     ui_style = 'latex'
     symbol1 = '\\vec'
+    pure = 'vec'
+
+    def _pure_(self):
+       return self.po(purify(self.operand))
 
 class Sine(TrigFunction):
     ui_style = 'prefix'
     symbol = '\\sin'
+    pure = 'Sin'
 
     def _pure_(self):
-       return pure.sin(self.operand._pure_())
+       print self.po
+       return self.po(purify(self.operand))
 
 class Cosine(TrigFunction):
     symbol = '\\cos'
+    pure = 'cos'
 
     def _pure_(self):
        return pure.cos(self.operand._pure_())
@@ -2208,6 +2238,10 @@ class Negate(Operation):
     show_parenthesis = False
     css_class = 'negate'
 
+    # Capitalize since "neg" already exists in the default Pure
+    # predule.
+    pure = 'Neg'
+
     def __init__(self,operand):
         self.operand = operand
         self.operand.group = self.id
@@ -2217,7 +2251,7 @@ class Negate(Operation):
             self.show_parenthesis = True
 
     def _pure_(self):
-       return pure.neg(self.operand._pure_())
+       return pure.po(self.operand._pure_())
 
     @fallback(Term.combine_fallback)
     def combine(self,other,context):
@@ -2407,55 +2441,6 @@ class Diff(Operation):
 
         return self.html.render(c)
 
-    def propogate(self):
-
-        #Propagates differentiation by descent
-
-        if type(self.operand) is Addition:
-            # Linearity of Differentiation: 
-            # d/dx ( A + B + C ) ---> ( d/dx A + d/dx B + d/dx C) 
-
-            split = map(Diff,self.operand.terms)
-            split = map(lambda obj: obj.propogate(), split)
-            return Addition(*split)
-
-        elif type(self.operand) is Product:
-            ''' Product Rule'''
-            def leibniz(f,g):
-                cross1 = Diff(f).propogate()
-                cross2 = Diff(g).propogate()
-
-                cross_result = cross1 * g + f * cross2
-                cross_result.show_parenthesis = True
-                return cross_result
-
-            newterms = reduce(leibniz,self.operand.terms)
-            return Addition(newterms)
-
-        #elif type(self.operand) is Fraction:
-        #    def leibniz(f,g):
-        #        cross = Addition( Product(Diff(f),g) , Product(f,Diff(g)) )
-        #        cross.show_parenthesis = True
-        #        return cross
-
-        #    newnum = leibniz(self.operand.num,self.operand.den)
-        #    newden = Product(self.operand.num,self.operand.den)
-        #    return Fraction(newnum,newden).get_html()
-
-        #elif type(self.operand) is Base_Symbol:
-        #    if self.operand.symbol == self.variable:
-        #        return One().get_html()
-        #    else:
-        #        #This is partial differetiation
-        #        return Zero().get_html()
-
-        elif type(self.operand) is Numeric:
-            return Zero()
-
-        else:
-            #Just leave the operator in since we can't do anything meaningful with it
-            return self
-
 fdiff_html = '''
 <span id="{{id}}" math-meta-class="term" class="container {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
     <span class="operator middle" math-type="operator" math-meta-class="operator" group="{{id}}" title="{{type}}" >
@@ -2489,13 +2474,6 @@ fdiff_html = '''
 
 class FDiff(Operation):
 
-    '''To do standard derivatives
-
-    y=Function('y')(x)
-    x=Symbol('x')
-    diff(y*x,x)
-    '''
-
     ui_style = 'prefix'
 
     def __init__(self,differential,operand):
@@ -2523,64 +2501,6 @@ class FDiff(Operation):
             })
 
         return self.html.render(c)
-
-    def action(self):
-        #Take the derivative
-        deriv = sympify(self.sympy)
-        #Cast it to internal types
-        newterm = sympy2parsetree(deriv)
-        return newterm.get_html()
-
-    def propogate(self):
-
-        #Propagates differentiation by descent
-
-        if type(self.operand) is Addition:
-            # Linearity of Differentiation: 
-            # d/dx ( A + B + C ) ---> ( d/dx A + d/dx B + d/dx C) 
-
-            split = map(Diff,self.operand.terms)
-            split = map(lambda obj: obj.propogate(), split)
-            return Addition(*split)
-
-        elif type(self.operand) is Product:
-            ''' Product Rule'''
-            def leibniz(f,g):
-                cross1 = Diff(f).propogate()
-                cross2 = Diff(g).propogate()
-
-                cross_result = cross1 * g + f * cross2
-                cross_result.show_parenthesis = True
-                return cross_result
-
-            newterms = reduce(leibniz,self.operand.terms)
-            return Addition(newterms)
-
-        #elif type(self.operand) is Fraction:
-        #    def leibniz(f,g):
-        #        cross = Addition( Product(Diff(f),g) , Product(f,Diff(g)) )
-        #        cross.show_parenthesis = True
-        #        return cross
-
-        #    newnum = leibniz(self.operand.num,self.operand.den)
-        #    newden = Product(self.operand.num,self.operand.den)
-        #    return Fraction(newnum,newden).get_html()
-
-        #elif type(self.operand) is Base_Symbol:
-        #    if self.operand.symbol == self.variable:
-        #        return One().get_html()
-        #    else:
-        #        #This is partial differetiation
-        #        return Zero().get_html()
-
-        elif type(self.operand) is Numeric:
-            return Zero()
-
-        else:
-            #Just leave the operator in since we can't do anything meaningful with it
-            return self
-
-
 #-------------------------------------------------------------
 # Transforms
 #-------------------------------------------------------------
@@ -2588,3 +2508,8 @@ class FDiff(Operation):
 import algebra
 
 #print [i.domain for i in algebra.mappings]
+
+generate_translation(root=Term)
+generate_translation(root=Equation)
+generate_pure_objects(root=Term)
+generate_pure_objects(root=Equation)
