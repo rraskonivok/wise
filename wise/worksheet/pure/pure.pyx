@@ -248,28 +248,29 @@ cdef class PureTuple(PureExpr):
 cdef pure_expr *g(PureExpr obj):
     return obj._expr
 
-def reduce_with(PureRule locals, PureExpr x):
-    pure.pure_save()
-    pure.pure_eval(locals._stmt)
-    x.refresh()
-    pure.pure_restore()
-    return x
-
 def extract(PureRule rule):
     pure.pure_eval(rule._stmt)
 
-def reduce_with_list(rules, PureExpr x):
-    pure.pure_save()
-    for rule in rules:
-        extract(rule)
-    x.refresh()
-    pure.pure_restore()
-    return x
+def reduce_with_pure_rules(rules, PureExpr expr):
+    '''Convert a Python list of strings into a dynamic local
+    enviroment and pass reduce the given expression with it'''
 
-def reduce_with_pure_rules(rules, PureExpr x):
-    pure.pure_save()
-    for rule in rules:
-        pure.pure_eval(rule)
-    x.refresh()
-    pure.pure_restore()
-    return x
+    # I can't figure out how to use the locals command in the
+    # public API so we'll just use the eval until I can
+    # figure out a better way
+    #
+    # Basically equivelent to
+    # reduce_with expr __locals__ with rule1; rule2; end;
+
+    cdef pure_expr *locals
+    rls = '; '.join(rules)
+    cmd = ' '.join(['__locals__ with', rls, 'end;'])
+    print cmd
+    locals = pure.pure_eval(cmd)
+
+    print pure.str(locals)
+
+    cdef pure_expr *rexp
+    rexp = pure.reduce(locals, expr._expr)
+
+    return PureExpr().se(rexp)

@@ -41,6 +41,8 @@ ADMIN_MEDIA_PREFIX = '/media/'
 
 SECRET_KEY = 'changeme'
 
+INTERNAL_IPS = ('127.0.0.1',)
+
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.load_template_source',
     'django.template.loaders.app_directories.load_template_source',
@@ -50,6 +52,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware'
 )
 
 ROOT_URLCONF = 'wise.urls'
@@ -69,4 +72,5 @@ INSTALLED_APPS = (
     # into the same directory as this file, if you can't run
     # ' import gunicorn ' form this directory then it will fail
     'gunicorn',
+    'debug_toolbar'
 )

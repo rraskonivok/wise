@@ -42,13 +42,13 @@ cmp x y = ~(cmp y x) otherwise ;
 // Powers
 //////////////////////////////////////////////////////////////////////
 
-powr x 0 = 1;
-powr x 1 = x;
-powr 0 x = 0;
-powr 1 x = 1;
-
-powr (powr r s) w = powr r (mul s w) if numberp w ;
-powr (mul x y) w = mul (powr x w) (powr y w) if numberp w ;
+//powr x 0 = 1;
+//powr x 1 = x;
+//powr 0 x = 0;
+//powr 1 x = 1;
+//
+//powr (powr r s) w = powr r (mul s w) if numberp w ;
+//powr (mul x y) w = mul (powr x w) (powr y w) if numberp w ;
 
 //////////////////////////////////////////////////////////////////////
 // *
@@ -56,12 +56,12 @@ powr (mul x y) w = mul (powr x w) (powr y w) if numberp w ;
 
 //add x::int y::int = x + y;
 
-mul 0 x = 0 ;
+#mul 0 x = 0 ;
 mul x y = powr (base x) (add (exponent x) (exponent y)) if (base x) === (base y) ;
-mul (mul a x) y = mul a ( powr (base x) (add (exponent x) (exponent y)) ) if (base x) === (base y) ;
-mul x y = mul y x if cmp y x ;
-mul (mul x y) z = mul (mul x z) y if cmp z y ;
-mul x (mul y z) = mul (mul x y) z ;
+#mul (mul a x) y = mul a ( powr (base x) (add (exponent x) (exponent y)) ) if (base x) === (base y) ;
+#mul x y = mul y x if cmp y x ;
+#mul (mul x y) z = mul (mul x z) y if cmp z y ;
+#mul x (mul y z) = mul (mul x y) z ;
 
 //////////////////////////////////////////////////////////////////////
 // +

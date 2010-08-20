@@ -20,7 +20,7 @@ import traceback
 import parser
 import mathobjects
 
-from logger import debug
+from logger import debug, getlogger
 
 from decorator import decorator
 
@@ -269,12 +269,13 @@ def apply_rule(request):
     else:
         rule_id = None
 
-    debug(code)
+    #debug(code)
     namespace_index = int( request.POST.get('namespace_index') )
 
     uid = uidgen(namespace_index)
 
     args = [parse(cde, uid) for cde in code]
+    print 'sexp', args[0]
     transform = mathobjects.algebra.ReduceWithRules
 
     #Ugly hack to allow us to pass the uid generator and use it

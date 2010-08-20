@@ -151,16 +151,14 @@ def generate_translation(root):
 
 active_objects = {}
 
+# Traverse the root class and process all class that inherit from
+# it
 def generate_pure_objects(root):
     if root.pure:
         print 'Building Cython symbol for ... ', root.pure
         root.po = pure.PureSymbol(root.pure)
 
     for cls in root.__subclasses__():
-        #if cls.pure:
-        #    print 'Building Cython symbol for ... ', cls.pure
-        #    cls.po = pure.PureSymbol(cls.pure)
-
         generate_pure_objects(cls)
 
 def translate_pure(key):
@@ -862,7 +860,6 @@ class Placeholder(Term):
 
     sensitive = False
     html = template.Template(placeholder_html)
-    pure = 'ph'
 
     def __init__(self):
         self.latex = '$\\text{Placeholder}$'
@@ -1833,6 +1830,8 @@ class Operation(Term):
     is_commutative = False
     is_anticommutative = False
 
+    pure = None
+
     def __init__(self,*operands):
         if len(operands) > 1:
             self.terms = list(operands)
@@ -2124,6 +2123,7 @@ class Power(Operation):
         make_sortable(self)
 
     def _pure_(self):
+        print 'firing'
         return self.po(self.base._pure_() , self.exponent._pure_())
 
     def get_html(self):
@@ -2177,7 +2177,7 @@ class Vector(Operation):
 class Sine(TrigFunction):
     ui_style = 'prefix'
     symbol = '\\sin'
-    pure = 'Sin'
+#    pure = 'Sin'
 
     def _pure_(self):
        print self.po
