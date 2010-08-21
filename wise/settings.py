@@ -74,3 +74,6 @@ INSTALLED_APPS = (
     'gunicorn',
     'debug_toolbar'
 )
+
+def def_start_server(server):
+    sys.exit(0)

@@ -897,7 +897,6 @@ def new_line(request):
     newtype = request.POST.get('type')
 
     uid = uidgen(namespace_index)
-    print 'NEW TYPE', newtype
 
     # TODO we should do this without parsing, this is really slow
     # and inefficent

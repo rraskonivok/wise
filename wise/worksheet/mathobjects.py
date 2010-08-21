@@ -46,10 +46,11 @@ import parser
 #Used for hashing trees
 from hashlib import sha1
 from binascii import crc32
+from operator import xor 
 
 import pure.base as pure
 
-from wise.worksheet.models import Symbol, Function
+from wise.worksheet.models import Symbol, Function, Rule
 
 #-------------------------------------------------------------
 # Utilities
@@ -101,6 +102,9 @@ def purify(obj):
 def pairs(list):
     for i in range(len(list) - 1):
         yield (list[i],list[i+1])
+
+def hasharray(lst):
+    return hash(reduce(xor, lst))
 
 def fallback(fallback):
     '''Try to run f, if f returns None or False then run fallback'''
@@ -155,7 +159,7 @@ active_objects = {}
 # it
 def generate_pure_objects(root):
     if root.pure:
-        print 'Building Cython symbol for ... ', root.pure
+        #print 'Building Cython symbol for ... ', root.pure
         root.po = pure.PureSymbol(root.pure)
 
     for cls in root.__subclasses__():
@@ -193,6 +197,26 @@ def pure_to_python(obj,uidgen=None):
 def python_to_pure(obj):
     '''Maps internal Python objects into their pure equivelents'''
     return obj._pure_()
+
+#-------------------------------------------------------------
+# Rule Cache
+#-------------------------------------------------------------
+
+rulecache = {}
+
+#for rule in Rule.objects.all():
+#    rule = rule.pure
+#    hsh = hash(rule)
+#
+#    if hsh in rulecache:
+#        plevel = rulecache[hsh]
+#    else:
+#        plevel = pure.PureLevel([rule])
+#        rulecache[hsh] = plevel
+#        #print 'Building Pure rule: ( %s , %s )' % (hsh, rule)
+#
+#    #print 'Rule cache size:', len(rulecache)
+
 
 #-------------------------------------------------------------
 # Parse Tree
@@ -472,7 +496,12 @@ class Branch(object):
                 print 'something strange is being passed'
 
         typ = translate_pure(self.type)
-        obj = apply(typ,(map(f,self.args)))
+
+        try:
+            obj = apply(typ,(map(f,self.args)))
+        except TypeError:
+            error("Invalid function arguments: %s, %s" % (self.args, typ))
+
         obj.id = self.id
         obj.idgen = self.idgen
 
@@ -2123,7 +2152,6 @@ class Power(Operation):
         make_sortable(self)
 
     def _pure_(self):
-        print 'firing'
         return self.po(self.base._pure_() , self.exponent._pure_())
 
     def get_html(self):
@@ -2177,11 +2205,7 @@ class Vector(Operation):
 class Sine(TrigFunction):
     ui_style = 'prefix'
     symbol = '\\sin'
-#    pure = 'Sin'
-
-    def _pure_(self):
-       print self.po
-       return self.po(purify(self.operand))
+    pure = 'Sin'
 
 class Cosine(TrigFunction):
     symbol = '\\cos'
@@ -2280,23 +2304,31 @@ class Dot(Operation):
     ui_style = 'infix'
     symbol = '\\cdot'
     show_parenthesis = True
+    pure = 'dot'
 
     def __init__(self,*terms):
         self.terms = list(terms)
         for term in self.terms:
             term.group = self.id
         self.operand = self.terms
+
+    def _pure_(self):
+       return pure.po(self.operand._pure_())
 
 class Cross(Operation):
     ui_style = 'infix'
     symbol = '\\times'
     show_parenthesis = True
+    pure = 'cross'
 
     def __init__(self,*terms):
         self.terms = list(terms)
         for term in self.terms:
             term.group = self.id
         self.operand = self.terms
+
+    def _pure_(self):
+       return pure.po(self.operand._pure_())
 
 class Laplacian(Operation):
     ui_style = 'prefix'
@@ -2312,6 +2344,7 @@ class Differential(Operation):
     symbol = 'd'
     show_parenthesis = False
     css_class = ''
+    pure = 'Dx'
 
     def __init__(self,variable):
 
@@ -2322,7 +2355,7 @@ class Differential(Operation):
         self.terms = [self.operand]
 
     def _pure_(self):
-        return pure.differential(self.variable._pure_())
+        return self.po(self.variable._pure_())
 
 class Dagger(Operation):
     ui_style = 'sub'
@@ -2339,6 +2372,7 @@ class Integral(Operation):
     ui_style = 'outfix'
     symbol1 = Tex('\\int')
     show_parenthesis = False
+    pure = 'Int'
 
     def __init__(self,operand,differential):
         self.operand = operand
@@ -2355,7 +2389,7 @@ class Integral(Operation):
         self.terms = [self.operand, self.differential]
 
     def _pure_(self):
-        return pure.integral(self.operand._pure_(), self.differential._pure_())
+        return self.po(self.operand._pure_(), self.differential._pure_())
 
 class Abs(Operation):
     ui_style = 'outfix'
@@ -2513,3 +2547,4 @@ generate_translation(root=Term)
 generate_translation(root=Equation)
 generate_pure_objects(root=Term)
 generate_pure_objects(root=Equation)
+

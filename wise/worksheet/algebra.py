@@ -16,12 +16,14 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+
 from logger import debug
 
 from library_utils import *
 from library_utils import _
 
 from wise.worksheet.mathobjects import *
+
 
 @Map( _( Numeric , Numeric ) >> _( Numeric ) )
 def add(a,b):
@@ -57,21 +59,40 @@ def IntegrateEq( first, second ):
     return Equation(Integral(first.lhs.lhs,dff),Integral(first.rhs.rhs,dff))
 
 @Map( _( Definition , Equation ) >> _( None, Equation ) )
-def ReduceEq( first, second ):
-    rule = python_to_pure(first)
-    print 'new_rule',python_to_pure(first)
-    return 'pass' ,pure_to_python(pure.reduce_with_list([rule],python_to_pure(second)),first.idgen)
+def ReduceEq( rule, expr ):
+    rule = str(python_to_pure(rule))
+    hsh = hash(rule)
 
-@Map( _( Definition , Definition, Equation ) >> _( None, Equation ) )
-def Reduce2Eq( rule1, rule2, second ):
-    rule1p = python_to_pure(rule1)
-    rule2p = python_to_pure(rule2)
-    return 'pass' ,'pass', pure_to_python(pure.reduce_with_list([rule1p,rule2p],python_to_pure(second)),rule1.idgen)
+    if hsh in rulecache:
+        plevel = rulecache[hsh]
+    else:
+        print 'Building up new rule'
+        plevel = pure.PureLevel([rule])
+        rulecache[hsh] = plevel
+        print 'Rule cache size:', len(rulecache)
+
+    pexpr = python_to_pure(expr)
+
+    pure_expr = pure.reduce_with_pure_rules(plevel, pexpr)
+
+    debug(str(pexpr) + ' ----> ' + str(pure_expr))
+    return 'pass',pure_to_python(pure_expr,expr.idgen)
 
 def ReduceWithRules( rules, expr ):
+    hsh = hasharray(rules)
+
+    if hsh in rulecache:
+        plevel = rulecache[hsh]
+    else:
+        print 'Building up new rule'
+        plevel = pure.PureLevel(rules)
+        rulecache[hsh] = plevel
+        print 'Rule cache size:', len(rulecache)
+
     pexpr = python_to_pure(expr)
-    #print rules
-    pure_expr = pure.reduce_with_pure_rules(rules, python_to_pure(expr))
+
+    pure_expr = pure.reduce_with_pure_rules(plevel, pexpr)
+
     debug(str(pexpr) + ' ----> ' + str(pure_expr))
     return pure_to_python(pure_expr,expr.idgen)
 
