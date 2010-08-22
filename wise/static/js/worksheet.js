@@ -1279,25 +1279,42 @@ function save_workspace()
         } ,'json')
 }
 
-function parse_sage(text)
+function parse_pure()
 {
     var data = {}
-//    data.sage = $('#sage_text').val()
-    data.sage = text
-    $.post("sage_parse/", data ,
+    data.code = $('#pure_input').val()
+    data.namespace_index = NAMESPACE_INDEX;
+    data.cell_index = CELL_INDEX;
+
+    $.post("/cmds/pure_parse/", data ,
         function(data){
             if(data.error) {
                 error(data.error)
-                return
             }
 
-            if(data.newline) {
-                $('#lines').append(data.newline)
-                refresh_jsmath($(data.newline))
+            if(data.new_html) {
+                //TOOD Simplify this mess
+                
+                new_cell_html = $(data.new_html);
+                $("#workspace").append(new_cell_html);
+                $('.lines').show();
+                refresh_jsmath(new_cell_html);
+                traverse_lines();
+
+                var new_cell = new Cell();
+                new_cell.dom = new_cell_html;
+                var eq = build_tree_from_json(data.new_json);
+                new_cell.equations.push(eq);
+
+                CELLS.push(new_cell);
+                CELL_INDEX = data.cell_index;
+
             }
-            traverse_lines();
+
+            NAMESPACE_INDEX = data.namespace_index;
         }
-        ,'json')
+    ,'json')
+    cleanup_ajax_scripts();
 }
 
 function sage_inline(text)

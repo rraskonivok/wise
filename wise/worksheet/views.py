@@ -499,47 +499,55 @@ def preview_function(request):
 def palette(request):
     return generate_palette()
 
+@login_required
 @errors
-def sage_parse(request, eq_id):
-    sage = unencode( request.POST.get('sage') )
-    if not sage:
-        sage = unencode( request.GET.get('sage') )
+def pure_parse(request):
+    namespace_index = request.POST.get('namespace_index')
+    code = request.POST.get('code')
 
-    code = sage.split('\n')
-
-    parsd = run_code(code)
-
-    if parsd:
-        return JSONResponse({'newline': html(parsd)})
+    if not namespace_index:
+        namespace_index = 0
     else:
-        return JSONResponse({'error': 'Could not parse Sage input.'})
+        namespace_index = int(namespace_index)
 
-@errors
-def sage_inline(request, eq_id):
-    code = unencode( request.POST.get('sage') )
+    cell_index = int( request.POST.get('cell_index') )
 
-    common = {'x': mathobjects.Variable('x')}
+    uid = uidgen(namespace_index)
+    new = mathobjects.pure_to_python(code,uid)
 
-    if code in common:
-        print 'common'
-        return JSONResponse(html(common[code]))
+    newline_html = cellify(html(new),cell_index+1)
 
-    executed = run_code(code)
+    return JSONResponse({'new_html': newline_html,
+                         'new_json': json_flat(new),
+                         'namespace_index': uid.next()[3:],
+                         'cell_index': cell_index + 1})
 
-    if executed:
-        return JSONResponse(html(executed))
-    else:
-        return JSONResponse({'error': 'Could not parse Sage input.'})
-
-def run_code(code,ecmds=list()):
-    try:
-        evald = mathobjects.sage.sage_eval(code)
-        parsd = mathobjects.parse_sage_exp(evald)
-        return parsd
-    except NameError, e:
-        m = str(e).split()[1]
-        code.insert(0,( 'var(%s)\n' % m ))
-        return run_code(code)
+#@errors
+#def sage_inline(request, eq_id):
+#    code = unencode( request.POST.get('sage') )
+#
+#    common = {'x': mathobjects.Variable('x')}
+#
+#    if code in common:
+#        print 'common'
+#        return JSONResponse(html(common[code]))
+#
+#    executed = run_code(code)
+#
+#    if executed:
+#        return JSONResponse(html(executed))
+#    else:
+#        return JSONResponse({'error': 'Could not parse Sage input.'})
+#
+#def run_code(code,ecmds=list()):
+#    try:
+#        evald = mathobjects.sage.sage_eval(code)
+#        parsd = mathobjects.parse_sage_exp(evald)
+#        return parsd
+#    except NameError, e:
+#        m = str(e).split()[1]
+#        code.insert(0,( 'var(%s)\n' % m ))
+#        return run_code(code)
 
 @login_required
 @errors

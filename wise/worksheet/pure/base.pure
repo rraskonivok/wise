@@ -1,6 +1,7 @@
 using math;
 using set;
 
+
 // -------------
 // Basic properties
 // -------------
@@ -20,3 +21,6 @@ is_real;
 is_complex;
 
 neg x = Neg x;
+
+x + y = add x y;
+x * y = mul x y;

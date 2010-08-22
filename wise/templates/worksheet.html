@@ -3,7 +3,7 @@
 <head>
  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
  <title>Worksheet - {{title}}</title>
- <link rel="stylesheet" type="text/css" href="/static/style.css" />
+ <link rel="stylesheet" type="text/css" href="/static/css/style.css" />
  <link rel="stylesheet" type="text/css" href="/static/ui/ui.css" />
  <script src="/static/jquery.js" type="text/javascript"></script>
  <script src="/static/jquery-ui.js" type="text/javascript"></script>
@@ -91,7 +91,8 @@ _
 </div>
 
 <div id="sage_input" title="Sage Parser" style="display:none">
-    <textarea id="sage_text" style="width:90%; height: 85%"></textarea>
+    <textarea id="pure_input" style="width:90%; height: 85%"></textarea>
+    <a href="javascript:parse_pure()">Parse</a>
 </div>
 
 <div id="toolbar" class="ui-widget ui-widget-content ui-layout-south">
@@ -137,7 +138,7 @@ _
  <script src="/static/simpletip.js" type="text/javascript"></script>
  <script src="/static/layout.js" type="text/javascript"></script>
  <script src="/static/pnotify.js" type="text/javascript"></script>
- <script language="javascript" type="text/javascript" src="/static/Jit/jit.js"></script>
+ <script language="javascript" type="text/javascript" src="/static/Jit/jit-yc.js"></script>
  
 
  <!--

@@ -17,24 +17,11 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
-
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#Look into the Pure (haha) rendering language
-#http://beebole.com/pure/
-# I think this is the solution for giving the user the ability to
-# create custom objects client-side
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 #For error reporting
 import traceback
 
+
+import shpaml
 from django import template
 from django.utils import simplejson as json
 from django.utils.safestring import SafeUnicode
@@ -144,7 +131,7 @@ translation_table = {}
 
 def generate_translation(root):
     if root.pure:
-        print 'Building Python translation pair: ( %s , %s )' % (root.pure, root)
+        #print 'Building Python translation pair: ( %s , %s )' % (root.pure, root)
         translation_table[root.pure] = root
 
     for cls in root.__subclasses__():
@@ -500,7 +487,7 @@ class Branch(object):
         try:
             obj = apply(typ,(map(f,self.args)))
         except TypeError:
-            error("Invalid function arguments: %s, %s" % (self.args, typ))
+            raise ParseError("Invalid function arguments: %s, %s" % (self.args, typ))
 
         obj.id = self.id
         obj.idgen = self.idgen
@@ -993,6 +980,7 @@ class Greek(Base_Symbol):
 class Variable(Base_Symbol):
     assumptions = None
     bounds = None
+    pure = 'var'
 
     def __init__(self,symbol):
         self.symbol = symbol
@@ -1044,10 +1032,10 @@ class RefSymbol(Variable):
         return pure.ref(pure.PureInt(int(self.args)))
 
 #A variable with a ::int flag restricting it to integers
-class IntVariable(Variable):
-    def _pure_(self):
-        #Yah, this doesn't work
-        return pure.env.eval('%s::int' % self.symbol)
+#class IntVariable(Variable):
+#    def _pure_(self):
+#        #Yah, this doesn't work
+#        return pure.env.eval('%s::int' % self.symbol)
 
 class RealVariable(Base_Symbol):
     '''It's like above but with the assumption that it's real'''
@@ -1149,25 +1137,19 @@ class Time(Physical_Quantity):
 
         self.terms = [quantity,unit]
 
-
-fraction_html = '''
-<span id="{{id}}" class="fraction container" math-meta-class="term" math-type="{{type}}" math="{{ math }}" group="{{group}}">
-
-<span class="num">
-{{ num }}
-</span>
-
-<span class="den">
-{{ den }}
-</span>
-
-</span>
-'''
+fraction_html = shpaml.convert_text('''
+#{{id}}.fraction.container math-meta-class="term" math-type="{{type}}" group="{{group}}"
+    .num
+        {{num}}
+    .den
+        {{den}}
+''')
 
 class Fraction(Term):
     type = "Fraction"
     sensitive = True
     html = template.Template(fraction_html)
+    pure = 'rational'
 
     def __init__(self,num,den):
         self.num = num
@@ -1176,7 +1158,7 @@ class Fraction(Term):
         self.terms = [num,den]
 
     def _pure_(self):
-       return pure.rational(self.num._pure_(), self.den._pure_())
+       return pure.po(self.num._pure_(), self.den._pure_())
 
     def get_html(self):
         self.num.group = self.id
