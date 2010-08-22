@@ -1,22 +1,21 @@
-import parser
+# -*- coding: utf-8 -*-
 
-import mathobjects
+# Wise
+# Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+
 # Foundational math objects
+import mathobjects
 import base
 
-from logger import debug, getlogger
 from django import template
 
-from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from django.shortcuts import render_to_response, get_object_or_404
-from django.utils import simplejson as json
-from django.utils.html import strip_spaces_between_tags as strip_whitespace
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.cache import cache_page
-
 from wise.worksheet.utils import *
 from wise.worksheet.models import Workspace, MathematicalEquation, Cell, Symbol, Function, Rule, RuleSet
 
@@ -26,8 +25,10 @@ CACHE_INTERVAL = 30*60 # 5 Minutes
 # Rules --------------------
 #---------------------------
 
-@errors
 @login_required
+@errors
+@ajax_request
+@cache_page(CACHE_INTERVAL)
 def apply_rule(request):
     code = tuple(request.POST.getlist('selections[]'))
     set_id = int( request.POST.get('set_id') )
@@ -95,8 +96,9 @@ ruleslist = '''
 </ul>
 '''
 
-@errors
 @login_required
+@errors
+@cache_page(CACHE_INTERVAL)
 def rules_request(request):
     ruleset = RuleSet.objects.filter(owner=request.user)
     subrules = []
@@ -124,8 +126,9 @@ symbolslist = '''
 </table>
 '''
 
-@errors
 @login_required
+@errors
+@cache_page(CACHE_INTERVAL)
 def symbols_request(request):
     symbols = Symbol.objects.filter(owner=request.user)
     symbols_html = [mathobjects.RefSymbol(sym).get_html() for sym in symbols]
@@ -150,8 +153,9 @@ functionslist = '''
 </table>
 '''
 
-@errors
 @login_required
+@errors
+@cache_page(CACHE_INTERVAL)
 def functions_request(request):
     ph = mathobjects.Placeholder()
     functions = Function.objects.filter(owner=request.user)
@@ -162,7 +166,10 @@ def functions_request(request):
     c = template.Context({'functions':zip(functions_html,descriptions)})
     return HttpResponse(lst.render(c))
 
+@login_required
 @errors
+@ajax_request
+@cache_page(CACHE_INTERVAL)
 def preview_function(request):
     symbol1 = request.POST.get('symbol1')
     notation = request.POST.get('notation')
@@ -191,6 +198,8 @@ def preview_function(request):
 
 @login_required
 @errors
+@ajax_request
+@cache_page(CACHE_INTERVAL)
 def pure_parse(request):
     namespace_index = request.POST.get('namespace_index')
     code = request.POST.get('code')
@@ -214,6 +223,7 @@ def pure_parse(request):
 
 @login_required
 @errors
+@ajax_request
 @cache_page(CACHE_INTERVAL)
 def lookup_transform(request):
     typs = tuple(request.POST.getlist('selections[]'))
@@ -242,6 +252,7 @@ def lookup_transform(request):
 
 @login_required
 @errors
+@ajax_request
 @cache_page(CACHE_INTERVAL)
 def combine(request):
     first = unencode( request.POST.get('first') )
@@ -272,6 +283,8 @@ def combine(request):
 
 @login_required
 @errors
+@ajax_request
+@cache_page(CACHE_INTERVAL)
 def apply_transform(request):
     code = tuple(request.POST.getlist('selections[]'))
     transform = unencode( request.POST.get('transform') )
@@ -324,11 +337,13 @@ def apply_transform(request):
 
 @login_required
 @errors
+@ajax_request
+@cache_page(CACHE_INTERVAL)
 def save_workspace(request,eq_id):
     try:
         workspace = Workspace.objects.get(id=eq_id)
     except ObjectDoesNotExist:
-        return HttpResponse(json.dumps({'error':'Workspace is missing'}))
+        return JsonResponse({'error':'Workspace is missing'})
 
     cells = Cell.objects.filter(workspace=eq_id)
 
@@ -350,15 +365,17 @@ def save_workspace(request,eq_id):
                 cell=newcell,
                 index=i).save()
 
-    return HttpResponse(json.dumps({'success': True}))
+    return JsonResponse({'success': True})
 
 @login_required
 @errors
+@ajax_request
+@cache_page(CACHE_INTERVAL)
 def save_ruleset(request,rule_id):
     try:
         ruleset = RuleSet.objects.get(id=rule_id)
     except ObjectDoesNotExist:
-        return HttpResponse(json.dumps({'error':'Rule Set is missing'}))
+        return JsonResponse({'error':'Rule Set is missing'})
 
     rules = Rule.objects.filter(set=rule_id)
 
@@ -386,10 +403,11 @@ def save_ruleset(request,rule_id):
                 confluent=is_confluent,
                 index=i).save()
 
-    return HttpResponse(json.dumps({'success': True}))
+    return JsonResponse({'success': True})
 
 @login_required
 @errors
+@ajax_request
 @cache_page(CACHE_INTERVAL)
 def receive(request):
     obj = unencode( request.POST.get(u'obj') )
@@ -428,6 +446,7 @@ def receive(request):
 
 @login_required
 @errors
+@ajax_request
 @cache_page(CACHE_INTERVAL)
 def remove(request):
     obj = unencode( request.POST.get(u'obj') )

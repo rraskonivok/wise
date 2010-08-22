@@ -37,24 +37,23 @@ urlpatterns = patterns('',
      (r'^rule/(?P<rule_id>\d+)/$', 'wise.worksheet.views.rule'),
      (r'^rule/(?P<rule_id>\d+)/save/$', 'wise.worksheet.views.save_ruleset'),
      (r'^rule/new/$', 'wise.worksheet.views.sym_update'),
-     (r'^rule_request/$', 'wise.worksheet.views.rules_request'),
+     (r'^rule_request/$', 'wise.worksheet.ajax.rules_request'),
 
      #Symbols
      (r'^sym/$', 'wise.worksheet.views.symbols_list'),
      (r'^sym/(?P<sym_id>\d+)/$', 'wise.worksheet.views.sym'),
      (r'^sym/new/$', 'wise.worksheet.views.sym_update'),
-     (r'^symbol_request/$', 'wise.worksheet.views.symbols_request'),
+     (r'^symbol_request/$', 'wise.worksheet.ajax.symbols_request'),
 
      #Functions
      (r'^fun/$', 'wise.worksheet.views.fun_list'),
      (r'^fun/(?P<sym_id>\d+)/$', 'wise.worksheet.views.fun'),
      (r'^fun/new/$', 'wise.worksheet.views.fun_update'),
-     (r'^functions_request/$', 'wise.worksheet.views.functions_request'),
-     (r'^preview_function/$', 'wise.worksheet.views.preview_function'),
+     (r'^functions_request/$', 'wise.worksheet.ajax.functions_request'),
+     (r'^preview_function/$', 'wise.worksheet.ajax.preview_function'),
 
      #Uncomment the next line to enable the admin:
      (r'^admin/', include(admin.site.urls)),
-
 )
 
 from django.conf import settings

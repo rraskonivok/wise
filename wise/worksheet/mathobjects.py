@@ -1,32 +1,22 @@
 # -*- coding: utf-8 -*-
 
-'''
-Wise
-Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as
-published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version.
-'''
-
-#For error reporting
-import traceback
-
-from django import template
-from django.utils import simplejson as json
-from django.utils.html import strip_spaces_between_tags as strip_whitespace
+# Wise
+# Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
 
 #Our parser functions
 import parser
 
 #Used for hashing trees
 from hashlib import sha1
-from binascii import crc32
-from operator import xor 
 
 from wise.worksheet.utils import *
 from wise.worksheet.models import Symbol, Function, Rule
+import wise.worksheet.exceptions as exception
 
 import pure_wrap
 
@@ -44,43 +34,9 @@ def html(*objs):
 
     return ''.join(new_html)
 
-def purify(obj):
-    return obj._pure_()
-
-def pairs(list):
-    for i in range(len(list) - 1):
-        yield (list[i],list[i+1])
-
-def hasharray(lst):
-    return hash(reduce(xor, lst))
-
-def fallback(fallback):
-    '''Try to run f, if f returns None or False then run fallback'''
-    def options(f):
-        def wrapper(self,*args,**kwargs):
-            if f(self,*args,**kwargs) is None:
-                return fallback(self,*args,**kwargs)
-            else:
-                return f(self,*args,**kwargs)
-        return wrapper
-    return options
-
-#Wrapper to make crcdigest behave like hashlib functions
-class crcdigest(object):
-    def __init__(self):
-        #crc32(0) = 0
-        self.hash = 0
-
-    def update(self,text):
-        self.hash = crc32(text,self.hash)
-
-    def hexdigest(self):
-        return hex(self.hash)
-
 #-------------------------------------------------------------
 # Pure Wrapper
 #-------------------------------------------------------------
-
 
 translation_table = {}
 
@@ -101,7 +57,7 @@ def translate_pure(key):
     try:
         return translation_table[key]
     except KeyError:
-        raise NoWrapper(key)
+        raise exception.NoWrapper(key)
 
 
 def parse_pure_exp(expr, uidgen=None):
@@ -367,8 +323,7 @@ class Branch(object):
                 try:
                     return x.eval_args()
                 except KeyError:
-                    raise InternalMathObjectNotFound
-                    print 'Could not find class: ',x.type
+                    raise exception.InternalMathObjectNotFound(x)
             else:
                 print 'something strange is being passed'
 
@@ -414,8 +369,7 @@ class Branch(object):
                 try:
                     return x.eval_pure()
                 except KeyError:
-                    raise InternalMathObjectNotFound
-                    print 'Could not find class: ',x.type
+                    raise exception.InternalMathObjectNotFound(x)
             else:
                 print 'something strange is being passed'
 
@@ -424,7 +378,7 @@ class Branch(object):
         try:
             obj = apply(typ,(map(f,self.args)))
         except TypeError:
-            raise ParseError("Invalid function arguments: %s, %s" % (self.args, typ))
+            raise exception.ParseError("Invalid function arguments: %s, %s" % (self.args, typ))
 
         obj.id = self.id
         obj.idgen = self.idgen
@@ -437,7 +391,7 @@ def ParseTree(str):
         parsed = parser.eq_parse(str)
         return reduce(lambda type, args: Branch(type,args,None), parsed)
     except Exception, e:
-        raise ParseError(str)
+        raise exception.ParseError(str)
 
 # Prints out a tree diagram of the parse tree with the
 # hashes for each object Ex:
@@ -472,136 +426,6 @@ def pretty(t):
             return repr(x)
 
     return pretty_tree(t,kids,show)
-
-#-------------------------------------------------------------
-# JQuery Interfaces
-#-------------------------------------------------------------
-
-def jquery(obj):
-    '''Returns a jquery "function" (i.e. $('#uid123') )  for a given object'''
-    return '$("#%s")' % obj.id
-
-
-class prototype_dict(dict):
-    '''Python and Javascript dictionaries are similar except that
-    python requires strings, this eliminates quotes in the
-    __str__ representation
-
-    Example:
-    > a = prototype_dict()
-    > a['foo'] = 'bar'
-    > print a
-    { foo : 'bar' }
-
-    '''
-
-    def __repr__(self):
-        s = ''
-        for key,value in super(prototype_dict,self).iteritems():
-            s += ' %s: %s,' % (key,value)
-        return '{%s}' % s
-
-class bind():
-    '''bind a method to element, context, or equation'''
-    def __init__(self,obj,method):
-        '''ui.item, ui.sender, original list '''
-        pass
-
-
-class make_sortable(object):
-    '''Wrapper to produce the jquery command to make ui elements
-    sortable/connected'''
-
-    sortable_object = None
-    connectWith = None
-    cancel = '".ui-state-disabled"'
-    helper = "'clone'"
-    tolerance = '"pointer"'
-    placeholder = '"helper"'
-    onout = None
-    onupdate = 'function(event,ui) { update($(this)); }'
-    onreceive = 'function(event,ui) { receive(ui,$(this),group_id); }'
-    onremove = 'function(event,ui) { remove(ui,$(this)); }'
-    onsort = None
-    forcePlaceholderSize = '"true"'
-    forceHelperSize = '"true"'
-    dropOnEmpty = '"true"'
-    axis = '"false"'
-
-    def __init__(self, sortable_object,
-            ui_connected=None,
-            onremove=None,
-            onrecieve=None,
-            onsort=None,
-            onupdate=None):
-
-        self.sortable_object = jquery(sortable_object)
-        if ui_connected is None:
-            self.connectWith = 'undefined'
-            self.upupdate = 'undefined'
-        else:
-            self.connectWith = jquery(ui_connected)
-
-    def get_html(self):
-        options = prototype_dict({'placeholder': self.placeholder,
-                                  'connectWith': self.connectWith,
-                                  'forceHelperSize': self.forceHelperSize,
-                                  'helper': self.helper,
-                                  'tolerance': self.tolerance,
-                                  'axis': self.axis,
-                                  'update': self.onupdate,
-                                  'receive': self.onreceive,
-                                  'remove': self.onremove,
-                                  'cancel': self.cancel,
-                                  #Revert is cool but buggy
-                                  #'revert': 'true',
-                                  #'deactivate': self.onupdate,
-                                  'forcePlaceholderSize': self.forcePlaceholderSize})
-
-        # An inconceivable amount of time/pain went into finding
-        # out that different browsers execute/run javascript
-        # immediately as it is loaded in the dom thus selectors
-        # that call objects that are farther down will be empty,
-        # this is solved by running all scripts when the document
-        # signals it is. 
-
-        args = (self.sortable_object, self.connectWith,
-                str(options))
-
-        html = '$(document).ready(function(){make_sortable(%s,%s,%s);})'
-
-        return html % args
-
-class ParseError(Exception):
-    def __init__(self,expr):
-        self.value = expr
-
-    def __str__(self):
-        return self.value
-
-class InternalMathObjectNotFound(Exception):
-    pass
-
-class PureError(Exception):
-    def __init__(self,expr):
-        self.value = expr
-
-    def __str__(self):
-        return self.value
-
-class PlaceholderInExpression(Exception):
-    def __init__(self):
-        self.value = 'A Placeholder was found in the equation and cannot be evaluated'
-
-    def __str__(self):
-        return self.value
-
-class NoWrapper(Exception):
-    def __init__(self,expr):
-        self.value = "No translation for %s" % expr
-
-    def __str__(self):
-        return self.value
 
 #-------------------------------------------------------------
 # Base Term Class 

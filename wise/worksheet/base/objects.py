@@ -1,35 +1,20 @@
 # -*- coding: utf-8 -*-
 
-'''
-Wise
-Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+# Wise
+# Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as
-published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version.
+import worksheet.js as js
+from worksheet.utils import *
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-'''
+#from worksheet.mathobjects import *
 
 from django import template
-from django.utils import simplejson as json
 from django.utils.safestring import SafeUnicode
-
-from worksheet.mathobjects import *
-from worksheet.shpaml import convert_text
-
-javascript_html = '''
-{% autoescape off %}
-<script language="javascript" type="text/javascript" data-type="ajax">{{javascript}}</script>
-{% endautoescape %} 
-'''
 
 term_html = '''
 <span id="{{id}}" class="{{class}}{{sensitive}} term" math="{{math}}" math-type="{{type}}" title="{{type}}" math-meta-class="term" group="{{group}}">
@@ -45,7 +30,7 @@ class Term(object):
     latex = '$Error$'
     is_negative = False
     html = template.Template(term_html)
-    javascript_template = template.Template(javascript_html)
+    javascript_template = js.javascript_template
     group = None
     css_class = ''
     id = None
@@ -229,7 +214,7 @@ class Term(object):
 
         self.has_sort = True
         #TODO: add support for binding callbacks to python methods... later
-        self.javascript = make_sortable(self,other).get_html()
+        self.javascript = js.make_sortable(self,other).get_html()
         return self.get_javascript()
 
 
@@ -1277,7 +1262,7 @@ class Addition(Operation):
                 self.terms = terms[0].terms
 
         self.operand = self.terms
-        make_sortable(self)
+        js.make_sortable(self)
 
     def __add__(self,other):
         if type(other) is Addition:

@@ -1,15 +1,31 @@
+# -*- coding: utf-8 -*-
+
+# Wise
+# Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+
+
 import traceback
 from decorator import decorator
+from logger import debug, getlogger
+from operator import xor 
+from binascii import crc32
 
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.utils.html import strip_spaces_between_tags as strip_whitespace
 from django.utils import simplejson as json
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import cache_page
+
 from worksheet.shpaml import convert_text
 
-# Wraps errors out to server log and javascript popup
 def errors(f):
+    '''Wraps errors out to server log and javascript popup'''
     def wrapper(*args,**kwargs):
         try:
             return f(*args,**kwargs)
@@ -23,6 +39,17 @@ def errors(f):
                 return HttpResponse(json.dumps({'error': 'A server-side error occured'}))
     return wrapper
 
+def fallback(fallback):
+    '''Try to run f, if f returns None or False then run fallback'''
+    def options(f):
+        def wrapper(self,*args,**kwargs):
+            if f(self,*args,**kwargs) is None:
+                return fallback(self,*args,**kwargs)
+            else:
+                return f(self,*args,**kwargs)
+        return wrapper
+    return options
+
 # From django-sugar project
 def ajax_request(func):
     '''
@@ -34,13 +61,9 @@ def ajax_request(func):
         if request.method == 'POST':
             response = func(request, *args, **kwargs)
         else:
-            response = {'error': {'type': 405,
-                                  'message': 'Accepts only POST request'}}
+            response = {'error': 'Accepts only POST request'}
         if isinstance(response, dict):
-            resp = JsonResponse(response)
-            if 'error' in response:
-                resp.status_code = response['error'].get('type', 500)
-            return resp
+            return JsonResponse(response)
         return response
     wrapper.__name__ = func.__name__
     wrapper.__module__ = func.__module__
@@ -110,3 +133,27 @@ def cellify(s,index):
 def spaceiter(list):
     '''iterate over a list returning a space separated string'''
     return ' '.join(list)
+
+def purify(obj):
+    return obj._pure_()
+
+#-------------------------------------------------------------
+# Hashing
+#-------------------------------------------------------------
+
+def hasharray(lst):
+    '''Return a hash of a list, not guaranteed to be collision
+    free'''
+    return hash(reduce(xor, lst))
+
+class crcdigest(object):
+    '''Wrapper to make crcdigest behave like hashlib functions'''
+    def __init__(self):
+        #crc32(0) = 0
+        self.hash = 0
+
+    def update(self,text):
+        self.hash = crc32(text,self.hash)
+
+    def hexdigest(self):
+        return hex(self.hash)
