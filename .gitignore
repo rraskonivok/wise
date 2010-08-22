@@ -1,8 +1,12 @@
 *.svn
 *.pyc
+*.pyo
 *.swp
+*.swo
 *.so
 *.o
 *.tmp
 *.json
+*.log
+*.backup
 wise/static/jsMath/fonts

@@ -1,6 +1,7 @@
 from django.conf.urls.defaults import *
 
 from django.contrib import admin
+
 admin.autodiscover()
 
 urlpatterns = patterns('',
@@ -21,15 +22,15 @@ urlpatterns = patterns('',
      (r'^del_workspace/$', 'wise.worksheet.views.del_workspace'),
 
      #Worksheet Commands
-     (r'^cmds/new_line/$', 'wise.worksheet.views.new_line'),
-     (r'^cmds/receive/$', 'wise.worksheet.views.receive'),
-     (r'^cmds/remove/$', 'wise.worksheet.views.remove'),
-     (r'^cmds/lookup_transform/$', 'wise.worksheet.views.lookup_transform'),
-     (r'^cmds/apply_rule/$', 'wise.worksheet.views.apply_rule'),
-     (r'^cmds/apply_transform/$', 'wise.worksheet.views.apply_transform'),
-     (r'^cmds/pure_parse/$', 'wise.worksheet.views.pure_parse'),
-     (r'^cmds/json_tree/$', 'wise.worksheet.views.json_tree'),
-     (r'^cmds/combine/$', 'wise.worksheet.views.combine'),
+     (r'^cmds/new_line/$', 'wise.worksheet.ajax.new_line'),
+     (r'^cmds/receive/$', 'wise.worksheet.ajax.receive'),
+     (r'^cmds/remove/$', 'wise.worksheet.ajax.remove'),
+     (r'^cmds/lookup_transform/$', 'wise.worksheet.ajax.lookup_transform'),
+     (r'^cmds/apply_rule/$', 'wise.worksheet.ajax.apply_rule'),
+     (r'^cmds/apply_transform/$', 'wise.worksheet.ajax.apply_transform'),
+     (r'^cmds/pure_parse/$', 'wise.worksheet.ajax.pure_parse'),
+     (r'^cmds/json_tree/$', 'wise.worksheet.ajax.json_tree'),
+     (r'^cmds/combine/$', 'wise.worksheet.ajax.combine'),
 
      #Rules
      (r'^rule/$', 'wise.worksheet.views.rules_list'),

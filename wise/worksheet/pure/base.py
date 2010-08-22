@@ -1,6 +1,5 @@
+# Import the Cython interface
 from pure import *
-
-print env.eval('using worksheet::pure::base')
 
 ref = PureSymbol('wiseref')
 refop = PureSymbol('wiserefop')
