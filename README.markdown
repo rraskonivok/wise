@@ -29,7 +29,7 @@ running it on any other distro. Some instructions:
     
     Download and installation directions can be found here:
         
-         http://code.google.com/p/pure-lang/
+         <http://code.google.com/p/pure-lang/>
 
 2.  You'll need to install Python2.6.x
 
@@ -39,7 +39,7 @@ running it on any other distro. Some instructions:
 
     If not then you can find directions here:
 
-	 http://gunicorn.org/
+	 <http://gunicorn.org/>
 
 4.  Run python manage.py run_gunicorn and point your browser to
     localhost:8000 . I see best performance in Chromium based
@@ -51,3 +51,6 @@ running it on any other distro. Some instructions:
 * Django - <http://www.djangoproject.com/>
 * Funcparserlib - <http://code.google.com/p/funcparserlib/>
 * SHPAML - <http://shpaml.webfactional.com/>
+* jQuery Hotkeys - <http://github.com/tzuryby/hotkeys>
+* jQuery layout - <http://layout.jquery-dev.net/>
+* jQuery pnotify - <http://plugins.jquery.com/project/pnotify>
