@@ -216,7 +216,7 @@ def pure_parse(request):
     cell_index = int( request.POST.get('cell_index') )
 
     uid = uidgen(namespace_index)
-    new = mathobjects.pure_to_python(code,uid)
+    new = translate.pure_to_python(code,uid)
 
     newline_html = cellify(html(new),cell_index+1)
 

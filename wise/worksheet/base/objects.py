@@ -16,12 +16,11 @@ from worksheet.utils import *
 from django import template
 from django.utils.safestring import SafeUnicode
 
-term_html = '''
-<span id="{{id}}" class="{{class}}{{sensitive}} term" math="{{math}}" math-type="{{type}}" title="{{type}}" math-meta-class="term" group="{{group}}">
-<span class="noselect" >
-${{latex}}$
-</span>
-</span> '''
+term_html = haml('''
+#{{id}}.{{class}}.{{sensitive}}.term math="{{math}}" math-type="{{type}}" title="{{type}}" math-meta-class="term" group="{{group}}"
+    .noselect
+        ${{latex}}$
+''')
 
 class Term(object):
 
@@ -225,7 +224,10 @@ class PlaceholderInExpression(Exception):
     def __str__(self):
         return self.value
 
-placeholder_html = '''<span id="{{id}}" class="{{class}}{{sensitive}} drag_placeholder term" math="{{math}}" math-type="{{type}}" title="{{type}}" math-meta-class="term" group="{{group}}"></span>'''
+placeholder_html = haml('''
+#{{id}} {{class}} .{{sensitive}} .drag_placeholder .term math="{{math}}" math-type="{{type}}" title="{{type}}" math-meta-class="term" group="{{group}}"
+    span.empty
+''')
 
 class Placeholder(Term):
     '''A placeholder for substitution'''
@@ -265,10 +267,9 @@ class Text(Term):
         self.latex = '\\text{' + text + '}'
 
 pureblob_template = '''
-<div>
-<img src="/static/pure.png" style="vertical-align: middle"/>
-Pure Blob - <em>{{annotation}}
-</div>
+div
+    img src="/static/pure.png" style="vertical-align: middle"
+    Pure Blob - <em>{{annotation}}</em>
 '''
 
 class PureBlob(Term):
@@ -282,7 +283,9 @@ class PureBlob(Term):
         return template.Template(pureblob_template).render(c)
 
 tex_template = '''
-<span class="operator" math-type="operator" math-meta-class="operator" group="{{group}}" title="{{type}}">$${{tex}}$$</span>
+.operator math-type="operator" math-meta-class="operator" group="{{group}}" title="{{type}}"
+    $${{tex}}$$
+
 '''
 
 class Tex(object):
@@ -387,12 +390,15 @@ class RefSymbol(Variable):
     def _pure_(self):
         return pure.ref(pure.PureInt(int(self.args)))
 
-fraction_html = convert_text('''
+fraction_html = haml('''
 #{{id}}.fraction.container math-meta-class="term" math-type="{{type}}" group="{{group}}"
+
     .num
         {{num}}
+
     .den
         {{den}}
+
 ''')
 
 class Fraction(Term):
@@ -438,17 +444,9 @@ class Fraction(Term):
         #    den = self.den
         #    return Fraction(num,den).get_html()
 
-numeric_html = '''
-<span id="{{id}}" title="{{type}}" class="{{class}} {{sensitive}} term" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
-<span class="noselect" >
-${{latex}}$
-</span>
-</span>'''
-
 class Numeric(Term):
     type = 'numeric'
     sensitive = True
-    html = template.Template(numeric_html)
     _is_constant = True
 
     def __init__(self,number):
@@ -529,22 +527,34 @@ def One():
 # Top Level Elements
 #-------------------------------------------------------------
 
-equation_html = '''
-    <tr id="{{id}}" class="equation" math="{{math}}" math-type="{{classname}}" toplevel="true">
+equation_html = haml('''
+    tr#{{id}}.equation math="{{math}}" math-type="{{classname}}" toplevel="true"
+        td
+            button.ui-icon.ui-icon-triangle-1-w onclick="select_term(get_lhs(this))"
+                {{lhs_id}}
 
-    <td>
-        <button class="ui-icon ui-icon-triangle-1-w" onclick="select_term(get_lhs(this))">{{lhs_id}}</button>
-        <button class="ui-icon ui-icon-triangle-2-e-w" onclick="select_term(get_equation(this))">{{id}}</button>
-        <button class="ui-icon ui-icon-triangle-1-e" onclick="select_term(get_rhs(this))">{{rhs_id}}</button>
-    </td>
-    <td>{{lhs}}</td>
-    <td><span class="equalsign">$${{symbol}}$$</span></td>
-    <td>{{rhs}}</td>
-    <td class="guard">{{guard}}</td>
-    <td class="annotation"><div contenteditable=true>{{annotation}}</div></td>
+            button.ui-icon.ui-icon-triangle-2-e-w onclick="select_term(get_equation(this))"
+                {{id}}
 
-    </tr>
-'''
+            button.ui-icon.ui-icon-triangle-1-e onclick="select_term(get_rhs(this))"
+                {{rhs_id}}
+
+        td
+            {{lhs}}
+
+        td.equalsign
+           $${{symbol}}$$
+
+        td
+            {{rhs}}
+
+        td.guard 
+            {{guard}}
+
+        td.annotation
+            div contenteditable=true
+                {{annotation}}
+''')
 
 class Equation(object):
     '''A statement relating some LHS to RHS'''
@@ -938,33 +948,30 @@ operation_html_outfix = '''
 
 #The unicode here comes from cmex10 font for parentheses
 
-operation_html_infix = '''
-    <span math-meta-class='term' id="{{id}}" class="container {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
+operation_html_infix = haml('''
+#{{id}}.{{class}}.container math-meta-class="term"  math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}"
     {% if parenthesis %}
-
-    <span class="ui-state-disabled pnths left">
+    .ui-state-disabled.pnths.left
        &Ograve;
-    </span>
-
     {% endif %}
 
     {% for o in operand %}
     {{ o }}
     {% if not forloop.last %}
-    <span id="{{ forloop.counter }}" class="ui-state-disabled infix" math-type='times' math-meta-class='sugar'>$${{symbol}}$$</span>
+    #{{ forloop.counter }} .ui-state-disabled.infix math-type="times" math-meta-class="sugar"
+        $${{symbol}}$$
     {% endif %}
     {% endfor %}
 
     {% if parenthesis %}
 
-    <span class="ui-state-disabled pnths right">
+    .ui-state-disabled.pnths.right
        &Oacute;
-    </span>
 
     {% endif %}
-    </span>
-    {{jscript}}
-'''
+
+{{jscript}}
+''')
 
 operation_html_sup = '''
 <span id="{{id}}" math-meta-class="term" class="container {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
@@ -1040,8 +1047,14 @@ operation_html_latex = '''
 </span>
 '''
 
+infix_symbol_template = haml('''
+.ui-state-disabled.infix.term math-type="infix" math-meta-class="sugar"
+    $${{%s}}$$
+''')
+
+
 def infix_symbol_html(symbol):
-    return '''<span class="ui-state-disabled infix term" math-type='infix' math-meta-class='sugar'>$${{%s}}$$</span>''' % symbol
+    return infix_symbol_template % symbol
 
 
 class Operation(Term):
@@ -1324,10 +1337,12 @@ class Product(Operation):
            pterms = map(lambda o: o._pure_() , self.terms)
            return self.po(*pterms)
 
-power_html = '''<span id="{{id}}" group="{{group}}" class="term {{class}}{{sensitive}}" math-type="{{type}}" math-meta-class="term" math="{{math}}">
-    <span class="base">{{base}}</span>
-    <sup><span class="exponent">{{exponent}}</span></sup>
-</span>
+power_html = '''
+#{{id}} group="{{group}}" .term.{{class}}.{{sensitive}} math-type="{{type}}" math-meta-class="term" math="{{math}}"
+    .base
+        {{base}}
+    sup.exponent
+        {{exponent}}
 '''
 
 class Power(Operation):

@@ -141,7 +141,7 @@ def rule(request, rule_id):
     html_eq = []
 
     for rule in rules:
-        etree = translate.parse_sexp(rule.sexp)
+        etree = translate.parse_sexp(rule.sexp,uid)
 
         #Copy rule attributes from database
         etree.annotation = rule.annotation
