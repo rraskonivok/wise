@@ -12,8 +12,7 @@ import traceback
 import parser
 
 import mathobjects
-# Foundational math objects
-import base
+from translate import parse_sexp
 
 from logger import debug, getlogger
 
@@ -33,79 +32,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.views.decorators.cache import cache_page
 
+from wise.worksheet.utils import *
 from wise.worksheet.forms import LoginForm
 from wise.worksheet.models import Workspace, MathematicalEquation, Cell, Symbol, Function, Rule, RuleSet
 
 CACHE_INTERVAL = 30*60 # 5 Minutes
-
-# Wraps errors out to server log and javascript popup
-def errors(f):
-    def wrapper(*args,**kwargs):
-        try:
-            return f(*args,**kwargs)
-        except Exception,e:
-            print e
-            print traceback.print_exc()
-
-            if settings.DEBUG:
-                return HttpResponse(json.dumps({'error': str(e)}))
-            else:
-                return HttpResponse(json.dumps({'error': 'A server-side error occured'}))
-    return wrapper
-
-#Strip unicode
-def unencode(s):
-    if type(s) is list:
-        s = s[0]
-    elif s is None:
-        return None
-    fileencoding = "iso-8859-1"
-    txt = s.decode(fileencoding)
-    return str(txt)
-
-# All these methods are null-safe, so if you pass anything that
-# is null it just maps to None
-def minimize_html(html):
-    if not html:
-        return None
-    return strip_whitespace(html.rstrip('\n'))
-
-def html(obj):
-    if not obj:
-        return None
-    return minimize_html(obj.get_html())
-
-def json_flat(obj):
-    if not obj:
-        return None
-    return obj.json_flat()
-
-def cellify(s,index):
-    return '<div class="cell" data-index="%s"><table class="lines" style="display: none">%s</table></div>' % (index, s)
-
-
-def parse(code, uid):
-    parsed = mathobjects.ParseTree(code)
-    parsed.gen_uids(uid)
-    evaled = parsed.eval_args()
-    return evaled
-
-def maps(func, obj):
-    '''It's like map() but awesomer, namely in that you can pass
-    a single argument to it and it doesn't crash and burn'''
-
-    if hasattr(obj,'__iter__'):
-        return map(func, obj)
-    return [func(obj)]
-
-def JSONResponse(obj):
-    '''Convenience wrapper for JSON responses'''
-    return HttpResponse(json.dumps(obj), mimetype="application/json")
-
-def uidgen(i=0):
-    while True:
-        yield 'uid%i' % i
-        i += 1
 
 def account_login(request):
     form = AuthenticationForm()
@@ -210,11 +141,7 @@ def rule(request, rule_id):
     html_eq = []
 
     for rule in rules:
-        eqtext = unencode(rule.sexp)
-        tree = mathobjects.ParseTree(eqtext)
-        tree.gen_uids(uid)
-
-        etree = tree.eval_args()
+        etree = translate.parse_sexp(rule.sexp)
 
         #Copy rule attributes from database
         etree.annotation = rule.annotation
@@ -353,11 +280,13 @@ def ws(request, eq_id):
             return HttpResponse('Cell is empty.')
 
         for eq in eqs:
-            eqtext = eq.code
-            tree = mathobjects.ParseTree(eqtext)
-            tree.gen_uids(uid)
+            etree = parse_sexp(eq.code, uid)
 
-            etree = tree.eval_args()
+            #eqtext = eq.code
+            #tree = mathobjects.ParseTree(eqtext)
+            #tree.gen_uids(uid)
+
+            #etree = tree.eval_args()
             etree.annotation = eq.annotation
             html_eq.append(html(etree))
             json_cell.append(etree.json_flat())
@@ -402,8 +331,8 @@ def del_workspace(request):
 @login_required
 @errors
 def new_workspace(request):
-    name = unencode( request.POST.get('name') )
-    init = unencode( request.POST.get('init') )
+    name = request.POST.get('name')
+    init = request.POST.get('init')
 
     new_workspace = Workspace(name=name,owner=request.user,public=False)
     new_workspace.save()
@@ -457,7 +386,7 @@ def generate_palette():
     #palette
 
     def Placeholder():
-        return base.objects.Placeholder()
+        return mathobjects.Placeholder()
 
     #constants = {'name': 'Constants', 'type': 'array', 'objects': [
     #                mathobjects.E().get_html(),
@@ -466,7 +395,7 @@ def generate_palette():
     #            ]}
 
     import string
-    lettervariables = [base.objects.Variable(letter).get_html() for letter in string.lowercase]
+    lettervariables = [mathobjects.Variable(letter).get_html() for letter in string.lowercase]
 
     #patternmatching = {'name': 'Pattern Matching', 'type': 'array', 'objects': [
     #                mathobjects.FreeFunction('f').get_html(),

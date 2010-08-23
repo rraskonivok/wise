@@ -9,6 +9,8 @@
 # License, or (at your option) any later version.
 
 # Foundational math objects
+
+import translate
 import mathobjects
 import base
 
@@ -16,8 +18,10 @@ from django import template
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseRedirect, Http404
+
 from wise.worksheet.utils import *
 from wise.worksheet.models import Workspace, MathematicalEquation, Cell, Symbol, Function, Rule, RuleSet
+import wise.worksheet.exceptions as exception
 
 CACHE_INTERVAL = 30*60 # 5 Minutes
 
@@ -44,7 +48,7 @@ def apply_rule(request):
 
     uid = uidgen(namespace_index)
 
-    args = [parse(cde, uid) for cde in code]
+    args = [translate.parse_sexp(cde, uid) for cde in code]
     print 'sexp', args[0]
     transform = mathobjects.algebra.ReduceWithRules
 
@@ -262,14 +266,8 @@ def combine(request):
 
     uid = uidgen(namespace_index)
 
-    first = mathobjects.ParseTree(first)
-    second = mathobjects.ParseTree(second)
-
-    first.gen_uids(uid)
-    second.gen_uids(uid)
-
-    first = first.eval_args()
-    second = second.eval_args()
+    first = translate.parse_sexp(first,uid)
+    second = translate.parse_sexp(second,uid)
 
     # The combination of the two elements (if a rule exists),
     # otherwise default to just the whatever the container the
@@ -292,7 +290,7 @@ def apply_transform(request):
 
     uid = uidgen(namespace_index)
 
-    args = [parse(cde, uid) for cde in code]
+    args = [translate.parse_sexp(cde, uid) for cde in code]
 
     transform = mathobjects.algebra.__dict__[transform]
 
@@ -388,7 +386,7 @@ def save_ruleset(request,rule_id):
 
     for i in xrange(indexes):
         math, annotation, is_confluent, is_public = request.POST.getlist(''.join([str(i),'[]']))
-        pure = parse(math,uid)._pure_()
+        pure = translate.parse_sexp(math,uid)._pure_()
 
         is_confluent = (is_confluent == '1')
         is_public = (is_public == '1')
@@ -423,18 +421,24 @@ def receive(request):
 
     new_position = unencode( request.POST.get('new_position') )
 
-    namespace_index = int( request.POST.get('namespace_index') )
+    namespace_index = request.POST.get('namespace_index')
 
-    uid = uidgen(namespace_index)
+    if not namespace_index:
+        raise exception.PostDataCorrupt('namespace_index')
 
-    inserted = mathobjects.ParseTree(obj)
-    received = mathobjects.ParseTree(receiver)
+    uid = uidgen(int(namespace_index))
 
-    inserted.gen_uids(uid)
-    received.gen_uids(uid)
+    inserted = translate.parse_sexp(obj, uid )
+    received = translate.parse_sexp(receiver, uid )
 
-    inserted = inserted.eval_args()
-    received = received.eval_args()
+    #inserted = mathobjects.ParseTree(obj)
+    #received = mathobjects.ParseTree(receiver)
+
+    #inserted.gen_uids(uid)
+    #received.gen_uids(uid)
+
+    #inserted = inserted.eval_args()
+    #received = received.eval_args()
 
     new = received.receive(inserted,receiver_context,sender_type,sender_context,new_position)
     new.idgen = uid
@@ -460,14 +464,8 @@ def remove(request):
 
     uid = uidgen(namespace_index)
 
-    obj = mathobjects.ParseTree(obj)
-    sender = mathobjects.ParseTree(sender)
-
-    obj.gen_uids(uid)
-    sender.gen_uids(uid)
-
-    obj = obj.eval_args()
-    sender = sender.eval_args()
+    obj = translate.parse_sexp(obj,uid)
+    sender = translate.parse_sexp(sender,uid)
 
     new = sender.remove(obj,sender_context)
     if new:
@@ -498,9 +496,9 @@ def new_line(request):
     # TODO we should do this without parsing, this is really slow
     # and inefficent
     if newtype == u'def':
-        new = parse('(Definition (LHS (Placeholder )) (RHS (Placeholder )))',uid)
+        new = translate.parse_sexp('(Definition (LHS (Placeholder )) (RHS (Placeholder )))',uid)
     elif newtype == u'eq':
-        new = parse('(Equation (LHS (Placeholder )) (RHS (Placeholder )))',uid)
+        new = translate.parse_sexp('(Equation (LHS (Placeholder )) (RHS (Placeholder )))',uid)
     else:
         error('invalid type of inline')
     newline_html = cellify(html(new),cell_index+1)

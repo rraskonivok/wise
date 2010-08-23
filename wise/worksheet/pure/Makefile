@@ -1,7 +1,7 @@
 all: 
 	cython pure.pyx
-	gcc -O2 -fPIC -c pure.c -I/usr/include/python2.6 -lpure -lm -lint
-	gcc -shared pure.o -o pure.so -lm -lpure
+	gcc -O3 -fPIC -c pure.c -I/usr/include/python2.6 -lpure
+	gcc -shared pure.o -o pure.so -lpure
 
 clean:
 	rm -f *.so
