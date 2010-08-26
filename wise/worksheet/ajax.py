@@ -83,22 +83,24 @@ def apply_rule(request):
                          'new_json': new_json,
                          'namespace_index': uid.next()[3:]})
 
-ruleslist = '''
+ruleslist = haml('''
 {% load custom_tags %}
-<ul>
-{% for rule in rules%}
-    <li><a class='ruletoplevel' href="javascript:apply_rule({{rule.0.id}},null);">{{ rule.0.name }}</a>
-        <a class='expand'>[+]</a>
-        <ul style="display: none">
-        {% for subrule in rule.1 %}
-            <li><a
-            href="javascript:apply_rule({{rule.0.id}},{{subrule.id}});">{{ subrule.annotation|brak2tex }}</a></li>
-        {% endfor %}
-        </ul>
-    </li>
-{% endfor %}
-</ul>
-'''
+ul
+    {% for rule in rules%}
+    li
+        li
+            a.ruletoplevel href="javascript:apply_rule({{rule.0.id}},null);"
+                {{ rule.0.name }}
+            a.expand
+                [+]
+            ul style="display: none"
+            {% for subrule in rule.1 %}
+                li
+                    a href="javascript:apply_rule({{rule.0.id}},{{subrule.id}});"
+                        {{ subrule.annotation|brak2tex }}
+            {% endfor %}
+    {% endfor %}
+''')
 
 @login_required
 @errors
@@ -119,16 +121,16 @@ def rules_request(request):
 # Symbols ------------------
 #---------------------------
 
-symbolslist = '''
-<table style="width: 100%">
-{% for symbol in symbols%}
-    <tr>
-    <td>{{ symbol.0 }}</td>
-    <td>{{ symbol.1 }}</td>
-    <tr>
-{% endfor %}
-</table>
-'''
+symbolslist = haml('''
+table style="width: 100%"
+    {% for symbol in symbols%}
+    tr
+        td
+            {{ symbol.0 }}
+        td
+            {{ symbol.1 }}
+    {% endfor %}
+''')
 
 @login_required
 @errors
@@ -147,14 +149,14 @@ def symbols_request(request):
 #---------------------------
 
 functionslist = '''
-<table style="width: 100%">
-{% for function in functions%}
-    <tr>
-    <td>{{ function.0 }}</td>
-    <td>{{ function.1 }}</td>
-    <tr>
-{% endfor %}
-</table>
+table style="width: 100%"
+    {% for symbol in symbols%}
+    tr
+        td
+            {{ function.0 }}
+        td
+            {{ function.1 }}
+    {% endfor %}
 '''
 
 @login_required
@@ -430,15 +432,6 @@ def receive(request):
 
     inserted = translate.parse_sexp(obj, uid )
     received = translate.parse_sexp(receiver, uid )
-
-    #inserted = mathobjects.ParseTree(obj)
-    #received = mathobjects.ParseTree(receiver)
-
-    #inserted.gen_uids(uid)
-    #received.gen_uids(uid)
-
-    #inserted = inserted.eval_args()
-    #received = received.eval_args()
 
     new = received.receive(inserted,receiver_context,sender_type,sender_context,new_position)
     new.idgen = uid

@@ -9,6 +9,7 @@
 # License, or (at your option) any later version.
 
 import worksheet.js as js
+import worksheet.exceptions
 from worksheet.utils import *
 
 #from worksheet.mathobjects import *
@@ -217,13 +218,6 @@ class Term(object):
         return self.get_javascript()
 
 
-class PlaceholderInExpression(Exception):
-    def __init__(self):
-        self.value = 'A Placeholder was found in the equation and cannot be evaluated'
-
-    def __str__(self):
-        return self.value
-
 placeholder_html = haml('''
 #{{id}} {{class}} .{{sensitive}} .drag_placeholder .term math="{{math}}" math-type="{{type}}" title="{{type}}" math-meta-class="term" group="{{group}}"
     span.empty
@@ -239,7 +233,7 @@ class Placeholder(Term):
         self.latex = '$\\text{Placeholder}$'
 
     def _pure_(self):
-        raise PlaceholderInExpression()
+        raise exceptions.PlaceholderInExpression()
 
     def get_math(self):
         return '(Placeholder )'
