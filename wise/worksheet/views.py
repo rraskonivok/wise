@@ -16,12 +16,13 @@ from transforms import get_transform_by_path
 
 import mathobjects
 from translate import parse_sexp
+import panel
 
 from logger import debug, getlogger
 
 from decorator import decorator
 
-from django import template
+from django.template import Template, Context
 
 from django.conf import settings
 from django.core import serializers
@@ -383,13 +384,22 @@ palette_template = '''
 {% endfor %}
 '''
 
+palette_template = '''
+{% for panel in panels %}
+    <h3><a href="#">{{ panel.name }}</a></h3>
+    <div>
+        {{ panel.html }}
+    </div>
+{% endfor %}
+'''
+
 @errors
 def generate_palette():
     #TODO Be able to include snippts of html as widgets in the
     #palette
 
-    def Placeholder():
-        return mathobjects.Placeholder()
+    #def Placeholder():
+    #    return mathobjects.Placeholder()
 
     #constants = {'name': 'Constants', 'type': 'array', 'objects': [
     #                mathobjects.E().get_html(),
@@ -397,15 +407,15 @@ def generate_palette():
     #                mathobjects.Khinchin().get_html(),
     #            ]}
 
-    import string
-    lettervariables = [mathobjects.Variable(letter).get_html() for letter in string.lowercase]
+    #import string
+    #lettervariables = [mathobjects.Variable(letter).get_html() for letter in string.lowercase]
 
     #patternmatching = {'name': 'Pattern Matching', 'type': 'array', 'objects': [
     #                mathobjects.FreeFunction('f').get_html(),
     #                mathobjects.Variable('u').get_html(),
     #            ]}
 
-    variables = {'name': 'Variables', 'type': 'array', 'objects': lettervariables }
+    #variables = {'name': 'Variables', 'type': 'array', 'objects': lettervariables }
     #customvariables = {'name': 'Custom', 'type': 'widget', 'url': 'customvariable'}
 
     #trig = {'name': 'Functions', 'type': 'tabular', 'objects': [
@@ -447,9 +457,14 @@ def generate_palette():
     #palette = [trig,variables,operations,numbers,physics,constants,
     #        patternmatching, customvariables]
 
-    palette = [variables]
 
-    interface_ui = template.Template(palette_template)
-    c = template.Context({'palette':palette})
+    render_panels = []
+
+    for pnl in panel.panels.itervalues():
+        pnl.html = pnl.get_html()
+        render_panels.append(pnl)
+
+    interface_ui = Template(palette_template)
+    c = Context({'panels':render_panels})
 
     return HttpResponse(interface_ui.render(c))

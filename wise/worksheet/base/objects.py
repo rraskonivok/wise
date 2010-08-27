@@ -219,8 +219,8 @@ class Term(object):
 
 
 placeholder_html = haml('''
-#{{id}} {{class}} .{{sensitive}} .drag_placeholder .term math="{{math}}" math-type="{{type}}" title="{{type}}" math-meta-class="term" group="{{group}}"
-    span.empty
+#{{id}}.{{class}}.{{sensitive}}.drag_placeholder.term math="{{math}}" math-type="{{type}}" title="{{type}}" math-meta-class="term" group="{{group}}"
+    PASS
 ''')
 
 class Placeholder(Term):
@@ -1391,7 +1391,7 @@ class Negate(Operation):
             self.show_parenthesis = True
 
     def _pure_(self):
-       return pure.po(self.operand._pure_())
+       return self.po(self.operand._pure_())
 
     @fallback(Term.combine_fallback)
     def combine(self,other,context):
