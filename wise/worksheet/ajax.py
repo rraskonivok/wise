@@ -12,7 +12,7 @@
 
 import translate
 import mathobjects
-import base
+import transforms
 
 from django import template
 
@@ -88,12 +88,13 @@ ruleslist = haml('''
 ul
     {% for rule in rules%}
     li
-        li
-            a.ruletoplevel href="javascript:apply_rule({{rule.0.id}},null);"
-                {{ rule.0.name }}
-            a.expand
-                [+]
-            ul style="display: none"
+        a.ruletoplevel href="javascript:apply_rule({{rule.0.id}},null);"
+            {{ rule.0.name }}
+
+        a.expand
+            [+]
+
+        ul style="display: none"
             {% for subrule in rule.1 %}
                 li
                     a href="javascript:apply_rule({{rule.0.id}},{{subrule.id}});"
@@ -104,7 +105,7 @@ ul
 
 @login_required
 @errors
-@cache_page(CACHE_INTERVAL)
+#@cache_page(CACHE_INTERVAL)
 def rules_request(request):
     ruleset = RuleSet.objects.filter(owner=request.user)
     subrules = []
@@ -294,7 +295,11 @@ def apply_transform(request):
 
     args = [translate.parse_sexp(cde, uid) for cde in code]
 
-    transform = mathobjects.algebra.__dict__[transform]
+    #try:
+    pack, fun = transform.split('/')
+    transform = transforms.get_transform_by_path(pack, fun)
+    #except KeyError:
+    #    raise exception.NoSuchTransform(transform)
 
     #Ugly hack to allow us to pass the uid generator and use it
     # in the middle of a transformation in case we need to

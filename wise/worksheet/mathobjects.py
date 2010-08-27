@@ -11,7 +11,6 @@
 from wise.worksheet.utils import *
 from wise.worksheet.models import Symbol, Function, Rule
 import wise.worksheet.exceptions as exception
-import pure_wrap
 
 #-------------------------------------------------------------
 # Pure Wrapper

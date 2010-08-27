@@ -952,7 +952,7 @@ operation_html_infix = haml('''
     {% for o in operand %}
     {{ o }}
     {% if not forloop.last %}
-    #{{ forloop.counter }} .ui-state-disabled.infix math-type="times" math-meta-class="sugar"
+    .ui-state-disabled.infix math-type="times" math-meta-class="sugar"
         $${{symbol}}$$
     {% endif %}
     {% endfor %}

@@ -10,6 +10,7 @@
 
 import traceback
 import parser
+from transforms import get_transform_by_path
 
 import mathobjects
 from translate import parse_sexp

@@ -19,8 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from logger import debug
 
-from library_utils import *
-from library_utils import _
+from wise.library_utils import *
+from wise.library_utils import _
 
 #from wise.worksheet.mathobjects import *
 #
