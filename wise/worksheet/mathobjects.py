@@ -12,6 +12,8 @@ from wise.worksheet.utils import *
 from wise.worksheet.models import Symbol, Function, Rule
 import wise.worksheet.exceptions as exception
 
+from pure_wrap import generate_pure_objects
+
 #-------------------------------------------------------------
 # Pure Wrapper
 #-------------------------------------------------------------
@@ -76,8 +78,7 @@ from base.objects import *
 # Transforms
 #-------------------------------------------------------------
 
-#generate_translation(root=Term)
-#generate_translation(root=Equation)
-#generate_pure_objects(root=Term)
-#generate_pure_objects(root=Equation)
-
+generate_translation(root=Term)
+generate_translation(root=Equation)
+generate_pure_objects(root=Term)
+generate_pure_objects(root=Equation)

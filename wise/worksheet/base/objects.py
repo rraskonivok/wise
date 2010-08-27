@@ -8,7 +8,7 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
-from wise.worksheet.pure_wrap import PureSymbol
+from wise.worksheet.pure_wrap import PureSymbol, PureInt
 
 import worksheet.js as js
 import worksheet.exceptions
@@ -382,7 +382,7 @@ class RefSymbol(Variable):
         self.args = str(obj.id)
 
     def _pure_(self):
-        return pure.ref(pure.PureInt(int(self.args)))
+        return pure.ref(PureInt(int(self.args)))
 
 fraction_html = haml('''
 #{{id}}.fraction.container math-meta-class="term" math-type="{{type}}" group="{{group}}"
@@ -451,7 +451,7 @@ class Numeric(Term):
         self.latex = number
 
     def _pure_(self):
-        return pure.PureInt(self.number)
+        return PureInt(self.number)
 
     def get_html(self):
         c = template.Context({
@@ -835,7 +835,7 @@ class Definition(Equation):
 
     def _pure_(self):
         if self.lhs.hash != self.rhs.hash:
-            return pure.PureRule(self.lhs._pure_(),self.rhs._pure_())
+            return pure_wrap.PureRule(self.lhs._pure_(),self.rhs._pure_())
         else:
             print "Definition is infinitely recursive."
 
@@ -1251,7 +1251,7 @@ class RefOperator(Operation):
 
     def _pure_(self):
         args = [o._pure_() for o in self.terms]
-        return pure.refop(pure.PureInt(int(self.index)))(*args)
+        return pure.refop(PureInt(int(self.index)))(*args)
 
 class Addition(Operation):
     ui_style = 'infix'
