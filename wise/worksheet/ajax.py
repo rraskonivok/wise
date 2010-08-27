@@ -8,11 +8,11 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
-# Foundational math objects
-
 import translate
+
 import mathobjects
 import transforms
+import rules
 
 from django import template
 
@@ -50,7 +50,6 @@ def apply_rule(request):
 
     args = [translate.parse_sexp(cde, uid) for cde in code]
     print 'sexp', args[0]
-    transform = mathobjects.algebra.ReduceWithRules
 
     #Ugly hack to allow us to pass the uid generator and use it
     # in the middle of a transformation in case we need to
@@ -68,10 +67,10 @@ def apply_rule(request):
     #Apply all rules in the ruleset
     else:
         rs = RuleSet.objects.get(id=set_id)
-        rules = Rule.objects.filter(set=rs,confluent=True).order_by('index')
-        rule_strings = [rule.pure for rule in rules]
+        rules_q = Rule.objects.filter(set=rs,confluent=True).order_by('index')
+        rule_strings = [rule.pure for rule in rules_q]
 
-    new = transform(rule_strings,args[0])
+    new = rules.ReduceWithRules(rule_strings,args[0])
 
     new.idgen = uid
     new.ensure_id()
@@ -295,11 +294,11 @@ def apply_transform(request):
 
     args = [translate.parse_sexp(cde, uid) for cde in code]
 
-    #try:
-    pack, fun = transform.split('/')
-    transform = transforms.get_transform_by_path(pack, fun)
-    #except KeyError:
-    #    raise exception.NoSuchTransform(transform)
+    try:
+        pack, fun = transform.split('/')
+        transform = transforms.get_transform_by_path(pack, fun)
+    except KeyError:
+        raise exception.NoSuchTransform(transform)
 
     #Ugly hack to allow us to pass the uid generator and use it
     # in the middle of a transformation in case we need to

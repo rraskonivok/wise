@@ -8,6 +8,8 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
+import pure_wrap
+
 import traceback
 import parser
 from transforms import get_transform_by_path

@@ -8,11 +8,11 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
+from wise.worksheet.pure_wrap import PureSymbol
+
 import worksheet.js as js
 import worksheet.exceptions
 from worksheet.utils import *
-
-#from worksheet.mathobjects import *
 
 from django import template
 from django.utils.safestring import SafeUnicode
@@ -341,7 +341,7 @@ class Variable(Base_Symbol):
         self.args = str(symbol)
 
     def _pure_(self):
-        return pure.PureSymbol(self.symbol)
+        return PureSymbol(self.symbol)
 
 #Free abstract function (of a single variable at this time)
 class FreeFunction(Base_Symbol):
@@ -356,14 +356,14 @@ class FreeFunction(Base_Symbol):
     def _pure_(self):
         #LHS
         if self.side is 0:
-            return pure.PureSymbol(self.symbol + '@_')(pure.PureSymbol('u'))
+            return PureSymbol(self.symbol + '@_')(PureSymbol('u'))
         #RHS
         else:
-            return pure.PureSymbol(self.symbol)(pure.PureSymbol('u'))
+            return PureSymbol(self.symbol)(PureSymbol('u'))
 
 class Wildcard(Variable):
     def _pure_(self):
-        return pure.PureSymbol('_')
+        return PureSymbol('_')
 
 #Reference to a user-defined symbol
 class RefSymbol(Variable):

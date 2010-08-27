@@ -143,7 +143,12 @@ def purify(obj):
 
 def hasharray(lst):
     '''Return a hash of a list, not guaranteed to be collision
-    free'''
+    free, but good enough for most purposes'''
+    return hash(reduce(xor, lst))
+
+def hashdict(lst):
+    '''Return a hash of a dict, not guaranteed to be collision
+    free, but good enough for most purposes'''
     return hash(reduce(xor, lst))
 
 class crcdigest(object):

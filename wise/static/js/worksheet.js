@@ -19,9 +19,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //Optimization Tips:
 //http://net.tutsplus.com/tutorials/javascript-ajax/10-ways-to-instantly-increase-your-jquery-performance/
 //http://www.codenothing.com/archives/2010/8-jquery-micro-optimization-tips/
+
 ///////////////////////////////////////////////////////////
 // Utilities
 ///////////////////////////////////////////////////////////
+
+// Nerf the console.log function so that it doesn't accidently
+// break if Firebug / JS Consle is turned off.
+
+// Source: http://paulirish.com/2009/log-a-lightweight-wrapper-for-consolelog/
+window.log = function(){
+  log.history = log.history || [];   // store logs to an array for reference
+  log.history.push(arguments);
+  if(this.console){
+    console.log( Array.prototype.slice.call(arguments) );
+  }
+};
+
 $.fn.exists = function () {
     return jQuery(this).length > 0;
 }

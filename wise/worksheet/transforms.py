@@ -10,6 +10,7 @@ from django.utils import importlib
 
 import wise.worksheet.exceptions as exception
 from wise.library_utils import is_mapping
+from wise.worksheet.utils import hashdict
 
 ROOT_MODULE = 'wise.worksheet'
 packages = {}
@@ -20,7 +21,8 @@ transforms = {}
 
 for pack in settings.INSTALLED_MATH_PACKAGES:
     try:
-        packages[pack] = importlib.import_module('wise.worksheet.' + pack + '.transforms')
+        path = '.'.join([ROOT_MODULE,pack,'transforms'])
+        packages[pack] = importlib.import_module(path)
         for name, symbol in packages[pack].__dict__.iteritems():
             # We short circuit in this order since is_mapping is simply a hash lookup while
             # isinstance is potentially costly
@@ -38,4 +40,7 @@ def get_transform_by_path(pack, fun):
 def get_transform_by_str(fun):
     return transforms[fun]
 
-#print 'Import hash:', hash(transforms)
+# Hash the keys of the importing transforms, guaranteed to be unique to the specific
+# combinations of imported libraries.
+if settings.DEBUG:
+    print 'Aggregated transforms have hash ...', hashdict(transforms.iterkeys())

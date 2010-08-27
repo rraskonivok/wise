@@ -76,10 +76,6 @@ from base.objects import *
 # Transforms
 #-------------------------------------------------------------
 
-#import algebra
-
-#print [i.domain for i in algebra.mappings]
-
 #generate_translation(root=Term)
 #generate_translation(root=Equation)
 #generate_pure_objects(root=Term)
