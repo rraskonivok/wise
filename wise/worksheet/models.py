@@ -19,15 +19,16 @@ class RuleSet(models.Model):
 
 class Rule(models.Model):
     pure = models.TextField(max_length=10000,blank=False, null=False)
-    # Should allow for a blob of pure code which does not
-    # neccesarily translate into internal code, for more
-    # complicated things we wish to write only in pure.
     sexp = models.TextField(max_length=10000,blank=False, null=False)
     set = models.ForeignKey(RuleSet, blank=False, null=False)
     index = models.IntegerField(blank=False,null=False)
     annotation = models.TextField(max_length=100)
     confluent = models.BooleanField(blank=False, null=False)
     public = models.BooleanField(blank=False, null=False)
+    # True if the rule is a refernce to a symbol defined in the
+    # prelude referenced by a Sexp string of the form:
+    # package / symbol
+    external = models.BooleanField(blank=False, null=False)
 
     def __unicode__(self):
         return str(self.set) + ' ' + self.sexp[0:25]

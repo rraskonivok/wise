@@ -16,7 +16,7 @@ urlpatterns = patterns('',
 
      #Worksheet
      (r'^ws/(?P<eq_id>\d+)/$', 'wise.worksheet.views.ws'),
-     (r'^ws/(?P<eq_id>\d+)/save/$', 'wise.worksheet.views.save_workspace'),
+     (r'^ws/(?P<eq_id>\d+)/save/$', 'wise.worksheet.ajax.save_workspace'),
      (r'^palette/$', 'wise.worksheet.views.palette'),
      (r'^new_workspace/$', 'wise.worksheet.views.new_workspace'),
      (r'^del_workspace/$', 'wise.worksheet.views.del_workspace'),
@@ -29,13 +29,13 @@ urlpatterns = patterns('',
      (r'^cmds/apply_rule/$', 'wise.worksheet.ajax.apply_rule'),
      (r'^cmds/apply_transform/$', 'wise.worksheet.ajax.apply_transform'),
      (r'^cmds/pure_parse/$', 'wise.worksheet.ajax.pure_parse'),
-     (r'^cmds/json_tree/$', 'wise.worksheet.ajax.json_tree'),
+     (r'^cmds/json_tree/$', 'wise.worksheet.views.json_tree'),
      (r'^cmds/combine/$', 'wise.worksheet.ajax.combine'),
 
      #Rules
      (r'^rule/$', 'wise.worksheet.views.rules_list'),
      (r'^rule/(?P<rule_id>\d+)/$', 'wise.worksheet.views.rule'),
-     (r'^rule/(?P<rule_id>\d+)/save/$', 'wise.worksheet.views.save_ruleset'),
+     (r'^rule/(?P<rule_id>\d+)/save/$', 'wise.worksheet.ajax.save_ruleset'),
      (r'^rule/new/$', 'wise.worksheet.views.sym_update'),
      (r'^rule_request/$', 'wise.worksheet.ajax.rules_request'),
 

@@ -8,7 +8,6 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
-
 import traceback
 from decorator import decorator
 from logger import debug, getlogger

@@ -43,4 +43,4 @@ def get_transform_by_str(fun):
 # Hash the keys of the importing transforms, guaranteed to be unique to the specific
 # combinations of imported libraries.
 if settings.DEBUG:
-    print 'Aggregated transforms have hash ...', hashdict(transforms.iterkeys())
+    print 'Aggregated transforms have checksum ...', hashdict(transforms.iterkeys())

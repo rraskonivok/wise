@@ -60,23 +60,23 @@ $.fn.swap = function (b) {
 
 $.fn.id = function () {
     return $(this).attr('id')
-}
+};
 
 $.fn.math = function () {
     return $(this).attr('math')
-}
+};
 
 $.fn.group = function () {
     return $(this).attr('group')
-}
+};
 
 $.fn.mathtype = function () {
     return $(this).attr('math-type')
-}
+};
 
 $.fn.node = function () {
     return NODES[$(this).id()]
-}
+};
 
 $.extend($.fn.disableTextSelect = function () {
     return this.each(function () {

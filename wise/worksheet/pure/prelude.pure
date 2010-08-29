@@ -1,7 +1,6 @@
 using math;
 using set;
 
-
 // -------------
 // Basic properties
 // -------------
@@ -22,5 +21,7 @@ is_complex;
 
 neg x = Neg x;
 
-x + y = add x y;
-x * y = mul x y;
+stupid X = reduce X
+with
+    x = 128;
+end;

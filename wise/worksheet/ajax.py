@@ -13,6 +13,7 @@ import translate
 import mathobjects
 import transforms
 import rules
+import pure_wrap
 
 from django import template
 
@@ -49,6 +50,10 @@ def apply_rule(request):
     uid = uidgen(namespace_index)
 
     args = [translate.parse_sexp(cde, uid) for cde in code]
+
+    # We'll just leave this as an array for now until we add
+    # support for handling multiple expressions at once
+
     print 'sexp', args[0]
 
     #Ugly hack to allow us to pass the uid generator and use it
@@ -59,18 +64,31 @@ def apply_rule(request):
         arg.idgen = uid
 
 
-    #Apply a specific rule
+    # Load a specific rule
     if rule_id:
         rule = Rule.objects.get(id=rule_id)
         rule_strings = [rule.pure]
 
-    #Apply all rules in the ruleset
+    # Load all rules in the ruleset
     else:
         rs = RuleSet.objects.get(id=set_id)
         rules_q = Rule.objects.filter(set=rs,confluent=True).order_by('index')
         rule_strings = [rule.pure for rule in rules_q]
 
-    new = rules.ReduceWithRules(rule_strings,args[0])
+    # If the Rule is flagged as an external reference go fetch it
+    if rule.external == True:
+        try:
+            pack, symbol = rule.pure.split('/')
+        except ValueError:
+            raise Exception("Reference to external pure symbol is not well-formed: %s" % rule.pure)
+
+        print 'Lookup!!', pure_wrap.__dict__[symbol]
+        ref = pure_wrap.__dict__[symbol]
+        new = rules.ReduceWithExternalRule(ref,args[0])
+
+    # ... otherwise build it up from the given sexp string.
+    else:
+        new = rules.ReduceWithRules(rule_strings,args[0])
 
     new.idgen = uid
     new.ensure_id()
@@ -85,7 +103,7 @@ def apply_rule(request):
 ruleslist = haml('''
 {% load custom_tags %}
 ul
-    {% for rule in rules%}
+    {% for rule in rules %}
     li
         a.ruletoplevel href="javascript:apply_rule({{rule.0.id}},null);"
             {{ rule.0.name }}
