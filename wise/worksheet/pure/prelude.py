@@ -5,8 +5,8 @@ except ImportError:
     raise Exception('Could not load Cython Pure module, perhaps it needs to be built?')
 
 env.eval('using worksheet::pure::prelude')
-stupid = env.eval('stupid')
-print 'Stupid', stupid
+#stupid = env.eval('stupid')
+#print 'Stupid', stupid
 
 ref = PureSymbol('wiseref')
 refop = PureSymbol('wiserefop')

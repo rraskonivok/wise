@@ -21,7 +21,7 @@ is_complex;
 
 neg x = Neg x;
 
-stupid X = reduce X
-with
-    x = 128;
-end;
+//stupid X = reduce X
+//with
+//    x = 128;
+//end;

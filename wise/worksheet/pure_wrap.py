@@ -15,29 +15,44 @@ try:
 except:
     raise Exception('Could not load Pure prelude, all other Pure dependencies will fail.')
 
+# Wrap the atomic Pure objects up into this namespace.
+PureInt = pure.prelude.PureInt
+PureSymbol = pure.prelude.PureSymbol
+PureLevel = pure.prelude.PureLevel
+PureExpr = pure.prelude.PureExpr
+env = pure.prelude.env
+
+# This is called freqently enough that we'll push it up.
+reduce_with_pure_rules = pure.prelude.reduce_with_pure_rules
+
 ROOT_MODULE = 'wise.worksheet'
 packages = {}
 objects = {}
 
+def use(package, library):
+    print 'using ' + '::'.join([ROOT_MODULE.split('.')[1], package, library])
+    env.eval('using ' + '::'.join([ROOT_MODULE.split('.')[1], package, library]))
+
 def is_pure_expr(obj):
-    return isinstance(obj,pure.prelude.PureExpr)
+    return isinstance(obj,PureExpr)
 
 for pack in settings.INSTALLED_MATH_PACKAGES:
     try:
         path = '.'.join([ROOT_MODULE,pack,'prelude'])
         packages[pack] = importlib.import_module(path)
+        use(pack,'prelude')
         for name, obj in packages[pack].__dict__.iteritems():
-            print 'looking at', name
             if is_pure_expr(obj):
+                print "Importing symbol '%s' from pack %s" % (name, pack)
                 objects[name] = obj
     except ImportError:
         raise exception.IncompletePackage(pack,'prelude.py')
 
 print objects
-
+stupid = packages['base'].stupid
 
 # Traverse the root class and process all classes that inherit from
-# it
+# it, these are stored in in the internal .po method of the class
 def generate_pure_objects(root):
     if root.pure:
         #print 'Building Cython symbol for ... ', root.pure
@@ -46,11 +61,4 @@ def generate_pure_objects(root):
     for cls in root.__subclasses__():
         generate_pure_objects(cls)
 
-# Wrap the atomic Pure objects up into this namespace.
-PureInt = pure.prelude.PureInt
-PureSymbol = pure.prelude.PureSymbol
-PureLevel = pure.prelude.PureLevel
-stupid = pure.prelude.stupid
 
-# This is called freqently enough that we'll push it up.
-reduce_with_pure_rules = pure.prelude.reduce_with_pure_rules

@@ -82,9 +82,9 @@ def apply_rule(request):
         except ValueError:
             raise Exception("Reference to external pure symbol is not well-formed: %s" % rule.pure)
 
-        print 'Lookup!!', pure_wrap.__dict__[symbol]
-        ref = pure_wrap.__dict__[symbol]
-        new = rules.ReduceWithExternalRule(ref,args[0])
+        print 'Lookup!!', pure_wrap.objects[symbol]
+        ref = pure_wrap.objects[symbol]
+        new = rules.ApplyExternalRule(ref,args[0])
 
     # ... otherwise build it up from the given sexp string.
     else:
