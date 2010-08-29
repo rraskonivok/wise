@@ -1,0 +1,6 @@
+using infix_wrap;
+
+stupid X = reduce X
+with
+    x = z + epsilon;
+end;

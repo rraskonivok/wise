@@ -6,5 +6,5 @@ except ImportError:
 # !!!!!!!
 # Yah, this is ugly, we'd like to move this into a pure solution
 # in pure_wrap.py
-env.eval('using worksheet::base::prelude')
-stupid = env.eval('stupid')
+use('base','prelude')
+stupid = PureSymbol('stupid')

@@ -44,12 +44,14 @@ for pack in settings.INSTALLED_MATH_PACKAGES:
         for name, obj in packages[pack].__dict__.iteritems():
             if is_pure_expr(obj):
                 print "Importing symbol '%s' from pack %s" % (name, pack)
-                objects[name] = obj
+                if not name in objects:
+                    objects[name] = obj
+                else:
+                    raise Exception("Namespace collision, tried to import '%s' from package '%s' but symbol already exists")
     except ImportError:
         raise exception.IncompletePackage(pack,'prelude.py')
 
 print objects
-stupid = packages['base'].stupid
 
 # Traverse the root class and process all classes that inherit from
 # it, these are stored in in the internal .po method of the class
