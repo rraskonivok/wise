@@ -1,5 +1,5 @@
 cimport pure
-cimport python_exc
+cimport cpython
 
 current_interp = None
 env = PureEnv()
@@ -17,7 +17,7 @@ cdef class PureEnv:
             cargs[i] = args[i]
         self._interp = pure.pure_create_interp(1,cargs)
         if self._interp is NULL:
-            python_exc.PyErr_NoMemory()
+            cpython.PyErr_NoMemory()
         global current_interp
         current_interp = self
         self.locals = []
