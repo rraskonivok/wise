@@ -1,15 +1,34 @@
 from django.conf import settings
 from django.utils import importlib
-import wise.worksheet.exceptions as exception
 
+import wise.worksheet.exceptions as exception
 from wise.worksheet.utils import haml
-from types import ClassType, InstanceType
+from wise.worksheet.base.objects import Term, Placeholder
+
+from types import ClassType, InstanceType, TypeType
 from inspect import getargspec
 from django.template import Template, Context
 
 ROOT_MODULE = 'wise.worksheet'
 packages = {}
 panels = {}
+
+def _map_panel_types(obj):
+    if isinstance(obj, TypeType):
+        # Get the number of arguments the __init__ function for
+        # the mathobject takes and substitute placeholder in for
+        # each argument
+        args, varargs, keywords, defaults = getargspec(obj.__init__)
+        try:
+            # decrement the len(args) since we ignore the self
+            placeholder_tuple = (Placeholder(),)*(len(args) - 1)
+            return obj(*placeholder_tuple)
+        except TypeError:
+            print 'Type Error',args
+    elif isinstance(obj, Term):
+        return obj
+    else:
+        print 'Invalid object in panel', isinstance(obj, ClassType), isinstance(obj,InstanceType), isinstance(obj, TypeType) ,type(obj)
 
 class Panel:
     def get_html(self):
@@ -20,10 +39,10 @@ class Panel:
 
 tablular_template = haml('''
 <table class="palette">
-    {% for name, html in objects %}
+    {% for object in objects %}
         <tr>
-            <td>{{ name }}</td>
-            <td>{{ html }}</td>
+            <td>{{ object.0 }}</td>
+            <td>{{ object.1 }}</td>
         </tr>
     {% endfor %}
 </table>
@@ -40,7 +59,13 @@ class TabularPanel(Panel):
 
     def __init__(self, name, objects):
         self.name = name
-        self.objects = objects
+        self.objects = [(label, _map_panel_types(obj)) for label,obj in objects]
+
+    def get_html(self):
+        interface_ui = self.template
+        objects = [(label, obj.get_html()) for label,obj in self.objects]
+        c = Context({'name':self.name, 'objects': objects})
+        return interface_ui.render(c)
 
 
 class ArrayPanel(Panel):
@@ -48,7 +73,8 @@ class ArrayPanel(Panel):
 
     def __init__(self, name, objects):
         self.name = name
-        self.objects = objects
+        self.objects = map(_map_panel_types, objects)
+
 
 def is_panel(obj):
     return isinstance(obj,Panel)
@@ -65,5 +91,3 @@ for pack in settings.INSTALLED_MATH_PACKAGES:
                 panels[name] = symbol
     except ImportError:
         raise exception.IncompletePackage(pack,'panel.py')
-
-print panels

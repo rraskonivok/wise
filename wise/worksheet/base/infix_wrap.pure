@@ -2,3 +2,4 @@ x + y = add x y;
 x * y = mul x y;
 x / y = rational x y;
 x - y = add x (Neg y);
+x ^ y = powr x y;

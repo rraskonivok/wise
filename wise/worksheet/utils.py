@@ -8,6 +8,7 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
+import os.path
 import traceback
 from decorator import decorator
 from logger import debug, getlogger
@@ -135,6 +136,14 @@ def spaceiter(list):
 
 def purify(obj):
     return obj._pure_()
+
+def load_template(fname):
+    import sys
+    print sys.modules[__name__].__file__
+    if os.path.isfile(fname):
+        return open(fname).read()
+    else:
+        raise IOError("Cannot read template: %s" % fname)
 
 #-------------------------------------------------------------
 # Hashing

@@ -298,14 +298,48 @@ class Tex(object):
         return template.Template(tex_template).render(c)
 
 greek_alphabet = {
-        'alpha': '\\alpha',
-        'beta': '\\beta',
-        'gamma': '\\gamma',
-        'delta': '\\delta',
-        'epsilon': '\\varepsilon',
-        'pi': '\\pi',
+        'alpha'  :  '\\alpha',
+        'beta'   :  '\\beta',
+        'gamma'  :  '\\gamma',
+        'delta'  :  '\\delta',
+        'epsilo' :  '\\epsilon',
+        'vareps' :  '\\varepsilon',
+        'zeta'   :  '\\zeta',
+        'eta'    :  '\\eta',
+        'theta'  :  '\\theta',
+        'varthe' :  '\\vartheta',
+        'gamma'  :  '\\gamma',
+        'kappa'  :  '\\kappa',
+        'lambda' :  '\\lambda',
+        'mu'     :  '\\mu',
+        'nu'     :  '\\nu',
+        'xi'     :  '\\xi',
+        'pi'     :  '\\pi',
+        'varpi'  :  '\\varpi',
+        'rho'    :  '\\rho',
+        'varrho' :  '\\varrho',
+        'sigma'  :  '\\sigma',
+        'varsig' :  '\\varsigma',
+        'tau'    :  '\\tau',
+        'upsilon':  '\\upsilon',
+        'phi'    :  '\\phi',
+        'varphi' :  '\\varphi',
+        'chi'    :  '\\chi',
+        'psi'    :  '\\psi',
+        'omega'  :  '\\omega',
+        'Gamma'  :  '\\Gamma' ,
+        'Delta'  :  '\\Delta' ,
+        'Theta'  :  '\\Theta' ,
+        'Lambda' :  '\\Lambda',
+        'Xi'     :  '\\Xi'    , 
+        'Pi'     :  '\\Pi'    , 
+        'Sigma'  :  '\\Sigma' ,
+        'Upsilon':  '\\Upsilon',
+        'Phi'    :  '\\Phi'   , 
+        'Psi'    :  '\\Psi'   , 
+        'Omega'  :  '\\Omega' , 
         }
-
+ 
 def greek_lookup(s):
     try:
         return greek_alphabet[s]
@@ -316,7 +350,7 @@ class Base_Symbol(Term):
     sensitive = True
 
     def __init__(self,symbol):
-        self.args = "'%s'" % symbol
+        self.args = "'%s'" % greek_lookup(symbol)
         self.symbol = greek_lookup(symbol)
         self.latex = greek_lookup(symbol)
 
@@ -708,15 +742,6 @@ class Equation(object):
 
         #self.lhs.ensure_id()
         #self.rhs.ensure_id()
-
-    def down(self,other):
-        if type(other) is Numeric:
-            self.lhs = LHS(*[Fraction(term,other) for term in self.lhs.terms])
-            self.rhs = RHS(*[Fraction(term,other) for term in self.rhs.terms])
-            self.rhs.group = self.id
-            self.lhs.group = self.id
-
-        return self.get_html()
 
 rhs_html = '''
 <span id='{{id}}' math-type="RHS" math-meta-class="side" math="{{math}}" group="{{group}}" class="container">
@@ -1259,7 +1284,12 @@ class Addition(Operation):
     show_parenthesis = False
     pure = 'add'
 
-    def __init__(self,*terms):
+    def __init__(self,fst,snd=None):
+        if snd:
+            terms = [fst, snd]
+        else:
+            terms = [fst]
+
         self.terms = list(terms)
 
         #If we have nested Additions collapse them Ex: 
@@ -1317,7 +1347,7 @@ class Product(Operation):
             if type(term) is Addition:
                 term.show_parenthesis = True
         self.operand = self.terms
-        make_sortable(self)
+        #make_sortable(self)
         #self.ui_sortable()
 
     def remove(self,obj,remove_context):
@@ -1331,13 +1361,21 @@ class Product(Operation):
            pterms = map(lambda o: o._pure_() , self.terms)
            return self.po(*pterms)
 
-power_html = '''
-#{{id}} group="{{group}}" .term.{{class}}.{{sensitive}} math-type="{{type}}" math-meta-class="term" math="{{math}}"
+power_html = haml('''
+#{{id}} .term.{{sensitive}} math-type="{{type}}" math-meta-class="term" math="{{math}}" group="{{group}}" 
+
     .base
         {{base}}
+
     sup.exponent
         {{exponent}}
-'''
+''')
+
+import sys
+print sys.modules[__name__].__file__
+# prints out /home/stephen/GIT/wise/wise/../wise/worksheet/base/objects.py
+# strip out the end part and tack on template fname
+power_html = load_template('worksheet/base/power.tpl')
 
 class Power(Operation):
     sensitive = True
@@ -1351,7 +1389,7 @@ class Power(Operation):
         basetype = type(self.base)
         if basetype is Fraction or isinstance(self.base, Operation):
             self.base.show_parenthesis = True
-        make_sortable(self)
+        #make_sortable(self)
 
     def _pure_(self):
         return self.po(self.base._pure_() , self.exponent._pure_())

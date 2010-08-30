@@ -7,4 +7,6 @@ except ImportError:
 # Yah, this is ugly, we'd like to move this into a pure solution
 # in pure_wrap.py
 use('base','prelude')
+
 stupid = PureSymbol('stupid')
+canon_algebra = PureSymbol('canon_algebra')
