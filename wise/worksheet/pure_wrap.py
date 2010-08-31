@@ -38,7 +38,7 @@ def is_pure_expr(obj):
 
 for pack in settings.INSTALLED_MATH_PACKAGES:
     try:
-        path = '.'.join([ROOT_MODULE,pack,'prelude'])
+        path = '.'.join([ROOT_MODULE,pack,pack])
         packages[pack] = importlib.import_module(path)
         use(pack,'prelude')
         for name, obj in packages[pack].__dict__.iteritems():
@@ -49,7 +49,7 @@ for pack in settings.INSTALLED_MATH_PACKAGES:
                 else:
                     raise Exception("Namespace collision, tried to import '%s' from package '%s' but symbol already exists")
     except ImportError:
-        raise exception.IncompletePackage(pack,'prelude.py')
+        raise exception.IncompletePackage(pack,'%s.py' % pack)
 
 print objects
 

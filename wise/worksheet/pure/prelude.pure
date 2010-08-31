@@ -20,8 +20,3 @@ is_real;
 is_complex;
 
 neg x = Neg x;
-
-//stupid X = reduce X
-//with
-//    x = 128;
-//end;

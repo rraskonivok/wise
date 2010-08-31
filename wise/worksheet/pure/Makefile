@@ -4,6 +4,4 @@ all:
 	gcc -shared pure.o -o pure.so -lpure
 
 clean:
-	rm -f *.so
-	rm -f *.o
-	rm -f *.pyc
+	rm -f *.so *.o *.pyc

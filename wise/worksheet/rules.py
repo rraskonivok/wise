@@ -43,7 +43,7 @@ def ApplyExternalRule( ref, expr ):
 
     pexpr = translate.python_to_pure(expr)
     pure_expr = ref(pexpr)
-    
+
     print 'Reduced:', pure_expr
 
     #debug(str(pexpr) + ' ----> ' + str(pure_expr))

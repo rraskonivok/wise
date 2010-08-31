@@ -1375,7 +1375,7 @@ import sys
 print sys.modules[__name__].__file__
 # prints out /home/stephen/GIT/wise/wise/../wise/worksheet/base/objects.py
 # strip out the end part and tack on template fname
-power_html = load_template('worksheet/base/power.tpl')
+#power_html = load_template('worksheet/base/power.tpl')
 
 class Power(Operation):
     sensitive = True
@@ -1418,7 +1418,7 @@ class Negate(Operation):
 
     # Capitalize since "neg" already exists in the default Pure
     # predule.
-    pure = 'Neg'
+    pure = 'neg'
 
     def __init__(self,operand):
         self.operand = operand

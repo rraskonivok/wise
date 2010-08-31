@@ -9,4 +9,4 @@ except ImportError:
 use('base','prelude')
 
 stupid = PureSymbol('stupid')
-canon_algebra = PureSymbol('canon_algebra')
+algebra_normal = PureSymbol('algebra_normal')
