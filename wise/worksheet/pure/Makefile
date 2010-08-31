@@ -1,7 +1,27 @@
-all: 
-	cython pure.pyx
-	gcc -O3 -fPIC -c pure.c -I/usr/include/python2.6 -lpure
-	gcc -shared pure.o -o pure.so -lpure
+TARGET  := pure.so
+PYSRC  := pure.pyx
+CSRC    := ${PYSRC:.pyx=.c} 
+OBJS   := ${PYSRC:.pyx=.o} 
+
+PYTHONPATH = /usr/include/python2.6
+
+CCFLAGS = -O3 -Wall -fPIC -I$(PYTHONPATH)
+LDFLAGS = -shared
+LIBS    = -lpure
+
+.PHONY: all clean distclean 
+all:: ${TARGET} 
+
+${TARGET}: ${OBJS} 
+	${CC} ${LDFLAGS} -o $@ $^ ${LIBS} 
+
+${OBJS}: %.o: %.c ${CSRC}
+	${CC} ${CCFLAGS} -o $@ -c $< 
+
+${CSRC}: $(PYSRC)
+	cython $<
 
 clean:
-	rm -f *.so *.o *.pyc
+	-rm -f *~ ${CSRC} ${OBJS} ${TARGET} *.pyc *.pyo
+
+distclean:: clean
