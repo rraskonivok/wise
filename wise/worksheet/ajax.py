@@ -17,6 +17,7 @@ import pure_wrap
 
 from django import template
 
+from django.shortcuts import render_to_response
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 
@@ -100,26 +101,6 @@ def apply_rule(request):
                          'new_json': new_json,
                          'namespace_index': uid.next()[3:]})
 
-ruleslist = haml('''
-{% load custom_tags %}
-ul
-    {% for rule in rules %}
-    li
-        a.ruletoplevel href="javascript:apply_rule({{rule.0.id}},null);"
-            {{ rule.0.name }}
-
-        a.expand
-            [+]
-
-        ul style="display: none"
-            {% for subrule in rule.1 %}
-                li
-                    a href="javascript:apply_rule({{rule.0.id}},{{subrule.id}});"
-                        {{ subrule.annotation|brak2tex }}
-            {% endfor %}
-    {% endfor %}
-''')
-
 @login_required
 @errors
 #@cache_page(CACHE_INTERVAL)
@@ -131,64 +112,36 @@ def rules_request(request):
         rss = Rule.objects.filter(set=rs,public=True).order_by('index')
         subrules.append(rss)
 
-    lst = template.Template(ruleslist)
-    c = template.Context({'rules':zip(ruleset,subrules)})
-    return HttpResponse(lst.render(c))
+    return render_haml_to_response('ruleslist.tpl', {'rules':zip(ruleset,subrules)})
 
 #---------------------------
 # Symbols ------------------
 #---------------------------
 
-symbolslist = haml('''
-table style="width: 100%"
-    {% for symbol in symbols%}
-    tr
-        td
-            {{ symbol.0 }}
-        td
-            {{ symbol.1 }}
-    {% endfor %}
-''')
-
 @login_required
 @errors
-@cache_page(CACHE_INTERVAL)
+#@cache_page(CACHE_INTERVAL)
 def symbols_request(request):
     symbols = Symbol.objects.filter(owner=request.user)
     symbols_html = [mathobjects.RefSymbol(sym).get_html() for sym in symbols]
     descriptions = [sym.desc for sym in symbols]
 
-    lst = template.Template(symbolslist)
-    c = template.Context({'symbols':zip(symbols_html,descriptions)})
-    return HttpResponse(lst.render(c))
+    return render_haml_to_response('symbolslist.tpl',{'symbols':zip(symbols_html,descriptions)})
 
 #---------------------------
 # Functions ----------------
 #---------------------------
 
-functionslist = '''
-table style="width: 100%"
-    {% for symbol in symbols%}
-    tr
-        td
-            {{ function.0 }}
-        td
-            {{ function.1 }}
-    {% endfor %}
-'''
-
 @login_required
 @errors
-@cache_page(CACHE_INTERVAL)
+#@cache_page(CACHE_INTERVAL)
 def functions_request(request):
     ph = mathobjects.Placeholder()
     functions = Function.objects.filter(owner=request.user)
     functions_html = [mathobjects.RefOperator(fun,ph).get_html() for fun in functions]
     descriptions = [fun.desc for fun in functions]
 
-    lst = template.Template(functionslist)
-    c = template.Context({'functions':zip(functions_html,descriptions)})
-    return HttpResponse(lst.render(c))
+    return render_haml_to_response('functionslist.tpl',{'functions':zip(functions_html,descriptions)})
 
 @login_required
 @errors

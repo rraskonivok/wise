@@ -28,7 +28,7 @@ from django.conf import settings
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render_to_response
 from django.utils import simplejson as json
 from django.utils.html import strip_spaces_between_tags as strip_whitespace
 from django.contrib.auth import authenticate, login, logout
@@ -86,28 +86,15 @@ def home(request):
     workspaces = Workspace.objects.filter(owner=request.user)
     return render_to_response('home.html', {'workspaces': workspaces})
 
-log_page = '''
-<html>
-<head>
-</head>
-<body onLoad="window.location='#bottom';">
-{{log|safe}}
-<a name="bottom">
-</body>
-<script language="javascript">
-    setTimeout("location.reload(true);",2000);
-    window.location='#bottom';
-</script>
-</html>
-'''
-
 def log(request):
     log = open('session.log').read()
     log_html = log.replace("\n","<br />\n")
 
-    lst = template.Template(log_page)
-    c = template.Context({'log':log_html})
-    return HttpResponse(lst.render(c))
+    return render_to_response('log.html', {'log': log_html})
+
+    #lst = template.Template(log_page)
+    #c = template.Context({'log':log_html})
+    #return HttpResponse(lst.render(c))
 
 #---------------------------
 # Rules --------------------
@@ -212,7 +199,6 @@ def symbols_list(request):
 
     return render_to_response('symbols_list.html', {'symbols': symbols})
 
-
 #---------------------------
 # Functions ----------------
 #---------------------------
@@ -250,11 +236,9 @@ def fun_update(request, sym_id):
 
     return HttpResponseRedirect('/sym')
 
-
 #@cache_page(CACHE_INTERVAL)
 def palette(request):
     return generate_palette()
-
 
 @login_required
 @errors
@@ -284,7 +268,13 @@ def ws(request, eq_id):
             return HttpResponse('Cell is empty.')
 
         for eq in eqs:
-            etree = parse_sexp(eq.code, uid)
+            try:
+                etree = parse_sexp(eq.code, uid)
+            except NameError:
+                if settings.DEBUG:
+                    pass
+                else:
+                    return HttpResponse('This worksheet contains symbols that are not installed')
 
             #eqtext = eq.code
             #tree = mathobjects.ParseTree(eqtext)
@@ -395,69 +385,6 @@ palette_template = '''
 
 @errors
 def generate_palette():
-    #TODO Be able to include snippts of html as widgets in the
-    #palette
-
-    #def Placeholder():
-    #    return mathobjects.Placeholder()
-
-    #constants = {'name': 'Constants', 'type': 'array', 'objects': [
-    #                mathobjects.E().get_html(),
-    #                mathobjects.Pi().get_html(),
-    #                mathobjects.Khinchin().get_html(),
-    #            ]}
-
-    #import string
-    #lettervariables = [mathobjects.Variable(letter).get_html() for letter in string.lowercase]
-
-    #patternmatching = {'name': 'Pattern Matching', 'type': 'array', 'objects': [
-    #                mathobjects.FreeFunction('f').get_html(),
-    #                mathobjects.Variable('u').get_html(),
-    #            ]}
-
-    #variables = {'name': 'Variables', 'type': 'array', 'objects': lettervariables }
-    #customvariables = {'name': 'Custom', 'type': 'widget', 'url': 'customvariable'}
-
-    #trig = {'name': 'Functions', 'type': 'tabular', 'objects': [
-    #                ('Sine', mathobjects.Sine(Placeholder()).get_html()),
-    #                ('Cosine', mathobjects.Cosine(Placeholder()).get_html()),
-    #                ('Tangent', mathobjects.Tangent(Placeholder()).get_html()),
-    #                ('Secant', mathobjects.Secant(Placeholder()).get_html()),
-    #                ('Cosecant', mathobjects.Cosecant(Placeholder()).get_html()),
-    #                ('Cotangent', mathobjects.Cotangent(Placeholder()).get_html()),
-    #                ('Logarithm', mathobjects.Log(Placeholder()).get_html()),
-    #            ]}
-
-    #operations = {'name': 'Operations', 'type': 'tabular', 'objects': [
-    #                ('Addition', mathobjects.Addition(*[Placeholder(),Placeholder()]).get_html()),
-    #                ('Negation', mathobjects.Negate(Placeholder()).get_html()),
-    #                ('Product', mathobjects.Product(*[Placeholder(),Placeholder()]).get_html()),
-    #                ('Fraction', mathobjects.Fraction(Placeholder(),Placeholder()).get_html()),
-    #                ('Power', mathobjects.Power(Placeholder(),Placeholder()).get_html()),
-    #                ('Abs', mathobjects.Abs(Placeholder()).get_html()),
-    #                ('Dagger', mathobjects.Dagger(Placeholder()).get_html()),
-    #                ('Wedge', mathobjects.Wedge(Placeholder(),Placeholder()).get_html()),
-    #                ('Dot Product', mathobjects.Dot(Placeholder(),Placeholder()).get_html()),
-    #                ('Cross Product', mathobjects.Cross(Placeholder(),Placeholder()).get_html()),
-    #                ('Integral', mathobjects.Integral(Placeholder(),mathobjects.Differential(Placeholder())).get_html()),
-    #                ('Partial Derivative', mathobjects.Diff(Placeholder(),Placeholder()).get_html()),
-    #                ('Derivative', mathobjects.FDiff(Placeholder(),Placeholder()).get_html()),
-    #                ('Laplacian', mathobjects.Laplacian(Placeholder()).get_html()),
-    #            ]}
-
-    #numbers = {'name': 'Numbers', 'type': 'array', 'objects': [
-    #                mathobjects.Numeric(x).get_html() for x in range(0,10)
-    #            ]}
-
-    #physics = {'name': 'Physics', 'type': 'tabular', 'objects': [
-    #                ('Length', mathobjects.Length(Placeholder()).get_html()),
-    #                ('Vector', mathobjects.Vector(Placeholder()).get_html()),
-    #            ]}
-
-    #palette = [trig,variables,operations,numbers,physics,constants,
-    #        patternmatching, customvariables]
-
-
     render_panels = []
 
     for pnl in panel.panels.itervalues():

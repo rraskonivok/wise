@@ -15,6 +15,8 @@ from logger import debug, getlogger
 from operator import xor 
 from binascii import crc32
 
+from django import template
+from django.template import loader
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.utils.html import strip_spaces_between_tags as strip_whitespace
@@ -74,6 +76,13 @@ class JsonResponse(HttpResponse):
     ''' HttpResponse descendant, which return response with ``application/json`` mimetype.  '''
     def __init__(self, data):
         super(JsonResponse, self).__init__(content=json.dumps(data), mimetype='application/json')
+
+
+@errors
+def render_haml_to_response(tname, context):
+    tps, tpo = loader.find_template_source(tname)
+    tpl = template.Template(haml(tps))
+    return HttpResponse(tpl.render(template.Context(context)))
 
 def unencode(s):
     '''Convert unicode to iso-8859-1'''
