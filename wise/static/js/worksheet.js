@@ -1054,7 +1054,7 @@ function traverse_lines() {
     //containing their math-type
     //$('#workspace *[title]').tooltip({track:true});
     $('#workspace *[math-meta-class=term]').unbind('click');
-    $('#palette *[math-meta-class=term]').unbind('click');
+    $('#palette .placeholder').unbind('click');
     $('#rtoolbar *[math-meta-class=term]').unbind('click');
 
 /*$('#workspace *[title]').simpletip(
@@ -1069,7 +1069,7 @@ function traverse_lines() {
         event.stopPropagation()
     });
 
-    $('#palette *[math-meta-class=term]').click(
+    $('#palette *[math-meta-class=term]').not('.placeholder').click(
 
     function (event) {
         select_term(this);
@@ -1507,8 +1507,8 @@ function duplicate_placeholder(placeholder) {
 }
 
 function next_placeholder(start) {
-    last = $('.lines .drag_placeholder:last')
-    first = $('.lines .drag_placeholder:first')
+    last = $('.lines .placeholder:last')
+    first = $('.lines .placeholder:first')
 
     if (!start) {
         if (selection.nth(0).exists()) {
@@ -1526,7 +1526,7 @@ function next_placeholder(start) {
         return
     }
 
-    placeholders = $('.lines .drag_placeholder')
+    placeholders = $('.lines .placeholder')
 
     var i = 0;
     for (i = 0; i <= placeholders.length; i++) {

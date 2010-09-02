@@ -1,26 +1,20 @@
 /*
-Wise
-Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+ *
+ Wise
+ Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+ 
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as
+ published by the Free Software Foundation, either version 3 of the
+ License, or (at your option) any later version.
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as
-published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 ::selection { background: transparent; }
 ::-moz-selection { background: transparent; }
 
-/*
-  Beamer Fly Colorscheme
+/* Modelled after the Beamer fly colorscheme
+
   0   0   0 fly text
    64  64  64   fly added grey
    #404040
@@ -272,7 +266,7 @@ input.search {
     margin-top: -5px;
 }
 
-.drag_placeholder {
+.placeholder {
     border: 1px dashed #d4a5a5 !important;
     min-height: 20px;
     padding-left: 10px;
@@ -282,7 +276,7 @@ input.search {
     opacity: 1.0 !important;
 }
 
-.drag_placeholder.selected {
+.placeholder.selected {
     background-color: #d4a5a5;
 }
 
@@ -324,6 +318,16 @@ input.search {
     font-size: 10px;
     overflow: hidden;
     padding: 0px !important;
+}
+
+#palette .term:not(.placeholder):hover {
+    border-bottom: 5px solid #9CBD86;
+    margin-bottom: -5px;
+}
+
+#palette .container:not(.placeholder):hover {
+    border-top: 5px solid #989CD7;
+    margin-top: -5px;
 }
 
 .ui-layout-east { /* content-div has Accordion */
@@ -492,6 +496,7 @@ html > body .ui-pnotify {
 	float: left;
 	margin-right: .2em;
 }
+
 /* History Pulldown
 ----------------------------------*/
 .ui-pnotify-history-container {

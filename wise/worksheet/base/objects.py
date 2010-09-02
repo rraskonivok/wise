@@ -236,6 +236,7 @@ class Term(object):
 class Placeholder(Term):
     '''A placeholder for substitution'''
 
+    css_class = 'placeholder'
     sensitive = False
     html = load_haml_template('placeholder.tpl')
 
@@ -300,12 +301,12 @@ greek_alphabet = {
         'beta'   :  '\\beta',
         'gamma'  :  '\\gamma',
         'delta'  :  '\\delta',
-        'epsilo' :  '\\epsilon',
-        'vareps' :  '\\varepsilon',
+        'epsilon' :  '\\epsilon',
+        'varepsilon' :  '\\varepsilon',
         'zeta'   :  '\\zeta',
         'eta'    :  '\\eta',
         'theta'  :  '\\theta',
-        'varthe' :  '\\vartheta',
+        'vartheta' :  '\\vartheta',
         'gamma'  :  '\\gamma',
         'kappa'  :  '\\kappa',
         'lambda' :  '\\lambda',
@@ -317,7 +318,7 @@ greek_alphabet = {
         'rho'    :  '\\rho',
         'varrho' :  '\\varrho',
         'sigma'  :  '\\sigma',
-        'varsig' :  '\\varsigma',
+        'varsigma' :  '\\varsigma',
         'tau'    :  '\\tau',
         'upsilon':  '\\upsilon',
         'phi'    :  '\\phi',
@@ -329,15 +330,15 @@ greek_alphabet = {
         'Delta'  :  '\\Delta' ,
         'Theta'  :  '\\Theta' ,
         'Lambda' :  '\\Lambda',
-        'Xi'     :  '\\Xi'    , 
-        'Pi'     :  '\\Pi'    , 
+        'Xi'     :  '\\Xi'    ,
+        'Pi'     :  '\\Pi'    ,
         'Sigma'  :  '\\Sigma' ,
         'Upsilon':  '\\Upsilon',
-        'Phi'    :  '\\Phi'   , 
-        'Psi'    :  '\\Psi'   , 
-        'Omega'  :  '\\Omega' , 
+        'Phi'    :  '\\Phi'   ,
+        'Psi'    :  '\\Psi'   ,
+        'Omega'  :  '\\Omega' ,
         }
- 
+
 def greek_lookup(s):
     try:
         return greek_alphabet[s]
@@ -352,8 +353,10 @@ class Base_Symbol(Term):
 
 class Greek(Base_Symbol):
     sensitive = True
+
     def __init__(self,symbol):
         self.symbol = symbol
+        self.latex = greek_alphabet[symbol]
         self.args = "'%s'" % symbol
 
 class Variable(Base_Symbol):

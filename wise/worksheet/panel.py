@@ -21,7 +21,9 @@ def _map_panel_types(obj):
         args, varargs, keywords, defaults = getargspec(obj.__init__)
         try:
             # decrement the len(args) since we ignore the self
-            placeholder_tuple = (Placeholder(),)*(len(args) - 1)
+            ph = Placeholder
+            ph.sensitive = False
+            placeholder_tuple = (ph(),)*(len(args) - 1)
             return obj(*placeholder_tuple)
         except TypeError:
             print 'Type Error',args
