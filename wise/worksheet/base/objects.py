@@ -19,29 +19,53 @@ from django import template
 from django.utils.safestring import SafeUnicode
 
 class Term(object):
+    '''The base class for all other math objects.'''
 
-    args = None
-
-    latex = '$Error$'
-    is_negative = False
-    html = load_haml_template('term.tpl')
-    javascript_template = js.javascript_template
-    group = None
-    css_class = ''
-    id = None
-    terms = []
-    javascript = SafeUnicode()
-    has_sort = False
-
-    _is_constant = False
-    idgen = None
+    args = None # Static arguments used to initialze object
+    terms = []  # Term objects as arguments to
+    group = None # Expressions that object is embeeded in
     parent = None
+
+    id = None # The unique ID used to track the object clientside
+    idgen = None # A instance of a uid generator
+
+    # HTML / HAML template used to render object
+    html = load_haml_template('term.tpl')
+    latex = None # LaTeX code used in rendering object
+    css_class = None # Extra styling in addition to .term class
+
+    javascript = SafeUnicode()
+    javascript_template = js.javascript_template
+    has_sort = False # Can be reordered with jQuery sortable
+
     side = None # 0 if on LHS, 1 if on RHS
+
+
+    #############################################################
+    ######### Pure Translation ##################################
+    #############################################################
+
+    # self.pure property is automatically scraped off the object
+    # at program initialization and translated into a PureSymbol
+    # instance which is stored in self.po
+    #
+    # self.pure *must* be unique and must also not conflict with
+    # any reserved names in the Pure namespace
+    # 
+    # For example for Addition has Addition.pure = 'add' which
+    # runs the command in pure_wrap PureSymbol('add') and stores
+    # the resulting Cython object inside Addition.po . 
+    # When the # Addition._pure_ method is called 
+    # Addition.po( arg1, arg2 ) is instantiated 
+
+    # This results in a pure function application pure_funcapp 
+    # Addition.po( arg1.po, arg2.po ) 
+
+    # Note: If no pure property is specified the object is
+    # entirely internal and cannot be used except in Python
+
     pure = None # The symbol used in pure expression
     po = None   # Reference to the type of object
-
-    def __init__(self,*ex):
-        print 'Anonymous Term was caught with arguments',ex
 
     #############################################################
     ######### Essential Methods for All Math Objects ############
@@ -49,6 +73,9 @@ class Term(object):
 
     # Every interaction between Math Objects requires that these
     # methods exist
+
+    def __init__(self,*args,**kwargs):
+        raise Exception('Anonymous Term was caught with arguments ' + (args,kwargs))
 
     def _pure_(self):
         raise PureError('No pure representation of %s.' % self.classname)
@@ -191,11 +218,6 @@ class Term(object):
                 result = self.get_html() + infix_symbol_html(Product.symbol) +  other.get_html()
                 return result,[self,other]
 
-        elif context == 'Wedge':
-            if isinstance(other,Term):
-                result = self.get_html() + infix_symbol_html(Wedge.symbol) +  other.get_html()
-                return result,[self,other]
-
     def combine(self,other,context):
         return self.combine_fallback(other,context)
 
@@ -325,13 +347,8 @@ def greek_lookup(s):
 class Base_Symbol(Term):
     sensitive = True
 
-    def __init__(self,symbol):
-        self.args = "'%s'" % greek_lookup(symbol)
-        self.symbol = greek_lookup(symbol)
-        self.latex = greek_lookup(symbol)
-
-    def _pure_(self):
-        return pure.var(self.symbol)
+    def __init__(self,*args):
+        pass
 
 class Greek(Base_Symbol):
     sensitive = True
@@ -339,8 +356,9 @@ class Greek(Base_Symbol):
         self.symbol = symbol
         self.args = "'%s'" % symbol
 
-#A free variable
 class Variable(Base_Symbol):
+    '''A free variable'''
+
     assumptions = None
     bounds = None
     pure = 'var'
@@ -432,10 +450,14 @@ class Rational(Term):
         #    den = self.den
         #    return Fraction(num,den).get_html()
 
+class Infinity(Base_Symbol):
+    latex = '\\infty'
+    symbol = 'inf'
+    pure = 'inf'
+    args = "'inf'"
+
 class Numeric(Term):
-    type = 'numeric'
     sensitive = True
-    _is_constant = True
 
     def __init__(self,number):
 
@@ -509,6 +531,12 @@ def Zero():
 
 def One():
     return Numeric(1)
+
+class ImaginaryUnit(Base_Symbol):
+    latex = 'i'
+    symbol = 'i'
+    pure = 'i'
+    args = "'i'"
 
 #-------------------------------------------------------------
 # Top Level Elements
@@ -974,6 +1002,18 @@ class Operation(Term):
         if len(self.terms) == 1:
             return True
 
+class PrefixOperation(Operation):
+    ui_style = 'prefix'
+
+class InfixOperation(Operation):
+    ui_style = 'infix'
+
+class PostfixOperation(Operation):
+    ui_style = 'postfix'
+
+class PostfixOperation(Operation):
+    ui_style = 'postfix'
+
 class RefOperator(Operation):
     def __init__(self, obj, *operands):
         if isinstance(obj, unicode) or isinstance(obj,str):
@@ -1062,7 +1102,12 @@ class Product(Operation):
     show_parenthesis = False
     pure = 'mul'
 
-    def __init__(self,*terms):
+    def __init__(self,fst,snd=None):
+        if snd:
+            terms = [fst, snd]
+        else:
+            terms = [fst]
+
         self.terms = list(terms)
 
         for term in self.terms:
@@ -1145,3 +1190,6 @@ class Negate(Operation):
         if context == 'Addition':
             if isinstance(other,Negate):
                 return Negate(Addition(self.operand, other.operand))
+
+    def negate(self):
+        return self.operand
