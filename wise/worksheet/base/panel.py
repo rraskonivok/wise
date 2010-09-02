@@ -5,7 +5,13 @@ from wise.worksheet.panel import TabularPanel, ArrayPanel
 #TODO: @extends decorator to append to existing panel
 
 lettervariables = [objects.Variable(letter) for letter in string.lowercase]
-greek_alphabet = ['alpha', 'beta', 'gamma', 'delta', 'epsilon', 'varepsilon', 'zeta', 'eta', 'theta', 'vartheta', 'gamma', 'kappa', 'lambda', 'mu', 'nu', 'xi', 'pi', 'varpi', 'rho', 'varrho', 'sigma', 'varsigma', 'tau', 'upsilon', 'phi', 'varphi', 'chi', 'psi', 'omega']
+greek_alphabet = ['alpha', 'beta', 'gamma', 'delta', 'epsilon',
+'varepsilon', 'zeta', 'eta', 'theta', 'vartheta', 'gamma',
+'kappa', 'lambda', 'mu', 'nu', 'xi', 'pi', 'varpi', 'rho',
+'varrho', 'sigma', 'varsigma', 'tau', 'upsilon', 'phi', 'varphi',
+'chi', 'psi', 'omega', 'Gamma', 'Delta', 'Theta', 'Lambda', 'Xi',
+'Pi', 'Sigma', 'Upsilon', 'Phi', 'Psi', 'Omega']
+
 greek_symbols = map(objects.Greek, greek_alphabet)
 
 Variables = ArrayPanel(name='Variables',

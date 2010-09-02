@@ -52,11 +52,6 @@ def apply_rule(request):
 
     args = [translate.parse_sexp(cde, uid) for cde in code]
 
-    # We'll just leave this as an array for now until we add
-    # support for handling multiple expressions at once
-
-    print 'sexp', args[0]
-
     #Ugly hack to allow us to pass the uid generator and use it
     # in the middle of a transformation in case we need to
     # generate a whole new batch of uids (like when converting
@@ -83,7 +78,6 @@ def apply_rule(request):
         except ValueError:
             raise Exception("Reference to external pure symbol is not well-formed: %s" % rule.pure)
 
-        print 'Lookup!!', pure_wrap.objects[symbol]
         ref = pure_wrap.objects[symbol]
         new = rules.ApplyExternalRule(ref,args[0])
 

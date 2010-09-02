@@ -1,6 +1,10 @@
 import translate
 from pure_wrap import PureLevel, reduce_with_pure_rules
 from worksheet.utils import hasharray
+import wise.worksheet.exceptions as exception
+
+from django.utils import importlib
+from django.conf import settings
 
 # A lookup table mapping previously run rules to their
 # Cython equivelents to avoid the cost of translation
@@ -44,7 +48,45 @@ def ApplyExternalRule( ref, expr ):
     pexpr = translate.python_to_pure(expr)
     pure_expr = ref(pexpr)
 
-    print 'Reduced:', pure_expr
+    pyexpr = translate.pure_to_python(pure_expr,expr.idgen)
 
-    #debug(str(pexpr) + ' ----> ' + str(pure_expr))
-    return translate.pure_to_python(pure_expr,expr.idgen)
+    print 'Applying Rule:', ref, '\n--'
+    print 'Input Sexp:', expr
+    print 'Input Pure:', pexpr
+    print 'Reduced Sexp:', pyexpr
+    print 'Reduced Pure:', pure_expr
+
+    return pyexpr
+
+class PublicRule:
+    def __init__(self, pure_symbol_name):
+        return
+
+    def get_html(self):
+        interface_ui = self.template
+        objects = [obj.get_html() for obj in self.objects]
+        c = Context({'name':self.name, 'objects': objects})
+        return interface_ui.render(c)
+
+def is_rule(obj):
+    return isinstance(obj,PublicRule)
+
+packages = {}
+rulesets = {}
+
+ROOT_MODULE = 'wise.worksheet'
+
+for pack in settings.INSTALLED_MATH_PACKAGES:
+    try:
+        path = '.'.join([ROOT_MODULE,pack,'rules'])
+        packages[pack] = importlib.import_module(path)
+        for name, symbol in packages[pack].__dict__.iteritems():
+            if is_rule(symbol):
+                if settings.DEBUG:
+                    print "Importing ruleset ... %s/%s" % (pack, name)
+
+                rulesets[name] = symbol
+    except ImportError:
+        raise exception.IncompletePackage(pack,'rules.py')
+
+print rulesets

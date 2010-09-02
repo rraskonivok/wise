@@ -52,6 +52,9 @@ def translate_pure(key):
 #    Then q(y) should be true for objects y of type S where S is
 #    a subtype of T.
 
+# Yah, yah I know this is bad but who really cares since we're
+# only acting on internal enviromental variables
+
 from base.objects import *
 
 #-------------------------------------------------------------

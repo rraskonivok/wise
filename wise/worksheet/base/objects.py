@@ -78,10 +78,10 @@ class Term(object):
         raise Exception('Anonymous Term was caught with arguments ' + (args,kwargs))
 
     def _pure_(self):
-        raise PureError('No pure representation of %s.' % self.classname)
+        raise exception.PureError('No pure representation of %s.' % self.classname)
 
     def _latex_(self):
-        raise PureError('No LaTeX representation of %s.' % self.classname)
+        raise exception.PureError('No LaTeX representation of %s.' % self.classname)
 
     def get_html(self):
         c = template.Context({
@@ -353,11 +353,15 @@ class Base_Symbol(Term):
 
 class Greek(Base_Symbol):
     sensitive = True
+    pure = 'greek'
 
     def __init__(self,symbol):
         self.symbol = symbol
         self.latex = greek_alphabet[symbol]
-        self.args = "'%s'" % symbol
+        self.args = "%s" % symbol
+
+    def _pure_(self):
+        return self.po(PureSymbol(self.symbol))
 
 class Variable(Base_Symbol):
     '''A free variable'''
