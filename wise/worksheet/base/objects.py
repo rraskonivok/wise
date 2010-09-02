@@ -8,6 +8,7 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
+from wise.worksheet.utils import render_haml_to_response
 from wise.worksheet.pure_wrap import PureSymbol, PureInt
 
 import worksheet.js as js
@@ -17,19 +18,13 @@ from worksheet.utils import *
 from django import template
 from django.utils.safestring import SafeUnicode
 
-term_html = haml('''
-#{{id}}.{{class}}.{{sensitive}}.term math="{{math}}" math-type="{{type}}" title="{{type}}" math-meta-class="term" group="{{group}}"
-    .noselect
-        ${{latex}}$
-''')
-
 class Term(object):
 
     args = None
 
     latex = '$Error$'
     is_negative = False
-    html = template.Template(term_html)
+    html = load_haml_template('term.tpl')
     javascript_template = js.javascript_template
     group = None
     css_class = ''
@@ -213,21 +208,14 @@ class Term(object):
         other.ensure_id()
 
         self.has_sort = True
-        #TODO: add support for binding callbacks to python methods... later
         self.javascript = js.make_sortable(self,other).get_html()
         return self.get_javascript()
-
-
-placeholder_html = haml('''
-#{{id}}.{{class}}.{{sensitive}}.drag_placeholder.term math="{{math}}" math-type="{{type}}" title="{{type}}" math-meta-class="term" group="{{group}}"
-    PASS
-''')
 
 class Placeholder(Term):
     '''A placeholder for substitution'''
 
     sensitive = False
-    html = template.Template(placeholder_html)
+    html = load_haml_template('placeholder.tpl')
 
     def __init__(self):
         self.latex = '$\\text{Placeholder}$'
@@ -260,31 +248,19 @@ class Text(Term):
     def __init__(self,text):
         self.latex = '\\text{' + text + '}'
 
-pureblob_template = '''
-div
-    img src="/static/pure.png" style="vertical-align: middle"
-    Pure Blob - <em>{{annotation}}</em>
-'''
-
 class PureBlob(Term):
-    '''Pure code with no internal representation, Pure Blob'''
+    html = load_haml_template('pureblob.tpl')
     def __init__(self):
         pass
 
     def get_html(self):
         c = template.Context({'annotation': self.annotation})
-
-        return template.Template(pureblob_template).render(c)
-
-tex_template = '''
-.operator math-type="operator" math-meta-class="operator" group="{{group}}" title="{{type}}"
-    $${{tex}}$$
-
-'''
+        return self.html.render(c)
 
 class Tex(object):
     '''LaTeX sugar for operators'''
     tex = None
+    html = load_haml_template('tex.tpl')
 
     def __init__(self,tex):
         self.tex = tex
@@ -295,7 +271,7 @@ class Tex(object):
             'type': 'Tex',
             'tex': self.tex})
 
-        return template.Template(tex_template).render(c)
+        return self.html.render(c)
 
 greek_alphabet = {
         'alpha'  :  '\\alpha',
@@ -479,7 +455,6 @@ class Numeric(Term):
 
     def __init__(self,number):
 
-        # TODO We shouldn't assume integers
         self.number = int(number)
         self.args = str(number)
         self.latex = number
@@ -901,176 +876,10 @@ class Definition(Equation):
 # Operations
 #-------------------------------------------------------------
 
-operation_html_postfix = '''
-<span id="{{id}}" math-meta-class="term" class="term {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
-
-    <span class="parenthesis">
-    {{operand}}
-    </span>
-
-    <span class="operator" math-type="operator" math-meta-class="operator" group="{{id}}">
-    $${{symbol}}$$
-    </span>
-</span>
-'''
-
-operation_html_prefix = '''
-<span id="{{id}}" math-meta-class="term" class="container {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
-    <span class="operator {{class}}" math-type="operator"
-        math-meta-class="operator" group="{{id}}" title="{{type}}" >$${{symbol}}$$
-    </span>
-
-    {% if parenthesis %}
-    <span class="ui-state-disabled pnths left">
-       &Ograve;
-    </span>
-    {% endif %}
-
-    <span class="">
-    {{operand}}
-    </span>
-
-    {% if parenthesis %}
-    <span class="ui-state-disabled pnths right">
-       &Oacute;
-    </span>
-    {% endif %}
-
-</span>
-'''
-
-operation_html_outfix = '''
-    <span id="{{id}}" math-meta-class="term" class="container {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
-
-    {{symbol1}}
-
-    {% if parenthesis %}
-    <span class="ui-state-disabled pnths left">
-       &Ograve;
-    </span>
-    {% endif %}
-
-    <span class="parenthesis">
-    {{operand}}
-    </span>
-
-    {% if parenthesis %}
-    <span class="ui-state-disabled pnths right">
-       &Oacute;
-    </span>
-    {% endif %}
-
-    {{symbol2}}
-
-    </span>
-'''
-
-#The unicode here comes from cmex10 font for parentheses
-
-operation_html_infix = haml('''
-#{{id}}.{{class}}.container math-meta-class="term"  math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}"
-    {% if parenthesis %}
-    .ui-state-disabled.pnths.left
-       &Ograve;
-    {% endif %}
-
-    {% for o in operand %}
-    {{ o }}
-    {% if not forloop.last %}
-    .ui-state-disabled.infix math-type="times" math-meta-class="sugar"
-        $${{symbol}}$$
-    {% endif %}
-    {% endfor %}
-
-    {% if parenthesis %}
-
-    .ui-state-disabled.pnths.right
-       &Oacute;
-
-    {% endif %}
-
-{{jscript}}
-''')
-
-operation_html_sup = '''
-<span id="{{id}}" math-meta-class="term" class="container {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
-
-    {% if parenthesis %}
-    <span class="ui-state-disabled pnths left">
-       &Ograve;
-    </span>
-    {% endif %}
-
-    <span class="">
-    {{operand}}
-    </span>
-
-    <sup>
-    {{symbol1}}
-    </sup>
-
-    {% if parenthesis %}
-    <span class="ui-state-disabled pnths right">
-       &Oacute;
-    </span>
-    {% endif %}
-
-</span>
-'''
-
-operation_html_sub = '''
-<span id="{{id}}" math-meta-class="term" class="container {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
-
-    {% if parenthesis %}
-    <span class="ui-state-disabled pnths left">
-       &Ograve;
-    </span>
-    {% endif %}
-
-    <span class="">
-    {{operand}}
-    </span>
-
-    <sub>
-    {{symbol1}}
-    </sub>
-
-    {% if parenthesis %}
-    <span class="ui-state-disabled pnths right">
-       &Oacute;
-    </span>
-    {% endif %}
-
-</span>
-'''
-
-operation_html_latex = '''
-<span id="{{id}}" math-meta-class="term" class="container {{class}}{{sensitive}}" math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
-
-    {% if parenthesis %}
-    <span class="ui-state-disabled pnths left">
-       &Ograve;
-    </span>
-    {% endif %}
-
-    <span class="{{class}}">
-    {{operand}}
-    </span>
-
-    {% if parenthesis %}
-    <span class="ui-state-disabled pnths right">
-       &Oacute;
-    </span>
-    {% endif %}
-
-</span>
-'''
-
 infix_symbol_template = haml('''
 .ui-state-disabled.infix.term math-type="infix" math-meta-class="sugar"
     $${{%s}}$$
 ''')
-
 
 def infix_symbol_html(symbol):
     return infix_symbol_template % symbol
@@ -1118,7 +927,7 @@ class Operation(Term):
 
         #Infix Formatting
         if self.ui_style == 'infix':
-            self.html = template.Template(operation_html_infix)
+            self.html = load_haml_template('infix.tpl')
             objects = [o.get_html() for o in self.terms]
 
             c = template.Context({
@@ -1137,7 +946,7 @@ class Operation(Term):
 
         #Outfix Formatting
         elif self.ui_style == 'outfix':
-            self.html = template.Template(operation_html_outfix)
+            self.html = load_haml_template('outfix.tpl')
 
             c = template.Context({
                 'id': self.id,
@@ -1154,7 +963,7 @@ class Operation(Term):
 
         #Prefix Formatting
         elif self.ui_style == 'prefix':
-            self.html = template.Template(operation_html_prefix)
+            self.html = load_haml_template('prefix.tpl')
 
             #if not self.css_class:
             #    self.css_class = 'baseline'
@@ -1172,7 +981,7 @@ class Operation(Term):
 
         #Postfix Formatting
         elif self.ui_style == 'postfix':
-            self.html = template.Template(operation_html_postfix)
+            self.html = load_haml_template('postfix.tpl')
 
             c = template.Context({
                 'id': self.id,
@@ -1187,7 +996,7 @@ class Operation(Term):
 
         #Superscript Formatting
         elif self.ui_style == 'sup':
-            self.html = template.Template(operation_html_sup)
+            self.html = load_haml_template('sup.tpl')
 
             if not self.css_class:
                 self.css_class = 'middle'
@@ -1205,7 +1014,7 @@ class Operation(Term):
 
         #Subscript Formatting
         elif self.ui_style == 'sub':
-            self.html = template.Template(operation_html_sub)
+            self.html = load_haml_template('sub.tpl')
 
             if not self.css_class:
                 self.css_class = 'middle'
@@ -1220,9 +1029,10 @@ class Operation(Term):
                 'parenthesis': self.show_parenthesis,
                 'class': self.css_class
                 })
+
         #Subscript Formatting
         elif self.ui_style == 'latex':
-            self.html = template.Template(operation_html_latex)
+            self.html = load_haml_template('latex.tpl')
 
             if hasattr(self.operand,'symbol'):
                 self.operand.latex = "%s{%s}" % (self.symbol1, self.operand.symbol)
@@ -1237,7 +1047,7 @@ class Operation(Term):
                 'class': self.css_class
                 })
         else:
-            print('Unknown operator class, should be (infix,postfix,prefix,outfix)')
+            print('Unknown operator class, should be (infix,postfix,prefix,outfix,sup,sub,latex)')
 
         return self.html.render(c)
 
@@ -1361,25 +1171,9 @@ class Product(Operation):
            pterms = map(lambda o: o._pure_() , self.terms)
            return self.po(*pterms)
 
-power_html = haml('''
-#{{id}} .term.{{sensitive}} math-type="{{type}}" math-meta-class="term" math="{{math}}" group="{{group}}" 
-
-    .base
-        {{base}}
-
-    sup.exponent
-        {{exponent}}
-''')
-
-import sys
-print sys.modules[__name__].__file__
-# prints out /home/stephen/GIT/wise/wise/../wise/worksheet/base/objects.py
-# strip out the end part and tack on template fname
-#power_html = load_template('worksheet/base/power.tpl')
-
 class Power(Operation):
     sensitive = True
-    html = template.Template(power_html)
+    html = load_haml_template('power.tpl')
     pure = 'powr'
 
     def __init__(self,base,exponent):
@@ -1438,6 +1232,3 @@ class Negate(Operation):
         if context == 'Addition':
             if isinstance(other,Negate):
                 return Negate(Addition(self.operand, other.operand))
-
-    def negate(self):
-        return self.operand

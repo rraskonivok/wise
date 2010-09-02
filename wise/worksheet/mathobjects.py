@@ -39,26 +39,6 @@ def translate_pure(key):
     except KeyError:
         raise exception.NoWrapper(key)
 
-
-#-------------------------------------------------------------
-# Rule Cache
-#-------------------------------------------------------------
-
-rulecache = {}
-
-#for rule in Rule.objects.all():
-#    rule = rule.pure
-#    hsh = hash(rule)
-#
-#    if hsh in rulecache:
-#        plevel = rulecache[hsh]
-#    else:
-#        plevel = pure.PureLevel([rule])
-#        rulecache[hsh] = plevel
-#        #print 'Building Pure rule: ( %s , %s )' % (hsh, rule)
-#
-#    #print 'Rule cache size:', len(rulecache)
-
 #-------------------------------------------------------------
 # Base Term Class 
 #-------------------------------------------------------------

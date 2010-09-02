@@ -60,8 +60,15 @@ MIDDLEWARE_CLASSES = (
 
 ROOT_URLCONF = 'wise.urls'
 
-TEMPLATE_DIRS = (
-    'templates'
+# Template directories include:
+#
+# templates/
+# worksheet/templates
+# worksheet/$PACKAGES/templates
+
+TEMPLATE_DIRS = tuple(
+        ['templates'] +
+        [('worksheet/%s/templates' % pack) for pack in INSTALLED_MATH_PACKAGES]
 )
 
 INSTALLED_APPS = (
@@ -77,6 +84,3 @@ INSTALLED_APPS = (
     'gunicorn',
     'debug_toolbar'
 )
-
-def def_start_server(server):
-    sys.exit(0)

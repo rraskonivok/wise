@@ -146,13 +146,9 @@ def spaceiter(list):
 def purify(obj):
     return obj._pure_()
 
-def load_template(fname):
-    import sys
-    print sys.modules[__name__].__file__
-    if os.path.isfile(fname):
-        return open(fname).read()
-    else:
-        raise IOError("Cannot read template: %s" % fname)
+def load_haml_template(fname):
+    tps, tpo = loader.find_template_source(fname)
+    return template.Template(haml(tps))
 
 #-------------------------------------------------------------
 # Hashing

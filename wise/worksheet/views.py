@@ -23,7 +23,6 @@ from logger import debug, getlogger
 from decorator import decorator
 
 from django.template import Template, Context
-
 from django.conf import settings
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
@@ -70,17 +69,6 @@ def account_logout(request):
     # Redirect to a success page.
     return HttpResponse('Logged Out')
 
-@errors
-def test(request):
-    pass
-    #add = mathobjects.pure.add
-    #rational = mathobjects.pure.rational
-    #one = mathobjects.pure.PureInt(1)
-    #two = mathobjects.pure.PureInt(2)
-    #sage_test = str(rational(one,two))
-    #pure_exp = mathobjects.parse_pure_exp(sage_test)
-    #return render_to_response('index.html',{'sage': pure_exp.get_html()})
-
 @login_required
 def home(request):
     workspaces = Workspace.objects.filter(owner=request.user)
@@ -91,10 +79,6 @@ def log(request):
     log_html = log.replace("\n","<br />\n")
 
     return render_to_response('log.html', {'log': log_html})
-
-    #lst = template.Template(log_page)
-    #c = template.Context({'log':log_html})
-    #return HttpResponse(lst.render(c))
 
 #---------------------------
 # Rules --------------------
@@ -132,7 +116,7 @@ def rule(request, rule_id):
     html_eq = []
 
     for rule in rules:
-        etree = translate.parse_sexp(rule.sexp,uid)
+        etree = parse_sexp(rule.sexp,uid)
 
         #Copy rule attributes from database
         etree.annotation = rule.annotation
@@ -236,9 +220,6 @@ def fun_update(request, sym_id):
 
     return HttpResponseRedirect('/sym')
 
-#@cache_page(CACHE_INTERVAL)
-def palette(request):
-    return generate_palette()
 
 @login_required
 @errors
@@ -272,20 +253,14 @@ def ws(request, eq_id):
                 etree = parse_sexp(eq.code, uid)
             except NameError:
                 if settings.DEBUG:
-                    pass
+                    print 'Some symbols could not be rendered'
                 else:
                     return HttpResponse('This worksheet contains symbols that are not installed')
 
-            #eqtext = eq.code
-            #tree = mathobjects.ParseTree(eqtext)
-            #tree.gen_uids(uid)
-
-            #etree = tree.eval_args()
             etree.annotation = eq.annotation
             html_eq.append(html(etree))
             json_cell.append(etree.json_flat())
 
-        #This is stupid unintuitive syntax
         html_cells.append(cellify(''.join(html_eq),index))
         json_cells.append(json_cell)
 
@@ -298,20 +273,21 @@ def ws(request, eq_id):
         'json_cells': json.dumps(json_cells),
         })
 
-@errors
-def json_tree(request, eq_id):
-    eqs = MathematicalEquation.objects.filter(workspace=eq_id)
-    uid = uidgen()
-    json_list = []
-
-    for eq in eqs:
-        code = eq.code
-        tree = mathobjects.ParseTree(code)
-        tree.gen_uids(uid)
-
-        json_list.append(tree.json_flat())
-
-    return JSONResponse(json_list)
+#@errors
+#def json_tree(request, eq_id):
+#    print 'JSON TREE'
+#    eqs = MathematicalEquation.objects.filter(workspace=eq_id)
+#    uid = uidgen()
+#    json_list = []
+#
+#    for eq in eqs:
+#        code = eq.code
+#        tree = mathobjects.ParseTree(code)
+#        tree.gen_uids(uid)
+#
+#        json_list.append(tree.json_flat())
+#
+#    return JSONResponse(json_list)
 
 @login_required
 @errors
@@ -342,46 +318,13 @@ def new_workspace(request):
     init_eq = MathematicalEquation(code=equation, workspace=new_workspace).save()
     return HttpResponseRedirect('/home')
 
-palette_template = '''
-{% for group in palette %}
-    <h3><a href="#">{{ group.name }}</a></h3>
-    <div>
+#---------------------------
+# Palette ------------------
+#---------------------------
 
-        {% ifequal group.type 'tabular' %}
-            <table class="palette">
-                {% for name, html in group.objects %}
-                    <tr>
-                        <td>{{ name }}</td>
-                        <td>{{ html }}</td>
-                    </tr>
-                {% endfor %}
-            </table>
-        {% endifequal %}
-
-        {% ifequal group.type 'array' %}
-            {% for html in group.objects %}
-                {{ html }}
-            {% endfor %}
-        {% endifequal %}
-
-        {% ifequal group.type 'widget' %}
-            <div id="widget_preview{{forloop.counter}}"></div>
-            <textarea></textarea><br/>
-            <a href="javascript:widget_call('{{ group.url }}',{{forloop.counter}})">Create</a>
-        {% endifequal %}
-
-    </div>
-{% endfor %}
-'''
-
-palette_template = '''
-{% for panel in panels %}
-    <h3><a href="#">{{ panel.name }}</a></h3>
-    <div>
-        {{ panel.html }}
-    </div>
-{% endfor %}
-'''
+#@cache_page(CACHE_INTERVAL)
+def palette(request):
+    return generate_palette()
 
 @errors
 def generate_palette():
@@ -391,7 +334,4 @@ def generate_palette():
         pnl.html = pnl.get_html()
         render_panels.append(pnl)
 
-    interface_ui = Template(palette_template)
-    c = Context({'panels':render_panels})
-
-    return HttpResponse(interface_ui.render(c))
+    return render_haml_to_response('palette_template.tpl',{'panels': render_panels})
