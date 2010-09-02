@@ -371,10 +371,6 @@ class FreeFunction(Base_Symbol):
         else:
             return PureSymbol(self.symbol)(PureSymbol('u'))
 
-class Wildcard(Variable):
-    def _pure_(self):
-        return PureSymbol('_')
-
 #Reference to a user-defined symbol
 class RefSymbol(Variable):
     assumptions = None
@@ -394,21 +390,9 @@ class RefSymbol(Variable):
     def _pure_(self):
         return pure.ref(PureInt(int(self.args)))
 
-fraction_html = haml('''
-#{{id}}.fraction.container math-meta-class="term" math-type="{{type}}" group="{{group}}"
-
-    .num
-        {{num}}
-
-    .den
-        {{den}}
-
-''')
-
-class Fraction(Term):
-    type = "Fraction"
+class Rational(Term):
     sensitive = True
-    html = template.Template(fraction_html)
+    html = load_haml_template('rational.tpl')
     pure = 'rational'
 
     def __init__(self,num,den):
@@ -530,40 +514,11 @@ def One():
 # Top Level Elements
 #-------------------------------------------------------------
 
-equation_html = haml('''
-    tr#{{id}}.equation math="{{math}}" math-type="{{classname}}" toplevel="true"
-        td
-            button.ui-icon.ui-icon-triangle-1-w onclick="select_term(get_lhs(this))"
-                {{lhs_id}}
-
-            button.ui-icon.ui-icon-triangle-2-e-w onclick="select_term(get_equation(this))"
-                {{id}}
-
-            button.ui-icon.ui-icon-triangle-1-e onclick="select_term(get_rhs(this))"
-                {{rhs_id}}
-
-        td
-            {{lhs}}
-
-        td.equalsign
-           $${{symbol}}$$
-
-        td
-            {{rhs}}
-
-        td.guard 
-            {{guard}}
-
-        td.annotation
-            div contenteditable=true
-                {{annotation}}
-''')
-
 class Equation(object):
     '''A statement relating some LHS to RHS'''
     lhs = None
     rhs = None
-    html = template.Template(equation_html)
+    html = load_haml_template('equation.tpl')
     id = None
     symbol = "="
     sortable = True
@@ -653,7 +608,7 @@ class Equation(object):
             #drag terms between the numerator and denominator
             if self.lhs.lhs.has_single_term() and self.rhs.rhs.has_single_term():
                 #TODO: Change these to isinstance
-                if type(self.lhs.lhs.terms[0]) is Fraction and type(self.rhs.rhs.terms[0]) is Fraction:
+                if type(self.lhs.lhs.terms[0]) is Rational and type(self.rhs.rhs.terms[0]) is Rational:
 
                    lfrac = self.lhs.lhs.terms[0]
                    rfrac = self.rhs.rhs.terms[0]
@@ -718,17 +673,8 @@ class Equation(object):
         #self.lhs.ensure_id()
         #self.rhs.ensure_id()
 
-rhs_html = '''
-<span id='{{id}}' math-type="RHS" math-meta-class="side" math="{{math}}" group="{{group}}" class="container">
-    {% autoescape off %}
-    {{rhs}}
-    {% endautoescape %}
-</span>
-
-'''
-
 class RHS(Term):
-    html = template.Template(rhs_html)
+    html = load_haml_template('rhs.tpl')
 
     def __init__(self,*terms):
         self.rhs = Addition(*terms)
@@ -756,16 +702,8 @@ class RHS(Term):
 
         return self.html.render(c)
 
-lhs_html = '''
-<span id='{{id}}' math-type="LHS" math-meta-class="side" math="{{math}}" group="{{group}}" class="container" >
-    {% autoescape off %}
-    {{lhs}}
-    {% endautoescape %}
-</span>
-'''
-
 class LHS(Term):
-    html = template.Template(lhs_html)
+    html = load_haml_template('lhs.tpl')
 
     def __init__(self,*terms):
         self.lhs = Addition(*terms)
@@ -800,35 +738,10 @@ class LHS(Term):
 
         return self.html.render(c)
 
-definition_html = '''
-    <tr id="{{id}}" class="equation" math="{{math}}"
-    math-type="{{classname}}" toplevel="true" data-confluent="{{confluent}}" data-public="{{public}}">
-
-    <td>
-        <button class="ui-icon ui-icon-transferthick-e-w"
-        onclick="apply_transform('ReverseDef',get_equation(this))">{{lhs_id}}</button>
-        <button class="ui-icon ui-icon-arrow-4" onclick="select_term(get_equation(this))">{{id}}</button>
-        <button class="confluence 
-        {% if confluent %} 
-        ui-icon ui-icon-bullet
-        {% else %}
-        ui-icon ui-icon-radio-off
-        {% endif %}
-        " onclick="toggle_confluence(get_equation(this))">{{id}}</button>
-    </td>
-    <td>{{lhs}}</td>
-    <td><span class="equalsign">$${{symbol}}$$</span></td>
-    <td>{{rhs}}</td>
-    <td class="guard">{{guard}}</td>
-    <td class="annotation"><div contenteditable=true>{{annotation}}</div></td>
-
-    </tr>
-'''
-
 class Definition(Equation):
     symbol = ":="
     sortable = False
-    html = template.Template(definition_html)
+    html = load_haml_template('def.tpl')
     confluent = True
     public = True
     pure = None
@@ -1181,7 +1094,7 @@ class Power(Operation):
         self.exponent = exponent
         self.terms = [self.base, self.exponent]
         basetype = type(self.base)
-        if basetype is Fraction or isinstance(self.base, Operation):
+        if basetype is Rational or isinstance(self.base, Rational):
             self.base.show_parenthesis = True
         #make_sortable(self)
 

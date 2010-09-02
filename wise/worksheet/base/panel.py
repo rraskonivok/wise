@@ -18,7 +18,7 @@ operations = [('Addition',objects.Addition),
               ('Multiplication',objects.Product),
               ('Exponent',objects.Power),
               ('Negate',objects.Negate),
-              ('Division',objects.Fraction),
+              ('Rational',objects.Rational),
              ]
 
 Operations = TabularPanel(name='Operations',
