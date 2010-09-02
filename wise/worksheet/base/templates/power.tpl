@@ -1,4 +1,4 @@
-#{{id}} .term.{{sensitive}} math-type="{{type}}" math-meta-class="term" math="{{math}}" group="{{group}}" 
+#{{id}}.{{class}}.container math-type="{{type}}" math-meta-class="term" math="{{math}}" group="{{group}}" 
 
     .base
         {{base}}

@@ -427,7 +427,7 @@ class Rational(Term):
         self.terms = [num,den]
 
     def _pure_(self):
-       return pure.po(self.num._pure_(), self.den._pure_())
+       return self.po(self.num._pure_(), self.den._pure_())
 
     def get_html(self):
         self.num.group = self.id
