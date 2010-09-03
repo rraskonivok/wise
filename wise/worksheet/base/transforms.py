@@ -27,5 +27,5 @@ def ReduceWithRules( rules, expr ):
 
     pure_expr = pure.reduce_with_pure_rules(plevel, pexpr)
 
-    debug(str(pexpr) + ' ----> ' + str(pure_expr))
+    #debug(str(pexpr) + ' ----> ' + str(pure_expr))
     return pure_to_python(pure_expr,expr.idgen)

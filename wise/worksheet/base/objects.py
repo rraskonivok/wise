@@ -1177,7 +1177,7 @@ class Negate(Operation):
 
     # Capitalize since "neg" already exists in the default Pure
     # predule.
-    pure = 'neg'
+    pure = 'Neg'
 
     def __init__(self,operand):
         self.operand = operand

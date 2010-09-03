@@ -506,10 +506,9 @@ function lookup_transform() {
     }, 'json')
 }
 
-function apply_rule(set_id, rule_id, selections) {
+function apply_rule(rule, selections) {
     var data = {}
-    data.set_id = set_id
-    data.rule_id = rule_id
+    data.rule = rule
     data.namespace_index = NAMESPACE_INDEX;
 
     if (selections == null) {

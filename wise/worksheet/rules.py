@@ -1,5 +1,8 @@
 import translate
+
+import pure_wrap
 from pure_wrap import PureLevel, reduce_with_pure_rules
+
 from worksheet.utils import hasharray
 import wise.worksheet.exceptions as exception
 
@@ -59,8 +62,12 @@ def ApplyExternalRule( ref, expr ):
     return pyexpr
 
 class PublicRule:
+    po = None
+    ref = None
+
     def __init__(self, pure_symbol_name):
-        return
+        self.ref = pure_symbol_name
+        self.po = pure_wrap.objects[pure_symbol_name]
 
     def get_html(self):
         interface_ui = self.template
@@ -73,7 +80,6 @@ def is_rule(obj):
 
 packages = {}
 rulesets = {}
-
 ROOT_MODULE = 'wise.worksheet'
 
 for pack in settings.INSTALLED_MATH_PACKAGES:
@@ -89,4 +95,4 @@ for pack in settings.INSTALLED_MATH_PACKAGES:
     except ImportError:
         raise exception.IncompletePackage(pack,'rules.py')
 
-print rulesets
+print 'RuleSets',rulesets

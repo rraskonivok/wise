@@ -17,6 +17,7 @@ import pure_wrap
 
 from django import template
 
+from django.conf import settings
 from django.shortcuts import render_to_response
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseRedirect, Http404
@@ -31,25 +32,80 @@ CACHE_INTERVAL = 30*60 # 5 Minutes
 # Rules --------------------
 #---------------------------
 
+#@login_required
+#@errors
+#@ajax_request
+#@cache_page(CACHE_INTERVAL)
+#def apply_rule(request):
+#    code = tuple(request.POST.getlist('selections[]'))
+#    set_id = int( request.POST.get('set_id') )
+#    rule_id = request.POST.get('rule_id')
+#
+#    if rule_id != 'null':
+#        rule_id = int(rule_id)
+#    else:
+#        rule_id = None
+#
+#    #debug(code)
+#    namespace_index = int( request.POST.get('namespace_index') )
+#
+#    uid = uidgen(namespace_index)
+#
+#    args = [translate.parse_sexp(cde, uid) for cde in code]
+#
+#    #Ugly hack to allow us to pass the uid generator and use it
+#    # in the middle of a transformation in case we need to
+#    # generate a whole new batch of uids (like when converting
+#    # pure <-> python ).
+#    for arg in args:
+#        arg.idgen = uid
+#
+#    # Load a specific rule
+#    if rule_id:
+#        rule = Rule.objects.get(id=rule_id)
+#        rule_strings = [rule.pure]
+#
+#    # Load all rules in the ruleset
+#    else:
+#        rs = RuleSet.objects.get(id=set_id)
+#        rules_q = Rule.objects.filter(set=rs,confluent=True).order_by('index')
+#        rule_strings = [rule.pure for rule in rules_q]
+#
+#    # If the Rule is flagged as an external reference go fetch it
+#    if rule.external == True:
+#        try:
+#            pack, symbol = rule.pure.split('/')
+#        except ValueError:
+#            raise Exception("Reference to external pure symbol is not well-formed: %s" % rule.pure)
+#
+#        ref = pure_wrap.objects[symbol]
+#        new = rules.ApplyExternalRule(ref,args[0])
+#
+#    # ... otherwise build it up from the given sexp string.
+#    else:
+#        new = rules.ReduceWithRules(rule_strings,args[0])
+#
+#    new.idgen = uid
+#    new.ensure_id()
+#
+#    new_html = [html(new)]
+#    new_json = [json_flat(new)]
+#
+#    return JsonResponse({'new_html': new_html,
+#                         'new_json': new_json,
+#                         'namespace_index': uid.next()[3:]})
+
 @login_required
 @errors
 @ajax_request
-@cache_page(CACHE_INTERVAL)
+#@cache_page(CACHE_INTERVAL)
 def apply_rule(request):
     code = tuple(request.POST.getlist('selections[]'))
-    set_id = int( request.POST.get('set_id') )
-    rule_id = request.POST.get('rule_id')
 
-    if rule_id != 'null':
-        rule_id = int(rule_id)
-    else:
-        rule_id = None
+    rule = request.POST.get('rule')
 
-    #debug(code)
     namespace_index = int( request.POST.get('namespace_index') )
-
     uid = uidgen(namespace_index)
-
     args = [translate.parse_sexp(cde, uid) for cde in code]
 
     #Ugly hack to allow us to pass the uid generator and use it
@@ -59,31 +115,9 @@ def apply_rule(request):
     for arg in args:
         arg.idgen = uid
 
-
-    # Load a specific rule
-    if rule_id:
-        rule = Rule.objects.get(id=rule_id)
-        rule_strings = [rule.pure]
-
-    # Load all rules in the ruleset
-    else:
-        rs = RuleSet.objects.get(id=set_id)
-        rules_q = Rule.objects.filter(set=rs,confluent=True).order_by('index')
-        rule_strings = [rule.pure for rule in rules_q]
-
-    # If the Rule is flagged as an external reference go fetch it
-    if rule.external == True:
-        try:
-            pack, symbol = rule.pure.split('/')
-        except ValueError:
-            raise Exception("Reference to external pure symbol is not well-formed: %s" % rule.pure)
-
-        ref = pure_wrap.objects[symbol]
-        new = rules.ApplyExternalRule(ref,args[0])
-
-    # ... otherwise build it up from the given sexp string.
-    else:
-        new = rules.ReduceWithRules(rule_strings,args[0])
+    # Change this to rules[rule]
+    ref = pure_wrap.objects[rule]
+    new = rules.ApplyExternalRule(ref,args[0])
 
     new.idgen = uid
     new.ensure_id()
@@ -99,14 +133,14 @@ def apply_rule(request):
 @errors
 #@cache_page(CACHE_INTERVAL)
 def rules_request(request):
-    ruleset = RuleSet.objects.filter(owner=request.user)
-    subrules = []
 
-    for rs in ruleset:
-        rss = Rule.objects.filter(set=rs,public=True).order_by('index')
-        subrules.append(rss)
+    if settings.DEBUG:
+        ruleslist = [(rule.ref, rule) for rule in rules.rulesets.itervalues()]
+    else:
+        ruleslist = [(name, rule) for (name,rule) in rules.rulesets.iteritems()]
 
-    return render_haml_to_response('ruleslist.tpl', {'rules':zip(ruleset,subrules)})
+
+    return render_haml_to_response('ruleslist.tpl', {'rules':ruleslist})
 
 #---------------------------
 # Symbols ------------------
