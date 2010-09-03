@@ -536,6 +536,7 @@ function apply_rule(rule, selections) {
             obj = selection.nth(i)
             group_id = obj.attr('group');
             group_id_cache = String(group_id)
+            obj.fadeOut('slow');
 
             if (data.new_html[i] == null) {
                 obj.remove();
@@ -551,14 +552,16 @@ function apply_rule(rule, selections) {
                 if (toplevel == 'Definition' | toplevel == 'Equation') {
                     build_tree_from_json(data.new_json[i])
                     //merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
-                    nsym = obj.replace(data.new_html[i]);
+                    nsym = obj.replace(data.new_html[i]).hide();
                     //nsym.attr('group',group_id_cache);
-                    refresh_jsmath($(nsym))
+                    refresh_jsmath($(nsym));
+                    nsym.fadeIn('slow');
                 } else {
                     merge_json_to_tree(NODES[obj.id()], data.new_json[i]);
-                    nsym = obj.replace(data.new_html[i]);
+                    nsym = obj.replace(data.new_html[i]).hide();
                     nsym.attr('group', group_id_cache);
                     refresh_jsmath($(nsym))
+                    nsym.fadeIn('slow');
                 }
                 update(get_container(nsym))
                 //Check to see if the uid assigning failed
