@@ -14,7 +14,13 @@ Pure language.
 It is *very* much alpha at this time but if you want to play
 with it I reccomend you do so on Linux. I have not tested it on
 any distro but Arch Linux but there shouldn't be any hurdles to
-running it on any other distro. Some instructions:
+running it on any other distro.
+
+In Arch Linux the dependencies can be built using the command
+
+>    yaourt -S pure cython python gunicorn
+
+On any other Linux / BSD / Mac OSX:
 
 1.  You'll need to install pure which depends on.
     
@@ -29,19 +35,23 @@ running it on any other distro. Some instructions:
     
     Download and installation directions can be found here:
         
-         <http://code.google.com/p/pure-lang/>
+    <http://code.google.com/p/pure-lang/>
 
-2.  You'll need to install Python2.6.x
+2.  You'll need to install Python2.6 and Cython which has no dependencies other than a C compiler like gcc or clang. Directions can be found here:
 
-3.  You'll need gunicorn. If you have easy_install run
+    <http://www.cython.org/>
 
-	 easy_install gunicorn
+3.  You'll need gunicorn. If you have easy_install run:
+
+    >   easy_install gunicorn
 
     If not then you can find directions here:
+    <http://gunicorn.org/>
 
-	 <http://gunicorn.org/>
+4.  In a shell in the src directory run:
+    >    python manage.py run_gunicorn 
 
-4.  Run python manage.py run_gunicorn and point your browser to
+    and point your browser to
     localhost:8000 . I see best performance in Chromium based
     browsers but Firefox works fine.
 
