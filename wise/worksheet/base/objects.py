@@ -100,7 +100,7 @@ class Term(object):
             return self.html.render(c)
 
     def get_math(self):
-        '''This generates the sexp that is parsable on the Javascript side'''
+        '''Generates the sexp that is parsable on the Javascript side'''
 
         #Container-type Objects, Example: (Addition 1 2 3)
         if len(self.terms) > 1:
@@ -582,6 +582,9 @@ class Equation(object):
         self.lhs = lhs
 
         self.terms = [self.rhs, self.lhs]
+
+    def get_math(self):
+        return '(' + self.classname + ' ' + spaceiter(map(lambda o: o.get_math(), self.terms)) + ')'
 
     @property
     def math(self):

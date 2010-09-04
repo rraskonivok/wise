@@ -48,17 +48,17 @@ def ApplyExternalRule( ref, *expr ):
     #     rewrite rules
     # end;
 
-    #pexpr = translate.python_to_pure(expr)
     pexpr = map(translate.python_to_pure,expr)
     pure_expr = ref(*pexpr)
-
     pyexpr = translate.pure_to_python(pure_expr,expr[0].idgen)
 
-    print 'Applying Rule:', ref, '\n--'
-    print 'Input Sexp:', expr
-    print 'Input Pure:', pexpr
-    print 'Reduced Sexp:', pyexpr
-    print 'Reduced Pure:', pure_expr
+
+    if settings.DEBUG:
+        print 'Applying Rule:', ref, '\n--'
+        print 'Input Sexp:', expr
+        print 'Input Pure:', pexpr
+        print 'Reduced Sexp:', pyexpr
+        print 'Reduced Pure:', pure_expr
 
     return pyexpr
 
