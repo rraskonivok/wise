@@ -144,7 +144,10 @@ def spaceiter(list):
     return ' '.join(list)
 
 def purify(obj):
-    return obj._pure_()
+    if hasattr(obj,'__iter__'):
+        return map(purify,obj)
+    else:
+        return obj._pure_()
 
 def load_haml_template(fname):
     tps, tpo = loader.find_template_source(fname)

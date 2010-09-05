@@ -21,6 +21,7 @@ except ImportError:
 '''
 
 for fnx in fn:
+    #TODO: At some point remove the 'base'
     print "use('base','%s')" % fnx.split('.')[0]
 
 for fnx in fn:

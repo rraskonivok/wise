@@ -39,20 +39,9 @@ def translate_pure(key):
     except KeyError:
         raise exception.NoWrapper(key)
 
-#-------------------------------------------------------------
-# Base Term Class 
-#-------------------------------------------------------------
-
-# Philosophy for Math Objects
-#
-# Objects should only be inherited if they follow the Liskov
-# Substitution Principle i.e. 
-#
-#    Let q(x) be a property provable about objects x of type T.
-#    Then q(y) should be true for objects y of type S where S is
-#    a subtype of T.
 
 from base.objects import *
+from logic.objects import *
 
 #-------------------------------------------------------------
 # Transforms
@@ -62,3 +51,6 @@ generate_translation(root=Term)
 generate_translation(root=Equation)
 generate_pure_objects(root=Term)
 generate_pure_objects(root=Equation)
+
+import uml
+uml.generate(Term)

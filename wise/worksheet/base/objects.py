@@ -12,11 +12,30 @@ from wise.worksheet.utils import render_haml_to_response
 from wise.worksheet.pure_wrap import PureSymbol, PureInt
 
 import worksheet.js as js
-import worksheet.exceptions
+import worksheet.exceptions as exception
 from worksheet.utils import *
 
 from django import template
 from django.utils.safestring import SafeUnicode
+
+#-------------------------------------------------------------
+# Base Term Class 
+#-------------------------------------------------------------
+
+# Philosophy for Math Objects
+#
+# Objects should only be inherited if they follow the Liskov
+# Substitution Principle i.e. 
+#
+# 1) Let q(x) be a property provable about objects x of type T.
+#    Then q(y) should be true for objects y of type S where S is
+#    a subtype of T.
+#
+# 2) Objects should define their own Pure translation functions.
+#
+# 3) If A is an object and B is a subclass of A, if A is 
+#    strictly internal ( no Pure translation ) then B should 
+#    be stricly internal.
 
 class Term(object):
     '''The base class for all other math objects.'''
@@ -350,6 +369,9 @@ class Base_Symbol(Term):
 
     def __init__(self,*args):
         pass
+
+    def _pure_(self):
+        return self.po()
 
 class Greek(Base_Symbol):
     sensitive = True
@@ -835,7 +857,6 @@ infix_symbol_template = haml('''
 def infix_symbol_html(symbol):
     return infix_symbol_template % symbol
 
-
 class Operation(Term):
     '''An operator acting a term'''
 
@@ -843,16 +864,13 @@ class Operation(Term):
 
     symbol = None
     show_parenthesis = False
-    recursive_propogation = False
     sortable = False
 
     #Arity of the operator
     arity = None
 
     is_linear = False
-    is_bilinear = False
-    is_commutative = False
-    is_anticommutative = False
+    is_associative = False
 
     pure = None
 
@@ -863,6 +881,9 @@ class Operation(Term):
         else:
             self.operand = operands[0]
             self.terms = [operands[0]]
+
+    def _pure_(self):
+        return self.po(*purify(self.terms))
 
     def action(self,operand):
         return self.get_html()
@@ -1051,8 +1072,7 @@ class RefOperator(Operation):
         args = [o._pure_() for o in self.terms]
         return pure.refop(PureInt(int(self.index)))(*args)
 
-class Addition(Operation):
-    ui_style = 'infix'
+class Addition(InfixOperation):
     symbol = '+'
     show_parenthesis = False
     pure = 'add'
@@ -1106,7 +1126,7 @@ class Addition(Operation):
         if type(self.terms[0]) is Empty:
             return Numeric(0)
 
-class Product(Operation):
+class Product(InfixOperation):
     ui_style = 'infix'
     symbol = '\\cdot'
     show_parenthesis = False
@@ -1172,8 +1192,7 @@ class Power(Operation):
 
         return self.html.render(c)
 
-class Negate(Operation):
-    ui_style = 'prefix'
+class Negate(PrefixOperation):
     symbol = '-'
     show_parenthesis = False
     css_class = 'negate'
