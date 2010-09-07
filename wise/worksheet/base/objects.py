@@ -325,7 +325,7 @@ greek_alphabet = {
         'zeta'   :  '\\zeta',
         'eta'    :  '\\eta',
         'theta'  :  '\\theta',
-        'vartheta' :  '\\vartheta',
+        'vartheta' :'\\vartheta',
         'gamma'  :  '\\gamma',
         'kappa'  :  '\\kappa',
         'lambda' :  '\\lambda',
@@ -337,7 +337,7 @@ greek_alphabet = {
         'rho'    :  '\\rho',
         'varrho' :  '\\varrho',
         'sigma'  :  '\\sigma',
-        'varsigma' :  '\\varsigma',
+        'varsigma' :'\\varsigma',
         'tau'    :  '\\tau',
         'upsilon':  '\\upsilon',
         'phi'    :  '\\phi',
@@ -546,6 +546,32 @@ class Numeric(Term):
                 if self.is_zero():
                     return self.get_html()
 
+class ComplexNumeric(Term):
+    html = load_haml_template('complex.tpl')
+    pure = 'complex'
+
+    def __init__(self, re, im):
+        self.re = re
+        self.im = im
+        self.terms = [self.re, self.im]
+
+    def get_html(self):
+        self.associate_terms()
+
+        c = template.Context({
+            'id': self.id,
+            'class': self.css_class,
+            're': self.re.get_html(),
+            'im': self.im.get_html(),
+            'math': self.get_math(),
+            'type': self.classname,
+            'group': self.group})
+
+        return self.html.render(c)
+
+    def _pure_(self):
+        return self.po(*purify(self.terms))
+
 #Constants should be able to be represented by multiple symbols
 class Constant(Term):
     sensitive = True
@@ -564,7 +590,7 @@ def One():
 class ImaginaryUnit(Base_Symbol):
     latex = 'i'
     symbol = 'i'
-    pure = 'i'
+    pure = 'I'
     args = "'i'"
 
 #-------------------------------------------------------------
@@ -874,7 +900,8 @@ class Operation(Term):
 
     pure = None
 
-    def __init__(self,*operands):
+    def __init__(self,op,*ops):
+        operands = list(ops) + [op]
         if len(operands) > 1:
             self.terms = list(operands)
             self.operand = self.terms
@@ -1035,6 +1062,7 @@ class Operation(Term):
 
 class PrefixOperation(Operation):
     ui_style = 'prefix'
+    show_parenthesis = True
 
 class InfixOperation(Operation):
     ui_style = 'infix'
@@ -1044,6 +1072,12 @@ class PostfixOperation(Operation):
 
 class PostfixOperation(Operation):
     ui_style = 'postfix'
+
+class SupOperation(Operation):
+    ui_style = 'sup'
+
+class OutfixOperation(Operation):
+    ui_style = 'outfix'
 
 class RefOperator(Operation):
     def __init__(self, obj, *operands):
@@ -1159,6 +1193,39 @@ class Product(InfixOperation):
            pterms = map(lambda o: o._pure_() , self.terms)
            return self.po(*pterms)
 
+class Root(Operation):
+    sensitive = True
+    html = load_haml_template('power.tpl')
+    pure = 'root'
+
+    def __init__(self,base,exponent):
+        self.base = base
+        self.exponent = exponent
+        self.terms = [self.base, self.exponent]
+        basetype = type(self.base)
+        if basetype is Rational or isinstance(self.base, Rational):
+            self.base.show_parenthesis = True
+        #make_sortable(self)
+
+    def _pure_(self):
+        return self.po(self.base._pure_() , self.exponent._pure_())
+
+    def get_html(self):
+        self.exponent.css_class = 'exponent'
+        self.exponent.group = self.id
+        self.base.css_class = 'exponent'
+        self.base.group = self.id
+
+        c = template.Context({
+            'id': self.id,
+            'math': self.get_math(),
+            'group': self.group,
+            'base': self.base.get_html(),
+            'type': self.classname,
+            'exponent': self.exponent.get_html() })
+
+        return self.html.render(c)
+
 class Power(Operation):
     sensitive = True
     html = load_haml_template('power.tpl')
@@ -1191,6 +1258,70 @@ class Power(Operation):
             'exponent': self.exponent.get_html() })
 
         return self.html.render(c)
+
+class Sqrt(PrefixOperation):
+    symbol = '\\sqrt{x}'
+
+#class Abs(OutfixOperation):
+#    symbol1 = '|'
+#    symbol2 = '|'
+
+class Sgn(PrefixOperation):
+    symbol = '\\text{sgn}'
+
+class DiracDelta(PrefixOperation):
+    symbol = '\\delta'
+
+class Sin(PrefixOperation):
+    symbol = '\\sin'
+
+class Cos(PrefixOperation):
+    symbol = '\\cos'
+
+class Tan(PrefixOperation):
+    symbol = '\\tan'
+
+class Exp(PrefixOperation):
+    symbol = '\\exp'
+
+class Ln(PrefixOperation):
+    symbol = '\\ln'
+
+class Asin(PrefixOperation):
+    symbol = '\\sin^{-1}'
+
+class Acos(PrefixOperation):
+    symbol = '\\cos^{-1}'
+
+class Atan(PrefixOperation):
+    symbol = '\\tan^{-1}'
+
+class Sinh(PrefixOperation):
+    symbol = '\\sinh'
+
+class Cosh(PrefixOperation):
+    symbol = '\\cosh'
+
+class Tanh(PrefixOperation):
+    symbol = '\\tanh'
+
+class Asinh(PrefixOperation):
+    symbol = '\\sinh^{-1}'
+
+class Acosh(PrefixOperation):
+    symbol = '\\cosh^{-1}'
+
+class Atanh(PrefixOperation):
+    symbol = '\\tanh^{-1}'
+
+class Gamma(PrefixOperation):
+    symbol = '\\Gamma'
+
+class Zeta(PrefixOperation):
+    symbol = '\\zeta'
+
+class Factorial(PostfixOperation):
+    symbol = '!'
 
 class Negate(PrefixOperation):
     symbol = '-'

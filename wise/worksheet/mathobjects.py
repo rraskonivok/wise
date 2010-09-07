@@ -52,5 +52,5 @@ generate_translation(root=Equation)
 generate_pure_objects(root=Term)
 generate_pure_objects(root=Equation)
 
-import uml
-uml.generate(Term)
+#import uml
+#uml.generate(Term)

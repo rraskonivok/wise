@@ -112,7 +112,7 @@ function nested_json(T) {
 function merge_json_to_tree(old_node, json_input) {
     var newtree = build_tree_from_json(json_input);
     if (!old_node) {
-        error('Could not attach branch');
+        //error('Could not attach branch');
         return;
     }
     old_node.swapNode(newtree.root);
