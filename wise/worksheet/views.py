@@ -80,6 +80,9 @@ def log(request):
 
     return render_to_response('log.html', {'log': log_html})
 
+def translate(request):
+    return render_to_response('translate.html')
+
 #---------------------------
 # Rules --------------------
 #---------------------------

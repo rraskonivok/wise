@@ -184,14 +184,14 @@ function clear_selection() {
     });
     $('.selected').removeClass('selected');
     $('#options').hide();
-    $('#selectionlist').fadeIn();
+//    $('#selectionlist').fadeIn();
     selection.clear();
 }
 
 function select_term(object) {
     //Since the selections have changed clear any looked-up (is that even a word?) actions
     clear_lookups();
-    $("#selectionlist").fadeIn();
+//    $("#selectionlist").fadeIn();
 
     clickedon = $(object);
 
@@ -269,8 +269,6 @@ function select_term(object) {
         //Bind to select object command
     }
 
-    console.log(selection.nth(0).attr('math-type'));
-    console.log(selection.nth(1).attr('math-type'));
     if (selection.count == 2 && selection.nth(0).attr('math-type') == 'Placeholder') {
         apply_transform('base/PlaceholderSubstitute');
     }
@@ -498,7 +496,7 @@ function lookup_transform() {
                 apply_transform($(this).attr('internal'))
             })
 
-            $('#selectionlist').hide();
+//            $('#selectionlist').hide();
             $('#options').prepend(button);
             $('#options').show();
             $('#options button').button();
@@ -523,7 +521,7 @@ function apply_rule(rule, selections) {
 
         if (data.error) {
             error(data.error)
-            $('#selectionlist').fadeIn();
+//            $('#selectionlist').fadeIn();
             clear_selection()
             return
         }
@@ -602,7 +600,7 @@ function apply_transform(transform, selections) {
 
         if (data.error) {
             error(data.error)
-            $('#selectionlist').fadeIn();
+//            $('#selectionlist').fadeIn();
             clear_selection()
             return
         }
@@ -1056,7 +1054,7 @@ function traverse_lines() {
     //containing their math-type
     //$('#workspace *[title]').tooltip({track:true});
     $('#workspace *[math-meta-class=term]').unbind('click');
-    $('#palette .placeholder').unbind('click');
+    $('#math_palette .placeholder').unbind('click');
     $('#rtoolbar *[math-meta-class=term]').unbind('click');
 
 /*$('#workspace *[title]').simpletip(
@@ -1071,12 +1069,11 @@ function traverse_lines() {
         event.stopPropagation()
     });
 
-    $('#palette *[math-meta-class=term]').not('.placeholder').click(
-
-    function (event) {
-        select_term(this);
-        event.stopPropagation()
-    });
+    $('#math_palette *[math-meta-class=term]').not('.placeholder').click(
+        function (event) {
+            select_term(this);
+            event.stopPropagation()
+        });
 
     $('#rtoolbar *[math-meta-class=term]').click(
 
@@ -1554,40 +1551,40 @@ function next_placeholder(start) {
 }
 
 
-function substite_addition() {
-    placeholder = get_selection(0)
-    if (placeholder.attr('math-type') == 'Placeholder') {
-        if (get_container(placeholder).attr('math-type') == 'Addition') {
-            add_after(placeholder, '(Placeholder )')
-        }
-        else {
-            replace_manually(placeholder, '(Addition (Placeholder ) (Placeholder ))')
-        }
-    }
-    else {
-        if (get_container(placeholder).attr('math-type') == 'Addition') {
-            add_after(placeholder, '(Placeholder )')
-        }
-    }
-
-}
-
-function substite_multiplication() {
-    placeholder = get_selection(0)
-    if (placeholder.attr('math-type') == 'Placeholder') {
-        if (get_container(placeholder).attr('math-type') == 'Product') {
-            add_after(placeholder, '(Placeholder )')
-        }
-        else {
-            replace_manually(placeholder, '(Product (Placeholder ) (Placeholder ))')
-        }
-    }
-    else {
-        if (get_container(placeholder).attr('math-type') == 'Product') {
-            add_after(placeholder, '(Placeholder )')
-        }
-    }
-}
+//function substite_addition() {
+//    placeholder = get_selection(0)
+//    if (placeholder.attr('math-type') == 'Placeholder') {
+//        if (get_container(placeholder).attr('math-type') == 'Addition') {
+//            add_after(placeholder, '(Placeholder )')
+//        }
+//        else {
+//            replace_manually(placeholder, '(Addition (Placeholder ) (Placeholder ))')
+//        }
+//    }
+//    else {
+//        if (get_container(placeholder).attr('math-type') == 'Addition') {
+//            add_after(placeholder, '(Placeholder )')
+//        }
+//    }
+//
+//}
+//
+//function substite_multiplication() {
+//    placeholder = get_selection(0)
+//    if (placeholder.attr('math-type') == 'Placeholder') {
+//        if (get_container(placeholder).attr('math-type') == 'Product') {
+//            add_after(placeholder, '(Placeholder )')
+//        }
+//        else {
+//            replace_manually(placeholder, '(Product (Placeholder ) (Placeholder ))')
+//        }
+//    }
+//    else {
+//        if (get_container(placeholder).attr('math-type') == 'Product') {
+//            add_after(placeholder, '(Placeholder )')
+//        }
+//    }
+//}
 
 function remove_element() {
     var placeholder = selection.nth(0)
@@ -1629,20 +1626,20 @@ function remove_element() {
     }
 }
 
-function substite_subtraction() {
-    placeholder = get_selection(0)
-    if (get_container(placeholder).attr('math-type') == 'Addition') {
-        add_after(placeholder, '(Negate (Placeholder ))')
-    }
-    else {
-        replace_manually(placeholder, '(Addition (Negate (Placeholder )))')
-    }
-}
-
-function substite_division() {
-    placeholder = get_selection(0)
-    replace_manually(placeholder, '(Fraction (Placeholder ) (Placeholder ) )')
-}
+//function substite_subtraction() {
+//    placeholder = get_selection(0)
+//    if (get_container(placeholder).attr('math-type') == 'Addition') {
+//        add_after(placeholder, '(Negate (Placeholder ))')
+//    }
+//    else {
+//        replace_manually(placeholder, '(Addition (Negate (Placeholder )))')
+//    }
+//}
+//
+//function substite_division() {
+//    placeholder = get_selection(0)
+//    replace_manually(placeholder, '(Fraction (Placeholder ) (Placeholder ) )')
+//}
 
 function replace_manually(obj, code) {
     data = {}

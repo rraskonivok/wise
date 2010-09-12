@@ -82,5 +82,6 @@ INSTALLED_APPS = (
     # into the same directory as this file, if you can't run
     # ' import gunicorn ' form this directory then it will fail
     'gunicorn',
-    'debug_toolbar'
+    'debug_toolbar',
+    'reversion'
 )

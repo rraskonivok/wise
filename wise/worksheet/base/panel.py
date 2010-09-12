@@ -51,3 +51,10 @@ operations = [('Addition',objects.Addition),
 
 Operations = TabularPanel(name='Operations',
                           objects=operations)
+
+constants = [('Imaginary Unit',objects.ImaginaryUnit),
+              ('Catalan Number',objects.Catalan),
+             ]
+
+Constants = TabularPanel(name='Constants',
+                          objects=constants)

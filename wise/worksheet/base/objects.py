@@ -214,7 +214,6 @@ class Term(object):
 
         if context == 'Addition':
             if isinstance(other,Term):
-
                 if type(other) is Negate:
                     # Don't add a plus sign if we have a negation
                     # to avoid verbose expressions like 3 + -4
@@ -596,6 +595,10 @@ class ImaginaryUnit(Base_Symbol):
 #-------------------------------------------------------------
 # Top Level Elements
 #-------------------------------------------------------------
+
+class Relational(object):
+    '''A statement relating some LHS to RHS'''
+    pass
 
 class Equation(object):
     '''A statement relating some LHS to RHS'''
@@ -1024,12 +1027,12 @@ class Operation(Term):
                 'type': self.classname,
                 'group': self.group,
                 'operand': self.operand.get_html(),
-                'symbol1': self.symbol1.get_html(),
+                'symbol1': self.symbol1,
                 'parenthesis': self.show_parenthesis,
                 'class': self.css_class
                 })
 
-        #Subscript Formatting
+        #Latex Styled Formatting
         elif self.ui_style == 'latex':
             self.html = load_haml_template('latex.tpl')
 
@@ -1075,6 +1078,9 @@ class PostfixOperation(Operation):
 
 class SupOperation(Operation):
     ui_style = 'sup'
+
+class SubOperation(Operation):
+    ui_style = 'sub'
 
 class OutfixOperation(Operation):
     ui_style = 'outfix'
@@ -1322,6 +1328,12 @@ class Zeta(PrefixOperation):
 
 class Factorial(PostfixOperation):
     symbol = '!'
+
+class Catalan(SubOperation):
+    latex = 'C'
+    symbol1 = 'C'
+    pure = 'catalan'
+    args = "'n'"
 
 class Negate(PrefixOperation):
     symbol = '-'

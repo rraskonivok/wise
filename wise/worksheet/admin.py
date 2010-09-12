@@ -1,5 +1,6 @@
 from wise.worksheet.models import MathematicalEquation, Workspace, Cell, Symbol, Function, Rule, RuleSet
 
+from reversion.admin import VersionAdmin
 from django.contrib import admin
 
 #class EquationInline(admin.StackedInline):
@@ -13,7 +14,10 @@ class WorkspaceAdmin(admin.ModelAdmin):
     ]
     #inlines = [EquationInline]
 
-admin.site.register(Workspace)
+class VersionedWorkspace(VersionAdmin):
+    pass
+
+admin.site.register(Workspace,VersionedWorkspace)
 admin.site.register(MathematicalEquation)
 admin.site.register(Cell)
 admin.site.register(Symbol)
