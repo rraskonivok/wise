@@ -16,6 +16,11 @@
 
   <!-- Notification Plugin -->
  <script src="/static/pnotify.js" type="text/javascript"></script>
+ <script src="/static/dimensions.js" type="text/javascript"></script>
+ <script src="/static/tooltip.js" type="text/javascript"></script>
+
+ <!-- Hotkeys Plugin -->
+ <script src="/static/keys.js" type="text/javascript"></script>
 
 </head>
 <body>
@@ -54,7 +59,7 @@
             <h2 class="title">{{title|title}}</h2>
             <div class="inner">
               <hr />
-              <p> <span class="gray"><a href="javascript:$('.equation button').toggle()">Toggle Controls</a></span></p>
+              <p> <span class="gray"><a href="javascript:$('.equation button').toggle()">Toggle Controls</a> | <a id="hovertoggle" href="#">Show Containers</a></span></p>
               <p class="first">
                 <div id="workspace">
                     {% for equation in equations %}
@@ -67,11 +72,7 @@
         </div>
 
         <div id="selectionlist"></div>
-        <div id="footer">
-          <div class="block">
-            <p>Copyright &copy; 2010 Your Site.</p>
-          </div>
-        </div>
+
       </div>
       <div id="sidebar">
         <div class="block">
@@ -198,28 +199,25 @@
     {
         $(document).bind( 'keydown', 'f4', function() {show_debug_menu()})
             .bind('keydown', 't', function() {lookup_transform()})
-            .bind('keydown', 'del', function() {remove_element()})
+//            .bind('keydown', 'del', function() {remove_element()})
             .bind('keydown', 'esc', function() {clear_selection()})
             .bind('keydown', 'r', function() {refresh_jsmath()})
             .bind('keydown', 'tab', function() {next_placeholder()})
             .bind('keydown', 's', function() {show_cmd()}
         )
-    
-        bind_hover_toggle();
-    
-        //JIT Canvas
-        //var infovis = document.getElementById('infovis');
-        //var w = infovis.offsetWidth, h = infovis.offsetHeight;
-    
-        //__CANVAS__ = new Canvas('mycanvas', {
-        //    'injectInto': 'infovis',
-        //    'width': w,
-        //    'height': h,
+
+
         //});
     
         // Text selection on jsMath rendered math objects causes
         // issues, so we disable it.
         $(".typeset").disableTextSelect();
+
+        $('#vis_container').toggle(function() {
+            $('.container:hover').css('padding-top','5px');
+        }, function() {
+            $('.container:not(.placeholder):hover').css('padding-top','0px');
+        });
     
         $("#cmd_form").submit(function(e) { 
                 exec_cmd();
@@ -249,14 +247,6 @@
             handle_palette();
         }});
     
-        //Handle the right toolbar
-        $('#rtoolbar').tabs({
-            load: function() {
-                refresh_jsmath($("#rtoolbar"));
-                traverse_lines();
-            }
-        });
-    
         //Make buttons pretty
         $('.equation button').parent().buttonset();
         $('#cmdbuttons button').parent().buttonset();
@@ -280,6 +270,8 @@
             }
             CELLS.push(new_cell);
         }
+        
+        bind_hover_toggle();
     }
 
  </script>

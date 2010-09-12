@@ -178,13 +178,13 @@ selection.clear = function () {
 }
 
 function clear_selection() {
-    //TODO: Remove $.each
     $.each($("#selectionlist button"), function () {
         $(this).remove();
     });
+
     $('.selected').removeClass('selected');
     $('#options').hide();
-//    $('#selectionlist').fadeIn();
+
     selection.clear();
 }
 
@@ -394,37 +394,49 @@ function debug_math() {
     });
 }
 
+function highlight() {
+
+}
+
 function bind_hover_toggle() {
     $('#hovertoggle').toggle(
 
-    function () {
-        $('#workspace .term[math]').hover(
-
         function () {
-            $(this).addClass('term_hover')
+            $('#workspace .term[math]').hover(
+
+            function () {
+//                $(this).fadeTo('slow',1);
+//                $(this).addClass('term_hover');
+//                $(this).dequeue();
+            }, function () {
+//                $(this).fadeTo('slow',0.3);
+//                $(this).removeClass('term_hover');
+//                $(this).dequeue();
+            })
+
+            $('#workspace .container[math]').hover(
+
+            function () {
+                $(this).addClass('container_hover')
+                $(this).dequeue();
+            }, function () {
+                $(this).removeClass('container_hover')
+                $(this).dequeue();
+            })
+
         }, function () {
-            $(this).removeClass('term_hover')
-        })
+            $('#workspace .term[math]').hover(
 
-        $('#workspace .container[math]').hover(
+                function () {
+                    $(this).removeClass('term_hover')
+                })
 
-        function () {
-            $(this).addClass('container_hover')
-        }, function () {
-            $(this).removeClass('container_hover')
+                $('#workspace .container[math]').hover(
+                    function () {
+                        $(this).removeClass('container_hover')
+                    }
+                )
         })
-    }, function () {
-        $('#workspace .term[math]').hover(
-
-        function () {
-            $(this).removeClass('term_hover')
-        })
-        $('#workspace .container[math]').hover(
-
-        function () {
-            $(this).removeClass('container_hover')
-        })
-    })
 }
 
 function toggle_sageinput() {
@@ -511,6 +523,10 @@ function apply_rule(rule, selections) {
 
     if (selections == null) {
         //Fetch the math for each of the selections
+        if(selection.count == 0) {
+            error("Selection is empty.");
+            return;
+        }
         data.selections = selection.list_prop('math')
     }
     else {
@@ -590,6 +606,10 @@ function apply_transform(transform, selections) {
 
     if (selections == null) {
         //Fetch the math for each of the selections
+        if(selection.count == 0) {
+            error("No selection to apply transform to");
+            return;
+        }
         data.selections = selection.list_prop('math')
     }
     else {
@@ -1052,7 +1072,11 @@ function are_siblings(first, second) {
 function traverse_lines() {
     //All elements with a [title] attribute show tooltips
     //containing their math-type
-    //$('#workspace *[title]').tooltip({track:true});
+    $('#workspace *[math-type]').tooltip({
+        track:true,
+        bodyHandler: $(this).attr('math-type'),
+    });
+
     $('#workspace *[math-meta-class=term]').unbind('click');
     $('#math_palette .placeholder').unbind('click');
     $('#rtoolbar *[math-meta-class=term]').unbind('click');

@@ -1,3 +1,29 @@
+/*
+.term:not(.placeholder):hover {
+    border-bottom: 5px solid #9CBD86;
+    margin-bottom: -5px;
+}
+
+.container:not(.placeholder):hover {
+    border-top: 5px solid #989CD7;
+    margin-top: -5px;
+}
+*/
+
+.term_hover {
+    border-bottom: 5px solid #9CBD86;
+    margin-bottom: -5px;
+}
+
+.container_hover {
+    border: 1px solid #ccc;
+    padding-bottom: 4px;
+    padding-top: 4px;
+    box-shadow: 10px 10px 5px #888; 
+    padding: 5px 5px 5px 15px;
+}
+
+
 #math_palette .term:not(.placeholder):hover {
     border-bottom: 5px solid #9CBD86;
     margin-bottom: -5px;
@@ -18,7 +44,6 @@
     background: none !important;
     border-bottom: none !important;
 }
-
 
 .placeholder {
     border: 1px dashed #d4a5a5 !important;
@@ -43,6 +68,71 @@
     min-height: 20px;
 }
 
+#tooltip {
+	position: absolute;
+	z-index: 3000;
+	border: 1px solid #111;
+	background-color: #eee;
+	padding: 5px;
+	opacity: 0.85;
+}
+#tooltip h3, #tooltip div { margin: 0; }
+
+/* 
+	Document   : jquery.pnotify.default.css
+	Created on : Nov 23, 2009, 3:14:10 PM
+	Author     : Hunter Perrin
+	Description:
+		Default styling for Pines Notify jQuery plugin.
+*/
+
+/* Notice
+----------------------------------*/
+.ui-pnotify {
+	top: 18px;
+	right: 18px;
+	position: absolute;
+	height: auto;
+	/* Ensure that the notices are on top of everything else. */
+	z-index: 9999;
+}
+
+/* This hides position: fixed from IE6, which doesn't understand it. */
+html > body .ui-pnotify {
+	position: fixed;
+}
+.ui-pnotify .ui-pnotify-shadow {
+	margin: 0;
+	position: absolute;
+	top: .1em;
+	left: .1em;
+	bottom: -.2em;
+	right: -.2em;
+	z-index: -1;
+}
+.ui-pnotify-container {
+	background-position: 0 0;
+	padding: .8em;
+	height: 100%;
+}
+.ui-pnotify-closer {
+	float: right;
+	margin-left: .2em;
+}
+.ui-pnotify-title {
+	display: block;
+	font-size: 1.2em;
+	font-weight: bold;
+	margin-bottom: .4em;
+}
+.ui-pnotify-text {
+	display: block;
+}
+.ui-pnotify-icon, .ui-pnotify-icon span {
+	display: block;
+	float: left;
+	margin-right: .2em;
+}
 
 /* History Pulldown
 ----------------------------------*/
@@ -52,6 +142,7 @@
 	right: 18px;
 	width: 70px;
 	border-top: none;
+	/* Ensure that the history container is on top of the notices. */
 	z-index: 10000;
 }
 .ui-pnotify-history-container .ui-pnotify-history-header {
