@@ -267,24 +267,14 @@ def ws(request, eq_id):
         html_cells.append(cellify(''.join(html_eq),index))
         json_cells.append(json_cell)
 
-    if request.GET.get('new'):
-        return render_to_response('worksheet_new.html', {
-            'title': ws.name,
-            'equations': html_cells,
-            'username': request.user.username,
-            'namespace_index': uid.next()[3:],
-            'cell_index': len(cells),
-            'json_cells': json.dumps(json_cells),
-            })
-    else:
-        return render_to_response('worksheet.html', {
-            'title': ws.name,
-            'equations': html_cells,
-            'username': request.user.username,
-            'namespace_index': uid.next()[3:],
-            'cell_index': len(cells),
-            'json_cells': json.dumps(json_cells),
-            })
+    return render_to_response('worksheet_new.html', {
+        'title': ws.name,
+        'equations': html_cells,
+        'username': request.user.username,
+        'namespace_index': uid.next()[3:],
+        'cell_index': len(cells),
+        'json_cells': json.dumps(json_cells),
+        })
 
 #@errors
 #def json_tree(request, eq_id):
