@@ -1,0 +1,74 @@
+#math_palette .term:not(.placeholder):hover {
+    border-bottom: 5px solid #9CBD86;
+    margin-bottom: -5px;
+}
+
+#math_palette .container:not(.placeholder):hover {
+    border-top: 5px solid #989CD7;
+    margin-top: -5px;
+}
+
+.placeholder.selected {
+    background-color: #d4a5a5;
+}
+
+/* Override the default sidebar stylesheet to remove ugly */
+
+#sidebar ul li a:link, #sidebar ul li a:visited {
+    background: none !important;
+    border-bottom: none !important;
+}
+
+
+.placeholder {
+    border: 1px dashed #d4a5a5 !important;
+    min-height: 20px;
+    padding-left: 10px;
+    padding-right: 10px;
+    display: inline-block;
+    vertical-align: middle;
+    opacity: 1.0 !important;
+}
+
+#selectionlist {
+    border-top-left-radius: 4px 4px;
+    border-top-right-radius: 4px 4px;
+    background: #262626;
+    color: white;
+    position: fixed;
+    bottom: 1px;
+    width: 70%;
+    /* 70% of 960px */
+    min-width: 672px;
+    min-height: 20px;
+}
+
+
+/* History Pulldown
+----------------------------------*/
+.ui-pnotify-history-container {
+	position: absolute;
+	top: 0;
+	right: 18px;
+	width: 70px;
+	border-top: none;
+	z-index: 10000;
+}
+.ui-pnotify-history-container .ui-pnotify-history-header {
+	padding: 2px;
+}
+.ui-pnotify-history-container button {
+	cursor: pointer;
+	display: block;
+	width: 100%;
+}
+.ui-pnotify-history-container .ui-pnotify-history-pulldown {
+	display: block;
+	margin: 0 auto;
+}
+
+/*
+#jsMath_button {
+	display: none;
+}
+*/

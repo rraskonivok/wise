@@ -1,0 +1,289 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Wise ( {{title|title}} ) </title>
+
+  <link rel="stylesheet" type="text/css" href="/static/css/math.css" />
+  <link rel="stylesheet" type="text/css" href="/static/ui/ui.css" />
+  <link rel="stylesheet" href="/static/css/base.css" type="text/css" media="screen" />
+  <link rel="stylesheet" id="current-theme" href="/static/css/themes/default/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="/static/css/worksheet.css" />
+
+  <!-- Load jQuery -->
+ <script src="/static/jquery.js" type="text/javascript"></script>
+ <script src="/static/jquery-ui.js" type="text/javascript"></script>
+
+  <!-- Notification Plugin -->
+ <script src="/static/pnotify.js" type="text/javascript"></script>
+
+</head>
+<body>
+  <div id="container">
+    <div id="header">
+      <h1><a href="index.html">Worksheet</a></h1>
+      <div id="user-navigation">
+        <ul class="wat-cf">
+          <li><a href="#">{{username}}</a></li>
+          <li><a href="#">Profile</a></li>
+          <li><a href="#">Settings</a></li>
+          <li><a class="logout" href="#">Logout</a></li>
+        </ul>
+      </div>
+
+      <div id="main-navigation">
+        <ul class="wat-cf">
+          <li class="first"><a href="#block-text">Main Page</a></li>
+          <li class="active"><a href="#block-text">Active</a></li>
+          <li><a href="#block-login">Login</a></li>
+          <li><a href="#block-signup">Signup</a></li>
+        </ul>
+      </div>
+    </div>
+    <div id="wrapper" class="wat-cf">
+      <div id="main">
+
+        <div class="block" id="block-text">
+          <div class="secondary-navigation">
+            <ul class="wat-cf">
+              <li class="active first"><a href="#block-text">Text</a></li>
+              <li><a href="javascript:new_line('eq')">New Equation</a></li>
+            </ul>
+          </div>
+          <div class="content">
+            <h2 class="title">{{title|title}}</h2>
+            <div class="inner">
+              <hr />
+              <p> <span class="gray"><a href="javascript:$('.equation button').toggle()">Toggle Controls</a></span></p>
+              <p class="first">
+                <div id="workspace">
+                    {% for equation in equations %}
+                        {{equation|safe}} 
+                    {% endfor %}
+                </div>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div id="selectionlist"></div>
+        <div id="footer">
+          <div class="block">
+            <p>Copyright &copy; 2010 Your Site.</p>
+          </div>
+        </div>
+      </div>
+      <div id="sidebar">
+        <div class="block">
+
+          <div class="secondary-navigation">
+            <ul class="wat-cf">
+              <li id="tab_math_palette" class="active first"><a href="javascript:palette(1)">Palette</a></li>
+              <li id="tab_rules_palette"><a href="javascript:palette(2)">Rules</a></li>
+            </ul>
+          </div>
+
+          <div id="math_palette" style="display:none">
+          </div>
+
+          <div id="rules_palette" style="display:none">
+          </div>
+
+        </div>
+        <!--
+        <div class="block">
+          <h3>Switch Theme</h3>
+          <ul class="navigation">
+            <li><a href="#" onclick="Theme.activate('default'); return false;">Default</a></li>
+            <li><a href="#" onclick="Theme.activate('amro'); return false;">Amro</a></li>
+            <li><a href="#" onclick="Theme.activate('bec'); return false;">Bec</a></li>
+            <li><a href="#" onclick="Theme.activate('bec-green'); return false;">Bec-Green</a></li>
+            <li><a href="#" onclick="Theme.activate('blue'); return false;">Blue</a></li>
+            <li><a href="#" onclick="Theme.activate('djime-cerulean'); return false;">Djime-Cerulean</a></li>
+            <li><a href="#" onclick="Theme.activate('drastic-dark'); return false;">Drastic Dark</a></li>
+            <li><a href="#" onclick="Theme.activate('kathleene'); return false;">Kathleene</a></li>
+            <li><a href="#" onclick="Theme.activate('olive'); return false;">Olive</a></li>
+            <li><a href="#" onclick="Theme.activate('orange'); return false;">Orange</a></li>
+            <li><a href="#" onclick="Theme.activate('reidb-greenish'); return false;">Greenish</a></li>
+            <li><a href="#" onclick="Theme.activate('warehouse'); return false;">Warehouse</a></li>
+          </ul>
+        </div>
+        -->
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Load jsMath -->
+ <script src="/static/jsMath/easy/load.js"></script>
+
+  <!-- Worksheet functionality -->
+ <script src="/static/js/worksheet.js" type="text/javascript"></script>
+
+  <!-- Expression tree functionality -->
+ <script src="/static/js/tree.js" type="text/javascript"></script>
+
+ <!-- Script is put down here to optimize load time -->
+ <script type="text/javascript">
+
+    // This is passed by Django to help us keep track of the #uid
+    // counter
+    
+    // Count of how many "nodes"/uid tagged elements there are in the
+    // DOM
+    var NAMESPACE_INDEX = {{ namespace_index }};
+    
+    // Count of how many cells are in the workspace
+    var CELL_INDEX = {{ cell_index }};
+    
+    // Raw json sent from the server when the page
+    // initializes
+    var JSON_TREE = $.parseJSON('{{ json_cells|safe }}');
+    
+    // Array of cells, index corresponds to order on page. Each
+    // element contains another array of equations in that cell.
+    var CELLS = [];
+    
+    // Dictionary of equations indexed by uid
+    var EQUATIONS = {};
+    
+    // Lookup table of active equations which maps uid -> internal
+    // tree object
+    var NODES = {};
+    
+    // InfoVis Canvas object and active_graph singleton
+    var __CANVAS__;
+    var active_graph = null;
+    
+    $(document).ajaxError(function() {
+        error("Error connecting to server")
+    });
+    
+    $(document).ready(function () {
+        init();
+    
+        //Only show the workspace after all math is rendered
+        jsMath.Synchronize(function () {
+            refresh_jsmath();
+            $(".lines").fadeIn('fast');
+        });
+    });
+    
+    $(document).ajaxSuccess(function() {
+        $('.expand').click(function() {
+            $(this).next().toggle();
+            return false;
+        }).next()
+        //refresh_jsmath($('#rtoolbar'))
+    });
+
+    $('#rules_palette').load('/rule_request');
+
+    function palette(num) {
+        if(num == 1) {
+            $('#math_palette').show();
+            $('#rules_palette').hide();
+            $('#tab_math_palette').addClass('active');
+            $('#tab_rules_palette').removeClass('active');
+        }
+        else {
+            $('#math_palette').hide();
+            $('#rules_palette').show();
+            $('#tab_rules_palette').addClass('active');
+            $('#tab_math_palette').removeClass('active');
+        }
+    }
+    
+    function init()
+    {
+        $(document).bind( 'keydown', 'f4', function() {show_debug_menu()})
+            .bind('keydown', 't', function() {lookup_transform()})
+            .bind('keydown', 'del', function() {remove_element()})
+            .bind('keydown', 'esc', function() {clear_selection()})
+            .bind('keydown', 'r', function() {refresh_jsmath()})
+            .bind('keydown', 'tab', function() {next_placeholder()})
+            .bind('keydown', 's', function() {show_cmd()}
+        )
+    
+        bind_hover_toggle();
+    
+        //JIT Canvas
+        //var infovis = document.getElementById('infovis');
+        //var w = infovis.offsetWidth, h = infovis.offsetHeight;
+    
+        //__CANVAS__ = new Canvas('mycanvas', {
+        //    'injectInto': 'infovis',
+        //    'width': w,
+        //    'height': h,
+        //});
+    
+        // Text selection on jsMath rendered math objects causes
+        // issues, so we disable it.
+        $(".typeset").disableTextSelect();
+    
+        $("#cmd_form").submit(function(e) { 
+                exec_cmd();
+                e.preventDefault();
+        });
+        
+        //Load the math palette
+        $.ajax({
+        url: '/palette/',
+        success: function(data) {
+            $("#math_palette").replace(data)
+    
+    
+            //Make the palette sections collapsable
+            $('#math_palette .pal').bind('click',function() {
+                    $(this).next().toggle();
+                    return false
+            }).next().hide();
+    
+            //Make the Palette look like an accordion widget
+            //$('#math_palette').addClass('ui-accordion ui-widget ui-helper-reset ui-accordion-icons')
+            //$('#math_palette h3').addClass('ui-accordion-header ui-helper-reset ui-state-default')
+            //$('#math_palette div').addClass('ui-accordion-content ui-helper-reset ui-widget-content')
+    
+    
+            //Make the math terms interactive
+            handle_palette();
+        }});
+    
+        //Handle the right toolbar
+        $('#rtoolbar').tabs({
+            load: function() {
+                refresh_jsmath($("#rtoolbar"));
+                traverse_lines();
+            }
+        });
+    
+        //Make buttons pretty
+        $('.equation button').parent().buttonset();
+        $('#cmdbuttons button').parent().buttonset();
+    
+        $(".lines tbody").sortable({
+            //handle: '.hand',
+        }).disableSelection();
+    
+        traverse_lines();
+    
+        for(var cell in JSON_TREE) {
+            cell_index = cell;
+            var cell = JSON_TREE[cell];
+            var new_cell = new Cell();
+            new_cell.dom = $('#workspace').find('[data-index='+cell_index+']');
+            for(var eq in cell){
+                var eq_index = eq;
+                var eq = cell[eq];
+                EQUATIONS[eq_index] = build_tree_from_json(eq);
+                new_cell.equations.push(eq);
+            }
+            CELLS.push(new_cell);
+        }
+    }
+
+ </script>
+
+</body>
+</html>
+
