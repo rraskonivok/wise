@@ -23,6 +23,7 @@
     padding: 5px 5px 5px 15px;
 }
 
+/* Math Palette */
 
 #math_palette .term:not(.placeholder):hover {
     border-bottom: 5px solid #9CBD86;
@@ -32,6 +33,24 @@
 #math_palette .container:not(.placeholder):hover {
     border-top: 5px solid #989CD7;
     margin-top: -5px;
+}
+
+#math_palette { 
+    max-height: 500px;
+    overflow: auto;
+}
+
+.panel_category { 
+    clear: right;
+    display: block;
+    padding: 10px 15px;
+    margin: 0;
+    font-size: 13px;
+}
+
+.panel_frame {
+    padding: 10px 15px;
+    margin: 0;
 }
 
 .placeholder.selected {

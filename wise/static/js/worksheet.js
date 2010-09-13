@@ -336,24 +336,13 @@ function show_debug_menu() {
 function resize_parentheses() {
     //Scale parentheses
     //TODO: Remove $.each
-    $.each($('.pnths'), function (obj) {
+    $.each($('.pnths','#workspace'), function (obj) {
         parent_height = $(this).parent().height();
         $(this).height(parent_height)
         $(this).css('margin-top', -parent_height / 3)
         $(this).css('font-size', String(parent_height / 3) + 'px')
     });
 }
-
-/*
-function connect_to_every_sortable(object)
-{
-    $(object).children().draggable({
-        connectToSortable: $('.ui-sortable'),
-        helper: 'clone',
-        appendTo: 'body',
-    });
-}
-*/
 
 function fade_and_destroy(object) {
     $(object).fadeOut('fast', function () {
@@ -1084,33 +1073,26 @@ function traverse_lines() {
 
     _.each(untooltiped, make_tooltip);
 
-    $('#workspace *[math-meta-class=term]').unbind('click');
-    $('#math_palette .placeholder').unbind('click');
-    $('#rtoolbar *[math-meta-class=term]').unbind('click');
-    $('#workspace *[math-meta-class=term]').click(
+    $("[math-meta-class=term]","#workspace").unbind('click');
+    $(".placeholder","#math_palette").unbind('click');
+
+    $("[math-meta-class=term]","#workspace").click(
         function (event) {
             select_term(this);
             event.stopPropagation()
         }
     );
 
-    $('#math_palette *[math-meta-class=term]').not('.placeholder').click(
+    $("[math-meta-class=term]","#math_palette").not('.placeholder').click(
         function (event) {
             select_term(this);
             event.stopPropagation()
-        });
-
-    $('#rtoolbar *[math-meta-class=term]').click(
-
-    function (event) {
-        select_term(this);
-        event.stopPropagation()
-    });
-
+        }
+    );
 
     resize_parentheses()
     //Webkit requires that we run this twice
-    resize_parentheses()
+//    resize_parentheses()
 
     $('.equation button').parent().buttonset();
 }

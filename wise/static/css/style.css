@@ -183,7 +183,13 @@ input.search {
 
 /* Math Palette*/
 
-#palette {
+.panel_category { 
+    border-bottom: 1px solid black;
+    width: 100%;
+    background-color: red;
+}
+
+#math_palette {
     font-size: 10px;
     overflow: hidden;
     padding: 0px !important;

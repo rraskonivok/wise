@@ -29,7 +29,7 @@
 <body>
   <div id="container">
     <div id="header">
-      <h1><a href="index.html">Worksheet</a></h1>
+      <h1><a href="/">Wise</a></h1>
       <div id="user-navigation">
         <ul class="wat-cf">
           <li><a href="#">{{username}}</a></li>
@@ -42,7 +42,7 @@
       <div id="main-navigation">
         <ul class="wat-cf">
           <li class="first"><a href="#block-text">Main Page</a></li>
-          <li class="active"><a href="#block-text">Active</a></li>
+          <li class="active"><a href="#block-text">Worksheet</a></li>
           <li><a href="#block-login">Login</a></li>
           <li><a href="#block-signup">Signup</a></li>
         </ul>
@@ -202,7 +202,7 @@
     {
         $(document).bind( 'keydown', 'f4', function() {show_debug_menu()})
             .bind('keydown', 't', function() {lookup_transform()})
-//            .bind('keydown', 'del', function() {remove_element()})
+            .bind('keydown', 'del', function() {remove_element()})
             .bind('keydown', 'esc', function() {clear_selection()})
             .bind('keydown', 'r', function() {refresh_jsmath()})
             .bind('keydown', 'tab', function() {next_placeholder()})
@@ -235,7 +235,7 @@
     
     
             //Make the palette sections collapsable
-            $('#math_palette .pal').bind('click',function() {
+            $(".panel_category","#math_palette").bind('click',function() {
                     $(this).next().toggle();
                     return false
             }).next().hide();
@@ -248,6 +248,8 @@
     
             //Make the math terms interactive
             handle_palette();
+
+            traverse_lines();
         }});
     
         //Make buttons pretty
@@ -258,7 +260,6 @@
             //handle: '.hand',
         }).disableSelection();
     
-        traverse_lines();
     
         for(var cell in JSON_TREE) {
             cell_index = cell;

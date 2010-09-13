@@ -1,10 +1,11 @@
 <div id="math_palette">
     <ul class="navigation">
-    <a href="#">{{ panel.name }}</a>
     {% for panel in panels %}
-        <li>
+        <a href="#" class="panel_category">{{ panel.name }}</a>
+        <li class="panel_frame" style="display:none">
             {{ panel.html }}
         </li>
+        <hr/>
     {% endfor %}
     </ul>
 </div>
