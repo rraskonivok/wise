@@ -178,12 +178,11 @@ selection.clear = function () {
 }
 
 function clear_selection() {
-    $.each($("#selectionlist button"), function () {
-        $(this).remove();
-    });
+    // Clear the selection indicator bar
+    $("#selectionlist").empty();
 
+    // Clear the selection highlighting in the workspace
     $('.selected').removeClass('selected');
-    $('#options').hide();
 
     selection.clear();
 }
@@ -1070,28 +1069,30 @@ function are_siblings(first, second) {
 
 
 function traverse_lines() {
-    //All elements with a [title] attribute show tooltips
-    //containing their math-type
-    $('#workspace *[math-type]').tooltip({
-        track:true,
-        bodyHandler: $(this).attr('math-type'),
-    });
+    // jQuery tooltip croaks if we apply $.tooltip multiple times
+    // so we just ignore elements that we've already initiated
+    untooltiped = _.reject($('[math-type]','#workspace'), function(obj){ return obj.tooltipText });
+
+    function make_tooltip(obj) {
+        $(obj).tooltip({
+            track:true,
+            bodyHandler: $(this).attr('math-type'),
+            fade: 250,
+            delay: 1000,
+        });
+    }
+
+    _.each(untooltiped, make_tooltip);
 
     $('#workspace *[math-meta-class=term]').unbind('click');
     $('#math_palette .placeholder').unbind('click');
     $('#rtoolbar *[math-meta-class=term]').unbind('click');
-
-/*$('#workspace *[title]').simpletip(
-            {fixed:false,
-            content: $(this).attr('title'),
-            position: });*/
-
     $('#workspace *[math-meta-class=term]').click(
-
-    function (event) {
-        select_term(this);
-        event.stopPropagation()
-    });
+        function (event) {
+            select_term(this);
+            event.stopPropagation()
+        }
+    );
 
     $('#math_palette *[math-meta-class=term]').not('.placeholder').click(
         function (event) {
@@ -1163,7 +1164,7 @@ function dragging(sort_object, ui) {
 function check_container(object) {
     //This handles stupid checks that are too expensive to do via Ajax, ie removing infix sugar 
     //TODO: Remove $.each
-    $.each(object.children(), function () {
+    _.each(object.children(), function () {
         var prev = $(this).prev();
         var cur = $(this);
         var next = $(this).next();
