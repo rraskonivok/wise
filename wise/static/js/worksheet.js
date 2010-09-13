@@ -1073,28 +1073,24 @@ function traverse_lines() {
 
     _.each(untooltiped, make_tooltip);
 
-    $("[math-meta-class=term]","#workspace").unbind('click');
-    $(".placeholder","#math_palette").unbind('click');
-
-    $("[math-meta-class=term]","#workspace").click(
-        function (event) {
+    unselectable = _.reject($('[math-meta-class=term]','#workspace'), function(obj){ return obj.selectable });
+    
+    function make_selectable(obj) {
+        $(obj).click(function(event) {
             select_term(this);
-            event.stopPropagation()
-        }
-    );
+            event.stopPropagation();
+        });
+        // Pass this object in subsequent interations
+        obj.selectable = true;
+    };
 
-    $("[math-meta-class=term]","#math_palette").not('.placeholder').click(
-        function (event) {
-            select_term(this);
-            event.stopPropagation()
-        }
-    );
+    _.each(unselectable, make_selectable);
+
+    unselectable = _.reject($('[math-meta-class=term]:not(.placeholder)','#math_palette'), function(obj){ return obj.selectable });
+    _.each(unselectable, make_selectable);
 
     resize_parentheses()
-    //Webkit requires that we run this twice
-//    resize_parentheses()
 
-    $('.equation button').parent().buttonset();
 }
 
 function handle_palette() {
