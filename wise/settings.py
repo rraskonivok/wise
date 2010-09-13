@@ -77,6 +77,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
+    'django.contrib.humanize',
     'wise.worksheet',
     # Gunicorn needs to be installed in site-packages or dropped
     # into the same directory as this file, if you can't run

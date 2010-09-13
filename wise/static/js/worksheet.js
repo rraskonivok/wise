@@ -190,7 +190,6 @@ function clear_selection() {
 function select_term(object) {
     //Since the selections have changed clear any looked-up (is that even a word?) actions
     clear_lookups();
-//    $("#selectionlist").fadeIn();
 
     clickedon = $(object);
 
@@ -525,7 +524,6 @@ function apply_rule(rule, selections) {
 
         if (data.error) {
             error(data.error)
-//            $('#selectionlist').fadeIn();
             clear_selection()
             return
         }
@@ -558,6 +556,7 @@ function apply_rule(rule, selections) {
                     //nsym.attr('group',group_id_cache);
                     refresh_jsmath($(nsym));
                     nsym.fadeIn('slow');
+                    $('.equation button','#workspace').parent().buttonset();
                 } else {
                     merge_json_to_tree(NODES[obj.id()], data.new_json[i]);
                     nsym = obj.replace(data.new_html[i]).hide();
@@ -608,7 +607,6 @@ function apply_transform(transform, selections) {
 
         if (data.error) {
             error(data.error)
-//            $('#selectionlist').fadeIn();
             clear_selection()
             return
         }
@@ -864,6 +862,7 @@ function new_line(type) {
         }
 
         NAMESPACE_INDEX = data.namespace_index;
+        $('.equation button','#workspace').parent().buttonset();
     }, 'json')
     cleanup_ajax_scripts();
 }

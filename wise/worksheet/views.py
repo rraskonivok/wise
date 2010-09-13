@@ -38,6 +38,7 @@ from django.views.decorators.cache import cache_page
 from wise.worksheet.utils import *
 from wise.worksheet.forms import LoginForm
 from wise.worksheet.models import Workspace, MathematicalEquation, Cell, Symbol, Function, Rule, RuleSet
+from django.contrib.auth.models import User
 
 CACHE_INTERVAL = 30*60 # 5 Minutes
 
@@ -72,7 +73,11 @@ def account_logout(request):
 @login_required
 def home(request):
     workspaces = Workspace.objects.filter(owner=request.user)
-    return render_to_response('home.html', {'workspaces': workspaces})
+    return render_to_response('home_new.html', {'workspaces': workspaces})
+
+@login_required
+def users(request):
+    return render_to_response('users.html',{'users':User.objects.all()})
 
 def log(request):
     log = open('session.log').read()

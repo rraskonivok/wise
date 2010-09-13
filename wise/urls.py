@@ -7,6 +7,7 @@ admin.autodiscover()
 urlpatterns = patterns('',
      (r'^$', 'wise.worksheet.views.home'),
      (r'^home$', 'wise.worksheet.views.home'),
+     (r'^users$', 'wise.worksheet.views.users'),
 #     (r'^test$', 'wise.worksheet.views.test'),
      (r'^log$', 'wise.worksheet.views.log'),
      (r'^translate$', 'wise.worksheet.views.translate'),
