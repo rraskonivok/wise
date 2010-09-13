@@ -1,5 +1,6 @@
 # Wise  
 Copyright (C) 2010 Stephen Diehl (<sdiehl@clarku.edu>)
+
 Licensed under the AGPLv3.
 
 This is WISE an experimental math interface and simple
@@ -18,7 +19,7 @@ running it on any other distro.
 
 In Arch Linux all dependencies can be built using the command
 
->    yaourt -S pure pure-gsl cython python gunicorn
+>    yaourt -S pure pure-gsl cython python django gunicorn
 
 On any other Linux / BSD / Mac OSX:
 
@@ -44,12 +45,17 @@ On any other Linux / BSD / Mac OSX:
 
     <http://www.cython.org/>
 
-3.  You'll need gunicorn. If you have easy_install run:
+3.  You'll need gunicorn and django. If you have easy_install run:
+
+    >   easy_install django
 
     >   easy_install gunicorn
 
-    If not then you can find directions here:
-    <http://gunicorn.org/>
+    If not then you can find directions and source here:
+
+    <http://gunicorn.org>
+
+    <http://www.djangoproject.com>
 
 4.  In a shell in the src directory run:
     >    python manage.py run_gunicorn 

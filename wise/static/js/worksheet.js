@@ -1109,30 +1109,14 @@ function handle_palette() {
 // Drag & Drop
 ///////////////////////////////////////////////////////////
 
+//This is the functin django calls to init the sortable state of
+//new objects
 function make_sortable(object, connector, options) {
     //TODO: Add an option to disable all dragging and hover
     //states in the worksheet
-    //console.log([$(object),$(connector)]);
+    
     group_id = $(object).attr('id');
     $(object).sortable(options)
-    //console.log(object,options)
-}
-
-function dragging(sort_object, ui) {
-    drag_x = ui.offset.left
-    drag_y = ui.offset.top
-    container = get_container(ui.item);
-    if (container == null) {
-        return false;
-    }
-    container_x = container.offset().left
-    container_y = container.offset().top
-    difference_y = Math.abs(container_y - drag_y)
-    if (difference_y > 120) {
-        $(sort_object).sortable('disable');
-        $(sort_object).sortable('destroy');
-        down(container, ui.item);
-    }
 }
 
 ///////////////////////////////////////////////////////////
@@ -1140,8 +1124,7 @@ function dragging(sort_object, ui) {
 ///////////////////////////////////////////////////////////
 
 function check_container(object) {
-    //This handles stupid checks that are too expensive to do via Ajax, ie removing infix sugar 
-    //TODO: Remove $.each
+    //This handles stupid expression checking that is too expensive to do via Ajax, ie removing infix sugar 
     _.each(object.children(), function () {
         var prev = $(this).prev();
         var cur = $(this);
