@@ -246,8 +246,8 @@ Node.prototype.delNode = function (node) {
 
 Node.prototype.swapNode = function (newNode) {
 
-    console.log('newNode');
-    console.log(newNode);
+    window.log('newNode');
+    window.log(newNode);
 
     newNode._parent = this._parent;
     newNode.index = this.index;

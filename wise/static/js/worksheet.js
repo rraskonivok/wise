@@ -269,7 +269,7 @@ function select_term(object) {
         format_selection();
     }
     
-    definition_apply();
+//    definition_apply();
     if (clickedon.mathtype() != 'Placeholder') {
         placeholder_substitute();
     }
@@ -311,6 +311,7 @@ function format_selection() {
 ///////////////////////////////////////////////////////////
 // UI Handling
 ///////////////////////////////////////////////////////////
+
 $(document).ajaxStart(function () {
     $('#ajax_loading').show()
 })
@@ -401,7 +402,7 @@ function term_spacing(x, y) {
 
 function cleanup_ajax_scripts() {
     //The ensures that any <script> tags inserted via ajax don't get executed more than once
-    $("script[data-type=ajax]").remove()
+    $("script[data-type=ajax]").remove();
 }
 
 function debug_math() {
@@ -418,6 +419,7 @@ function highlight() {
 function bind_hover_toggle() {
     $('#hovertoggle').toggle(
 
+        // ---- On State ---
         function () {
             $('#workspace .term[math]').hover(
 
@@ -429,18 +431,18 @@ function bind_hover_toggle() {
 //                $(this).fadeTo('slow',0.3);
 //                $(this).removeClass('term_hover');
 //                $(this).dequeue();
-            })
+            });
 
             $('#workspace .container[math]').hover(
+                function () {
+                    $(this).addClass('container_hover')
+                    $(this).dequeue();
+                }, function () {
+                    $(this).removeClass('container_hover')
+                    $(this).dequeue();
+            });
 
-            function () {
-                $(this).addClass('container_hover')
-                $(this).dequeue();
-            }, function () {
-                $(this).removeClass('container_hover')
-                $(this).dequeue();
-            })
-
+        // ---- Off State ---
         }, function () {
             $('#workspace .term[math]').hover(
 
@@ -456,20 +458,20 @@ function bind_hover_toggle() {
         })
 }
 
-function toggle_sageinput() {
-    $('#sage_input').dialog();
-}
+//function toggle_sageinput() {
+//    $('#sage_input').dialog();
+//}
 
-function show_cmd() {
-    if (selection.count > 0) {
-        $('#cmd_input').toggle();
-        $("#sage_cmd").focus()
-    }
-}
-
-function exec_cmd() {
-    sage_inline($('#sage_cmd').val())
-}
+//function show_cmd() {
+//    if (selection.count > 0) {
+//        $('#cmd_input').toggle();
+//        $("#sage_cmd").focus()
+//    }
+//}
+//
+//function exec_cmd() {
+//    sage_inline($('#sage_cmd').val())
+//}
 
 function debug_colors(object) {
     $('li[math-meta-class=term]').css('border-bottom', '5px solid red');
@@ -534,8 +536,8 @@ function lookup_transform() {
 }
 
 function apply_rule(rule, selections) {
-    var data = {}
-    data.rule = rule
+    var data = {};
+    data.rule = rule;
     data.namespace_index = NAMESPACE_INDEX;
 
     if (selections == null) {
@@ -544,18 +546,18 @@ function apply_rule(rule, selections) {
             error("Selection is empty.");
             return;
         }
-        data.selections = selection.list_attr('math')
+        data.selections = selection.list_attr('math');
     }
     else {
-        data.selections = selections
+        data.selections = selections;
     }
 
     $.post("/cmds/apply_rule/", data, function (data) {
 
         if (data.error) {
-            error(data.error)
-            clear_selection()
-            return
+            error(data.error);
+            clear_selection();
+            return;
         }
 
         //Iterate over the elements in the image of the
@@ -563,9 +565,9 @@ function apply_rule(rule, selections) {
         //elements in the domain. Elements mapped to 'null'
         //are deleted.
         for (var i = 0; i < data.new_html.length; i++) {
-            obj = selection.nth(i)
+            obj = selection.nth(i);
             group_id = obj.attr('group');
-            group_id_cache = String(group_id)
+            group_id_cache = String(group_id);
             obj.fadeOut('slow');
 
             if (data.new_html[i] == null) {
@@ -591,7 +593,7 @@ function apply_rule(rule, selections) {
                     merge_json_to_tree(NODES[obj.id()], data.new_json[i]);
                     nsym = obj.replace(data.new_html[i]).hide();
                     nsym.attr('group', group_id_cache);
-                    refresh_jsmath($(nsym))
+                    refresh_jsmath($(nsym));
                     nsym.fadeIn('slow');
                 }
                 update(get_container(nsym))
@@ -607,18 +609,18 @@ function apply_rule(rule, selections) {
 
         NAMESPACE_INDEX = data.namespace_index;
 
-        clear_selection()
+        clear_selection();
         traverse_lines();
         //update(get_container(obj))
     }, "json");
 
-    cleanup_ajax_scripts()
-    clear_lookups()
+    cleanup_ajax_scripts();
+    clear_lookups();
 }
 
 function apply_transform(transform, selections) {
-    var data = {}
-    data.transform = transform
+    var data = {};
+    data.transform = transform;
     data.namespace_index = NAMESPACE_INDEX;
 
     if (selections == null) {
@@ -637,8 +639,8 @@ function apply_transform(transform, selections) {
     $.post("/cmds/apply_transform/", data, function (data) {
 
         if (data.error) {
-            error(data.error)
-            clear_selection()
+            error(data.error);
+            clear_selection();
             return
         }
 
@@ -672,7 +674,7 @@ function apply_transform(transform, selections) {
                     merge_json_to_tree(NODES[obj.id()], data.new_json[i]);
                     nsym = obj.replace(data.new_html[i]);
                     nsym.attr('group', group_id_cache);
-                    refresh_jsmath($(nsym))
+                    refresh_jsmath($(nsym));
                 }
                 update(get_container(nsym))
                 //Check to see if the uid assigning failed
@@ -684,28 +686,28 @@ function apply_transform(transform, selections) {
 
         NAMESPACE_INDEX = data.namespace_index;
 
-        clear_selection()
+        clear_selection();
         traverse_lines();
         //update(get_container(obj))
     }, "json");
 
-    cleanup_ajax_scripts()
-    clear_lookups()
+    cleanup_ajax_scripts();
+    clear_lookups();
 }
 
 function receive(ui, receiver, group_id) {
-    group_id = receiver.attr('id')
+    group_id = receiver.attr('id');
 
-    obj = ui.item
+    obj = ui.item;
     //If we drop an element in make sure we associate it with the group immediately
     obj.attr('group', group_id);
 
     //If we drag from a jquery draggable then the ui.item doesn't exist here yet
     //so just remap all the children with the group... this should be safe (right?)
-    receiver.children('[math]').attr('group', group_id)
+    receiver.children('[math]').attr('group', group_id);
 
     //Make sure nothing is changed while we process the request
-    receiver.attr('locked', 'true')
+    receiver.attr('locked', 'true');
 
     data = {
         //The math of the dragged object 
@@ -761,9 +763,9 @@ function remove(ui, removed) {
     //best example is when the last element from a equation side
     //(i.e. LHS) is removed, this induces the remove method on
     //LHS and appends a zero.
-    group_id = removed.attr('id')
-    obj = ui.item
-    removed.attr('locked', 'true')
+    group_id = removed.attr('id');
+    obj = ui.item;
+    removed.attr('locked', 'true');
 
     data = {
         //The math of the dragged object 
@@ -780,8 +782,8 @@ function remove(ui, removed) {
 
     $.post("/cmds/remove/", data, function (data) {
         if (data.error) {
-            error(data.error)
-            return
+            error(data.error);
+            return;
         }
 
         if (data.new_html) {
@@ -864,14 +866,14 @@ function combine(first, second, context) {
 }
 
 function new_line(type) {
-    data = {}
+    data = {};
     data.namespace_index = NAMESPACE_INDEX;
     data.cell_index = CELL_INDEX;
-    data.type = type
+    data.type = type;
 
     $.post("/cmds/new_line/", data, function (data) {
         if (data.error) {
-            error(data.error)
+            error(data.error);
         }
 
         if (data.new_html) {
@@ -899,8 +901,8 @@ function new_line(type) {
 }
 
 function save_workspace() {
-    data = {}
-    i = 0
+    data = {};
+    i = 0;
 
     //TODO: Remove $.each
     $.each($("tr[toplevel='true']", '#workspace'), function (obj) {
@@ -920,7 +922,7 @@ function save_workspace() {
 
     $.post("save/", data, function (data) {
         if (data.error) {
-            error(data.error)
+            error(data.error);
         }
         if (data.success) {
             error('Save succesfull.')
@@ -929,14 +931,14 @@ function save_workspace() {
 }
 
 function parse_pure() {
-    var data = {}
+    var data = {};
     data.code = $('#pure_input').val()
     data.namespace_index = NAMESPACE_INDEX;
     data.cell_index = CELL_INDEX;
 
     $.post("/cmds/pure_parse/", data, function (data) {
         if (data.error) {
-            error(data.error)
+            error(data.error);
         }
 
         if (data.new_html) {
@@ -962,33 +964,6 @@ function parse_pure() {
     cleanup_ajax_scripts();
 }
 
-function sage_inline(text) {
-    var data = {}
-    //    data.sage = $('#sage_text').val()
-    data.sage = text
-
-    $.post("sage_inline/", data, function (data) {
-        if (data.error) {
-            error(data.error)
-            $("#sage_cmd").focus()
-            return
-        }
-
-        obj = selection.nth(0);
-
-        group_id = obj.attr('group');
-        group_id_cache = String(group_id)
-
-        nsym = obj.replace(data);
-        nsym.attr('group', group_id_cache);
-        refresh_jsmath($(nsym))
-
-        $('body').focus()
-        $('#cmd_input').hide();
-        clear_selection();
-    }, 'json')
-}
-
 ///////////////////////////////////////////////////////////
 // Tree Traversal
 ///////////////////////////////////////////////////////////
@@ -1011,11 +986,11 @@ function get_common_parent(first, second) {
     //** Check to see if our elements are in disjoint branches **//
     //Yah, apparently the .find command can't strip the selector off a jquery() argument passed to it, lame
     if ($(first).find(second.selector).exists()) {
-        return first
+        return first;
     }
 
     if ($(second).find(first.selector).exists()) {
-        return second
+        return second;
     }
 
     //** Our elements are disjoint so ascend upwards recursively until we find the common parent**//
@@ -1069,19 +1044,19 @@ function get_nested(first, second) {
 
      */
     if ($(first).find(second.selector).exists()) {
-        return first
+        return first;
     }
 
     if ($(second).find(first.selector).exists()) {
-        return second
+        return second;
     }
 
-    return null
+    return null;
 }
 
 function are_siblings(first, second) {
     //Convenience wrapper for checking if two elements are siblings
-    return (get_common_context(first, second) != null)
+    return (get_common_context(first, second) != null);
 }
 
 function traverse_lines() {
@@ -1116,7 +1091,7 @@ function traverse_lines() {
     unselectable = _.reject($('[math-meta-class=term]:not(.placeholder)','#math_palette'), function(obj){ return obj.selectable });
     _.each(unselectable, make_selectable);
 
-    resize_parentheses()
+    resize_parentheses();
 }
 
 ///////////////////////////////////////////////////////////
@@ -1130,7 +1105,7 @@ function make_sortable(object, connector, options) {
     //states in the worksheet
     
     group_id = $(object).attr('id');
-    $(object).sortable(options)
+    $(object).sortable(options);
 }
 
 ///////////////////////////////////////////////////////////
@@ -1240,20 +1215,7 @@ function get_container(object) {
     }
 }
 
-function is_toplevel(object) {
-    //If container is RHS or LHS we consider it toplevel
-    context = get_container($(object)).attr('math-type');
-    if (context == 'LHS' || context == 'RHS') {
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-
 //This should be called after each change to the workspace
-
-
 function update(object) {
     if (object != undefined) {
         if (object.attr('locked') != 'true') {
@@ -1315,9 +1277,7 @@ function update_math(object, stack_depth) {
 
     var mst = new String;
 
-    self_id = object.attr('id');
-
-    members = $('#' + self_id + ' *[group=' + object.attr('id') + ']');
+    var members = $('[group=' + object.attr('id') + ']',object);
 
     //If we have an empty container
     if (members.length == 0) {
@@ -1326,12 +1286,13 @@ function update_math(object, stack_depth) {
 
     //TODO: Remove $.each
     $.each(members, function () {
-        if ($(this).attr("math") != undefined) {
-            mst += $(this).attr("math") + ' ';
+        mth = $(this).attr('math');
+        if (mth != undefined) {
+            mst += mth + ' ';
         }
     });
 
-    mst = '(' + object.mathtype() + ' ' + mst + ')';
+    mst = ['(', object.mathtype() ,' ' , mst ,')'].join('');
 
     object.attr('math', mst);
     object.attr('num_children', members.length)
