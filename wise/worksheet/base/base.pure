@@ -1,0 +1,197 @@
+/*
+
+  Wise
+  Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+  
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as
+  published by the Free Software Foundation, either version 3 of the
+  License, or (at your option) any later version.
+
+*/
+
+using infix_wrap;
+
+/*
+    Algebraic Ordering
+    ==============
+*/
+
+cmp x y = x < y if numberp x && numberp y ;
+cmp x y = 1 if numberp x && ~(numberp y) ;
+cmp (powr a b) (powr c d) = if a === c then cmp b d else cmp a c ;
+cmp a (powr b c) = if a === b then cmp 1 c else cmp a b ;
+cmp (powr a b) c = if a === b then cmp b 1 else cmp a c ;
+cmp (x1@_ y1) (x2@_ y2) = if x1===x2 then cmp y1 y2 else cmp x1 x2;
+cmp (x1@_ y1) x2 = if x1===x2 then 0 else cmp x1 x2;
+cmp x1 (x2@_ y2) = if x1===x2 then 1 else cmp x1 x2;
+cmp x y = str x < str y if atomp x && atomp y ;
+cmp x y = ~(cmp y x) otherwise ;
+
+/*
+    Deconstructors
+    ==============
+*/
+
+sump (add x y) = 1 ; sump x = 0 ;
+
+base (powr x y) = x;
+base x = x;
+
+exponent (powr x y) = y ;
+exponent x = 1;
+
+term (mul n x) = x if numberp n;
+term ((mul (mul x y) z)) = mul (term (mul x y)) z;
+term x = x ;
+
+constant (mul n x) = n if numberp n ;
+constant (mul (mul x y) z) = constant (mul x y) ;
+constant x = 1 ;
+
+/*
+    Equation Manipulation
+    ========================
+*/
+
+add_to_both_sides (eq lhs rhs) x = eq (lhs+x) (rhs+x);
+sub_from_both_sides (eq lhs rhs) x = eq (lhs+(Neg x)) (rhs+(Neg x));
+mul_both_sides (eq lhs rhs) x = eq (lhs*x) (rhs*x);
+div_both_sides (eq lhs rhs) x = eq (lhs/x) (rhs/x);
+
+/*
+    Trigonometric Manipulation
+    ========================
+*/
+
+/*
+    Trigonometric Simplification
+    ========================
+*/
+
+atan2 y x = atan (rational y x) if numberp x && x > 0;
+          = Pi + atan (rational y x) if all numberp [y x] && y >= 0 && x < 0;
+          = -Pi + atan (rational y x ) if all numberp [y,x] && y < 0 && x < 0;
+          = Pi/2 if all numberp [y,x] && y > 0 && x == 0;
+          = -(Pi/2) if all numberp [y,x] && y < 0 && x == 0;
+          = rational 0 0 if all numberp [y,x] && y == 0 && x == 0;
+          = atan (rational y x) otherwise;
+
+/*
+    Absolute Value Manipulation
+    ========================
+*/
+
+abs (mul x y) = mul (abs x) (abs y);
+
+/*
+    Complex Manipulation
+    ========================
+*/
+
+// Real Part
+Re (complex x y) = x;
+
+// Imaginary Part
+Im (complex x y) = y;
+
+// Modulus 
+abs (complex x y) = Sqrt (x*x+y*y);
+
+conj (complex x y);
+
+simplify_complex X = reduce X
+with
+    // Componentwise Addition
+    add (complex x y) (complex u v) = complex (x+u) (y+v);
+
+    // Componentwise Subtraction
+    add (complex x y) (Neg (complex u v)) = (complex (x-u) (y-v));
+
+    // Componentwise Multiplication
+    mul (complex a b) (complex c d) = (complex (a*c-b*d) (b*c+a*d));
+
+    rational (complex a b) (complex c d) = (complex 
+    (rational (a*c+b*d) (c^2 + d^2))
+    (rational (b*c-a*d) (c^2 + d^2))
+    )
+end;
+
+rect_to_polar X = reduce X
+with
+    (complex 0 0) = 0;
+    (complex x y) = (Sqrt (x*x+y*y)) * exp( I * (atan2 y x));
+end;
+
+//complex_sqrt X = reduce X
+//with
+//    Sqrt (complex x y) = ( Sqrt (x*x+y*y) ) * Exp ( (Arg () );
+//end;
+
+complex_trig_expand X = reduce X
+with
+    Sin (complex x y)  = complex (Sin x*Cosh y) (Cos x*Sinh y);
+    Cos (complex x y)  = complex (Cos x*Cosh y) (-Sin x*Sinh y);
+    Tan (complex x y)  = (complex (Sin (2*x)) (Sinh (2*y))) / (Cos (2*x)+Cosh (2*y));
+end;
+
+polar_to_rect X = reduce X
+with
+    mul r (exp (mul I theta)) = complex;
+end;
+
+complex_split (complex x y) = x + (I * y);
+//complex_rect (Complex x y) = (Complex r*cos t +: r*sin t;
+
+/*
+    Automatic Simplification
+    ========================
+*/
+
+algebra_normal X = (simplify_multiplication . 
+                    simplify_addition .
+                    simplify_power . 
+                    simplify_rational) X;
+
+simplify_multiplication X = reduce X
+with
+    mul 0 x = 0 ;
+    mul x y = x * y if numberp x && numberp y;
+    mul x y = powr (base x) (add (exponent x) (exponent y)) if (base x) === (base y) ;
+    mul (mul a x) y = mul a ( powr (base x) (add (exponent x) (exponent y)) ) if (base x) === (base y) ;
+    mul x y = mul y x if cmp y x ;
+    mul (mul x y) z = mul (mul x z) y if cmp z y ;
+    mul x (mul y z) = mul (mul x y) z ;
+    mul x (Neg y) = mul (Neg x) y;
+end;
+
+simplify_addition X = reduce X
+with
+    add 0 x = x ;
+    add x y = x + y if numberp x && numberp y;
+    add a b = (mul ( (constant a) + (constant b) ) (term a)) if (term a) === (term b) ;
+    add (add a b)  c = add a (mul (add (constant b) (constant c)) (term b)) if (term b) === (term c) ;
+    add a b = add b a if (cmp b a) && ~(sump a) ;
+    add (add a b)  c = add (add a c) b if cmp c b ;
+    add a (add b c) = add (add a b) c;
+    add (Neg x) (Neg y) = Neg (add x y);
+end;
+
+simplify_power X = reduce X
+with
+    powr x 0 = 1;
+    powr x 1 = x;
+    powr 0 x = 0;
+    powr 1 x = 1;
+    powr x y = x ^ y if numberp x && numberp y;
+    powr (powr r s) w = powr r (mul s w) if numberp w ;
+    powr (mul x y) w = mul (powr x w) (powr y w) if numberp w ;
+end;
+
+simplify_rational X = reduce X
+with
+    rational x y = mul x (powr y (Neg 1)) ;
+end;
+
+maptox x y = (x+y)+z if numberp x && numberp y;
+maptox x y = (x/y);

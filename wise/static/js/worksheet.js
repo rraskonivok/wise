@@ -192,7 +192,6 @@ function clear_selection() {
     selection.clear();
 }
 
-substitute_stoplist = ['Placeholder'];
 
 function select_term(object) {
     //Since the selections have changed clear any looked-up (is that even a word?) actions
@@ -270,11 +269,15 @@ function select_term(object) {
         format_selection();
     }
     
+    definition_apply();
     if (clickedon.mathtype() != 'Placeholder') {
         placeholder_substitute();
     }
 }
 
+substitute_stoplist = ['Placeholder'];
+
+// ( Placeholder, Placeholder , ... , Expression )
 function placeholder_substitute() {
     if (selection.count >= 2) {
         heads = _.first(selection.list(), selection.count-1);
@@ -296,6 +299,8 @@ function placeholder_substitute() {
         }
     }
 }
+
+// ( Definition, Definition , ... , TExpression )
 
 function format_selection() {
     $($("#selectionlist").children()).css('background-color', '#9CBD86');
