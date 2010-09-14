@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // break if Firebug / JS Consle is turned off.
 
 // Source: http://paulirish.com/2009/log-a-lightweight-wrapper-for-consolelog/
+//
 window.log = function(){
   log.history = log.history || [];   // store logs to an array for reference
   log.history.push(arguments);
@@ -74,6 +75,14 @@ $.fn.mathtype = function () {
     return $(this).attr('math-type')
 };
 
+$.fn.is_placeholder = function() {
+    return $(this).attr('math-type') == 'Placeholder';
+}
+
+$.fn.is_toplevel = function() {
+    return $(this).attr('toplevel') == 'true';
+}
+
 $.fn.node = function () {
     return NODES[$(this).id()]
 };
@@ -94,10 +103,6 @@ $.extend($.fn.disableTextSelect = function () {
     });
 });
 
-function whatisit(object) {
-    return $(object).id() + ', ' + $(object).mathtype() + ', ' + $(object).math()
-}
-
 function sleep(milliseconds) {
     var start = new Date().getTime();
     for (var i = 0; i < 1e7; i++) {
@@ -107,10 +112,10 @@ function sleep(milliseconds) {
     }
 }
 
-
 ///////////////////////////////////////////////////////////
 // Selection Handling
 ///////////////////////////////////////////////////////////
+
 // Out global selection container
 var selection = {};
 selection.count = 0;
@@ -145,9 +150,9 @@ selection.list = function () {
     return lst;
 }
 
-//Return a list of the given property of the elements
-//Ex: selection.list_prop('math')
-selection.list_prop = function (prop) {
+//Return a list of the given attribute of the elements
+//Ex: selection.list_attr('math')
+selection.list_attr = function (prop) {
     var lst = [];
     for (i in this.objs) {
         lst.push(this.objs[i].attr(prop));
@@ -186,6 +191,8 @@ function clear_selection() {
 
     selection.clear();
 }
+
+substitute_stoplist = ['Placeholder'];
 
 function select_term(object) {
     //Since the selections have changed clear any looked-up (is that even a word?) actions
@@ -233,8 +240,6 @@ function select_term(object) {
 
         li.attr('index', index)
 
-        //li.attr('math',clickedon.attr('math'))
-        //li.attr('math-type',clickedon.attr('math-type'))
         cancel.attr('index', index)
 
         li.bind('mouseover', function () {
@@ -262,13 +267,33 @@ function select_term(object) {
 
         $("#selectionlist").append(li);
 
-        //clickedon.effect('transfer',{ to: li, className: 'ui-effects-transfer' },400)
         format_selection();
-        //Bind to select object command
     }
+    
+    if (clickedon.mathtype() != 'Placeholder') {
+        placeholder_substitute();
+    }
+}
 
-    if (selection.count == 2 && selection.nth(0).attr('math-type') == 'Placeholder') {
-        apply_transform('base/PlaceholderSubstitute');
+function placeholder_substitute() {
+    if (selection.count >= 2) {
+        heads = _.first(selection.list(), selection.count-1);
+        last = _.last(selection.list());
+
+        if(last.is_toplevel()) {
+            error('Cannot substitute toplevel element into expression');
+            return;
+        }
+
+        //Yah, this hoses Chromium unless we add == true at
+        //the end, don't understand why
+        run_of_ph = ( _.all(_.invoke(heads,'is_placeholder')) == true );
+
+        if(run_of_ph == true) {
+            _.each(heads, function(slt) {
+                apply_transform('base/PlaceholderSubstitute',[slt,last]);
+            });
+        }
     }
 }
 
@@ -459,7 +484,7 @@ function lookup_transform() {
     data = {}
 
     //Get the types of the values we have selected
-    data.selections = selection.list_prop('math-type')
+    data.selections = selection.list_attr('math-type')
 
     //Iterate through all elements
     //if(get_nested(first,second) != null)
@@ -514,7 +539,7 @@ function apply_rule(rule, selections) {
             error("Selection is empty.");
             return;
         }
-        data.selections = selection.list_prop('math')
+        data.selections = selection.list_attr('math')
     }
     else {
         data.selections = selections
@@ -597,10 +622,11 @@ function apply_transform(transform, selections) {
             error("No selection to apply transform to");
             return;
         }
-        data.selections = selection.list_prop('math')
+        selections = selections.list();
+        data.selections = selection.list_attr('math')
     }
     else {
-        data.selections = selections
+        data.selections = _.invoke(selections,'math');
     }
 
     $.post("/cmds/apply_transform/", data, function (data) {
@@ -616,7 +642,7 @@ function apply_transform(transform, selections) {
         //elements in the domain. Elements mapped to 'null'
         //are deleted.
         for (var i = 0; i < data.new_html.length; i++) {
-            obj = selection.nth(i)
+            obj = selections[i];
             group_id = obj.attr('group');
             group_id_cache = String(group_id)
 
@@ -1053,9 +1079,6 @@ function are_siblings(first, second) {
     return (get_common_context(first, second) != null)
 }
 
-//TODO: Move this to inline JS in worksheet.html
-
-
 function traverse_lines() {
     // jQuery tooltip croaks if we apply $.tooltip multiple times
     // so we just ignore elements that we've already initiated
@@ -1088,19 +1111,6 @@ function traverse_lines() {
     unselectable = _.reject($('[math-meta-class=term]:not(.placeholder)','#math_palette'), function(obj){ return obj.selectable });
     _.each(unselectable, make_selectable);
 
-    resize_parentheses()
-
-}
-
-function handle_palette() {
-
-    //$('#palette *[title]').tooltip({track:true});
-    //$('#palette *[math-meta-class=term]').click(
-    //        function(event) {
-    //            select_term(this); event.stopPropagation() 
-    //        });
-    //Prevent subelements of math elements in the palette from
-    //being selected
     resize_parentheses()
 }
 

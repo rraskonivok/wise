@@ -35,7 +35,7 @@
           <li><a href="#">{{username}}</a></li>
           <li><a href="#">Profile</a></li>
           <li><a href="#">Settings</a></li>
-          <li><a class="logout" href="#">Logout</a></li>
+          <li><a class="logout" href="/accounts/logout">Logout</a></li>
         </ul>
       </div>
 
@@ -43,8 +43,6 @@
         <ul class="wat-cf">
           <li class="first"><a href="/">Main Page</a></li>
           <li class="active"><a href="#block-text">Worksheet</a></li>
-          <li><a href="#block-login">Login</a></li>
-          <li><a href="#block-signup">Signup</a></li>
         </ul>
       </div>
     </div>
@@ -56,6 +54,7 @@
             <ul class="wat-cf">
               <li class="active first"><a href="#block-text">Text</a></li>
               <li><a href="javascript:new_line('eq')">New Equation</a></li>
+              <li><a href="javascript:new_line('def')">New Definition</a></li>
             </ul>
           </div>
           <div class="content">
@@ -225,11 +224,9 @@
             //$('#math_palette h3').addClass('ui-accordion-header ui-helper-reset ui-state-default')
             //$('#math_palette div').addClass('ui-accordion-content ui-helper-reset ui-widget-content')
     
-    
             //Make the math terms interactive
-            handle_palette();
-
             traverse_lines();
+            resize_parentheses()
         }});
     
         //Make buttons pretty
