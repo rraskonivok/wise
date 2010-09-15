@@ -6,14 +6,23 @@ Licensed under the AGPLv3.
 This is WISE an experimental math interface and simple
 computer algebra system based on term rewriting. 
 
-Originally I developed Wise to work with the Sage computer algebra 
-system but instead moved over to the simpler and more robust
-Pure language.
+# Motivation
+
+Wise is largely inspired by Sympy and Sage. At various times during 
+development I actually used Sympy and Sage for the symbolic backend 
+before going with Pure.
+
+Wise, unlike Sage and Sympy, is not a library or programming language 
+in and of itself. As such it will only ever have a very small subset
+of the functionality you find in a full-blown CAS like Sage. 
+
+The goal of Wise is simply to provide a digital scratchpad that makes 
+manipulating symbolic expressions fluid, fast, and extensible.
 
 ## Installation
 
 Wise is *very* much alpha at this time but if you want to play
-with it I reccomend you do so on Linux. I have not tested it on
+with it I recommend you do so on Linux. I have not tested it on
 any distro but Arch Linux but there shouldn't be any hurdles to
 running it on any other distro.
 
@@ -76,3 +85,4 @@ Wise depends/includes source from many open source projects. If I have used your
 * SHPAML - <http://shpaml.webfactional.com/>
 * jQuery Hotkeys - <http://github.com/tzuryby/hotkeys>
 * jQuery pnotify - <http://plugins.jquery.com/project/pnotify>
+* Decorator module - <http://pypi.python.org/pypi/decorator>
