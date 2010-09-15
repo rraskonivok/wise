@@ -25,13 +25,13 @@ env = pure.prelude.env
 # This is called freqently enough that we'll push it up.
 reduce_with_pure_rules = pure.prelude.reduce_with_pure_rules
 
-ROOT_MODULE = 'wise.worksheet'
+ROOT_MODULE = 'wise'
 packages = {}
 objects = {}
 
 def use(package, library):
-    print 'using ' + '::'.join([ROOT_MODULE.split('.')[1], package, library])
-    env.eval('using ' + '::'.join([ROOT_MODULE.split('.')[1], package, library]))
+    print 'using ' + '::'.join([package, library])
+    env.eval('using ' + '::'.join([package, library]))
 
 def is_pure_expr(obj):
     return isinstance(obj,PureExpr)

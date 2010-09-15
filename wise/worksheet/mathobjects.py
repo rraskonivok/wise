@@ -40,8 +40,8 @@ def translate_pure(key):
         raise exception.NoWrapper(key)
 
 
-from base.objects import *
-from logic.objects import *
+from wise.base.objects import *
+from wise.logic.objects import *
 
 #-------------------------------------------------------------
 # Transforms

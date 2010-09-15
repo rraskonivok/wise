@@ -68,7 +68,7 @@ ROOT_URLCONF = 'wise.urls'
 
 TEMPLATE_DIRS = tuple(
         ['templates'] +
-        [('worksheet/%s/templates' % pack) for pack in INSTALLED_MATH_PACKAGES]
+        [('%s/templates' % pack) for pack in INSTALLED_MATH_PACKAGES]
 )
 
 INSTALLED_APPS = (

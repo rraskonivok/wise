@@ -12,7 +12,7 @@ import wise.worksheet.exceptions as exception
 from wise.library_utils import is_mapping
 from wise.worksheet.utils import hashdict
 
-ROOT_MODULE = 'wise.worksheet'
+ROOT_MODULE = 'wise'
 packages = {}
 transforms = {}
 

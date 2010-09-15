@@ -3,13 +3,13 @@ from django.utils import importlib
 
 import wise.worksheet.exceptions as exception
 from wise.worksheet.utils import haml
-from wise.worksheet.base.objects import Term, Placeholder
+from wise.base.objects import Term, Placeholder
 
 from types import ClassType, InstanceType, TypeType
 from inspect import getargspec
 from django.template import Template, Context
 
-ROOT_MODULE = 'wise.worksheet'
+ROOT_MODULE = 'wise'
 packages = {}
 panels = {}
 

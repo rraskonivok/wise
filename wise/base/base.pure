@@ -1,5 +1,4 @@
 /*
-
   Wise
   Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
   
@@ -7,14 +6,22 @@
   it under the terms of the GNU Affero General Public License as
   published by the Free Software Foundation, either version 3 of the
   License, or (at your option) any later version.
-
 */
 
 using infix_wrap;
 
-/*
-    Algebraic Ordering
-    ==============
+/* ..
+   Algebraic Ordering
+   ==============
+*/
+
+/* :Name: ``cmp`` x y - Lexicographical ordering on algebraic terms
+   :Arguments:
+    x - Arbitrary expression
+    y - Arbitrary expression
+   :Description: Returns 1 if ``x'' > ``y''
+   :Python: None (internal)
+   :See Also:
 */
 
 cmp x y = x < y if numberp x && numberp y ;

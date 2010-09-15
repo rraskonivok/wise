@@ -81,7 +81,7 @@ def is_rule(obj):
 
 packages = {}
 rulesets = {}
-ROOT_MODULE = 'wise.worksheet'
+ROOT_MODULE = 'wise'
 
 for pack in settings.INSTALLED_MATH_PACKAGES:
     try:
