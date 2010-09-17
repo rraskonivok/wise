@@ -11,6 +11,8 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   tutorial.rst
+   develop.rst
    packages/base.rst
 
 Indices and tables

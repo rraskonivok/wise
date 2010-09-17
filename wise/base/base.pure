@@ -109,7 +109,7 @@ constant (mul n x) = n if numberp n ;
 constant (mul (mul x y) z) = constant (mul x y) ;
 constant x = 1 ;
 
-/*
+/*  ..
     Equation Manipulation
     ------------ 
 */
@@ -178,8 +178,7 @@ div_both_sides (eq lhs rhs) x = eq (lhs/x) (rhs/x);
    :y: Arbitrary expression
    :Description: Return atan(y / x), in radians. The result is between -pi and pi. 
    .. math::
-        \operatorname{atan2}(y, x) = \begin{cases} \arctan(\frac y x) & \qquad x > 0 \\ \pi + \arctan(\frac y x) & \qquad y \ge 0 , x < 0 \\ -\pi + \arctan(\frac y x) & \qquad y < 0 , x < 0 \\ \frac{\pi}{2} & \qquad y > 0 , x = 0 \\ -\frac{\pi}{2} & \qquad y < 0 , x = 0 \\ \text{undefined} & \qquad y = 0, x = 0 \end{cases}
-
+        \operatorname{atan2}(y, x) = \begin{cases} \arctan(\frac y x) & \qquad x > 0 \\ \pi + \arctan(\frac y x) & \qquad y \ge 0 , x < 0 \\ -\pi + \arctan(\frac y x) & \qquad y < 0 , x < 0 \\ \frac{\pi}{2} & \qquad y > 0 , x = 0 \\ -\frac{\pi}{2} & \qquad y < 0 , x = 0 \\ \frac{0}{0} & \qquad y = 0, x = 0 \end{cases} 
    :Python: None (Internal)
    :See Also:
    ------------ 
@@ -207,7 +206,7 @@ abs (mul x y) = mul (abs x) (abs y);
 
 /* :Name: ``Re`` x
    :Arguments:
-   :x: Equation
+   :x: Complex number
    :Description: Return the real part of a complex number x.
    .. math::
         \text{Re}(x+iy) = x
@@ -217,16 +216,53 @@ abs (mul x y) = mul (abs x) (abs y);
    ------------ 
 */
 
-// Real Part
 Re (complex x y) = x;
 
-// Imaginary Part
+/* :Name: ``Im`` x
+   :Arguments:
+   :x: Complex number
+   :Description: Return the imaginary part of a complex number x.
+   .. math::
+        \text{Re}(x+iy) = y
+
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
 Im (complex x y) = y;
 
 // Modulus 
 abs (complex x y) = Sqrt (x*x+y*y);
 
+/* :Name: ``conj`` x
+   :Arguments:
+   :x: Complex number
+   :Description: Return the complex conjugate of a complex number x.
+   .. math::
+        \text{Re}(x+iy) = x-iy
+
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
 conj (complex x y);
+
+/* :Name: ``simplify_complex`` x
+   :Arguments:
+   :x: Complex number
+   :Description: Simplifies a complex expression with the following rules:
+   .. math::
+        (u+iv) + (x+iy) = (u+x)+i(v+y)\\
+        (u+iv) - (x+iy) = (u-x)+i(v-y)\\
+        (a+ib) \times (c+id) = (ac-bd) + i (bc+ad)\\
+        \frac{a + bi}{c + di} = \left({ac + bd \over c^2 + d^2}\right) + \left( {bc - ad \over c^2 + d^2} \right)i
+
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
 
 simplify_complex X = reduce X
 with
@@ -245,6 +281,18 @@ with
     )
 end;
 
+/* :Name: ``rect_to_polar`` x
+   :Arguments:
+   :x: Complex number
+   :Description: Returns the polar form of a complex number as a complex exponential.
+   .. math::
+        (x+iy) \mapsto \sqrt{x^2+y^2} e^{i \theta}
+
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
 rect_to_polar X = reduce X
 with
     (complex 0 0) = 0;
@@ -256,6 +304,20 @@ end;
 //    Sqrt (complex x y) = ( Sqrt (x*x+y*y) ) * Exp ( (Arg () );
 //end;
 
+/* :Name: ``complex_trig_expand`` x
+   :Arguments:
+   :x: Arbitrary expression
+   :Description: Reduces the given expression with the following rules:
+   .. math::
+        \sin(x+iy) = \sin(x) \cosh(y) + \cos(x) \sinh(y) i\\
+        \cos(x+iy) = \cos(x) \cosh(y) - \sin(x) \sinh(y) i\\
+        \tan(x+iy) = \sin(2x) + \frac{\sin(2y) i}{\cos(2x)+\cosh(2y)}\\
+
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
 complex_trig_expand X = reduce X
 with
     Sin (complex x y)  = complex (Sin x*Cosh y) (Cos x*Sinh y);
@@ -263,23 +325,68 @@ with
     Tan (complex x y)  = (complex (Sin (2*x)) (Sinh (2*y))) / (Cos (2*x)+Cosh (2*y));
 end;
 
-polar_to_rect X = reduce X
+/* :Name: ``complex_polar_to_rect`` x
+   :Arguments:
+   :x: Multiplication expression
+   :Description: Converts a complex exponential into a rectangular complex number
+   .. math::
+        r e^{i \theta} = r \cos(\theta)+i r \sin(\theta)
+
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+complex_polar_to_rect X = reduce X
 with
     mul r (exp (mul I theta)) = complex;
 end;
+
+/* :Name: ``complex_split`` x
+   :Arguments:
+   :x: Complex expression
+   :Description: Converts a atomic complex value into a addition of the real part and the product of the imaginary part and the imaginary unit
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
 
 complex_split (complex x y) = x + (I * y);
 //complex_rect (Complex x y) = (Complex r*cos t +: r*sin t;
 
 /*
     Automatic Simplification
-    ========================
+   ------------ 
 */
 
 algebra_normal X = (simplify_multiplication . 
                     simplify_addition .
                     simplify_power . 
                     simplify_rational) X;
+
+/* :Name: ``simplify_multiplication`` x
+   :Arguments:
+   :x: Arbitrary expression
+   :Description: Reduces the given expression with the following rules
+   .. math::
+        0x = 0\\
+        a^x a^y = a^{x+y}\\
+        (a b^x) b^y = a b^{x+y}\\
+        x(yz) = (xy)z\\
+        x(-y) = (-x)y\\
+
+   Multiplication is is associated to the left.
+
+   Multiplication of numeric quantities is reduced to a
+   single numeric quantitiy.
+
+   Multiplication of algebraic terms is sorted alphabetically by
+   variable as defined by ``cmp`` rule.
+
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
 
 simplify_multiplication X = reduce X
 with
@@ -293,17 +400,61 @@ with
     mul x (Neg y) = mul (Neg x) y;
 end;
 
+/* :Name: ``simplify_addition`` x
+   :Arguments:
+   :x: Arbitrary expression
+   :Description: Reduces the given expression with the following rules
+   .. math::
+        0+x = x\\
+        (qx)+(rx) = (q+r)(x)\\
+        (qx)+(qy) = (q)(x+y)\\
+        x+(y+z) = (x+y)+z\\
+        -x+-y = -(x+y)\\
+
+   Addition is is associated to the left.
+
+   Addition of numeric quantities is reduced to a
+   single numeric quantitiy.
+
+   Addition of algebraic terms is sorted alphabetically by
+   variable as defined by ``cmp`` rule.
+
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
 simplify_addition X = reduce X
 with
     add 0 x = x ;
     add x y = x + y if numberp x && numberp y;
     add a b = (mul ( (constant a) + (constant b) ) (term a)) if (term a) === (term b) ;
-    add (add a b)  c = add a (mul (add (constant b) (constant c)) (term b)) if (term b) === (term c) ;
+    add (add a b) c = add a (mul (add (constant b) (constant c)) (term b)) if (term b) === (term c) ;
     add a b = add b a if (cmp b a) && ~(sump a) ;
     add (add a b)  c = add (add a c) b if cmp c b ;
     add a (add b c) = add (add a b) c;
     add (Neg x) (Neg y) = Neg (add x y);
 end;
+
+/* :Name: ``simplify_power`` x
+   :Arguments:
+   :x: Arbitrary expression
+   :Description: Reduces the given expression with the following rules
+   .. math::
+        x^0 = 1\\
+        x^1 = x\\
+        0^x = 0\\
+        1^x = 1\\
+        (x^y)^z = x^{yz}\\
+        (xy)^z = x^y x^z\\
+
+   Powers of numeric quantities is reduced to a
+   single numeric quantitiy.
+
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
 
 simplify_power X = reduce X
 with
@@ -316,10 +467,19 @@ with
     powr (mul x y) w = mul (powr x w) (powr y w) if numberp w ;
 end;
 
+/* :Name: ``simplify_rational`` x
+   :Arguments:
+   :x: Arbitrary expression
+   :Description: Reduces the given expression with the following rules
+   .. math::
+        \frac{x}{y} = x y^{-1}\\
+
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
 simplify_rational X = reduce X
 with
     rational x y = mul x (powr y (Neg 1)) ;
 end;
-
-maptox x y = (x+y)+z if numberp x && numberp y;
-maptox x y = (x/y);

@@ -1,4 +1,4 @@
-using prelude;
+using base;
 using infix_wrap;
 
 cmp (z^2) y == 0 || throw 1000;
