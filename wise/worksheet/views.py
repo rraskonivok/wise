@@ -73,7 +73,7 @@ def account_logout(request):
 @login_required
 def home(request):
     workspaces = Workspace.objects.filter(owner=request.user)
-    return render_to_response('home_new.html', {'workspaces': workspaces})
+    return render_to_response('home.html', {'workspaces': workspaces})
 
 @login_required
 def users(request):
@@ -272,7 +272,7 @@ def ws(request, eq_id):
         html_cells.append(cellify(''.join(html_eq),index))
         json_cells.append(json_cell)
 
-    return render_to_response('worksheet_new.html', {
+    return render_to_response('worksheet.html', {
         'title': ws.name,
         'equations': html_cells,
         'username': request.user.username,

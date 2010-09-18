@@ -10,14 +10,15 @@
 
 import token
 
+# Special thanks to fellow Arch Linux user Andrey Vlasovskikh for
+# writing this genius library, it scales wonderfully and has been
+# the one fixed point in my code for 6 months of development.
 import funcparserlib
 from funcparserlib.parser import some, a, many, skip, finished, maybe, forward_decl, with_forward_decls
 from funcparserlib.util import pretty_tree
 
 from tokenize import generate_tokens
 from StringIO import StringIO
-
-#Parsing infix... see http://en.literateprograms.org/Shunting_yard_algorithm_(Python)
 
 class Token(object):
     def __init__(self, code, value, start=(0, 0), stop=(0, 0), line=''):
@@ -66,7 +67,8 @@ pc = op_(')')
 
 @with_forward_decls
 def primary():
-    return (var + many(var|string|number|primary)) | (po + primary + pc)
+    return (var + many(var|string|number|primary)) | (po +
+            primary + pc) | (var | string | number )
 
 toplevel = primary
 

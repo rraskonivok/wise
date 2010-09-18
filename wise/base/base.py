@@ -5,6 +5,10 @@ try:
 except ImportError:
     raise Exception('Could not load Cython Pure module, perhaps it needs to be built?')
 
+# Include any .pure files you want to use here.
+# Syntax is ( package , filename ). So ( 'foo', 'bar' )
+# corresponds to wise/foo/bar.pure
+
 use('base','base')
 
 # base.pure

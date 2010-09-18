@@ -11,7 +11,7 @@ from django.conf import settings
 
 # A lookup table mapping previously run rules to their
 # Cython equivelents to avoid the cost of translation
-# for future use
+# in subsequent calls
 rulecache = {}
 
 def ReduceWithRules( rules, expr ):
