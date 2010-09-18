@@ -134,13 +134,12 @@ def apply_rule(request):
 #@cache_page(CACHE_INTERVAL)
 def rules_request(request):
 
-    if settings.DEBUG:
-        ruleslist = [(rule.ref, rule) for rule in rules.rulesets.itervalues()]
-    else:
-        ruleslist = [(name, rule) for (name,rule) in rules.rulesets.iteritems()]
+    #if settings.DEBUG:
+    #    ruleslist = [(rule.ref, rule) for rule in rules.rulesets.itervalues()]
+    #else:
+    #    ruleslist = [(name, rule) for (name,rule) in rules.rulesets.iteritems()]
 
-
-    return render_haml_to_response('ruleslist.tpl', {'rules':ruleslist})
+    return render_haml_to_response('ruleslist.tpl',{'rulesets':rules.rulesets})
 
 #---------------------------
 # Symbols ------------------

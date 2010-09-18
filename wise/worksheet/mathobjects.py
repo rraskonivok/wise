@@ -43,10 +43,6 @@ def translate_pure(key):
 from wise.base.objects import *
 from wise.logic.objects import *
 
-#-------------------------------------------------------------
-# Transforms
-#-------------------------------------------------------------
-
 generate_translation(root=Term)
 generate_translation(root=Equation)
 generate_pure_objects(root=Term)

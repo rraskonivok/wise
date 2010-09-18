@@ -13,6 +13,7 @@ Contents:
 
    tutorial.rst
    develop.rst
+   worksheet.rst
    packages/base.rst
 
 Indices and tables

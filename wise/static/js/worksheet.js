@@ -612,10 +612,10 @@ function apply_rule(rule, selections) {
         clear_selection();
         traverse_lines();
         //update(get_container(obj))
+        resize_parentheses();
     }, "json");
 
     cleanup_ajax_scripts();
-    clear_lookups();
 }
 
 function apply_transform(transform, selections) {
@@ -688,6 +688,7 @@ function apply_transform(transform, selections) {
 
         clear_selection();
         traverse_lines();
+        resize_parentheses();
         //update(get_container(obj))
     }, "json");
 
@@ -752,6 +753,7 @@ function receive(ui, receiver, group_id) {
         NODES[obj.id()].delNode();
 
         NAMESPACE_INDEX = data.namespace_index;
+        resize_parentheses();
     }, "json");
 
     cleanup_ajax_scripts();

@@ -88,11 +88,16 @@ for pack in settings.INSTALLED_MATH_PACKAGES:
         path = '.'.join([ROOT_MODULE,pack,'rules'])
         packages[pack] = importlib.import_module(path)
         for name, symbol in packages[pack].__dict__.iteritems():
-            if is_rule(symbol):
-                if settings.DEBUG:
-                    print "Importing ruleset ... %s/%s" % (pack, name)
 
-                rulesets[name] = symbol
+            # Merge dictionary into main
+            if name == 'panel':
+                rulesets.update(symbol)
+
+            #if is_rule(symbol):
+            #    if settings.DEBUG:
+            #        print "Importing ruleset ... %s/%s" % (pack, name)
+
+            #    rulesets[name] = symbol
     except ImportError:
         raise exception.IncompletePackage(pack,'rules.py')
 

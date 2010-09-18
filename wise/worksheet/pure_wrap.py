@@ -40,7 +40,7 @@ for pack in settings.INSTALLED_MATH_PACKAGES:
     try:
         path = '.'.join([ROOT_MODULE,pack,pack])
         packages[pack] = importlib.import_module(path)
-        use(pack,'prelude')
+        #use(pack,'prelude')
         for name, obj in packages[pack].__dict__.iteritems():
             if is_pure_expr(obj):
                 print "Importing symbol '%s' from pack %s" % (name, pack)

@@ -139,7 +139,7 @@
     var active_graph = null;
     
     $(document).ajaxError(function() {
-        error("Error connecting to server")
+        error("Error connecting to server");
     });
     
     $(document).ready(function () {
@@ -157,10 +157,8 @@
             $(this).next().toggle();
             return false;
         }).next()
-        //refresh_jsmath($('#rtoolbar'))
     });
 
-    $('#rules_palette').load('/rule_request');
 
     function palette(num) {
         if(num == 1) {
@@ -188,9 +186,6 @@
             .bind('keydown', 's', function() {show_cmd()}
         )
 
-
-        //});
-    
         // Text selection on jsMath rendered math objects causes
         // issues, so we disable it.
         $(".typeset").disableTextSelect();
@@ -201,33 +196,40 @@
             $('.container:not(.placeholder):hover').css('padding-top','0px');
         });
     
-        $("#cmd_form").submit(function(e) { 
-                exec_cmd();
-                e.preventDefault();
-        });
+        //$("#cmd_form").submit(function(e) { 
+        //        exec_cmd();
+        //        e.preventDefault();
+        //});
         
+        $.ajax({
+                url: '/rule_request',
+                success: function(data) {
+                    $("#rules_palette").replace(data);
+                    $(".panel_category","#rules_palette").bind('click',function() {
+                            $(this).next().toggle();
+                            return false
+                    }).next().hide();
+                }
+        });
+
         //Load the math palette
         $.ajax({
-        url: '/palette/',
-        success: function(data) {
-            $("#math_palette").replace(data)
-    
-    
-            //Make the palette sections collapsable
-            $(".panel_category","#math_palette").bind('click',function() {
-                    $(this).next().toggle();
-                    return false
-            }).next().hide();
-    
-            //Make the Palette look like an accordion widget
-            //$('#math_palette').addClass('ui-accordion ui-widget ui-helper-reset ui-accordion-icons')
-            //$('#math_palette h3').addClass('ui-accordion-header ui-helper-reset ui-state-default')
-            //$('#math_palette div').addClass('ui-accordion-content ui-helper-reset ui-widget-content')
-    
-            //Make the math terms interactive
-            traverse_lines();
-            resize_parentheses()
-        }});
+            url: '/palette/',
+            success: function(data) {
+                $("#math_palette").replace(data)
+        
+        
+                //Make the palette sections collapsable
+                $(".panel_category","#math_palette").bind('click',function() {
+                        $(this).next().toggle();
+                        return false
+                }).next().hide();
+        
+                //Make the math terms interactive
+                traverse_lines();
+                resize_parentheses()
+            }
+        });
     
         //Make buttons pretty
         $('.equation button','#workspace').parent().buttonset();
