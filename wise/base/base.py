@@ -6,29 +6,11 @@ except ImportError:
     raise Exception('Could not load Cython Pure module, perhaps it needs to be built?')
 
 use('base','base')
+
 # base.pure
-polar_to_rect = PureSymbol('polar_to_rect')
-constant = PureSymbol('constant')
-add_to_both_sides = PureSymbol('add_to_both_sides')
-Re = PureSymbol('Re')
-simplify_multiplication = PureSymbol('simplify_multiplication')
-exponent = PureSymbol('exponent')
-complex_trig_expand = PureSymbol('complex_trig_expand')
-rect_to_polar = PureSymbol('rect_to_polar')
-abs = PureSymbol('abs')
-algebra_normal = PureSymbol('algebra_normal')
-simplify_power = PureSymbol('simplify_power')
-sump = PureSymbol('sump')
-simplify_complex = PureSymbol('simplify_complex')
-base = PureSymbol('base')
-maptox = PureSymbol('maptox')
-complex_split = PureSymbol('complex_split')
-term = PureSymbol('term')
-sub_from_both_sides = PureSymbol('sub_from_both_sides')
-simplify_addition = PureSymbol('simplify_addition')
-atan2 = PureSymbol('atan2')
-mul_both_sides = PureSymbol('mul_both_sides')
-Im = PureSymbol('Im')
-div_both_sides = PureSymbol('div_both_sides')
-simplify_rational = PureSymbol('simplify_rational')
-cmp = PureSymbol('cmp')
+
+# Define any references you want to use in Python as PureSymbol
+# objects. They will get scraped out and added to the symbol
+# table in worksheet.pure_wrap
+#
+# Add = PureSymbol('add')

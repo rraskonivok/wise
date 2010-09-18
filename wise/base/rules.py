@@ -15,7 +15,6 @@ AlgebraNormal = PublicRule('algebra_normal')
 ComplexToRect = PublicRule('complex_polar_to_rect')
 ComplexTrigExpand = PublicRule('complex_trig_expand')
 ComplexSimplify = PublicRule('simplify_complex')
-
 RectangularToPolar = PublicRule('rect_to_polar')
 
 panel = {}
@@ -26,4 +25,7 @@ panel['Equation Manipulation'] = [('Add Equation by Expression', AddSides),
                                  ]
 
 panel['Algebraic Simplification'] = [('Canonical Algebraic Form', AlgebraNormal),
+                                     ('Simplify Complex', ComplexSimplify),
+                                     ('Expand Complex Trig', ComplexTrigExpand),
+                                     ('Polar Complex to Rectangular', ComplexToRect),
                                     ]

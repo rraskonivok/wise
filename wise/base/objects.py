@@ -250,7 +250,10 @@ class Placeholder(Term):
         self.latex = '$\\text{Placeholder}$'
 
     def _pure_(self):
-        raise exceptions.PlaceholderInExpression()
+
+        # If there is a placeholder left in an expression throw
+        # an error and abort the pure translation.
+        raise exception.PlaceholderInExpression()
 
     def get_math(self):
         return '(Placeholder )'

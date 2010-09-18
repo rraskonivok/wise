@@ -15,7 +15,7 @@ try:
 except:
     raise Exception('Could not load Pure prelude, all other Pure dependencies will fail.')
 
-# Wrap the atomic Pure objects up into this namespace.
+# Pull the atomic Pure objects up into this namespace.
 PureInt = pure.prelude.PureInt
 PureSymbol = pure.prelude.PureSymbol
 PureLevel = pure.prelude.PureLevel
