@@ -56,7 +56,7 @@ urlpatterns = patterns('',
 
      #Uncomment the next line to enable the admin:
      (r'^admin/', include(admin.site.urls)),
-     (r'^docs/(?P<path>.*)$', 'django.views.static.serve', {'document_root': 'docs/_build/html'}),
+     (r'^docs/(?P<path>.*)$', 'django.views.static.serve', {'document_root': 'docs/_build/html','show_indexes': True}),
 )
 
 from django.conf import settings

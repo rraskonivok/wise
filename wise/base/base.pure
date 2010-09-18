@@ -8,12 +8,13 @@
   License, or (at your option) any later version.
 */
 
+using infix_wrap;
+
 /* ..
    Base Mathematics
    ==============
 */
 
-using infix_wrap;
 
 /* ..
    Algebraic Ordering

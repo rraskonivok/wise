@@ -102,11 +102,13 @@ class Term(object):
     def _latex_(self):
         raise exception.PureError('No LaTeX representation of %s.' % self.classname)
 
+    def _sage_(self):
+        raise exception.PureError('No Sage representation of %s.' % self.classname)
+
     def get_html(self):
         c = template.Context({
             'id': self.id,
             'class': self.css_class,
-            'sensitive':self.get_sensitive(),
             'latex':self.latex,
             'math': self.get_math(),
             'type': self.classname,
@@ -119,7 +121,7 @@ class Term(object):
             return self.html.render(c)
 
     def get_math(self):
-        '''Generates the sexp that is parsable on the Javascript side'''
+        '''Generates the S-exp that is parsable on the Javascript side'''
 
         #Container-type Objects, Example: (Addition 1 2 3)
         if len(self.terms) > 1:
@@ -141,23 +143,10 @@ class Term(object):
 
     #############################################################
 
-    #These can (and often should) be overloaded
-    def __add__(self,other):
-        return Addition(*[self,other])
-
-    def __mul__(self,other):
-        return Product(*[self,other])
-
     def wrap(self,other):
         '''Take one object and wrap it in container object, return
-        the container'''
+        the resulting container'''
         return other(self)
-
-    def get_sensitive(self):
-        if self.sensitive is False:
-            return 'ui-state-disabled'
-        else:
-            return ''
 
     def ensure_id(self):
         '''Make sure there is a unique id set, if there isn't
@@ -255,7 +244,6 @@ class Placeholder(Term):
     '''A placeholder for substitution'''
 
     css_class = 'placeholder'
-    sensitive = False
     html = load_haml_template('placeholder.tpl')
 
     def __init__(self):
@@ -268,7 +256,6 @@ class Placeholder(Term):
         return '(Placeholder )'
 
 class Empty(Term):
-    sensitive = False
     def __init__(self):
         self.latex = '$\\text{Empty}$'
 
@@ -284,7 +271,6 @@ class Empty(Term):
 
 class Text(Term):
     type = 'text'
-    sensitive = True
 
     def __init__(self,text):
         self.latex = '\\text{' + text + '}'
@@ -364,7 +350,6 @@ def greek_lookup(s):
         return s
 
 class Base_Symbol(Term):
-    sensitive = True
 
     def __init__(self,*args):
         pass
@@ -373,7 +358,6 @@ class Base_Symbol(Term):
         return self.po()
 
 class Greek(Base_Symbol):
-    sensitive = True
     pure = 'greek'
 
     def __init__(self,symbol):
@@ -437,7 +421,6 @@ class RefSymbol(Variable):
         return pure.ref(PureInt(int(self.args)))
 
 class Rational(Term):
-    sensitive = True
     html = load_haml_template('rational.tpl')
     pure = 'rational'
 
@@ -485,7 +468,6 @@ class Infinity(Base_Symbol):
     args = "'inf'"
 
 class Numeric(Term):
-    sensitive = True
 
     def __init__(self,number):
 
@@ -500,7 +482,6 @@ class Numeric(Term):
         c = template.Context({
             'id': self.id,
             'class': self.css_class,
-            'sensitive':self.get_sensitive(),
             'latex':self.latex,
             'math': self.get_math(),
             'type': self.classname,
@@ -573,7 +554,6 @@ class ComplexNumeric(Term):
 
 #Constants should be able to be represented by multiple symbols
 class Constant(Term):
-    sensitive = True
     representation = None
 
     def __init__(self,*symbol):
@@ -1134,11 +1114,6 @@ class Addition(InfixOperation):
         self.operand = self.terms
         js.make_sortable(self)
 
-    def __add__(self,other):
-        if type(other) is Addition:
-            self.terms.extend(other.terms)
-            return self
-
     def _pure_(self):
         # There is some ambiguity here since we often use an
         # addition operator of arity=1 to make UI magic happen
@@ -1200,7 +1175,6 @@ class Product(InfixOperation):
            return self.po(*pterms)
 
 class Root(Operation):
-    sensitive = True
     html = load_haml_template('power.tpl')
     pure = 'root'
 
@@ -1233,7 +1207,6 @@ class Root(Operation):
         return self.html.render(c)
 
 class Power(Operation):
-    sensitive = True
     html = load_haml_template('power.tpl')
     pure = 'powr'
 
@@ -1261,9 +1234,14 @@ class Power(Operation):
             'group': self.group,
             'base': self.base.get_html(),
             'type': self.classname,
-            'exponent': self.exponent.get_html() })
+            'exponent': self.exponent.get_html()
+        })
 
         return self.html.render(c)
+
+class Interval(InfixOperation):
+    html = load_haml_template('power.tpl')
+
 
 class Sqrt(PrefixOperation):
     symbol = '\\sqrt{x}'
