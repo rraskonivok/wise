@@ -240,7 +240,13 @@ class Branch(object):
         #    obj.hash = self.gethash()
         #    obj.idgen = self.idgen
         #else:
-        obj = apply(eval(self.type),(map(f,self.args)))
+
+        if self.atomic:
+            print self.type
+            obj = typ(*self.args)
+        else:
+            obj = apply(eval(self.type),(map(f,self.args)))
+
         obj.hash = self.gethash()
         obj.id = self.id
         obj.idgen = self.idgen
@@ -294,18 +300,19 @@ class Branch(object):
 
         return obj
 
-def ParseTree(str):
+def ParseTree(str,ignore_atomic=True):
     atomic = False
     parsed = parser.eq_parse(str)
 
     # Our sexp is atomic ( only occurs in Pure -> Python translation)
-    if not parsed[1]:
-        atomic = True
-        tag, args = parsed
-        if tag.isdigit():
-            parsed = ('num',[tag])
-        else:
-            parsed = ('var',[tag])
+    if not ignore_atomic:
+        if not parsed[1]:
+            atomic = True
+            tag, args = parsed
+            if tag.isdigit():
+                parsed = ('num',[tag])
+            else:
+                parsed = ('var',[tag])
 
     branch = reduce(lambda type, args: Branch(type,args,None), parsed)
     branch.atomic = atomic
@@ -333,7 +340,7 @@ def pretty(t):
 
 def parse_pure_exp(expr, uidgen=None):
     #Get the string representation of the pure expression
-    parsed = ParseTree(str(expr))
+    parsed = ParseTree(str(expr),ignore_atomic=False)
     if uidgen:
         parsed.gen_uids(uidgen)
     else:
