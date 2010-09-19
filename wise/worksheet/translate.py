@@ -12,11 +12,6 @@ import wise.worksheet.exceptions as exception
 # Parse Tree
 #-------------------------------------------------------------
 
-# Note:
-# I was totally strung out on caffeine when I wrote all these
-# recursive data structures and they seem to work flawlessly but
-# I probably will never understand why again
-
 # Create our parse tree structure, the Branch object simply holds
 # the arguments before they are evaluated into internal Math
 # objects
@@ -37,6 +32,8 @@ class Branch(object):
 
     # We use the SHA1 algorithm, since it likely to have
     # collisions than CRC32. But it's much slower.
+
+    atomic = False
 
     def __init__(self,typ,args,parent):
         self.type = typ
@@ -236,17 +233,17 @@ class Branch(object):
                 print 'something strange is being passed'
 
         #Ugly hack to pass database indices
-        if '__' in self.type:
-            ref,id = self.type.split('__')
-            self.args.insert(0,id)
-            obj = apply(eval(ref),(map(f,self.args)))
-            obj.hash = self.gethash()
-            obj.idgen = self.idgen
-        else:
-            obj = apply(eval(self.type),(map(f,self.args)))
-            obj.hash = self.gethash()
-            obj.id = self.id
-            obj.idgen = self.idgen
+        #if '__' in self.type:
+        #    ref,id = self.type.split('__')
+        #    self.args.insert(0,id)
+        #    obj = apply(eval(ref),(map(f,self.args)))
+        #    obj.hash = self.gethash()
+        #    obj.idgen = self.idgen
+        #else:
+        obj = apply(eval(self.type),(map(f,self.args)))
+        obj.hash = self.gethash()
+        obj.id = self.id
+        obj.idgen = self.idgen
 
         if hasattr(obj,'side') and (obj.side is not None):
             obj.set_side(obj.side)
@@ -281,10 +278,14 @@ class Branch(object):
             else:
                 print 'something strange is being passed'
 
+        print 'HERE IT IS',self,type(self.args[0])
         typ = translate_pure(self.type)
 
         #try:
-        obj = apply(typ,(map(f,self.args)))
+        if self.atomic:
+            obj = typ(*self.args)
+        else:
+            obj = apply(typ,(map(f,self.args)))
         #except TypeError:
         #    raise exception.ParseError("Invalid function arguments: %s, %s" % (self.args, typ))
 
@@ -294,8 +295,22 @@ class Branch(object):
         return obj
 
 def ParseTree(str):
+    atomic = False
     parsed = parser.eq_parse(str)
-    return reduce(lambda type, args: Branch(type,args,None), parsed)
+
+    # Our sexp is atomic ( only occurs in Pure -> Python translation)
+    if not parsed[1]:
+        atomic = True
+        tag, args = parsed
+        if tag.isdigit():
+            parsed = ('num',[tag])
+        else:
+            parsed = ('var',[tag])
+
+    branch = reduce(lambda type, args: Branch(type,args,None), parsed)
+    branch.atomic = atomic
+
+    return branch
 
 def pretty(t):
     '''Prints out a tree diagram of the parse tree with the

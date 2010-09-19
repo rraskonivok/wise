@@ -67,8 +67,7 @@ pc = op_(')')
 
 @with_forward_decls
 def primary():
-    return (var + many(var|string|number|primary)) | (po +
-            primary + pc) | (var | string | number )
+    return ((var|string|number) + many(var|string|number|primary)) | (po + primary + pc)
 
 toplevel = primary
 

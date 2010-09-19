@@ -405,23 +405,23 @@ class FreeFunction(Base_Symbol):
             return PureSymbol(self.symbol)(PureSymbol('u'))
 
 #Reference to a user-defined symbol
-class RefSymbol(Variable):
-    assumptions = None
-    bounds = None
-
-    def __init__(self, obj):
-        if isinstance(obj, unicode) or isinstance(obj,str):
-            obj = Symbol.objects.get(id=int(obj))
-
-        if isinstance(obj, Numeric):
-            obj = Symbol.objects.get(id=obj.number)
-
-        self.symbol = obj.tex
-        self.latex = '$%s$' % self.symbol
-        self.args = str(obj.id)
-
-    def _pure_(self):
-        return pure.ref(PureInt(int(self.args)))
+#class RefSymbol(Variable):
+#    assumptions = None
+#    bounds = None
+#
+#    def __init__(self, obj):
+#        if isinstance(obj, unicode) or isinstance(obj,str):
+#            obj = Symbol.objects.get(id=int(obj))
+#
+#        if isinstance(obj, Numeric):
+#            obj = Symbol.objects.get(id=obj.number)
+#
+#        self.symbol = obj.tex
+#        self.latex = '$%s$' % self.symbol
+#        self.args = str(obj.id)
+#
+#    def _pure_(self):
+#        return pure.ref(PureInt(int(self.args)))
 
 class Rational(Term):
     html = load_haml_template('rational.tpl')
