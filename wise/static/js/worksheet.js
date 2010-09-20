@@ -1569,23 +1569,24 @@ function remove_element() {
             return;
         }
 
-        if (container.attr('math-type') == 'Addition' || container.attr('math-type') == 'Product') {
-            if (parseInt(container.attr('num_children')) > 1) {
-                container = get_container(placeholder)
-                container_cache = String(container.selector)
-                placeholder.remove()
-                clear_selection()
-                update($(container_cache))
-            }
-            else {
-                apply_transform('Replace', [placeholder.math(), '(Placeholder )'])
-                //replace_manually(placeholder, '(Placeholder )')
-            }
-        }
-        else {
-            apply_transform('Replace', [placeholder.math(), '(Placeholder )'])
-            //replace_manually(placeholder, '(Placeholder )')
-        }
+        apply_transform('base/Delete', [placeholder]);
+        //if (container.attr('math-type') == 'Addition' || container.attr('math-type') == 'Product') {
+        //    if (parseInt(container.attr('num_children')) > 1) {
+        //        container = get_container(placeholder)
+        //        container_cache = String(container.selector)
+        //        placeholder.remove()
+        //        clear_selection()
+        //        update($(container_cache))
+        //    }
+        //    else {
+        //        apply_transform('base/Delete', [placeholder]);
+        //        //replace_manually(placeholder, '(Placeholder )')
+        //    }
+        //}
+        //else {
+        //        apply_transform('base/Delete', [placeholder]);
+        //    //replace_manually(placeholder, '(Placeholder )')
+        //}
     }
 }
 

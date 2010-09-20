@@ -65,6 +65,8 @@ string = some(lambda tok: tok.type == 'STRING') >> tokval
 po = op_('(')
 pc = op_(')')
 
+#TODO: Make this into two parsers...
+
 @with_forward_decls
 def primary():
     return ((var|string|number) + many(var|string|number|primary)) | (po + primary + pc)

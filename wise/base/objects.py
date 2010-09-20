@@ -1261,21 +1261,26 @@ class DiracDelta(PrefixOperation):
 
 class Sin(PrefixOperation):
     symbol = '\\sin'
+    pure = 'sin'
 
 class Cos(PrefixOperation):
     symbol = '\\cos'
+    pure = 'cos'
 
 class Tan(PrefixOperation):
     symbol = '\\tan'
+    pure = 'tan'
 
 class Exp(PrefixOperation):
     symbol = '\\exp'
 
 class Ln(PrefixOperation):
     symbol = '\\ln'
+    pure = 'ln'
 
 class Asin(PrefixOperation):
     symbol = '\\sin^{-1}'
+    pure = 'asin'
 
 class Acos(PrefixOperation):
     symbol = '\\cos^{-1}'
@@ -1307,6 +1312,7 @@ class Gamma(PrefixOperation):
 class Zeta(PrefixOperation):
     symbol = '\\zeta'
 
+
 class Factorial(PostfixOperation):
     symbol = '!'
 
@@ -1315,6 +1321,18 @@ class Catalan(SubOperation):
     symbol1 = 'C'
     pure = 'catalan'
     args = "'n'"
+
+class Integral(PrefixOperation):
+    symbol = '\\int'
+    show_parenthesis = False
+
+class Diff(PrefixOperation):
+    symbol = '\\frac{d}{dx}'
+    show_parenthesis = False
+
+class Del(PrefixOperation):
+    symbol = '\\nabla'
+    show_parenthesis = False
 
 class Negate(PrefixOperation):
     symbol = '-'

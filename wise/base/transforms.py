@@ -12,6 +12,10 @@ def PlaceholderSubstitute( ph, tm ):
 
 PlaceholderSubstitute.pretty = 'Substitute'
 
+@Map( _( Term ) >> _( Placeholder ) )
+def Delete( first ):
+    return Placeholder()
+
 def ReduceWithRules( rules, expr ):
     hsh = hasharray(rules)
 
