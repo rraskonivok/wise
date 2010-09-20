@@ -72,7 +72,6 @@
     display: inline-block;
     /* Some operators look better with this */
     /*vertical-align: middle;*/
-    z-index: -1;
 }
 
 .exponent {
@@ -145,3 +144,20 @@
     vertical-align: middle;
     opacity: 1.0 !important;
 }
+
+.sqrt-prefix {
+  vertical-align: top;
+  position: relative;
+  left: 1px;
+  top: 2px;
+  font-family:'Computer Modern', 'Times New Roman', serif;
+}
+
+.sqrt-stem {
+  border-top: 1px solid black;
+  margin-top: 1px;
+  padding-left: 2px;
+  padding-right: .1em;
+  margin-right: .1em;
+}
+

@@ -446,7 +446,8 @@ class Rational(Term):
             'num': self.num.get_html(),
             'den': self.den.get_html(),
             'group': self.group,
-            'type': self.classname
+            'type': self.classname,
+            'class': self.css_class
             })
 
         return self.html.render(c)
@@ -948,7 +949,7 @@ class Operation(Term):
 
         #Prefix Formatting
         elif self.ui_style == 'prefix':
-            self.html = load_haml_template('prefix.tpl')
+            #self.html = load_haml_template('prefix.tpl')
 
             #if not self.css_class:
             #    self.css_class = 'baseline'
@@ -1047,6 +1048,7 @@ class Operation(Term):
             return True
 
 class PrefixOperation(Operation):
+    html = load_haml_template('prefix.tpl')
     ui_style = 'prefix'
     show_parenthesis = True
 
@@ -1247,7 +1249,18 @@ class Interval(InfixOperation):
 
 
 class Sqrt(PrefixOperation):
-    symbol = '\\sqrt{x}'
+    html = load_haml_template('root.tpl')
+
+    def __init__(self,op,*ops):
+        operands = list(ops) + [op]
+        if len(operands) > 1:
+            self.terms = list(operands)
+            self.operand = self.terms
+        else:
+            self.operand = operands[0]
+            self.terms = [operands[0]]
+
+        op.css_class = 'sqrt-stem'
 
 #class Abs(OutfixOperation):
 #    symbol1 = '|'

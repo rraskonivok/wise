@@ -372,6 +372,11 @@ function resize_parentheses() {
         $(this).css('margin-top', -parent_height / 3)
         $(this).css('font-size', String(parent_height / 3) + 'px')
     });
+    $.each($('.sqrt-prefix','#workspace'), function (obj) {
+        $(this).css({'height':0});
+        parent_height = $(this).parent().height();
+        $(this).css({'fontSize':String(parent_height) + 'px'});
+    });
 }
 
 function fade_and_destroy(object) {
@@ -652,6 +657,7 @@ function apply_transform(transform, selections) {
             obj = selections[i];
             group_id = obj.attr('group');
             group_id_cache = String(group_id)
+            container = get_container(obj);
 
             if (data.new_html[i] == null) {
                 obj.remove();
@@ -676,7 +682,7 @@ function apply_transform(transform, selections) {
                     nsym.attr('group', group_id_cache);
                     refresh_jsmath($(nsym));
                 }
-                update(get_container(nsym))
+                update(container)
                 //Check to see if the uid assigning failed
                 if (nsym.find('#None').length > 0) {
                     error("Warning: some elements do not have uids");
