@@ -1277,15 +1277,15 @@ class DiracDelta(PrefixOperation):
 
 class Sin(PrefixOperation):
     symbol = '\\sin'
-    pure = 'sin'
+    pure = 'Sin'
 
 class Cos(PrefixOperation):
     symbol = '\\cos'
-    pure = 'cos'
+    pure = 'Cos'
 
 class Tan(PrefixOperation):
     symbol = '\\tan'
-    pure = 'tan'
+    pure = 'Tan'
 
 class Exp(PrefixOperation):
     symbol = '\\exp'
@@ -1306,9 +1306,11 @@ class Atan(PrefixOperation):
 
 class Sinh(PrefixOperation):
     symbol = '\\sinh'
+    pure = 'Sinh'
 
 class Cosh(PrefixOperation):
     symbol = '\\cosh'
+    pure = 'Cosh'
 
 class Tanh(PrefixOperation):
     symbol = '\\tanh'
@@ -1327,7 +1329,6 @@ class Gamma(PrefixOperation):
 
 class Zeta(PrefixOperation):
     symbol = '\\zeta'
-
 
 class Factorial(PostfixOperation):
     symbol = '!'

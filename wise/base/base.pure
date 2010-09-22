@@ -429,6 +429,8 @@ simplify_addition X = reduce X
 with
     add 0 x = x ;
     add x y = x + y if numberp x && numberp y;
+    add x (Neg y) = x - y if numberp x && numberp y;
+    add (Neg x) (Neg y) = Neg (x + y) if numberp x && numberp y;
     add a b = (mul ( (constant a) + (constant b) ) (term a)) if (term a) === (term b) ;
     add (add a b) c = add a (mul (add (constant b) (constant c)) (term b)) if (term b) === (term c) ;
     add a b = add b a if (cmp b a) && ~(sump a) ;
