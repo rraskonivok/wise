@@ -10,11 +10,7 @@
     {{ o }}
     {% if not forloop.last %}
     .ui-state-disabled.infix math-type="times" math-meta-class="sugar"
-        {% if notex %}
-        {{symbol}}
-        {% else %}
         $${{symbol}}$$
-        {% endif %}
     {% endif %}
     {% endfor %}
 

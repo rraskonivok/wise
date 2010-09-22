@@ -864,7 +864,7 @@ class Definition(Equation):
 
 infix_symbol_template = haml('''
 .ui-state-disabled.infix.term math-type="infix" math-meta-class="sugar"
-    %s
+    $${{%s}}$$
 ''')
 
 def infix_symbol_html(symbol):
@@ -886,7 +886,6 @@ class Operation(Term):
     is_associative = False
 
     pure = None
-    notex = False
 
     def __init__(self,op,*ops):
         operands = list(ops) + [op]
@@ -930,7 +929,6 @@ class Operation(Term):
                 'parenthesis': self.show_parenthesis,
                 'jscript': self.get_javascript(),
                 'class': self.css_class,
-                'notex': self.notex
                 })
 
             return self.html.render(c)
@@ -968,7 +966,6 @@ class Operation(Term):
                 'symbol': self.symbol,
                 'parenthesis': self.show_parenthesis,
                 'class': self.css_class,
-                'notex': self.notex
                 })
 
         #Postfix Formatting
@@ -1357,7 +1354,6 @@ class Negate(PrefixOperation):
     symbol = '-'
     show_parenthesis = False
     css_class = 'negate'
-    notex = True
 
     # Capitalize since "neg" already exists in the default Pure
     # predule.

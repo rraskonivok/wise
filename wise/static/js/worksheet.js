@@ -374,6 +374,9 @@ function resize_parentheses() {
     _.each(ppairs, function (obj) {
         parent_height = $(obj[0]).parent().height() * 0.7;
         console.log(parent_height);
+        if(parent_height > 50) {
+            parent_height = 50;
+        }
         console.log(obj);
         $(obj[0]).css({'fontSize':String(parent_height) + 'px'});
         $(obj[1]).css({'fontSize':String(parent_height) + 'px'});
@@ -1273,13 +1276,13 @@ function refresh_jsmath(element) {
     if (element) {
         //Toggling visiblity prevents the underlying TeX from
         //showing
-        element.css('visibility', 'hidden')
+//        element.css('visibility', 'hidden')
         
 //        MathJax.Hub.Typeset(element[0]);
         MathJax.Hub.Queue(["Typeset",MathJax.Hub,element[0]]);
         MathJax.Hub.Queue(
             function () {
-                element.css('visibility', 'visible')
+ //               element.css('visibility', 'visible')
             }
         );
     }
