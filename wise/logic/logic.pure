@@ -25,3 +25,14 @@ with
     Or True False = True;
     Or True True = True;
 end;
+
+demorgan X = reduce X
+with
+    LogicNeg (And A B) = Or (LogicNeg A) (LogicNeg B);
+    LogicNeg (Or A B) = And (LogicNeg A) (LogicNeg B);
+end;
+
+doubleneg X = reduce X
+with
+    LogicNeg (LogicNeg A) = A;
+end;

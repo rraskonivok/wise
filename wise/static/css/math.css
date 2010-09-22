@@ -1,16 +1,13 @@
-.typeset {
+.MathJax_Display {
     margin-top: 0px !important;
     margin-bottom: 0px !important;
 }
 
+/*
 .parenthesis {
     display: inline-block;
-    /* TODO: There are times when we would like the baseline to
-     * be at the middle and times when we want it to be at the
-     * bottom */
-
-    /*vertical-align: middle;*/
 }
+    */
 
 .equation button {
     float: left;
@@ -58,6 +55,7 @@
 
 .infix {
     display: inline-block;
+    font-family: MathJax_Main;
 }
 
 .texdecoration {
@@ -116,6 +114,7 @@
     vertical-align: middle;
 }
 
+/*
 .pnths {
     height: inherit;
     display: inline-block;
@@ -126,6 +125,7 @@
 .pnths img {
     height: inherit;
 }
+*/
 
 .fractionbar {
    border-bottom: 1px solid black; 
@@ -143,6 +143,13 @@
     display: inline-block;
     vertical-align: middle;
     opacity: 1.0 !important;
+}
+
+.pnths {
+    vertical-align: middle;
+    position: relative;
+    font-family: MathJax_Main;
+    word-spacing: 0px;
 }
 
 .sqrt-prefix {

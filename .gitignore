@@ -9,4 +9,4 @@
 *.json
 *.log
 *.backup
-wise/static/jsMath/fonts
+wise/static/mathjax/fonts

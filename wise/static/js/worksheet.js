@@ -364,14 +364,29 @@ function show_debug_menu() {
 }
 
 function resize_parentheses() {
+
+    var scaling_factor = 0.7;
     //Scale parentheses
     //TODO: Remove $.each
-    $.each($('.pnths','#workspace'), function (obj) {
-        parent_height = $(this).parent().height();
-        $(this).height(parent_height)
-        $(this).css('margin-top', -parent_height / 3)
-        $(this).css('font-size', String(parent_height / 3) + 'px')
+    $('.pnths','#workspace').css({'fontSize':0});
+    $('.pnths','#workspace').css({'height':0});
+    ppairs = _.zip($('.left','#workspace'),$('.right','#workspace'));
+    _.each(ppairs, function (obj) {
+        parent_height = $(obj[0]).parent().height() * 0.7;
+        console.log(parent_height);
+        console.log(obj);
+        $(obj[0]).css({'fontSize':String(parent_height) + 'px'});
+        $(obj[1]).css({'fontSize':String(parent_height) + 'px'});
     });
+    //$.each($('.pnths','#workspace'), function (obj) {
+    //    parent_height = $(this).parent().height();
+//  //      $(this).height(parent_height)
+//  //      $(this).css('margin-top', -parent_height / 3)
+//  //      $(this).css('font-size', String(parent_height / 3) + 'px')
+//  //      $(this).css({'height':0});
+    //    $(this).css({'height':0});
+    //    $(this).css({'fontSize':String(parent_height) + 'px'});
+    //});
     $.each($('.sqrt-prefix','#workspace'), function (obj) {
         $(this).css({'height':0});
         parent_height = $(this).parent().height();
@@ -1072,16 +1087,16 @@ function traverse_lines() {
     // so we just ignore elements that we've already initiated
     untooltiped = _.reject($('[math-type]','#workspace'), function(obj){ return obj.tooltipText });
 
-    function make_tooltip(obj) {
-        $(obj).tooltip({
-            track:true,
-            bodyHandler: $(this).attr('math-type'),
-            fade: 250,
-            delay: 1000,
-        });
-    }
+    //function make_tooltip(obj) {
+    //    $(obj).tooltip({
+    //        track:true,
+    //        bodyHandler: $(this).attr('math-type'),
+    //        fade: 250,
+    //        delay: 1000,
+    //    });
+    //}
 
-    _.each(untooltiped, make_tooltip);
+    //_.each(untooltiped, make_tooltip);
 
     unselectable = _.reject($('[math-meta-class=term]','#workspace'), function(obj){ return obj.selectable });
     
@@ -1121,8 +1136,14 @@ function make_sortable(object, connector, options) {
 ///////////////////////////////////////////////////////////
 
 function check_container(object) {
+
+    //TODO: The original algorithm I wrote many moons ago seems
+    //to break if we have strange <script> tags inside the
+    //container. So just remove them... until I fix it.
+  
+    $('[type=math/tex; mode=display]',object).remove();
     //This handles stupid expression checking that is too expensive to do via Ajax, ie removing infix sugar 
-    _.each(object.children(), function () {
+    _.each(object.children(':not(script)'), function () {
         var prev = $(this).prev();
         var cur = $(this);
         var next = $(this).next();
@@ -1253,17 +1274,22 @@ function refresh_jsmath(element) {
         //Toggling visiblity prevents the underlying TeX from
         //showing
         element.css('visibility', 'hidden')
-        jsMath.ConvertTeX(element[0])
-        jsMath.ProcessBeforeShowing(element[0])
-        $(function () {
-            element.css('visibility', 'visible')
-        })
+        
+//        MathJax.Hub.Typeset(element[0]);
+        MathJax.Hub.Queue(["Typeset",MathJax.Hub,element[0]]);
+        MathJax.Hub.Queue(
+            function () {
+                element.css('visibility', 'visible')
+            }
+        );
     }
     //Refresh math Globally, shouldn't be called too much because
     //it bogs down the browser
     else {
-        jsMath.ConvertTeX()
-        jsMath.ProcessBeforeShowing()
+        alert('Doing the whole thing');
+        MathJax.Hub.Process();
+        //jsMath.ConvertTeX()
+        //jsMath.ProcessBeforeShowing()
     }
 }
 

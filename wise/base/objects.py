@@ -380,7 +380,7 @@ class Variable(Base_Symbol):
 
     def __init__(self,symbol):
         self.symbol = symbol
-        self.latex = '$%s$' % symbol
+        self.latex = '%s' % symbol
         self.args = str(symbol)
 
     def _pure_(self):
@@ -864,7 +864,7 @@ class Definition(Equation):
 
 infix_symbol_template = haml('''
 .ui-state-disabled.infix.term math-type="infix" math-meta-class="sugar"
-    $${{%s}}$$
+    %s
 ''')
 
 def infix_symbol_html(symbol):
@@ -886,6 +886,7 @@ class Operation(Term):
     is_associative = False
 
     pure = None
+    notex = False
 
     def __init__(self,op,*ops):
         operands = list(ops) + [op]
@@ -897,7 +898,10 @@ class Operation(Term):
             self.terms = [operands[0]]
 
     def _pure_(self):
-        return self.po(*purify(self.terms))
+        if self.po:
+            return self.po(*purify(self.terms))
+        else:
+            raise exception.PureError('No pure representation of %s.' % self.classname)
 
     def action(self,operand):
         return self.get_html()
@@ -925,7 +929,8 @@ class Operation(Term):
                 'symbol': self.symbol,
                 'parenthesis': self.show_parenthesis,
                 'jscript': self.get_javascript(),
-                'class': self.css_class
+                'class': self.css_class,
+                'notex': self.notex
                 })
 
             return self.html.render(c)
@@ -962,7 +967,8 @@ class Operation(Term):
                 'operand': self.operand.get_html(),
                 'symbol': self.symbol,
                 'parenthesis': self.show_parenthesis,
-                'class': self.css_class
+                'class': self.css_class,
+                'notex': self.notex
                 })
 
         #Postfix Formatting
@@ -1351,6 +1357,7 @@ class Negate(PrefixOperation):
     symbol = '-'
     show_parenthesis = False
     css_class = 'negate'
+    notex = True
 
     # Capitalize since "neg" already exists in the default Pure
     # predule.

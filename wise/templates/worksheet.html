@@ -98,7 +98,7 @@
   </div>
 
   <!-- Load jsMath -->
- <script src="/static/jsMath/easy/load.js"></script>
+ <script type="text/javascript" src="/static/mathjax/MathJax.js"></script>
 
   <!-- Worksheet functionality -->
  <script src="/static/js/worksheet.js" type="text/javascript"></script>
@@ -146,10 +146,10 @@
         init();
     
         //Only show the workspace after all math is rendered
-        jsMath.Synchronize(function () {
-            refresh_jsmath();
-            $(".lines").fadeIn('fast');
-        });
+        //jsMath.Synchronize(function () {
+        //    refresh_jsmath();
+        //    $(".lines").fadeIn('fast');
+        //});
     });
     
     $(document).ajaxSuccess(function() {
