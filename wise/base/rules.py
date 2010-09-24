@@ -27,5 +27,5 @@ panel['Equation Manipulation'] = [('Add Equation by Expression', AddSides),
 panel['Algebraic Simplification'] = [('Canonical Algebraic Form', AlgebraNormal),
                                      ('Simplify Complex', ComplexSimplify),
                                      ('Expand Complex Trig', ComplexTrigExpand),
-                                     ('Polar Complex to Rectangular', ComplexToRect),
+                                     ('$$e^{\pi}$$', ComplexToRect),
                                     ]

@@ -28,7 +28,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // break if Firebug / JS Consle is turned off.
 
 // Source: http://paulirish.com/2009/log-a-lightweight-wrapper-for-consolelog/
-//
 window.log = function(){
   log.history = log.history || [];   // store logs to an array for reference
   log.history.push(arguments);
@@ -195,7 +194,6 @@ function clear_selection() {
 
 function select_term(object) {
     //Since the selections have changed clear any looked-up (is that even a word?) actions
-    clear_lookups();
 
     clickedon = $(object);
 
@@ -300,7 +298,7 @@ function placeholder_substitute() {
     }
 }
 
-// ( Definition, Definition , ... , TExpression )
+// ( Definition, Definition , ... , Expression )
 
 function format_selection() {
     $($("#selectionlist").children()).css('background-color', '#9CBD86');
@@ -312,12 +310,6 @@ function format_selection() {
 // UI Handling
 ///////////////////////////////////////////////////////////
 
-$(document).ajaxStart(function () {
-    $('#ajax_loading').show()
-})
-$(document).ajaxStop(function () {
-    $('#ajax_loading').hide()
-})
 
 function error(text) {
     $.pnotify({
@@ -345,10 +337,6 @@ function dialog(text) {
     });
 }
 
-function clear_lookups() {
-    $('#options').fadeOut()
-}
-
 function show_debug_menu() {
     $('#debug_menu').dialog();
     $('#horizslider').slider({
@@ -372,7 +360,7 @@ function resize_parentheses() {
     $('.pnths','#workspace').css({'height':0});
     ppairs = _.zip($('.left','#workspace'),$('.right','#workspace'));
     _.each(ppairs, function (obj) {
-        parent_height = $(obj[0]).parent().height() * 0.7;
+        parent_height = $(obj[0]).parent().height() * scaling_factor;
         console.log(parent_height);
         if(parent_height > 50) {
             parent_height = 50;
@@ -641,6 +629,10 @@ function apply_rule(rule, selections) {
     cleanup_ajax_scripts();
 }
 
+ajaxqueue = $.manageAjax.create('queue', {queue: false,
+                                          preventDoubbleRequests: false,
+                                          cacheResponse: true});
+
 function apply_transform(transform, selections) {
     var data = {};
     data.transform = transform;
@@ -653,71 +645,80 @@ function apply_transform(transform, selections) {
             return;
         }
         selections = selections.list();
+
+        selections.fadeOut();
+
         data.selections = selection.list_attr('math')
     }
     else {
         data.selections = _.invoke(selections,'math');
     }
 
-    $.post("/cmds/apply_transform/", data, function (data) {
+    postdata = data;
 
-        if (data.error) {
-            error(data.error);
+    ajaxqueue.add({
+        type: 'POST',
+        async: 'false',
+        url: "/cmds/apply_transform/", 
+        data: postdata, 
+        datatype: 'json',
+        success: function(data) {
+            if (data.error) {
+                error(data.error);
+                clear_selection();
+                return
+            }
+
+            //Iterate over the elements in the image of the
+            //transformation, attempt to map them 1:1 with the
+            //elements in the domain. Elements mapped to 'null'
+            //are deleted.
+            for (var i = 0; i < data.new_html.length; i++) {
+                obj = selections[i];
+                group_id = obj.attr('group');
+                group_id_cache = String(group_id)
+                container = get_container(obj);
+
+                if (data.new_html[i] == null) {
+                    obj.remove();
+                }
+                else if (data.new_html[i] == 'pass') {
+                    //console.log("Doing nothing");
+                }
+                else if (data.new_html[i] == 'delete') {
+                    //console.log("Deleting - at some point in the future");
+                }
+                else {
+                    toplevel = (data.new_json[i][0].type)
+                    if (toplevel == 'Definition' | toplevel == 'Equation') {
+                        build_tree_from_json(data.new_json[i])
+                        //merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
+                        nsym = obj.replace(data.new_html[i]);
+                        //nsym.attr('group',group_id_cache);
+                        refresh_jsmath($(nsym))
+                    } else {
+                        merge_json_to_tree(NODES[obj.id()], data.new_json[i]);
+                        nsym = obj.replace(data.new_html[i]);
+                        nsym.attr('group', group_id_cache);
+                        refresh_jsmath($(nsym));
+                    }
+                    update(container)
+                    //Check to see if the uid assigning failed
+                    if (nsym.find('#None').length > 0) {
+                        error("Warning: some elements do not have uids");
+                    }
+                }
+            }
+
+            NAMESPACE_INDEX = data.namespace_index;
+
             clear_selection();
-            return
-        }
-
-        //Iterate over the elements in the image of the
-        //transformation, attempt to map them 1:1 with the
-        //elements in the domain. Elements mapped to 'null'
-        //are deleted.
-        for (var i = 0; i < data.new_html.length; i++) {
-            obj = selections[i];
-            group_id = obj.attr('group');
-            group_id_cache = String(group_id)
-            container = get_container(obj);
-
-            if (data.new_html[i] == null) {
-                obj.remove();
-            }
-            else if (data.new_html[i] == 'pass') {
-                //console.log("Doing nothing");
-            }
-            else if (data.new_html[i] == 'delete') {
-                //console.log("Deleting - at some point in the future");
-            }
-            else {
-                toplevel = (data.new_json[i][0].type)
-                if (toplevel == 'Definition' | toplevel == 'Equation') {
-                    build_tree_from_json(data.new_json[i])
-                    //merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
-                    nsym = obj.replace(data.new_html[i]);
-                    //nsym.attr('group',group_id_cache);
-                    refresh_jsmath($(nsym))
-                } else {
-                    merge_json_to_tree(NODES[obj.id()], data.new_json[i]);
-                    nsym = obj.replace(data.new_html[i]);
-                    nsym.attr('group', group_id_cache);
-                    refresh_jsmath($(nsym));
-                }
-                update(container)
-                //Check to see if the uid assigning failed
-                if (nsym.find('#None').length > 0) {
-                    error("Warning: some elements do not have uids");
-                }
-            }
-        }
-
-        NAMESPACE_INDEX = data.namespace_index;
-
-        clear_selection();
-        traverse_lines();
-        resize_parentheses();
-        //update(get_container(obj))
-    }, "json");
+            traverse_lines();
+            resize_parentheses();
+            //update(get_container(obj))
+        }});
 
     cleanup_ajax_scripts();
-    clear_lookups();
 }
 
 function receive(ui, receiver, group_id) {
@@ -1274,11 +1275,6 @@ function toggle_confluence(obj) {
 function refresh_jsmath(element) {
     //Refresh math for a specific element
     if (element) {
-        //Toggling visiblity prevents the underlying TeX from
-        //showing
-//        element.css('visibility', 'hidden')
-        
-//        MathJax.Hub.Typeset(element[0]);
         MathJax.Hub.Queue(["Typeset",MathJax.Hub,element[0]]);
         MathJax.Hub.Queue(
             function () {
@@ -1289,7 +1285,7 @@ function refresh_jsmath(element) {
     //Refresh math Globally, shouldn't be called too much because
     //it bogs down the browser
     else {
-        alert('Doing the whole thing');
+        console.log('Refreshing all math on the page');
         MathJax.Hub.Process();
         //jsMath.ConvertTeX()
         //jsMath.ProcessBeforeShowing()
@@ -1605,23 +1601,6 @@ function remove_element() {
         }
 
         apply_transform('base/Delete', [placeholder]);
-        //if (container.attr('math-type') == 'Addition' || container.attr('math-type') == 'Product') {
-        //    if (parseInt(container.attr('num_children')) > 1) {
-        //        container = get_container(placeholder)
-        //        container_cache = String(container.selector)
-        //        placeholder.remove()
-        //        clear_selection()
-        //        update($(container_cache))
-        //    }
-        //    else {
-        //        apply_transform('base/Delete', [placeholder]);
-        //        //replace_manually(placeholder, '(Placeholder )')
-        //    }
-        //}
-        //else {
-        //        apply_transform('base/Delete', [placeholder]);
-        //    //replace_manually(placeholder, '(Placeholder )')
-        //}
     }
 }
 
@@ -1640,98 +1619,8 @@ function remove_element() {
 //    replace_manually(placeholder, '(Fraction (Placeholder ) (Placeholder ) )')
 //}
 
-function replace_manually(obj, code) {
-    data = {}
-    data.first = selection.nth(0).attr('math')
-    data.second = code
-    data.transform = 'Replace'
-
-    $.post("/cmds/apply_transform/", data, function (data) {
-
-        if (data.error) {
-            error(data.error)
-            clear_selection()
-            return
-        }
-
-        //Remove terms (if needed)
-        if (data.remove == 'first') {
-            obj.remove();
-        }
-
-        //Swap the first term
-        if (data.first) {
-            group_id = obj.attr('group');
-            group_id_cache = String(group_id)
-
-
-            nsym = obj.replace(data.first);
-            nsym.attr('group', group_id_cache);
-
-            refresh_jsmath($(nsym))
-
-        }
-
-        clear_selection()
-        traverse_lines();
-        update(get_container(obj))
-    }, "json");
-    cleanup_ajax_scripts()
-    clear_lookups()
-}
-
-function add_after(obj, code) {
-    // Apply PlaceholderSubstitute with the given code argument
-    data = {}
-    data.first = '(Placeholder )'
-    data.second = code
-    data.transform = 'Replace'
-
-    $.post("/cmds/apply_transform/", data, function (data) {
-
-        if (data.error) {
-            error(data.error)
-            clear_selection()
-            return
-        }
-
-        if (data.first) {
-            group_id = obj.attr('group');
-            group_id_cache = String(group_id)
-
-            nsym = obj.after(data.first).next();
-            nsym.attr('group', group_id_cache);
-
-            refresh_jsmath($(nsym))
-        }
-
-        traverse_lines();
-        update(get_container(obj))
-    }, "json");
-    cleanup_ajax_scripts()
-    clear_lookups()
-}
-
 function preview() {
     var tex = $('#texinput').val();
     $('#preview').html('$$' + tex + '$$');
     refresh_jsmath();
-}
-
-function new_symbol() {
-    $.post('/sym/0/?new=true', function (response) {
-        $('#new_symbol').html(response);
-        $("#new_symbol").dialog({
-            modal: true,
-            resizable: false,
-            position: 'center'
-        });
-        refresh_jsmath();
-        $('#form_new_symbol').submit(function () {
-            shareData = $(this).serialize();
-            $.post('/sym/new/', shareData);
-            return false;
-        });
-        $("#new_symbol").dialog("option", "width", 520);
-    });
 }

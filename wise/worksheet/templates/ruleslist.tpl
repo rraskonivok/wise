@@ -5,9 +5,9 @@ div#rules_palette style="display:none"
             a.panel_category href="#"
                 {{ title }}
 
-            {% for rule in rules %}
             li.panel_frame
-                a.ruletoplevel href="javascript:apply_rule('{{rule.1.ref}}',null);"
-                    {{rule.0}}
-            {% endfor %}
+                {% for rule in rules %}
+                    a.ruletoplevel href="javascript:apply_rule('{{rule.1.ref}}',null);"
+                        {{rule.0}}
+                {% endfor %}
         {% endfor %}
