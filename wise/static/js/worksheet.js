@@ -551,6 +551,7 @@ function apply_rule(rule, selections) {
     data.rule = rule;
     data.namespace_index = NAMESPACE_INDEX;
 
+
     if (selections == null) {
         //Fetch the math for each of the selections
         if(selection.count == 0) {
@@ -558,6 +559,14 @@ function apply_rule(rule, selections) {
             return;
         }
         data.selections = selection.list_attr('math');
+
+        if(data.selections.length == 1) {
+            console.log('fading');
+            selection.nth(0).queue(function() {
+               $(this).fadeOut('slow');
+               $(this).dequeue();
+            });
+        }
     }
     else {
         data.selections = selections;
@@ -579,7 +588,10 @@ function apply_rule(rule, selections) {
             obj = selection.nth(i);
             group_id = obj.attr('group');
             group_id_cache = String(group_id);
-            obj.fadeOut('slow');
+            obj.queue(function() {
+               $(this).fadeIn('slow');
+               $(this).dequeue();
+            });
 
             if (data.new_html[i] == null) {
                 obj.remove();
@@ -638,6 +650,10 @@ function apply_transform(transform, selections) {
     data.transform = transform;
     data.namespace_index = NAMESPACE_INDEX;
 
+    if(selections.length == 1) {
+        selections[0].fadeOut();
+    }
+
     if (selections == null) {
         //Fetch the math for each of the selections
         if(selection.count == 0) {
@@ -645,14 +661,12 @@ function apply_transform(transform, selections) {
             return;
         }
         selections = selections.list();
-
-        selections.fadeOut();
-
         data.selections = selection.list_attr('math')
     }
     else {
         data.selections = _.invoke(selections,'math');
     }
+
 
     postdata = data;
 

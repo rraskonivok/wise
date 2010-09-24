@@ -146,12 +146,6 @@
     
     $(document).ready(function () {
         init();
-    
-        //Only show the workspace after all math is rendered
-        //jsMath.Synchronize(function () {
-        //    refresh_jsmath();
-        //    $(".lines").fadeIn('fast');
-        //});
     });
 
     $(document).ajaxStart(function () {
@@ -166,8 +160,9 @@
     //  console.log(message.join(" ")+": '"+script.text+"'");
     //})
 
-    MathJax.Hub.Register.MessageHook("End Typeset", function (message) {
-            alert('done');
+    //Only show the workspace after all math is rendered
+    MathJax.Hub.Register.MessageHook("End Process", function (message) {
+        $(".lines").fadeIn('fast');
     })
     
     $(document).ajaxSuccess(function() {
