@@ -9,12 +9,14 @@ Welcome to wise's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    tutorial.rst
    develop.rst
    worksheet.rst
-   packages/base.rst
+   packages/base/base.rst
+   packages/logic/logic.rst
+   roadmap.rst
 
 Indices and tables
 ==================

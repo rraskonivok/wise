@@ -150,8 +150,11 @@ def purify(obj):
         return obj._pure_()
 
 def load_haml_template(fname):
-    tps, tpo = loader.find_template_source(fname)
-    return template.Template(haml(tps))
+    if settings.IGNORE_PATHS:
+        return False
+    else:
+        tps, tpo = loader.find_template_source(fname)
+        return template.Template(haml(tps))
 
 #-------------------------------------------------------------
 # Hashing

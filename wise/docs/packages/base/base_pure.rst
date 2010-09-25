@@ -1,8 +1,4 @@
 ..
-Base Mathematics
-==============
-
-..
 Algebraic Ordering
 --------------
 

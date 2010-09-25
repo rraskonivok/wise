@@ -1,11 +1,13 @@
+/* CSS to render math elements */
+
 .MathJax_Display {
     margin-top: 0px !important;
     margin-bottom: 0px !important;
 }
 
 /* Spacing between lines */
-.equation > td {
-    padding-bottom: 1em;
+.equation td {
+    padding-bottom: 0.5em;
 }
 
 .equation > .ui-buttonset {
@@ -21,9 +23,12 @@
     float: left;
 }
 
+.equation {
+    margin-left: 5px;
+}
+
 .equation.selected td:first-child {
     border-left: 5px solid  #d4a5a5;
-    margin-left: -5px;
 }
 
 .num {
@@ -117,19 +122,6 @@
     vertical-align: middle;
 }
 
-/*
-.pnths {
-    height: inherit;
-    display: inline-block;
-    font-family: jsMath-cmex10, times;
-    vertical-align: middle;
-}
-
-.pnths img {
-    height: inherit;
-}
-*/
-
 .fractionbar {
    border-bottom: 1px solid black; 
 }
@@ -156,18 +148,18 @@
 }
 
 .sqrt-prefix {
-  vertical-align: top;
-  position: relative;
-  left: 1px;
-  top: 2px;
-  font-family:'Computer Modern', 'Times New Roman', serif;
+    vertical-align: top;
+    position: relative;
+    left: 1px;
+    top: 2px;
+    font-family:'Computer Modern', 'Times New Roman', serif;
 }
 
 .sqrt-stem {
-  border-top: 1px solid black;
-  margin-top: 1px;
-  padding-left: 2px;
-  padding-right: .1em;
-  margin-right: .1em;
+    border-top: 1px solid black;
+    margin-top: 1px;
+    padding-left: 2px;
+    padding-right: .1em;
+    margin-right: .1em;
 }
 

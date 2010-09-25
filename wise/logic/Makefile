@@ -8,15 +8,15 @@ annotate:
 	../annotate.py ${SRCS} > $(PACKAGENAME).py
 	rm tags
 
-doc:
-	pure-doc *.pure > $(PACKAGENAME).markdown
+docs:
+	pure-doc *.pure > $(PACKAGENAME).rst
 
 html: doc
-	rst2html.py $(PACKAGENAME).markdown > $(PACKAGENAME).html
+	rst2html.py $(PACKAGENAME).rst > $(PACKAGENAME).html
 
 latex: doc
-	rst2latex.py $(PACKAGENAME).markdown > $(PACKAGENAME).tex 
+	rst2latex.py $(PACKAGENAME).rst > $(PACKAGENAME).tex 
 	pdflatex $(PACKAGENAME).tex
 
 clean: 
-	-rm -f *.o *.pyc *.pyo *.html *.markdown *.out *.aux *.log *.pdf tags
+	-rm -f *.o *.pyc *.pyo *.html *.rst *.out *.aux *.log *.pdf tags

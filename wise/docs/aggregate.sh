@@ -1,3 +1,3 @@
 #!/bin/bash
-rm ./packages/*.rst
+#mv ./packages/*.rst old_rst/
 cp -f ../*/*.rst ./packages/

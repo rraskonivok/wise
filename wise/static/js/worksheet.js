@@ -469,21 +469,6 @@ function bind_hover_toggle() {
         })
 }
 
-//function toggle_sageinput() {
-//    $('#sage_input').dialog();
-//}
-
-//function show_cmd() {
-//    if (selection.count > 0) {
-//        $('#cmd_input').toggle();
-//        $("#sage_cmd").focus()
-//    }
-//}
-//
-//function exec_cmd() {
-//    sage_inline($('#sage_cmd').val())
-//}
-
 function debug_colors(object) {
     $('li[math-meta-class=term]').css('border-bottom', '5px solid red');
     $('ul[math-type]').css('border-bottom', '5px solid blue');
@@ -497,6 +482,10 @@ function debug_colors(object) {
 ///////////////////////////////////////////////////////////
 // Server Queries
 ///////////////////////////////////////////////////////////
+
+ajaxqueue = $.manageAjax.create('queue', {queue: false,
+                                          preventDoubbleRequests: false,
+                                          cacheResponse: true});
 
 function lookup_transform() {
     data = {}
@@ -538,7 +527,6 @@ function lookup_transform() {
                 apply_transform($(this).attr('internal'))
             })
 
-//            $('#selectionlist').hide();
             $('#options').prepend(button);
             $('#options').show();
             $('#options button').button();
@@ -641,9 +629,6 @@ function apply_rule(rule, selections) {
     cleanup_ajax_scripts();
 }
 
-ajaxqueue = $.manageAjax.create('queue', {queue: false,
-                                          preventDoubbleRequests: false,
-                                          cacheResponse: true});
 
 function apply_transform(transform, selections) {
     var data = {};
