@@ -432,6 +432,8 @@ with
     add (add a b)  c = add (add a c) b if cmp c b ;
     add a (add b c) = add (add a b) c;
     add (Neg x) (Neg y) = Neg (add x y);
+    add x (Neg x) = 0;
+    add (Neg x) x = 0;
 end;
 
 /* :Name: ``simplify_power`` x
@@ -465,6 +467,23 @@ with
     powr (mul x y) w = mul (powr x w) (powr y w) if numberp w ;
 end;
 
+/* :Name: ``rational_to_power`` x
+   :Arguments:
+   :x: Arbitrary expression
+   :Description: Reduces the given expression with the following rules
+   .. math::
+        \frac{x}{y} = x y^{-1}\\
+
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+rational_to_power X = reduce X
+with
+    rational x y = mul x (powr y (Neg 1)) ;
+end;
+
 /* :Name: ``simplify_rational`` x
    :Arguments:
    :x: Arbitrary expression
@@ -479,8 +498,11 @@ end;
 
 simplify_rational X = reduce X
 with
-    rational x y = mul x (powr y (Neg 1)) ;
+    rational 0 x = 0;
+    rational x 1 = x;
+    rational (Neg x) y = Neg (rational x y);
 end;
+
 
 /*
    Polynomials
@@ -513,6 +535,7 @@ poly x n a = (a $$ n) * x^n + (poly x (n-1) a);
 combine_rational X = reduce X
 with
     Neg (rational a b) = rational (Neg a) b;
+    add (rational a c) (rational b c) = rational (a+b) c;
     add (rational a b) (rational c d) = rational (a*d+b*c) (b*d);
     add k (rational a b) = rational (k*b+a) b;
     mul (rational a b) (rational c d) = rational (a*c) (b*d);
@@ -534,5 +557,6 @@ end;
 
 split_rational X = reduce X
 with
+    (rational (Neg a) b) = Neg (rational a b);
     (rational (add a b) c) = add (rational a c) (rational b c);
 end;

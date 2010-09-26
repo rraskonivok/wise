@@ -552,11 +552,6 @@ function apply_rule(rule, selections) {
 
     $.post("/cmds/apply_rule/", data, function (data) {
 
-        obj.queue(function() {
-           $(this).fadeTo('slow',1);
-           $(this).dequeue();
-        });
-
         if (data.error) {
             error(data.error);
             clear_selection();
@@ -571,6 +566,11 @@ function apply_rule(rule, selections) {
             obj = selection.nth(i);
             group_id = obj.attr('group');
             group_id_cache = String(group_id);
+
+            obj.queue(function() {
+               $(this).fadeTo('slow',1);
+               $(this).dequeue();
+            });
 
             if (data.new_html[i] == null) {
                 obj.remove();

@@ -105,8 +105,12 @@ def apply_rule(request):
     rule = request.POST.get('rule')
 
     namespace_index = int( request.POST.get('namespace_index') )
+
+    if not namespace_index:
+        raise Exception('No namespace index given in request')
     uid = uidgen(namespace_index)
     args = [translate.parse_sexp(cde, uid) for cde in code]
+
 
     #Ugly hack to allow us to pass the uid generator and use it
     # in the middle of a transformation in case we need to
