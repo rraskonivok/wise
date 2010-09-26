@@ -242,7 +242,8 @@ abs (complex x y) = Sqrt (x*x+y*y);
    ------------ 
 */
 
-conj (complex x y);
+conj (complex x y) = complex x (-y);
+conj _ = _;
 
 /* :Name: ``simplify_complex`` x
    :Arguments:
@@ -271,8 +272,8 @@ with
     mul (complex a b) (complex c d) = (complex (a*c-b*d) (b*c+a*d));
 
     rational (complex a b) (complex c d) = (complex 
-    (rational (a*c+b*d) (c^2 + d^2))
-    (rational (b*c-a*d) (c^2 + d^2))
+        (rational (a*c+b*d) (c^2 + d^2))
+        (rational (b*c-a*d) (c^2 + d^2))
     )
 end;
 
@@ -356,8 +357,7 @@ complex_split (complex x y) = x + (I * y);
 
 algebra_normal X = (simplify_multiplication . 
                     simplify_addition .
-                    simplify_power . 
-                    simplify_rational) X;
+                    simplify_power) X;
 
 /* :Name: ``simplify_multiplication`` x
    :Arguments:
@@ -386,6 +386,7 @@ algebra_normal X = (simplify_multiplication .
 simplify_multiplication X = reduce X
 with
     mul 0 x = 0 ;
+    mul 1 x = x ;
     mul x y = x * y if numberp x && numberp y;
     mul x y = powr (base x) (add (exponent x) (exponent y)) if (base x) === (base y) ;
     mul (mul a x) y = mul a ( powr (base x) (add (exponent x) (exponent y)) ) if (base x) === (base y) ;
@@ -479,4 +480,59 @@ end;
 simplify_rational X = reduce X
 with
     rational x y = mul x (powr y (Neg 1)) ;
+end;
+
+/*
+   Polynomials
+   ------------ 
+*/
+
+poly x 1 a = (a $$ 1) * x;
+poly x n a = (a $$ n) * x^n + (poly x (n-1) a);
+
+/*
+   Rationals
+   ------------ 
+*/
+
+/* :Name: ``combine_rational`` x
+   :Arguments:
+   :x: Complex number
+   :Description: Combines rational expressions according to the rules:
+   .. math::
+        -\frac{a}{b} = \frac{-a}{b}\\
+        \frac{a}{b} + \frac{c}{d} = \frac{ad+bc}{bd}\\
+        \frac{a}{b} \cdot \frac{c}{d} = \frac{ac}{bd}\\
+        \frac{a}{b} \div \frac{c}{d} = \frac{ad}{bc}
+
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+combine_rational X = reduce X
+with
+    Neg (rational a b) = rational (Neg a) b;
+    add (rational a b) (rational c d) = rational (a*d+b*c) (b*d);
+    add k (rational a b) = rational (k*b+a) b;
+    mul (rational a b) (rational c d) = rational (a*c) (b*d);
+    mul k (rational a b) = rational (k*a) b;
+    rational (rational a b) (rational c d) = rational (a*c) (b*d);
+end;
+
+/* :Name: ``split_rational`` x
+   :Arguments:
+   :x: Complex number
+   :Description: Seperates rational expressions according to the rules:
+   .. math::
+        \frac{a+b}{c} = \frac{a}{c} + \frac{b}{c}
+
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+split_rational X = reduce X
+with
+    (rational (add a b) c) = add (rational a c) (rational b c);
 end;

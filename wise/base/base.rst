@@ -288,3 +288,28 @@ single numeric quantitiy.
 :See Also:
 ------------ 
 
+:Name: ``combine_rational`` x
+:Arguments:
+:x: Complex number
+:Description: Combines rational expressions according to the rules:
+.. math::
+     -\frac{a}{b} = \frac{-a}{b}\\
+     \frac{a}{b} + \frac{c}{d} = \frac{ad+bc}{bd}\\
+     \frac{a}{b} \cdot \frac{c}{d} = \frac{ac}{bd}\\
+     \frac{a}{b} \div \frac{c}{d} = \frac{ad}{bc}
+
+:Python: None (Internal)
+:See Also:
+------------ 
+
+:Name: ``split_rational`` x
+:Arguments:
+:x: Complex number
+:Description: Seperates rational expressions according to the rules:
+.. math::
+     \frac{a+b}{c} = \frac{a}{c} + \frac{b}{c}
+
+:Python: None (Internal)
+:See Also:
+------------ 
+

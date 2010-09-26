@@ -469,16 +469,6 @@ function bind_hover_toggle() {
         })
 }
 
-function debug_colors(object) {
-    $('li[math-meta-class=term]').css('border-bottom', '5px solid red');
-    $('ul[math-type]').css('border-bottom', '5px solid blue');
-    $('.rhs').css('border-bottom', 'none');
-    $('.lhs').css('border-bottom', 'none');
-    $('.equation').css('background-color', '#CCCCCC');
-    $('.rhs').css('background-color', '#FFCCCC');
-    $('.lhs').css('background-color', '#CCFF00');
-}
-
 ///////////////////////////////////////////////////////////
 // Server Queries
 ///////////////////////////////////////////////////////////
@@ -551,7 +541,7 @@ function apply_rule(rule, selections) {
         if(data.selections.length == 1) {
             console.log('fading');
             selection.nth(0).queue(function() {
-               $(this).fadeOut('slow');
+               $(this).fadeTo('slow',0.1);
                $(this).dequeue();
             });
         }
@@ -561,6 +551,11 @@ function apply_rule(rule, selections) {
     }
 
     $.post("/cmds/apply_rule/", data, function (data) {
+
+        obj.queue(function() {
+           $(this).fadeTo('slow',1);
+           $(this).dequeue();
+        });
 
         if (data.error) {
             error(data.error);
@@ -576,10 +571,6 @@ function apply_rule(rule, selections) {
             obj = selection.nth(i);
             group_id = obj.attr('group');
             group_id_cache = String(group_id);
-            obj.queue(function() {
-               $(this).fadeIn('slow');
-               $(this).dequeue();
-            });
 
             if (data.new_html[i] == null) {
                 obj.remove();

@@ -91,4 +91,4 @@ INSTALLED_APPS = (
 # different directory so this flag disables all the template
 # precaching / path loading so that Sphinx can complete. If this
 # is enabled then the worksheet will *NOT* work.
-IGNORE_PATHS = True
+IGNORE_PATHS = False
