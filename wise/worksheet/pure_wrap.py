@@ -7,6 +7,8 @@ from types import ClassType, InstanceType
 from inspect import getargspec
 from django.template import Template, Context
 
+import sys
+
 # Import the Cython interface
 try:
     import pure.prelude
@@ -14,6 +16,7 @@ try:
 # load then nothing will work.
 except:
     raise Exception('Could not load Pure prelude, all other Pure dependencies will fail.')
+    sys.exit(0)
 
 # Pull the atomic Pure objects up into this namespace.
 PureInt = pure.prelude.PureInt
@@ -33,6 +36,9 @@ def use(package, library):
     print 'using ' + '::'.join([package, library])
     env.eval('using ' + '::'.join([package, library]))
 
+def jit_compile_interp():
+    return env.compile_interp()
+
 def is_pure_expr(obj):
     return isinstance(obj,PureExpr)
 
@@ -43,7 +49,7 @@ for pack in settings.INSTALLED_MATH_PACKAGES:
         #use(pack,'prelude')
         for name, obj in packages[pack].__dict__.iteritems():
             if is_pure_expr(obj):
-                print "Importing symbol '%s' from pack %s" % (name, pack)
+                #print "Importing symbol '%s' from pack %s" % (name, pack)
                 if not name in objects:
                     objects[name] = obj
                 else:
@@ -51,7 +57,10 @@ for pack in settings.INSTALLED_MATH_PACKAGES:
     except ImportError:
         raise exception.IncompletePackage(pack,'%s.py' % pack)
 
-print objects
+print 'Done importing objects'
+
+if settings.PRECOMPILE:
+    jit_compile_interp()
 
 # Traverse the root class and process all classes that inherit from
 # it, these are stored in in the internal .po method of the class

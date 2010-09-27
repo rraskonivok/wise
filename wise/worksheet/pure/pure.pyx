@@ -41,6 +41,10 @@ cdef class PureEnv:
         for sym in self.locals:
             sym.update()
 
+    def compile_interp(self, fnp=0):
+        print 'JIT compiling symbols.'
+        pure.pure_interp_compile(self._interp,fnp)
+
 cdef class PureExpr:
     cdef pure_expr *_expr
     cpdef int _tag

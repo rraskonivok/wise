@@ -92,3 +92,5 @@ INSTALLED_APPS = (
 # precaching / path loading so that Sphinx can complete. If this
 # is enabled then the worksheet will *NOT* work.
 IGNORE_PATHS = False
+
+PRECOMPILE  = True

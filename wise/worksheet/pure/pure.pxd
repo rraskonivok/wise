@@ -129,6 +129,8 @@ cdef extern from "pure/runtime.h":
     void pure_freenew(pure_expr *x)
     void pure_ref(pure_expr *x)
     void pure_unref(pure_expr *x)
+    void pure_interp_compile(pure_interp *interp, int32_t fno)
+
     pure_expr *pure_sentry(pure_expr *sentry, pure_expr *x)
     pure_expr *pure_get_sentry(pure_expr *x)
     pure_expr *pure_clear_sentry(pure_expr *x)

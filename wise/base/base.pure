@@ -8,7 +8,14 @@
   License, or (at your option) any later version.
 */
 
-using infix_wrap;
+wrap_infix X = reduce X
+with
+    x + y = add x y;
+    x * y = mul x y;
+    x / y = rational x y;
+    x - y = add x (Neg y);
+    x ^ y = powr x y;
+end;
 
 /* ..
    Algebraic Ordering
@@ -357,7 +364,22 @@ complex_split (complex x y) = x + (I * y);
 
 algebra_normal X = (simplify_multiplication . 
                     simplify_addition .
-                    simplify_power) X;
+                    simplify_power .
+                    simplify_rational) X;
+
+//algebra_normal X = reduce X
+//with
+//    X = simplify_multiplication X;
+//    X = simplify_addition X;
+//    X = simplify_power X;
+//    X = simplify_rational X;
+//
+//    mul x y = x * y if numberp x && numberp y;
+//    add x y = x + y if numberp x && numberp y;
+//    add x (Neg y) = x - y if numberp x && numberp y;
+//    add (Neg x) (Neg y) = Neg (x + y) if numberp x && numberp y;
+//    powr x y = x^y if numberp x && numberp y;
+//end;
 
 /* :Name: ``simplify_multiplication`` x
    :Arguments:
@@ -387,7 +409,6 @@ simplify_multiplication X = reduce X
 with
     mul 0 x = 0 ;
     mul 1 x = x ;
-    mul x y = x * y if numberp x && numberp y;
     mul x y = powr (base x) (add (exponent x) (exponent y)) if (base x) === (base y) ;
     mul (mul a x) y = mul a ( powr (base x) (add (exponent x) (exponent y)) ) if (base x) === (base y) ;
     mul x y = mul y x if cmp y x ;
@@ -423,9 +444,6 @@ end;
 simplify_addition X = reduce X
 with
     add 0 x = x ;
-    add x y = x + y if numberp x && numberp y;
-    add x (Neg y) = x - y if numberp x && numberp y;
-    add (Neg x) (Neg y) = Neg (x + y) if numberp x && numberp y;
     add a b = (mul ( (constant a) + (constant b) ) (term a)) if (term a) === (term b) ;
     add (add a b) c = add a (mul (add (constant b) (constant c)) (term b)) if (term b) === (term c) ;
     add a b = add b a if (cmp b a) && ~(sump a) ;
@@ -462,7 +480,6 @@ with
     powr x 1 = x;
     powr 0 x = 0;
     powr 1 x = 1;
-    powr x y = x ^ y if numberp x && numberp y;
     powr (powr r s) w = powr r (mul s w) if numberp w ;
     powr (mul x y) w = mul (powr x w) (powr y w) if numberp w ;
 end;
@@ -557,6 +574,12 @@ end;
 
 split_rational X = reduce X
 with
-    (rational (Neg a) b) = Neg (rational a b);
-    (rational (add a b) c) = add (rational a c) (rational b c);
+    rational (Neg a) b = Neg (rational a b);
+    rational (add a b) c = add (rational a c) (rational b c);
+    rational (mul a b) (mul c d) = mul (rational a b) (rational c d);
+end;
+
+seperate_denom X = reduce X 
+with 
+    rational a (mul b c) = a * (rational 1 b) * (rational 1 c) if a ~= 1;
 end;

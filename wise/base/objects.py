@@ -1342,10 +1342,12 @@ class Catalan(SubOperation):
 class Integral(PrefixOperation):
     symbol = '\\int'
     show_parenthesis = False
+    pure = 'integral'
 
 class Diff(PrefixOperation):
     symbol = '\\frac{d}{dx}'
     show_parenthesis = False
+    pure = 'diff'
 
 class Del(PrefixOperation):
     symbol = '\\nabla'
