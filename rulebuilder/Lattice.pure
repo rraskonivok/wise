@@ -1,0 +1,27 @@
+using morphisms;
+
+// Cyclic
+cap_assoc_left = pushleft cap;
+cap_assoc_right = pushright cap;
+
+// Cyclic
+cup_assoc_left = pushleft cup;
+cup_assoc_right = pushright cup;
+
+// Cyclic
+commute_cap = commute cap;
+commute_cup = commute cup;
+
+// Noetherian
+idempotent_cap = idempotent_binary cap;
+idempotent_cup = idempotent_binary cup;
+
+// Noetherian
+absorbtion1 = absorbtion cap cup;
+absorbtion2 = absorbtion cup cup;
+
+push_left = [cap_assoc_left, cup_assoc_left];
+push_right = [cap_assoc_right, cup_assoc_right];
+
+// The composition of two Noetherian term rewrite systems is
+// Noetherian

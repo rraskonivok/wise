@@ -18,6 +18,8 @@ ComplexSimplify = PublicRule('simplify_complex')
 RectangularToPolar = PublicRule('rect_to_polar')
 CombineRational = PublicRule('combine_rational')
 SplitRational = PublicRule('split_rational')
+DivisionThm = PublicRule('division_theorem')
+Expand = PublicRule('algebra_expand')
 
 panel = {}
 panel['Relational'] = [('Add Equation by Expression', AddSides),
@@ -30,6 +32,8 @@ panel['Algebraic'] = [('Canonical Algebraic Form', AlgebraNormal),
                       ('Simplify Complex', ComplexSimplify),
                       ('Expand Complex Trig', ComplexTrigExpand),
                       ('ComplexToRect', ComplexToRect),
+                      ('Division Theorem', DivisionThm),
+                      ('Expand', Expand),
                      ]
 
 panel['Rational'] = [('Combine Rational', CombineRational),

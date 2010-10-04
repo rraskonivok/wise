@@ -20,12 +20,13 @@ from pure_wrap import generate_pure_objects
 
 from wise.base.objects import *
 from wise.logic.objects import *
+from wise.calculus.objects import *
 
 translation_table = {'num':Numeric,'var':Variable}
 
 def generate_translation(root):
     if root.pure:
-        print 'Building Python translation pair: ( %s , %s )' % (root.pure, root)
+        #print 'Building Python translation pair: ( %s , %s )' % (root.pure, root)
         translation_table[root.pure] = root
 
     for cls in root.__subclasses__():
@@ -41,7 +42,6 @@ def translate_pure(key):
         return translation_table[key]
     except KeyError:
         raise exception.NoWrapper(key)
-
 
 generate_translation(root=Term)
 generate_translation(root=Equation)

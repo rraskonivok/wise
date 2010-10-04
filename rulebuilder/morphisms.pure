@@ -1,0 +1,69 @@
+// Automatically generate boilerplate algebra code
+
+using system;
+
+strn x = str(x) + ";\n";
+prettylist x = printf "%s" $ strcat (map strn x);
+
+pretty [] = "";
+
+infixl 2102 forall;
+infixl 2103 forall2;
+infixl 2104 forall3;
+infixl 2105 forall2u;
+infixl 2106 forall3u;
+infixl 2107 foralln;
+infixl 2108 forallnu;
+
+infixl 3105 -->;
+
+cart A B = [ (a,b) | a=A; b=B ];
+ucart A B = [ (a,b) | a=A; b=B; ~(a===b) ];
+
+prop forall2 elms = map (uncurry prop) (cart elms elms);
+prop forall2u elms = map (uncurry prop) (ucart elms elms);
+
+__show__ (x --> y) = sprintf "%s = %s" (str(x),str(y));
+
+// Extract the lhs/rhs of a prototype
+lhs (l --> r) = str l;
+rhs (l --> r) = str r;
+
+// Create an instance of our prototype rule
+instance proto = eval $ (lhs proto) + " = " + (rhs proto);
+
+commute f = reduce (f1 x y --> f1 y x) with f1=f; g1=g; end;
+inversion f g = reduce (f1 (g1 x) --> x) with f1=f; g1=g; end;
+
+absorbtion f g = reduce (f1 x (g1 x y) --> x) with f1=f; g1=g; end;
+
+noetherianp (absorbtion f g) = 1;
+
+idempotent_unary f = reduce (f1 x (f1 x) --> x) with f1=f; end;
+idempotent_binary f = reduce (f1 x x --> x) with f1=f; end;
+
+pushleft f = reduce (f1 x (f1 y z) --> f1 (f1 x y) z ) with f1=f; end;
+pushright f = reduce (f1 (f1 x y) z --> f1 x (f1 y z) ) with f1=f; end;
+binary_universal_left f X = reduce (f1 x X --> X ) with f1=f; end;
+binary_universal_right f X = reduce (f1 X x --> X ) with f1=f; end;
+
+pushdown f g = reduce (f1 x (g1 y z) --> (g1 (f1 x y) (f1 x z) )) with f1 = f; g1 = g; end;
+
+demorgan f g h = reduce 
+    (f1 (g1 x y) --> h1 (f1 x) (f1 y)) 
+with 
+    f1 = f; g1 = g; h1 = h; 
+end;
+
+Ring (a b c) = 3;
+
+inverse_rules (Ring (a b c)) = (rule1,rule2,rule3) with
+   rule1 = inversion c a; 
+end;
+
+commutative_ring = Ring $ one zero neg rule1 with
+    one = 1;
+    zero = 0;
+    neg = Neg;
+    rule1 = inversion neg neg;
+end;

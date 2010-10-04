@@ -1,0 +1,13 @@
+using BooleanAlgebra;
+
+idempotent_comp = idempotent_unary comp;
+demorgan1 = demorgan comp cap cup;
+demorgan2 = demorgan comp cup cup;
+
+dnf = [
+    distribute1, 
+    distribute2, 
+    demorgan1, 
+    demorgan2, 
+    idempotent_comp
+];

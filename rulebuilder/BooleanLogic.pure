@@ -1,0 +1,7 @@
+using BooleanAlgebraExt;
+
+cap = BooleanAnd;
+cup = BooleanOr;
+zero = BooleanFalse;
+one = BooleanTrue;
+comp = BooleanNeg;

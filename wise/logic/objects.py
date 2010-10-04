@@ -33,5 +33,5 @@ class Or(InfixOperation):
 
 class LogicNeg(PrefixOperation):
     symbol = '\\neg'
-    show_parenthesis = True
+    show_parenthesis = False
     pure = 'LogicNeg'

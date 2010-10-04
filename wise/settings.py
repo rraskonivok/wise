@@ -21,7 +21,7 @@ DATABASE_PASSWORD = 'django'         # Not used with sqlite3.
 DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
 DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
 
-INSTALLED_MATH_PACKAGES = ('base','algebra','logic')
+INSTALLED_MATH_PACKAGES = ('base','algebra','logic','calculus')
 
 # Change to your desired cache
 CACHE_BACKEND = 'db://cache'
@@ -93,4 +93,4 @@ INSTALLED_APPS = (
 # is enabled then the worksheet will *NOT* work.
 IGNORE_PATHS = False
 
-PRECOMPILE  = True
+PRECOMPILE  = False

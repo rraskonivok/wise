@@ -47,12 +47,6 @@ elem_operations = [('Addition',objects.Addition),
               ('Sqrt',objects.Sqrt),
               ('Exp',objects.Exp),
               ('Ln',objects.Ln),
-              ('Integral',objects.Integral),
-              ('Diff',objects.Diff),
-              ('Del',objects.Del),
-#              ('Gamma',objects.Gamma),
-#              ('Factorial',objects.Factorial),
-#              ('Zeta',objects.Zeta),
              ]
 
 Operations = TabularPanel(name='Algebraic Operations',

@@ -88,7 +88,8 @@ for pack in settings.INSTALLED_MATH_PACKAGES:
         for name, symbol in packages[pack].__dict__.iteritems():
             if is_panel(symbol):
                 if settings.DEBUG:
-                    print "Importing panel ... %s/%s" % (pack, name)
+                    pass
+                    #print "Importing panel ... %s/%s" % (pack, name)
 
                 panels[name] = symbol
     except ImportError:

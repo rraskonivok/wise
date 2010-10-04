@@ -8,14 +8,11 @@
   License, or (at your option) any later version.
 */
 
-wrap_infix X = reduce X
-with
-    x + y = add x y;
-    x * y = mul x y;
-    x / y = rational x y;
-    x - y = add x (Neg y);
-    x ^ y = powr x y;
-end;
+def x + y = add x y;
+def x * y = mul x y;
+def x / y = rational x y;
+def x - y = add x (Neg y);
+def x ^ y = powr x y;
 
 /* ..
    Algebraic Ordering
@@ -337,7 +334,7 @@ end;
 
    :Python: None (Internal)
    :See Also:
-   ------------ 
+   ------------ ;
 */
 
 complex_polar_to_rect X = reduce X
@@ -573,13 +570,30 @@ end;
 */
 
 split_rational X = reduce X
-with
-    rational (Neg a) b = Neg (rational a b);
-    rational (add a b) c = add (rational a c) (rational b c);
-    rational (mul a b) (mul c d) = mul (rational a b) (rational c d);
-end;
+    with
+            rational (Neg a) b = -(a/b);
+            rational (add a b) c = (a/c) + (b/c);
+            rational (a b) (mul c d) = mul (rational a b) (rational c d);
+    end;
 
 seperate_denom X = reduce X 
 with 
     rational a (mul b c) = a * (rational 1 b) * (rational 1 c) if a ~= 1;
 end;
+
+tr = (a+b)/c;
+
+division_theorem a b = add (mul b (a div b)) (a mod b);
+
+//TODO: Use longs
+fact n = loop 1 n with
+  loop p n = if n>0 then loop (p*n) (n-1) else p;
+end;
+
+algebra_expand X = reduce X
+with
+    mul (add a b) k = add (mul a k) (mul b k);
+    mul k (add a b) = add (mul k a) (mul k a);
+    powr (add a b) 2 = add (add (powr a 2) (mul (mul 2 a) b)) (powr b 2);
+end;
+
