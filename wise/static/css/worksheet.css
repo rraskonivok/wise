@@ -26,13 +26,13 @@
 /* Math Palette */
 
 #math_palette .term:not(.placeholder):hover {
-    border-bottom: 5px solid #9CBD86;
-    margin-bottom: -5px;
+    border-left: 5px solid #9CBD86;
+    margin-left: -5px;
 }
 
 #math_palette .container:not(.placeholder):hover {
-    border-top: 5px solid #989CD7;
-    margin-top: -5px;
+    border-left: 5px solid #989CD7;
+    margin-left: -5px;
 }
 
 .palette {
@@ -88,6 +88,11 @@
 }
 
 .selected {
+    border: 1px dashed #d4a5a5;
+    margin: -1px !important;
+}
+
+.preselect {
     border: 1px dashed #d4a5a5;
     margin: -1px !important;
 }

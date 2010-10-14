@@ -1741,3 +1741,26 @@ function preview() {
     $('#preview').html('$$' + tex + '$$');
     refresh_jsmath();
 }
+
+var ctrlPressed = false;
+$(window).keydown(function(evt) {
+  if (evt.which == 17) { // ctrl
+    ctrlPressed = true;
+  }
+}).keyup(function(evt) {
+  if (evt.which == 17) { // ctrl
+    ctrlPressed = false;
+  }
+});
+
+$('.container','#workspace').live('mouseover mouseout', function(e) {
+  ths = $(this);
+  if (e.type == 'mouseover' && ctrlPressed) {
+            ths.css('padding-left','10px');
+            ths.css('padding-right','10px');
+            ths.addClass('preselect');
+  } else {
+            ths.css('padding','inherit');
+            ths.removeClass('preselect');
+  }
+});
