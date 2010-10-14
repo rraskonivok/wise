@@ -90,6 +90,7 @@ NumTheoryOperations = TabularPanel(name='Number Theory Functions',
 #-------------------------
 
 constants = [('Imaginary Unit',objects.ImaginaryUnit),
+             ('Pi',objects.Pi),
              ('Catalan Number',objects.Catalan),
             ]
 

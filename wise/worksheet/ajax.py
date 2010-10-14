@@ -52,20 +52,8 @@ def apply_rule(request):
         arg.idgen = uid
 
     # Change this to rules[rule]
-
-    if rule == 'algebra_normal':
-        pure_wrap.new_level()
-
-        l = pure_wrap.PureSymbol('y')
-        r = pure_wrap.PureSymbol('l')
-
-        a = pure_wrap.ProtoRule(l,r)()
-
     ref = pure_wrap.objects[rule]
     new = rules.ApplyExternalRule(ref,*args)
-
-    if rule == 'algebra_normal':
-        pure_wrap.restore_level()
 
     new.idgen = uid
     new.ensure_id()

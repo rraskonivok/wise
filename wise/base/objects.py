@@ -576,6 +576,12 @@ class ImaginaryUnit(Base_Symbol):
     pure = 'I'
     args = "'i'"
 
+class Pi(Base_Symbol):
+    latex = '\pi'
+    symbol = '\pi'
+    pure = 'Pi'
+    args = "'\pi'"
+
 #-------------------------------------------------------------
 # Top Level Elements
 #-------------------------------------------------------------
