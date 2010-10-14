@@ -28,7 +28,7 @@ class PlaceholderInExpression(Exception):
 
 class NoWrapper(Exception):
     def __init__(self,expr):
-        self.value = "No translation for %s" % expr
+        self.value = "No translation for %s, this more than likely corresponds to a Pure syntax error." % expr
 
     def __str__(self):
         return self.value

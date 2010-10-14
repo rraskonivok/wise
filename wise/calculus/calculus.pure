@@ -42,3 +42,4 @@ end;
 ndiff f x n = foldl diff f (repeatn n x);
 
 diff_both_sides (eq lhs rhs) = eq (diff lhs) (diff rhs);
+diff_both_sides x = error "Must perform on relation.";

@@ -8,6 +8,8 @@ from mathobjects import *
 from wise.worksheet.utils import *
 import wise.worksheet.exceptions as exception
 
+from pure_wrap import p2i, i2p
+
 #-------------------------------------------------------------
 # Parse Tree
 #-------------------------------------------------------------
@@ -344,19 +346,27 @@ def parse_pure_exp(expr, uidgen=None):
     if uidgen:
         parsed.gen_uids(uidgen)
     else:
-        print "You better be manually assigning UIDs or else!!!!"
+        print "You better be manually assigning or craaazy shit is going to go down."
     #Map into the Python wrapper classes
     return parsed.eval_pure()
 
 #Convenience wrappers with more obvious names...
-def pure_to_python(obj,uidgen=None):
+def pure_to_python(obj,uidgen=None,wrap_infix=True):
     '''Maps a set of Pure objects (as translated by the Cython
     wrapper into internal Python objects'''
-    return parse_pure_exp(obj,uidgen)
 
-def python_to_pure(obj):
+    if wrap_infix:
+        return parse_pure_exp(i2p(obj),uidgen)
+    else:
+        return parse_pure_exp(obj,uidgen)
+
+def python_to_pure(obj,wrap_infix=True):
     '''Maps internal Python objects into their pure equivelents'''
-    return obj._pure_()
+
+    if wrap_infix:
+        return p2i(obj._pure_())
+    else:
+        return obj._pure_()
 
 def parse_sexp(code, uid):
     parsed = ParseTree(code)

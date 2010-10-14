@@ -11,22 +11,6 @@
 // Order of operations is defined by the fixity of the operaters
 // defined in prelude.pure
 
-i2p X = reduce X with
-    x - y = add x (Neg y);
-    x + y = add x y;
-    x * y = mul x y;
-    x / y = rational x y;
-    x ^ y = powr x y;
-end;
-
-p2i X = reduce X with
-    add x (Neg y) =  x - y;        
-    add x y       =  x + y; 
-    mul x y       =  x * y;  
-    rational x y  =  x / y;       
-    powr x y      =  x ^ y;   
-end;
-
 /* ..
    Algebraic Ordering
    --------------
@@ -460,7 +444,7 @@ with
     add (add a b)  c = add (add a c) b if cmp c b ;
     add a (add b c) = add (add a b) c;
     add (Neg x) (Neg y) = Neg (add x y);
-    add x (Neg x) = 0;
+    x - x = 0;
     add (Neg x) x = 0;
 end;
 
@@ -561,13 +545,13 @@ poly x n a = (a $$ n) * x^n + (poly x (n-1) a);
 
 combine_rational X = reduce X
 with
-    Neg (rational a b) = rational (Neg a) b;
-    add (rational a c) (rational b c) = rational (a+b) c;
-    add (rational a b) (rational c d) = rational (a*d+b*c) (b*d);
-    add k (rational a b) = rational (k*b+a) b;
-    mul (rational a b) (rational c d) = rational (a*c) (b*d);
-    mul k (rational a b) = rational (k*a) b;
-    rational (rational a b) (rational c d) = rational (a*c) (b*d);
+//    Neg (rational a b) = rational (Neg a) b;
+    (a/c) + (b/c) = (a+b)/c;
+    (a/b) + (c/d) = (a*d+b*c)/(b*d);
+//    add k (rational a b) = rational (k*b+a) b;
+//    mul (rational a b) (rational c d) = rational (a*c) (b*d);
+//    mul k (rational a b) = rational (k*a) b;
+    (a/b) / (c/d) = (a*c)/(b*d);
 end;
 
 /* :Name: ``split_rational`` x
@@ -585,7 +569,7 @@ end;
 split_rational X = reduce X
     with
             rational (Neg a) b = -(a/b);
-            rational (add a b) c = (a/c) + (b/c);
+            (a+b)/c = (a/c) + (b/c);
             rational (a b) (mul c d) = mul (rational a b) (rational c d);
     end;
 

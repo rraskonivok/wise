@@ -11,3 +11,6 @@ refop = PureSymbol('wiserefop')
 
 proto_op = PureSymbol('prototype')
 instance = PureSymbol('instance')
+
+i2p = PureSymbol('i2p')
+p2i = PureSymbol('p2i')

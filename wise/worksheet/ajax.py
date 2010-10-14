@@ -53,6 +53,7 @@ def apply_rule(request):
 
     # Change this to rules[rule]
     ref = pure_wrap.objects[rule]
+
     new = rules.ApplyExternalRule(ref,*args)
 
     new.idgen = uid
