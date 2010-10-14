@@ -275,7 +275,6 @@ function select_term(object) {
         format_selection();
     }
     
-//    definition_apply();
     if (clickedon.mathtype() != 'Placeholder') {
         placeholder_substitute();
     }
@@ -318,7 +317,7 @@ function definition_apply() {
         console.log(fst);
         console.log(snd);
 
-        if(fst.is_definition()) {
+        if(fst.is_definition() && !snd.is_definition()) {
             apply_def(fst,[snd]);
         }
     }

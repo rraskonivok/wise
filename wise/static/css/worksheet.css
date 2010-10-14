@@ -53,6 +53,14 @@
     margin: 0;
 }
 
+#math_palette {
+    background-color: white;
+}
+
+#rules_palette {
+    background-color: white;
+}
+
 /* Drag Helpers */
 
 .ui-sortable-helper {
@@ -81,6 +89,7 @@
 
 .selected {
     border: 1px dashed #d4a5a5;
+    margin: -1px !important;
 }
 
 /* Override the default sidebar stylesheet to remove ugly */
