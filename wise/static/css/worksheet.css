@@ -35,6 +35,14 @@
     margin-top: -5px;
 }
 
+.palette {
+  border-left: 1px solid #ddd;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  background: #fff;
+}
+
 #math_palette { 
     max-height: 500px;
     overflow: auto;
@@ -51,14 +59,6 @@
 .panel_frame {
     padding: 10px 15px;
     margin: 0;
-}
-
-#math_palette {
-    background-color: white;
-}
-
-#rules_palette {
-    background-color: white;
 }
 
 /* Drag Helpers */

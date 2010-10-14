@@ -40,7 +40,7 @@ class Panel:
         return interface_ui.render(c)
 
 tablular_template = haml('''
-<table class="palette">
+<table>
     {% for object in objects %}
         <tr>
             <td>{{ object.0 }}</td>

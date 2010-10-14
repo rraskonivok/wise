@@ -1,5 +1,5 @@
 {% load custom_tags %}
-div#rules_palette style="display:none"
+div#rules_palette.palette style="display:none"
     ul.navigation
         {% for title, rules in rulesets.items %}
             a.panel_category href="#"

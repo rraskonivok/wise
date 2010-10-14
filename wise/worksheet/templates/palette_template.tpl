@@ -1,4 +1,4 @@
-<div id="math_palette">
+<div id="math_palette" class="palette">
     <ul class="navigation">
     {% for panel in panels %}
         <a href="#" class="panel_category">{{ panel.name }}</a>
