@@ -9,7 +9,7 @@
 # License, or (at your option) any later version.
 
 from wise.worksheet.utils import render_haml_to_response
-from wise.worksheet.pure_wrap import PureSymbol, PureInt
+from wise.worksheet.pure_wrap import PureSymbol, PureInt, ProtoRule
 
 import worksheet.js as js
 import worksheet.exceptions as exception
@@ -821,7 +821,7 @@ class Definition(Equation):
 
     def _pure_(self):
         if self.lhs.hash != self.rhs.hash:
-            return pure_wrap.PureRule(self.lhs._pure_(),self.rhs._pure_())
+            return ProtoRule(self.lhs._pure_(),self.rhs._pure_())
         else:
             print "Definition is infinitely recursive."
 

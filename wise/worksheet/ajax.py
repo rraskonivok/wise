@@ -28,73 +28,6 @@ import wise.worksheet.exceptions as exception
 
 CACHE_INTERVAL = 30*60 # 5 Minutes
 
-#---------------------------
-# Rules --------------------
-#---------------------------
-
-#@login_required
-#@errors
-#@ajax_request
-#@cache_page(CACHE_INTERVAL)
-#def apply_rule(request):
-#    code = tuple(request.POST.getlist('selections[]'))
-#    set_id = int( request.POST.get('set_id') )
-#    rule_id = request.POST.get('rule_id')
-#
-#    if rule_id != 'null':
-#        rule_id = int(rule_id)
-#    else:
-#        rule_id = None
-#
-#    #debug(code)
-#    namespace_index = int( request.POST.get('namespace_index') )
-#
-#    uid = uidgen(namespace_index)
-#
-#    args = [translate.parse_sexp(cde, uid) for cde in code]
-#
-#    #Ugly hack to allow us to pass the uid generator and use it
-#    # in the middle of a transformation in case we need to
-#    # generate a whole new batch of uids (like when converting
-#    # pure <-> python ).
-#    for arg in args:
-#        arg.idgen = uid
-#
-#    # Load a specific rule
-#    if rule_id:
-#        rule = Rule.objects.get(id=rule_id)
-#        rule_strings = [rule.pure]
-#
-#    # Load all rules in the ruleset
-#    else:
-#        rs = RuleSet.objects.get(id=set_id)
-#        rules_q = Rule.objects.filter(set=rs,confluent=True).order_by('index')
-#        rule_strings = [rule.pure for rule in rules_q]
-#
-#    # If the Rule is flagged as an external reference go fetch it
-#    if rule.external == True:
-#        try:
-#            pack, symbol = rule.pure.split('/')
-#        except ValueError:
-#            raise Exception("Reference to external pure symbol is not well-formed: %s" % rule.pure)
-#
-#        ref = pure_wrap.objects[symbol]
-#        new = rules.ApplyExternalRule(ref,args[0])
-#
-#    # ... otherwise build it up from the given sexp string.
-#    else:
-#        new = rules.ReduceWithRules(rule_strings,args[0])
-#
-#    new.idgen = uid
-#    new.ensure_id()
-#
-#    new_html = [html(new)]
-#    new_json = [json_flat(new)]
-#
-#    return JsonResponse({'new_html': new_html,
-#                         'new_json': new_json,
-#                         'namespace_index': uid.next()[3:]})
-
 @login_required
 @errors
 @ajax_request
@@ -111,7 +44,6 @@ def apply_rule(request):
     uid = uidgen(namespace_index)
     args = [translate.parse_sexp(cde, uid) for cde in code]
 
-
     #Ugly hack to allow us to pass the uid generator and use it
     # in the middle of a transformation in case we need to
     # generate a whole new batch of uids (like when converting
@@ -120,8 +52,76 @@ def apply_rule(request):
         arg.idgen = uid
 
     # Change this to rules[rule]
+
+    if rule == 'algebra_normal':
+        pure_wrap.new_level()
+
+        l = pure_wrap.PureSymbol('y')
+        r = pure_wrap.PureSymbol('l')
+
+        a = pure_wrap.ProtoRule(l,r)()
+
     ref = pure_wrap.objects[rule]
     new = rules.ApplyExternalRule(ref,*args)
+
+    if rule == 'algebra_normal':
+        pure_wrap.restore_level()
+
+    new.idgen = uid
+    new.ensure_id()
+
+    new_html = [html(new)]
+    new_json = [json_flat(new)]
+
+    return JsonResponse({'new_html': new_html,
+                         'new_json': new_json,
+                         'namespace_index': uid.next()[3:]})
+
+@login_required
+@errors
+@ajax_request
+#@cache_page(CACHE_INTERVAL)
+def apply_def(request):
+    code = tuple(request.POST.getlist('selections[]'))
+
+    # Handle client-side ID
+    namespace_index = int( request.POST.get('namespace_index') )
+
+    if not namespace_index:
+        raise Exception('No namespace index given in request.')
+
+    uid = uidgen(namespace_index)
+
+    # Build up the pure representation of the definition from
+    # the sexp
+
+    def_sexp = request.POST.get('def')
+
+    if not def_sexp:
+        raise Exception('No definiton specified.')
+
+    def_py = translate.parse_sexp(def_sexp,uid)
+    def_pure = purify(def_py)
+
+    # ---
+
+    args = [translate.parse_sexp(cde, uid) for cde in code]
+
+    for arg in args:
+        arg.idgen = uid
+
+    # Init a new a closure
+    pure_wrap.new_level()
+
+    # Init the local definition
+    def_pure()
+
+    # Evaluate the selection in the context of the definition
+    pure_expr = purify(args[0])
+
+    pure_wrap.restore_level()
+
+    new = translate.pure_to_python(pure_expr,args[0].idgen)
 
     new.idgen = uid
     new.ensure_id()

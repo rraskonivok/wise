@@ -28,6 +28,11 @@ env = pure.prelude.env
 # This is called freqently enough that we'll push it up.
 reduce_with_pure_rules = pure.prelude.reduce_with_pure_rules
 
+proto_op = pure.prelude.proto_op
+instance = pure.prelude.instance
+new_level = pure.prelude.new_level
+restore_level = pure.prelude.restore_level
+
 ROOT_MODULE = 'wise'
 packages = {}
 objects = {}
@@ -72,4 +77,19 @@ def generate_pure_objects(root):
     for cls in root.__subclasses__():
         generate_pure_objects(cls)
 
+# This is a statefull change in the interpreter, if this is
+# called at the root definition level it applies globally
+class ProtoRule:
+    _proto = None
 
+    def __init__(self, lhs, rhs, guards=None):
+        # Construct ( lhs --> rhs )
+        self._proto = proto_op(lhs,rhs)
+
+    def __call__(self):
+        print 'Init rule', self._proto
+        # instance ( lhs --> rhs )
+        print instance(self._proto)
+
+    def __repr__(self):
+        return str(self._proto)

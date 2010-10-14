@@ -8,11 +8,24 @@
   License, or (at your option) any later version.
 */
 
-def x + y = add x y;
-def x * y = mul x y;
-def x / y = rational x y;
-def x - y = add x (Neg y);
-def x ^ y = powr x y;
+// Order of operations is defined by the fixity of the operaters
+// defined in prelude.pure
+
+i2p X = reduce X with
+    x - y = add x (Neg y);
+    x + y = add x y;
+    x * y = mul x y;
+    x / y = rational x y;
+    x ^ y = powr x y;
+end;
+
+p2i X = reduce X with
+    add x (Neg y) =  x - y;        
+    add x y       =  x + y; 
+    mul x y       =  x * y;  
+    rational x y  =  x / y;       
+    powr x y      =  x ^ y;   
+end;
 
 /* ..
    Algebraic Ordering

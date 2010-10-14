@@ -78,6 +78,14 @@ $.fn.is_placeholder = function() {
     return $(this).attr('math-type') == 'Placeholder';
 }
 
+$.fn.is_definition = function() {
+    return $(this).attr('math-type') == 'Definition';
+}
+
+$.fn.is_assumption = function() {
+    return $(this).attr('math-type') == 'Assumption';
+}
+
 $.fn.is_toplevel = function() {
     return $(this).attr('toplevel') == 'true';
 }
@@ -271,6 +279,10 @@ function select_term(object) {
     if (clickedon.mathtype() != 'Placeholder') {
         placeholder_substitute();
     }
+
+    if (selection.nth(0).is_definition()) {
+        definition_apply();
+    }
 }
 
 substitute_stoplist = ['Placeholder'];
@@ -282,7 +294,7 @@ function placeholder_substitute() {
         last = _.last(selection.list());
 
         if(last.is_toplevel()) {
-            error('Cannot substitute toplevel element into expression');
+            //error('Cannot substitute toplevel element into expression');
             return;
         }
 
@@ -294,6 +306,20 @@ function placeholder_substitute() {
             _.each(heads, function(slt) {
                 apply_transform('base/PlaceholderSubstitute',[slt,last]);
             });
+        }
+    }
+}
+
+function definition_apply() {
+    if (selection.count == 2) {
+        fst = selection.nth(0);
+        snd = selection.nth(1);
+
+        console.log(fst);
+        console.log(snd);
+
+        if(fst.is_definition()) {
+            apply_def(fst,[snd]);
         }
     }
 }
@@ -564,6 +590,108 @@ function apply_rule(rule, selections) {
         //are deleted.
         for (var i = 0; i < data.new_html.length; i++) {
             obj = selection.nth(i);
+            group_id = obj.attr('group');
+            group_id_cache = String(group_id);
+
+            obj.queue(function() {
+               $(this).fadeTo('slow',1);
+               $(this).dequeue();
+            });
+
+            if (data.new_html[i] == null) {
+                obj.remove();
+            }
+            else if (data.new_html[i] == 'pass') {
+                //onsole.log("Doing nothing");
+            }
+            else if (data.new_html[i] == 'delete') {
+                //console.log("Deleting - at some point in the future");
+            }
+            else {
+                toplevel = (data.new_json[i][0].type)
+                if (toplevel == 'Definition' | toplevel == 'Equation') {
+                    build_tree_from_json(data.new_json[i])
+                    //merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
+                    nsym = obj.replace(data.new_html[i]).hide();
+                    //nsym.attr('group',group_id_cache);
+                    refresh_jsmath($(nsym));
+                    nsym.fadeIn('slow');
+                    $('.equation button','#workspace').parent().buttonset();
+                } else {
+                    merge_json_to_tree(NODES[obj.id()], data.new_json[i]);
+                    nsym = obj.replace(data.new_html[i]).hide();
+                    nsym.attr('group', group_id_cache);
+                    refresh_jsmath($(nsym));
+                    nsym.fadeIn('slow');
+                }
+                update(get_container(nsym))
+                //Check to see if the uid assigning failed
+                if (nsym.find('#None').length > 0) {
+                    error("Warning: some elements do not have uids");
+                }
+                if (nsym.find('[group="None"]').length > 0) {
+                    error("Warning: orphaned elements");
+                }
+            }
+        }
+
+        NAMESPACE_INDEX = data.namespace_index;
+
+        clear_selection();
+        traverse_lines();
+        //update(get_container(obj))
+        resize_parentheses();
+    }, "json");
+
+    cleanup_ajax_scripts();
+}
+
+function apply_def(def, selections) {
+    var data = {};
+
+    data.def = def.math()
+
+    data.namespace_index = NAMESPACE_INDEX;
+
+    if (selections == null) {
+
+        //Fetch the math for each of the selections
+        if(selection.count == 0) {
+            error("Selection is empty.");
+            return;
+        }
+
+        data.selections = selection.list_attr('math');
+
+        if(data.selections.length == 1) {
+            console.log('fading');
+            selection.nth(0).queue(function() {
+               $(this).fadeTo('slow',0.1);
+               $(this).dequeue();
+            });
+        }
+
+    }
+    else {
+        data.selections = _.invoke(selections,'math');
+    }
+
+    console.log(data);
+
+    $.post("/cmds/apply_def/", data, function (data) {
+
+        if (data.error) {
+            error(data.error);
+            clear_selection();
+            return;
+        }
+
+        //Iterate over the elements in the image of the
+        //transformation, attempt to map them 1:1 with the
+        //elements in the domain. Elements mapped to 'null'
+        //are deleted.
+        for (var i = 0; i < data.new_html.length; i++) {
+            obj = selections[i];
             group_id = obj.attr('group');
             group_id_cache = String(group_id);
 

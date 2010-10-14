@@ -40,7 +40,7 @@ def ApplyExternalRule( ref, *expr ):
     which corresponds to a set of rules defined in an external
     prelude'''
 
-    # Working under the assumptiong that the external rule is
+    # Working under the assumption that the external rule is
     # of the form 
     #
     # symbol X = reduce X
@@ -51,7 +51,6 @@ def ApplyExternalRule( ref, *expr ):
     pexpr = map(translate.python_to_pure,expr)
     pure_expr = ref(*pexpr)
     pyexpr = translate.pure_to_python(pure_expr,expr[0].idgen)
-
 
     if settings.DEBUG:
         print 'Applying Rule:', ref, '\n--'

@@ -192,10 +192,6 @@ cdef class PureRule(PureExpr):
         stmt = "=".join([slhs,srhs])
         self._stmt = stmt
         self._pstmt = stmt
-        #pure.pure_save()
-        #self._expr = pure.pure_eval(stmt)
-        #print pure.str(pure.pure_eval('f a'))
-        #pure.pure_restore()
 
         if isinstance(lhs,PureApp):
             #print 'Changing head'
@@ -283,3 +279,9 @@ def reduce_with_pure_rules(PureExpr level, PureExpr expr):
     cdef pure_expr *rexp
     rexp = pure.reduce(level._expr, expr._expr)
     return PureExpr().se(rexp)
+
+def new_level():
+    pure.pure_save()
+
+def restore_level():
+    pure.pure_restore()
