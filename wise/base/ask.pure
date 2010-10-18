@@ -26,7 +26,7 @@ def x ≠ y = x ~= y;
 //      is_even (complex x y) == true  # is_even (complex x y) == true
 //
 //      is_even (complex x y) === true # false
-//      {{ is_even (complex x y)       # false
+//      `is_even (complex x y)       # false
 //
 // If you do not restrict the condition to well-defined statements
 // then Pure will try to evaluate the expression to a boolean
@@ -101,7 +101,7 @@ is_positive x::int = 1 if x > 0;
 
 is_positive (exp x) = 1 if `(is_real x);
 
-is_positive (x^n) = 1 if is_even n and x ≠ 0;
+is_positive (x^n) = 1 if `is_even n and `is_nonzero x;
 
 is_zero n::int = 1 if n == 0; 
                = 0 otherwise;
