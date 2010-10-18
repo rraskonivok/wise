@@ -25,12 +25,11 @@
    :See Also:
     ------------ 
 */
-
 cmp x y = x < y if numberp x && numberp y ;
 cmp x y = 1 if numberp x && ~(numberp y) ;
-cmp a^b c^d = if a === c then cmp b d else cmp a c ;
-cmp a b^c = if a === b then cmp 1 c else cmp a b ;
-cmp a^b c = if a === b then cmp b 1 else cmp a c ;
+cmp (a^b) (c^d) = if a === c then cmp b d else cmp a c ;
+cmp a (b^c) = if a === b then cmp 1 c else cmp a b ;
+cmp (a^b) c = if a === b then cmp b 1 else cmp a c ;
 cmp (x1@_ y1) (x2@_ y2) = if x1===x2 then cmp y1 y2 else cmp x1 x2;
 cmp (x1@_ y1) x2 = if x1===x2 then 0 else cmp x1 x2;
 cmp x1 (x2@_ y2) = if x1===x2 then 1 else cmp x1 x2;
@@ -88,8 +87,8 @@ exponent x = 1;
    ------------ 
 */
 
-term n*x = x if numberp n;
-term ((mul (mul x y) z)) = mul (term (mul x y)) z;
+term (n*x) = x if numberp n ;
+term ((x*y)*z) = (term (x*y)) * z ;
 term x = x ;
 
 /* :Name: ``constant`` x
@@ -101,8 +100,8 @@ term x = x ;
    ------------ 
 */
 
-constant (mul n x) = n if numberp n ;
-constant (mul (mul x y) z) = constant (mul x y) ;
+constant (n*x) = n if numberp n ;
+constant ((x*y)*z) = (constant (x*y)) ;
 constant x = 1 ;
 
 /*  ..
@@ -397,6 +396,7 @@ algebra_normal X = (simplify_multiplication .
 
 simplify_multiplication X = reduce X
 with
+    /*
     mul 0 x = 0 ;
     mul 1 x = x ;
     mul x y = powr (base x) (add (exponent x) (exponent y)) if (base x) === (base y) ;
@@ -405,6 +405,15 @@ with
     mul (mul x y) z = mul (mul x z) y if cmp z y ;
     mul x (mul y z) = mul (mul x y) z ;
     mul x (Neg y) = mul (Neg x) y;
+    */
+    0*x = 0 ;
+    1*x = x ;
+    x*y = (base x) ^ ((exponent x) + (exponent y)) if (base x) === (base y) ;
+    a*x*y = a * ( (base x) ^ ((exponent x) + (exponent y)) ) if (base x) === (base y) ;
+    x*y = y*x if cmp y x ;
+    x*y*z = x*z*y if cmp z y ;
+    x*(y*z) = x*y*z ;
+    x*(-y) = (-x)*y ;
 end;
 
 /* :Name: ``simplify_addition`` x
@@ -433,15 +442,14 @@ end;
 
 simplify_addition X = reduce X
 with
-    add 0 x = x ;
-    add a b = (mul ( (constant a) + (constant b) ) (term a)) if (term a) === (term b) ;
-    add (add a b) c = add a (mul (add (constant b) (constant c)) (term b)) if (term b) === (term c) ;
-    add a b = add b a if (cmp b a) && ~(sump a) ;
-    add (add a b)  c = add (add a c) b if cmp c b ;
-    add a (add b c) = add (add a b) c;
-    add (Neg x) (Neg y) = Neg (add x y);
-    x - x = 0;
-    add (Neg x) x = 0;
+    0+x = x ;
+    a+b = ( (constant a) + (constant b) ) * (term a) if ((term a) === (term b)) and (~numberp a && ~numberp b) ;
+    a+b+c = a + ((constant b) + (constant c)) * (term b) if (term b) === (term c) ;
+    a+b = b+a if (cmp b a) && ~(sump a) ;
+    a+b+c = a+c+b if cmp c b ;
+    a+(b+c) = a+b+c ;
+    x-x = 0;
+    (-x) + (-y) = -(x+y);
 end;
 
 /* :Name: ``simplify_power`` x
@@ -466,12 +474,12 @@ end;
 
 simplify_power X = reduce X
 with
-    x^0 = 1;
-    x^1 = x;
-    0^x = 0;
-    1^x = 1;
-    powr (powr r s) w = powr r (mul s w) if numberp w ;
-    powr (mul x y) w = mul (powr x w) (powr y w) if numberp w ;
+    0^x = 0 ;
+    1^x = 1 ;
+    x^0 = 1 ;
+    x^1 = x ;
+    (r^s)^w = r^(s*w) if numberp w ;
+    (x*y)^w = (x^w)*(y^w) if numberp w ;
 end;
 
 /* :Name: ``rational_to_power`` x
@@ -505,9 +513,9 @@ end;
 
 simplify_rational X = reduce X
 with
-    rational 0 x = 0;
-    rational x 1 = x;
-    rational (Neg x) y = Neg (rational x y);
+    0/x = 0;
+    x/1 = x;
+    (-x)/y = -(x/y);
 end;
 
 

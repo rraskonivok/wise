@@ -6,53 +6,59 @@ infixl (==) ≠;
 
 def x ≠ y = x ~= y;
 
-// "Well-defined" operator
-// Syntax: ` expr
-// Returns True if the expression is syntatically equivelent to
-// boolean True. False is the expression is False or not well-defined.
-//
-// Identities:
-//  `(x and y) = `x and `y
-//  `(x or y) = `x or `y
-// 
-// This allows us some syntatic freedom in specifying guards on
-// conditions. For example if an argument to a function is not
-// well-defined then we would expect any higher construction
-// depending on that functions result as a condition to be defined.
-// For example there is no notion of parity for complex numbers 
-// so is_even (complex x y) is not well-defined:
-//
-//      is_even (complex x y)          # is_even (complex x y) 
-//      is_even (complex x y) == true  # is_even (complex x y) == true
-//
-//      is_even (complex x y) === true # false
-//      `is_even (complex x y)       # false
-//
-// If you do not restrict the condition to well-defined statements
-// then Pure will try to evaluate the expression to a boolean
-// value which results in an error. Example define a toy
-// function:
-//
-//      > is_zero_or_one x = 1 if (x == 1) or (x == 0);
-//
-//      > is_zero_or_one 0; # 1 as expected
-//
-//      > is_zero_or_one y; # Results in error
-//      ... unhandled exception 'failed_cond' while evaluating 'is_zero_or_one y'
-//
-//      > is_zero_or_one x = 1 if `(x == 1) or `(x == 0);
-//
-//      > is_zero_or_one y; # "is_zero_or_one y" as desired
+/*
+ "Well-defined" operator
+ Syntax: ` expr
+ Returns True if the expression is syntatically equivelent to
+ boolean True. False is the expression is False or not well-defined.
+
+ Identities:
+  `(x and y) = `x and `y
+  `(x or y) = `x or `y
+ 
+ This allows us some syntatic freedom in specifying guards on
+ conditions. For example if an argument to a function is not
+ well-defined then we would expect any higher construction
+ depending on that functions result as a condition to be defined.
+ For example there is no notion of parity for complex numbers 
+ so is_even (complex x y) is not well-defined:
+
+      is_even (complex x y)          # is_even (complex x y) 
+      is_even (complex x y) == true  # is_even (complex x y) == true
+
+      is_even (complex x y) === true # false
+      `is_even (complex x y)       # false
+
+ If you do not restrict the condition to well-defined statements
+ then Pure will try to evaluate the expression to a boolean
+ value which results in an error. Example define a toy
+ function:
+
+      > is_zero_or_one x = 1 if (x == 1) or (x == 0);
+
+      > is_zero_or_one 0; # 1 as expected
+
+      > is_zero_or_one y; # Results in error
+      ... unhandled exception 'failed_cond' while evaluating 'is_zero_or_one y'
+
+      > is_zero_or_one x = 1 if `(x == 1) or `(x == 0);
+
+      > is_zero_or_one y; # "is_zero_or_one y" as desired
+*/
 
 prefix 1001 `;
 
 ` expr = 1 if (expr === true);
        = 0 otherwise;
 
-// *AVOID* recursive definitions. The following results in a
-// segfault:
-// is_even x = 1 if `(is_odd x);
-// is_odd x = 1 if `(is_even x);
+/* 
+
+ *AVOID* recursive definitions. The following results in a
+ segfault:
+ is_even x = 1 if `(is_odd x);
+ is_odd x = 1 if `(is_even x);
+
+*/
 
 // Use n to denote properties of a numeric type
 // Use x to denote properties of a arbitrary type
