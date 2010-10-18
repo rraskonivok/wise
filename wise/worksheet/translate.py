@@ -286,7 +286,7 @@ class Branch(object):
             else:
                 print 'something strange is being passed'
 
-        print 'HERE IT IS',self,type(self.args[0])
+        #print 'HERE IT IS',self,type(self.args[0])
         typ = translate_pure(self.type)
 
         #try:

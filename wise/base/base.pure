@@ -28,9 +28,9 @@
 
 cmp x y = x < y if numberp x && numberp y ;
 cmp x y = 1 if numberp x && ~(numberp y) ;
-cmp (powr a b) (powr c d) = if a === c then cmp b d else cmp a c ;
-cmp a (powr b c) = if a === b then cmp 1 c else cmp a b ;
-cmp (powr a b) c = if a === b then cmp b 1 else cmp a c ;
+cmp a^b c^d = if a === c then cmp b d else cmp a c ;
+cmp a b^c = if a === b then cmp 1 c else cmp a b ;
+cmp a^b c = if a === b then cmp b 1 else cmp a c ;
 cmp (x1@_ y1) (x2@_ y2) = if x1===x2 then cmp y1 y2 else cmp x1 x2;
 cmp (x1@_ y1) x2 = if x1===x2 then 0 else cmp x1 x2;
 cmp x1 (x2@_ y2) = if x1===x2 then 1 else cmp x1 x2;
@@ -52,7 +52,7 @@ cmp x y = ~(cmp y x) otherwise ;
 */
 
 
-sump (add x y) = 1 ; sump x = 0 ;
+sump x+y = 1 ; sump x = 0 ;
 
 
 /* :Name: ``base`` x
@@ -64,7 +64,7 @@ sump (add x y) = 1 ; sump x = 0 ;
    ------------ 
 */
 
-base (powr x y) = x;
+base x^y = x;
 base x = x;
 
 /* :Name: ``exponent`` x
@@ -76,7 +76,7 @@ base x = x;
    ------------ 
 */
 
-exponent (powr x y) = y ;
+exponent x^y = y ;
 exponent x = 1;
 
 /* :Name: ``term`` x
@@ -88,7 +88,7 @@ exponent x = 1;
    ------------ 
 */
 
-term (mul n x) = x if numberp n;
+term n*x = x if numberp n;
 term ((mul (mul x y) z)) = mul (term (mul x y)) z;
 term x = x ;
 
@@ -263,19 +263,15 @@ conj _ = _;
 
 simplify_complex X = reduce X
 with
-    // Componentwise Addition
-    add (complex x y) (complex u v) = complex (x+u) (y+v);
+    // Complex Addition
+    (complex x y) + (complex u v) = complex (x+u) (y+v);
+    - (complex x y) = complex (-x) (-y);
 
-    // Componentwise Subtraction
-    add (complex x y) (Neg (complex u v)) = (complex (x-u) (y-v));
+    // Complex Multiplication
+    (complex a b) * (complex c d) = complex (a*c-b*d) (b*c+a*d);
 
-    // Componentwise Multiplication
-    mul (complex a b) (complex c d) = (complex (a*c-b*d) (b*c+a*d));
-
-    rational (complex a b) (complex c d) = (complex 
-        (rational (a*c+b*d) (c^2 + d^2))
-        (rational (b*c-a*d) (c^2 + d^2))
-    )
+    // Complex Division
+    (complex a b) / (complex c d) = (complex ((a*c+b*d) / (c^2 + d^2)) ((b*c-a*d) / (c^2 + d^2)) )
 end;
 
 /* :Name: ``rect_to_polar`` x
@@ -470,10 +466,10 @@ end;
 
 simplify_power X = reduce X
 with
-    powr x 0 = 1;
-    powr x 1 = x;
-    powr 0 x = 0;
-    powr 1 x = 1;
+    x^0 = 1;
+    x^1 = x;
+    0^x = 0;
+    1^x = 1;
     powr (powr r s) w = powr r (mul s w) if numberp w ;
     powr (mul x y) w = mul (powr x w) (powr y w) if numberp w ;
 end;

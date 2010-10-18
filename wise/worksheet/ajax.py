@@ -28,6 +28,16 @@ import wise.worksheet.exceptions as exception
 
 CACHE_INTERVAL = 30*60 # 5 Minutes
 
+def query_property(request):
+    # Should query the description framework to determine whether
+    # the object has the given property
+    # Example: IsRational( Sqrt 2 ) -> False
+    # Example: IsTranscendental( Pi ) -> True
+    # Example: IsZero( Pi + -Pi ) -> Unknown -> Backward Chain # IsZero( X + -X) = True
+    # PossibleZeroQ[E^(I Pi/4) - (-1)^(1/4)]
+    # Transcendental(sin(a)) = True if NotAlgebraic(a)
+    pass
+
 @login_required
 @errors
 @ajax_request
@@ -99,7 +109,7 @@ def apply_def(request):
     for arg in args:
         arg.idgen = uid
 
-    # Init a new a closure
+    # Init a new lexical closure
     pure_wrap.new_level()
 
     # Init the local definition
@@ -108,6 +118,7 @@ def apply_def(request):
     # Evaluate the selection in the context of the definition
     pure_expr = purify(args[0])
 
+    # Close the closure and return to the main level
     pure_wrap.restore_level()
 
     new = translate.pure_to_python(pure_expr,args[0].idgen)
