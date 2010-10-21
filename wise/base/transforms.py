@@ -2,6 +2,7 @@ from wise.library_utils import *
 from wise.library_utils import _
 
 import objects
+from wise.worksheet.pure_wrap import i2p, env
 
 Placeholder = objects.Placeholder
 Term = objects.Term
@@ -11,6 +12,11 @@ def PlaceholderSubstitute( ph, tm ):
     return tm, 'pass'
 
 PlaceholderSubstitute.pretty = 'Substitute'
+
+@Map( _( Term , Term ) >> _( Term ) )
+def CommandLine( old, cmd ):
+    new = pure_to_python(env.eval(cmd))
+    return new, 'pass'
 
 @Map( _( Term ) >> _( Placeholder ) )
 def Delete( first ):

@@ -85,11 +85,12 @@
 
 .placeholder.selected {
     background-color: #d4a5a5;
+    margin: 0px !important;
 }
 
 .selected {
-    border: 1px dashed #d4a5a5;
-    margin: -1px !important;
+    border: 5px solid #d4a5a5;
+    margin: -5px !important;
 }
 
 .preselect {
@@ -112,6 +113,30 @@
     display: inline-block;
     vertical-align: middle;
     opacity: 1.0 !important;
+}
+
+.cmd {
+    position: fixed;
+    bottom: 50px;
+    /* 70% of 960px */
+    width: 70%;
+    min-width: 672px;
+    min-height: 20px;
+    text-align: center;
+}
+
+.cmd input {
+    height: 50px;
+    font-size: 15pt;
+    font-family: Monaco, sans-serif;
+    border-style: solid;
+    border-color: #000000;
+    border-width: 1px;
+    background-color: #f2f2f2;
+}
+
+.cmd button {
+    height: 50px;
 }
 
 #selectionlist {

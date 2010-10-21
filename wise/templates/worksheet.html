@@ -75,7 +75,14 @@
           </div>
         </div>
 
-        <div id="selectionlist"></div>
+        <div id="selectionlist">
+        </div>
+
+        <div class="cmd">
+            <form id="cmdline" action="#">
+                <input id="cmdinput" type="text">
+            </form>
+        </div>
 
       </div>
       <div id="sidebar">
@@ -149,11 +156,17 @@
     });
 
     $(document).ajaxStart(function () {
-        $('#ajax_loading').show()
+        $('#ajax_loading').show();
     })
     $(document).ajaxStop(function () {
-        $('#ajax_loading').hide()
+        $('#ajax_loading').hide();
     })
+
+    $('#cmdline').submit(function() {
+        use_infix($("#cmdinput").val());
+        $("#cmdinput").blur();
+        return false;
+    });
 
     //MathJax.Hub.Register.MessageHook("New Math", function (message) {
     //  var script = MathJax.Hub.getJaxFor(message[1]).SourceElement();
@@ -195,8 +208,14 @@
             .bind('keydown', 'del', function() {remove_element()})
             .bind('keydown', 'esc', function() {clear_selection()})
             .bind('keydown', 'r', function() {refresh_jsmath()})
-            .bind('keydown', 'tab', function() {next_placeholder()})
-            .bind('keydown', 's', function() {show_cmd()}
+            .bind('keydown', 'w', function() {next_placeholder()})
+            .bind('keydown', 's', function() {show_cmd()})
+            .bind('keydown', 'o', function() {new_line('eq')})
+            .bind('keydown', 'x', function() {use_infix('x')})
+            .bind('keydown', 'y', function() {use_infix('y')})
+            .bind('keydown', 'z', function() {use_infix('z')})
+            .bind('keydown', '+', function() {use_infix('ph+ph')})
+            .bind('keydown', 'ctrl+space', function() {$("#cmdinput").focus()}
         )
 
         //$('#vis_container').toggle(function() {

@@ -245,15 +245,16 @@ class Placeholder(Term):
 
     css_class = 'placeholder'
     html = load_haml_template('placeholder.tpl')
+    pure = 'ph'
 
     def __init__(self):
         self.latex = '$\\text{Placeholder}$'
 
-    def _pure_(self):
+    #def _pure_(self):
 
-        # If there is a placeholder left in an expression throw
-        # an error and abort the pure translation.
-        raise exception.PlaceholderInExpression()
+    #    # If there is a placeholder left in an expression throw
+    #    # an error and abort the pure translation.
+    #    raise exception.PlaceholderInExpression()
 
     def get_math(self):
         return '(Placeholder )'

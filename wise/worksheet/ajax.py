@@ -286,6 +286,23 @@ def combine(request):
 @login_required
 @errors
 @ajax_request
+def use_infix(request):
+    code = request.POST.get('code')
+    transform = unencode( request.POST.get('transform') )
+    namespace_index = int( request.POST.get('namespace_index') )
+    uid = uidgen(namespace_index)
+
+    # TOOD: This is dangerous
+    pure_expr = pure_wrap.i2p(pure_wrap.env.eval(code))
+    new = translate.pure_to_python(pure_expr, uid)
+
+    return JsonResponse({'new_html': [html(new)],
+                         'new_json': [json_flat(new)],
+                         'namespace_index': uid.next()[3:]})
+
+@login_required
+@errors
+@ajax_request
 @cache_page(CACHE_INTERVAL)
 def apply_transform(request):
     code = tuple(request.POST.getlist('selections[]'))

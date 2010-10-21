@@ -32,6 +32,7 @@ urlpatterns = patterns('',
      (r'^cmds/apply_def/$', 'wise.worksheet.ajax.apply_def'),
      (r'^cmds/apply_transform/$', 'wise.worksheet.ajax.apply_transform'),
      (r'^cmds/pure_parse/$', 'wise.worksheet.ajax.pure_parse'),
+     (r'^cmds/use_infix/$', 'wise.worksheet.ajax.use_infix'),
 #     (r'^cmds/json_tree/$', 'wise.worksheet.views.json_tree'),
      (r'^cmds/combine/$', 'wise.worksheet.ajax.combine'),
 

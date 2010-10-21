@@ -16,10 +16,6 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-//Optimization Tips:
-//http://net.tutsplus.com/tutorials/javascript-ajax/10-ways-to-instantly-increase-your-jquery-performance/
-//http://www.codenothing.com/archives/2010/8-jquery-micro-optimization-tips/
-
 ///////////////////////////////////////////////////////////
 // Utilities
 ///////////////////////////////////////////////////////////
@@ -381,6 +377,7 @@ function resize_parentheses() {
     var scaling_factor = 0.7;
     //Scale parentheses
     //TODO: Remove $.each
+
     $('.pnths','#workspace').css({'fontSize':0});
     $('.pnths','#workspace').css({'height':0});
     ppairs = _.zip($('.left','#workspace'),$('.right','#workspace'));
@@ -394,15 +391,7 @@ function resize_parentheses() {
         $(obj[0]).css({'fontSize':String(parent_height) + 'px'});
         $(obj[1]).css({'fontSize':String(parent_height) + 'px'});
     });
-    //$.each($('.pnths','#workspace'), function (obj) {
-    //    parent_height = $(this).parent().height();
-//  //      $(this).height(parent_height)
-//  //      $(this).css('margin-top', -parent_height / 3)
-//  //      $(this).css('font-size', String(parent_height / 3) + 'px')
-//  //      $(this).css({'height':0});
-    //    $(this).css({'height':0});
-    //    $(this).css({'fontSize':String(parent_height) + 'px'});
-    //});
+
     $.each($('.sqrt-prefix','#workspace'), function (obj) {
         $(this).css({'height':0});
         parent_height = $(this).parent().height();
@@ -747,6 +736,95 @@ function apply_def(def, selections) {
     cleanup_ajax_scripts();
 }
 
+function use_infix(code) {
+
+    if(selection.count == 0) {
+        error('No object selected');
+        return;
+    }
+
+    selections = selection.list();
+
+    //if(selections.length == 1) {
+    //    selections[0].fadeOut();
+    //}
+
+    postdata = {};
+    postdata.namespace_index = NAMESPACE_INDEX;
+    postdata.code = code;
+
+    ajaxqueue.add({
+        type: 'POST',
+        async: 'false',
+        url: "/cmds/use_infix/", 
+        data: postdata, 
+        datatype: 'json',
+        success: function(data) {
+
+            if (data.error) {
+                error(data.error);
+                clear_selection();
+                return;
+            }
+
+            if(!data.new_html) {
+                error("Statement is not well-formed");
+                return;
+            }
+
+            //Iterate over the elements in the image of the
+            //transformation, attempt to map them 1:1 with the
+            //elements in the domain. Elements mapped to 'null'
+            //are deleted.
+            for (var i = 0; i < data.new_html.length; i++) {
+                obj = selections[i];
+                group_id = obj.attr('group');
+                group_id_cache = String(group_id);
+                container = get_container(obj);
+                
+                console.log(obj);
+
+                if (data.new_html[i] == null) {
+                    obj.remove();
+                }
+                else if (data.new_html[i] == 'pass') {
+                    //console.log("Doing nothing");
+                }
+                else if (data.new_html[i] == 'delete') {
+                    //console.log("Deleting - at some point in the future");
+                }
+                else {
+                    toplevel = (data.new_json[i][0].type)
+                    if (toplevel == 'Definition' | toplevel == 'Equation') {
+                        build_tree_from_json(data.new_json[i])
+                        //merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
+                        nsym = obj.replace(data.new_html[i]);
+                        //nsym.attr('group',group_id_cache);
+                        refresh_jsmath($(nsym))
+                    } else {
+                        merge_json_to_tree(NODES[obj.id()], data.new_json[i]);
+                        nsym = obj.replace(data.new_html[i]);
+                        nsym.attr('group', group_id_cache);
+                        refresh_jsmath($(nsym));
+                    }
+                    update(container)
+                    //Check to see if the uid assigning failed
+                    if (nsym.find('#None').length > 0) {
+                        error("Warning: some elements do not have uids");
+                    }
+                }
+            }
+
+            NAMESPACE_INDEX = data.namespace_index;
+
+            clear_selection();
+            traverse_lines();
+            resize_parentheses();
+            //update(get_container(obj))
+        }});
+
+    cleanup_ajax_scripts();
+}
 
 function apply_transform(transform, selections) {
     var data = {};
@@ -767,9 +845,17 @@ function apply_transform(transform, selections) {
         data.selections = selection.list_attr('math')
     }
     else {
-        data.selections = _.invoke(selections,'math');
+        //data.selections = _.invoke(selections,'math');
+        data.selections = _.map(selections, 
+            function(obj) { 
+                if(obj.constructor == String) {
+                    return obj
+                } else {
+                    return obj.math();
+                } 
+            }
+        );
     }
-
 
     postdata = data;
 
@@ -1724,7 +1810,7 @@ function remove_element() {
 //function substite_subtraction() {
 //    placeholder = get_selection(0)
 //    if (get_container(placeholder).attr('math-type') == 'Addition') {
-//        add_after(placeholder, '(Negate (Placeholder ))')
+//        add_after(placeholder, '(Negate (nlaceholder ))')
 //    }
 //    else {
 //        replace_manually(placeholder, '(Addition (Negate (Placeholder )))')
@@ -1743,6 +1829,7 @@ function preview() {
 }
 
 var ctrlPressed = false;
+
 $(window).keydown(function(evt) {
   if (evt.which == 17) { // ctrl
     ctrlPressed = true;
