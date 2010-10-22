@@ -16,10 +16,18 @@
  <script src="/static/dimensions.js" type="text/javascript"></script>
  <script src="/static/tooltip.js" type="text/javascript"></script>
 
+
+  <!-- ajaxmanager.js -->
  <script src="/static/jquery.ajaxmanager.js"></script> 
 
   <!-- underscore.js -->
  <script src="/static/underscore.js" type="text/javascript"></script>
+
+  <!-- underscore.js -->
+ <script src="/static/js/json2.js" type="text/javascript"></script>
+
+  <!-- backbone.js / depends on underscore.js and json2.js -->
+ <script src="/static/js/backbone.js" type="text/javascript"></script>
 
   <!-- Notification Plugin -->
  <script src="/static/pnotify.js" type="text/javascript"></script>
@@ -132,12 +140,6 @@
     // initializes
     var JSON_TREE = $.parseJSON('{{ json_cells|safe }}');
     
-    // Array of cells, index corresponds to order on page. Each
-    // element contains another array of equations in that cell.
-    var CELLS = [];
-    
-    // Dictionary of equations indexed by uid
-    var EQUATIONS = {};
     
     // Lookup table of active equations which maps uid -> internal
     // tree object
@@ -292,7 +294,7 @@
                 var eq_index = eq;
                 var eq = cell[eq];
                 EQUATIONS[eq_index] = build_tree_from_json(eq);
-                new_cell.equations.push(eq);
+                new_cell.equations.add(eq);
             }
             CELLS.push(new_cell);
         }

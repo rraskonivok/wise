@@ -2,19 +2,26 @@
 // Expression Tree Handling
 ///////////////////////////////////////////////////////////
 
-function Cell() {
-    this.equations = [];
-    this.length = 0;
-    this.dom = null;
-}
+//function Cell() {
+//    this.equations = [];
+//    this.length = 0;
+//    this.dom = null;
+//}
 
-function Equation() {
-    this.tree = null;
-    this.cell = null;
-    this.next = null;
-    this.prev = null;
-    this.index = null;
-}
+var EquationCollection = Backbone.Collection;
+
+var Equation = Backbone.Model.extend({
+    tree : null,
+    cell : null,
+    next : null,
+    prev : null,
+    index : null
+});
+
+var Cell = Backbone.Model.extend({
+    equations: new EquationCollection(),
+    length: 0,
+});
 
 function RootedTree(root) {
     root.tree = this;
@@ -176,13 +183,23 @@ function append_to_tree(root, json_input) {
 // This is a hash trie, see http://en.wikipedia.org/wiki/Trie
 EQUATION_TREE = null;
 
-function RootedTree(root) {
-    root.tree = this;
-    root.depth = 1;
-    root._parent = this;
-    this.root = root;
-    this.levels[0] = [root];
-}
+var RootedTree = Backbone.Model.extend({
+    initialize: function(root) { 
+        root.tree = this; 
+        root.depth = 1;
+        root._parent = this;
+        this.root = root;
+        this.levels[0] = [root];
+    },
+});
+
+//function RootedTree(root) {
+//    root.tree = this;
+//    root.depth = 1;
+//    root._parent = this;
+//    this.root = root;
+//    this.levels[0] = [root];
+//}
 
 RootedTree.prototype.walk = function (node) {
     if (!node) {
@@ -200,11 +217,15 @@ RootedTree.prototype.nodes = [];
 RootedTree.prototype.levels = [];
 RootedTree.prototype.depth = 0;
 
-function Node() {
-    this.children = [];
-    this._parent = null;
-}
-this.equations = [];
+var Node = Backbone.Model.extend({
+
+    initialize: function() { 
+        this.children = [];
+        this._parent = null;
+    },
+
+});
+
 Node.prototype.tree = null;
 Node.prototype.hasChildren = function () {
     return this.children.length > 0
@@ -256,18 +277,19 @@ Node.prototype.swapNode = function (newNode) {
     this._parent.children[this.index] = newNode;
 }
 
-function Expression() {
-/* Javascript is much faster at manipulating
-    arrays than strings */
+var Expression = Node.extend({
 
-    this.children = [];
-    this._parent = null;
-    this._math = [];
-    this.dom = null;
-    this.hash = null;
-}
+    initialize: function(root) { 
+        this.children = [];
+        this._parent = null;
+        this._math = [];
+        this.dom = null;
+        this.hash = null;
+    }
 
-Expression.prototype = new Node();
+});
+
+//Expression.prototype = new Node();
 Expression.prototype.smath = function () {
     return this._math.join(' ')
 }

@@ -16,6 +16,13 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// Array of cells, index corresponds to order on page. Each
+// element contains another array of equations in that cell.
+var CELLS = [];
+
+// Dictionary of equations indexed by uid
+var EQUATIONS = {};
+
 ///////////////////////////////////////////////////////////
 // Utilities
 ///////////////////////////////////////////////////////////
@@ -1117,7 +1124,7 @@ function new_line(type) {
             var new_cell = new Cell();
             new_cell.dom = new_cell_html;
             var eq = build_tree_from_json(data.new_json);
-            new_cell.equations.push(eq);
+            new_cell.equations.add(eq);
 
             CELLS.push(new_cell);
             CELL_INDEX = data.cell_index;

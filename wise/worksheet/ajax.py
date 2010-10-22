@@ -229,34 +229,33 @@ def pure_parse(request):
                          'namespace_index': uid.next()[3:],
                          'cell_index': cell_index + 1})
 
-@login_required
-@errors
-@ajax_request
-@cache_page(CACHE_INTERVAL)
-def lookup_transform(request):
-    typs = tuple(request.POST.getlist('selections[]'))
-
-    def str_to_mathtype(typ):
-        return mathobjects.__dict__[typ]
-
-    domain = tuple( map(str_to_mathtype, typs) )
-
-    def compatible_pred(obj_types, fun_signature):
-        if len(obj_types) != len(fun_signature): return False
-        return all(issubclass(ot, ft) for ot, ft in zip(obj_types, fun_signature))
-
-    @memoize
-    def get_comptables(obj_types, fun_signatures):
-        return [t for t in fun_signatures if compatible_pred(obj_types, t.domain)]
-
-    compatible_mappings = get_comptables( domain, mathobjects.algebra.mappings)
-
-    if not compatible_mappings:
-        return JsonResponse({'empty': True})
-
-    mappings_list = [(m.pretty , m.internal) for m in compatible_mappings]
-
-    return JsonResponse(mappings_list)
+#@login_required
+#@errors
+#@ajax_request
+#@cache_page(CACHE_INTERVAL)
+#def lookup_transform(request):
+#    typs = tuple(request.POST.getlist('selections[]'))
+#
+#    def str_to_mathtype(typ):
+#        return mathobjects.__dict__[typ]
+#
+#    domain = tuple( map(str_to_mathtype, typs) )
+#
+#    def compatible_pred(obj_types, fun_signature):
+#        if len(obj_types) != len(fun_signature): return False
+#        return all(issubclass(ot, ft) for ot, ft in zip(obj_types, fun_signature))
+#
+#    def get_comptables(obj_types, fun_signatures):
+#        return [t for t in fun_signatures if compatible_pred(obj_types, t.domain)]
+#
+#    compatible_mappings = get_comptables( domain, mathobjects.algebra.mappings)
+#
+#    if not compatible_mappings:
+#        return JsonResponse({'empty': True})
+#
+#    mappings_list = [(m.pretty , m.internal) for m in compatible_mappings]
+#
+#    return JsonResponse(mappings_list)
 
 @login_required
 @errors
