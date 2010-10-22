@@ -54,8 +54,8 @@
         <div class="block" id="block-text">
           <div class="secondary-navigation">
             <ul class="wat-cf">
-              <li class="active first"><a href="#block-text">Text</a></li>
-              <li><a href="javascript:new_line('eq')">New Equation</a></li>
+              <li class="active first"><a href="#block-text">Worksheet</a></li>
+              <li><a href="javascript:new_line('eq')">New Cell</a></li>
               <li><a href="javascript:new_line('def')">New Definition</a></li>
             </ul>
           </div>
@@ -185,7 +185,6 @@
         }).next()
     });
 
-
     function palette(num) {
         if(num == 1) {
             $('#math_palette').show();
@@ -200,34 +199,44 @@
             $('#tab_math_palette').removeClass('active');
         }
     }
+
+    function show_cmdline() {
+       $('.cmd').fadeIn();
+       $('#cmdinput').focus();
+    }
+
+    function hide_cmdline() {
+       $('.cmd').fadeIn();
+       $('#cmdinput').focus();
+    }
     
     function init()
     {
         $(document).bind( 'keydown', 'f4', function() {show_debug_menu()})
             .bind('keydown', 't', function() {lookup_transform()})
             .bind('keydown', 'del', function() {remove_element()})
+            .bind('keydown', 'd', function() {remove_element()})
             .bind('keydown', 'esc', function() {clear_selection()})
             .bind('keydown', 'r', function() {refresh_jsmath()})
             .bind('keydown', 'w', function() {next_placeholder()})
-            .bind('keydown', 's', function() {show_cmd()})
             .bind('keydown', 'o', function() {new_line('eq')})
+            .bind('keydown', 's', function() {apply_rule('algebra_normal',null)})
+            // Variable substitutions 
             .bind('keydown', 'x', function() {use_infix('x')})
             .bind('keydown', 'y', function() {use_infix('y')})
             .bind('keydown', 'z', function() {use_infix('z')})
+            .bind('keydown', 't', function() {use_infix('t')})
+            // Operation substitutions
             .bind('keydown', '+', function() {use_infix('ph+ph')})
+            .bind('keydown', '/', function() {use_infix('ph/ph')})
+            .bind('keydown', '*', function() {use_infix('ph*ph')})
+            .bind('keydown', '-', function() {use_infix('ph-ph')})
+            // Number substitutions
+            .bind('keydown', '2', function() {use_infix('2')})
+            .bind('keydown', '1', function() {use_infix('1')})
+            .bind('keydown', '0', function() {use_infix('0')})
             .bind('keydown', 'ctrl+space', function() {$("#cmdinput").focus()}
         )
-
-        //$('#vis_container').toggle(function() {
-        //    $('.container:hover').css('padding-top','5px');
-        //}, function() {
-        //    $('.container:not(.placeholder):hover').css('padding-top','0px');
-        //});
-    
-        //$("#cmd_form").submit(function(e) { 
-        //        exec_cmd();
-        //        e.preventDefault();
-        //});
         
         $.ajax({
                 url: '/rule_request',

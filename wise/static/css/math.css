@@ -162,3 +162,8 @@
     padding-right: .1em;
     margin-right: .1em;
 }
+
+.cell {
+    border-left: 5px solid #07B;
+    margin-bottom: 3px;
+}
