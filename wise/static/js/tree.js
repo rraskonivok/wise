@@ -117,36 +117,6 @@ function merge_json_to_tree(old_node, json_input) {
         return;
     }
     old_node.swapNode(newtree.root);
-
-    //Swap out a node in a tree with an expression created from
-    //JSON 
-    //js doesn't have proper iterators *grumble, grumble*
-    //if(json_input.length == 1) {
-    //   var node = new Expression();
-    //   var term = json_input[0];
-    //   old_node.swapNode(node);
-    //   //console.log("old_node: %s",old_node.id());
-    //   NODES[term.id] = node; 
-    //   node.id = term.id;
-    //   node.name = term.type;
-    //   node.dom = $('#' + term.id);
-    //   //delete NODES[old_node.id()];
-    //} else {
-    //    for(var term in json_input) {
-    //       var index = term;
-    //       var term = json_input[term];
-    //       var node = new Expression();
-    //       if(index == 0) {
-    //            old_node.swapNode(node);
-    //            //console.log("old_node: %s",old_node.id());
-    //            //delete NODES[old_node.id()];
-    //       }
-    //       NODES[term.id] = node; 
-    //       node.id = term.id;
-    //       node.name = term.type;
-    //       node.dom = $('#' + node.id);
-    //    }
-    //}
 }
 
 function append_to_tree(root, json_input) {
@@ -283,6 +253,16 @@ var Expression = Node.extend({
 //Expression.prototype = new Node();
 Expression.prototype.smath = function () {
     return this._math.join(' ')
+}
+
+Expression.prototype.math = function() {
+
+    if(!this.hasChildren()) {
+        this._math = this.name;
+    } else {
+        this._math = [this.name, _.invoke(this.children,'math')];
+    }
+    return this._math;
 }
 
 /*

@@ -39,6 +39,11 @@ window.log = function(){
   }
 };
 
+// TODO: Just for debugging
+function showmath() {
+   return NODES[selection.nth(0)[0].id].math();
+}
+
 $.fn.exists = function () {
     return jQuery(this).length > 0;
 }
