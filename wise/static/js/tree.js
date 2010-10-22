@@ -2,12 +2,6 @@
 // Expression Tree Handling
 ///////////////////////////////////////////////////////////
 
-//function Cell() {
-//    this.equations = [];
-//    this.length = 0;
-//    this.dom = null;
-//}
-
 var EquationCollection = Backbone.Collection;
 
 var Equation = Backbone.Model.extend({
@@ -37,7 +31,7 @@ function build_tree_from_json(json_input) {
 
     //Lookup table which establishes a correspondance between the DOM
     //ids (i.e. uid314 ) and the Node objects in the expression tree.
-    //Craete a hash table: { 'uid3': Node of uid3 }
+    //Create a hash table: { 'uid3': Node of uid3 }
     for (var term in json_input) {
         term = json_input[term];
         var node = new Expression();
@@ -193,14 +187,6 @@ var RootedTree = Backbone.Model.extend({
     },
 });
 
-//function RootedTree(root) {
-//    root.tree = this;
-//    root.depth = 1;
-//    root._parent = this;
-//    this.root = root;
-//    this.levels[0] = [root];
-//}
-
 RootedTree.prototype.walk = function (node) {
     if (!node) {
         node = this.root;
@@ -246,20 +232,25 @@ Node.prototype.addNode = function (node) {
 }
 
 Node.prototype.delNode = function (node) {
-    //If the node is not the root / toplevel
-    if (this.depth > 1) {
-        this._parent.children.splice(this.index, 1);
 
-        //Regenerate the indices
-        for (var i = 0; i < this._parent.children.length; i++) {
-            this._parent.children[i].index = i;
-        }
-    }
+    window.log('trying to delete node',this);
+    //If the node is not the root / toplevel
+
+    //if (this.depth > 1) {
+    //    this._parent.children.splice(this.index, 1);
+
+    //    //Regenerate the indices
+    //    for (var i = 0; i < this._parent.children.length; i++) {
+    //        this._parent.children[i].index = i;
+    //    }
+    //}
+
     //Eat up the node's children recursively, quite a modest
     //proposal
-    for (var i = 0; i < this.children.length; i++) {
-        this.children[i].delNode();
-    }
+    //for (var i = 0; i < this.children.length; i++) {
+    //    this.children[i].delNode();
+    //}
+    _.invoke(this.children,'delNode');
     //Destroy the node itself
     delete NODES[this.id];
     delete this;

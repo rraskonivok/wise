@@ -212,10 +212,10 @@ function select_term(object) {
     //container we add to each of the RHS or LHS
     container = get_container(clickedon);
 
-    if (container != undefined) {
-        if (container.attr('math-type') == 'RHS' || container.attr('math-type') == 'LHS') {
-            return
-        }
+    if (container) {
+        //if (container.attr('math-type') == 'RHS' || container.attr('math-type') == 'LHS') {
+        //    return
+        //}
     }
 
     if (clickedon.hasClass('selected')) {
@@ -316,9 +316,6 @@ function definition_apply() {
     if (selection.count == 2) {
         fst = selection.nth(0);
         snd = selection.nth(1);
-
-        console.log(fst);
-        console.log(snd);
 
         if(fst.is_definition() && !snd.is_definition()) {
             apply_def(fst,[snd]);
