@@ -26,7 +26,7 @@ function RootedTree(root) {
 }
 
 function build_tree_from_json(json_input) {
-    //Our Expression tree
+    //Build an expression from the output of the python function json_flat
     var T;
 
     //Lookup table which establishes a correspondance between the DOM
@@ -38,7 +38,10 @@ function build_tree_from_json(json_input) {
         NODES[term.id] = node;
         node.id = term.id;
         node.name = term.type;
-        node.dom = $('#' + node.id);
+        node.toplevel = term.toplevel;
+        node.args = term.args;
+
+        node.dom = $('#' + node.id,"#workspace");
     }
 
     //Iterate through the children and lookup their corresponding
@@ -252,35 +255,20 @@ var Expression = Node.extend({
 
 //Expression.prototype = new Node();
 Expression.prototype.smath = function () {
-    return this._math.join(' ')
+    return _.flatten(this._math).join(' ')
 }
 
 Expression.prototype.math = function() {
 
     if(!this.hasChildren()) {
-        this._math = this.name;
+        this._math = sexp(this.name, this.args);
     } else {
-        this._math = [this.name, _.invoke(this.children,'math')];
+        this._math = ['(', this.name, _.invoke(this.children,'math'), ')'];
     }
     return this._math;
 }
 
-/*
-// O(n) , n = nodes in tree
-for (level in T.levels.reverse()) {
-    var terms = T.levels[level];
-    for(term in terms) {
-       term = terms[term]; 
-       var _parent = term._parent
-       if(!term.hasChildren())
-       {
-            term.math = term._math
-       }
-       else
-       {
-           term.math = ['(',term.mathtype,' ',term._math.join(' '),')'].join('')
-       }
-       _parent._math.push(term.math)
-    }
+function sexp(head, args) {
+    // Builds an array of the form (head arg1 arg2 arg3)
+    return _.flatten(['(', head, args, ')']);
 }
-*/

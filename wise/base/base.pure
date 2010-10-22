@@ -11,6 +11,8 @@
 // Order of operations is defined by the fixity of the operaters
 // defined in prelude.pure
 
+using ask;
+
 /* ..
    Algebraic Ordering
    --------------
@@ -474,9 +476,9 @@ end;
 
 simplify_power X = reduce X
 with
-    0^x = 0 ;
+    0^x = 0 if `(x ~= 0);
     1^x = 1 ;
-    x^0 = 1 ;
+    x^0 = 1 if `(x ~= 0);
     x^1 = x ;
     (r^s)^w = r^(s*w) if numberp w ;
     (x*y)^w = (x^w)*(y^w) if numberp w ;

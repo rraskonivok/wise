@@ -181,6 +181,8 @@ class Term(object):
 
         lst.append({"id": self.id,
                     "type": self.classname,
+                    "toplevel": False,
+                    "args": self.args,
                     "children": [term.id for term in self.terms]})
 
         for term in self.terms:
@@ -623,7 +625,7 @@ class Equation(object):
         self.rhs = rhs
         self.lhs = lhs
 
-        self.terms = [self.rhs, self.lhs]
+        self.terms = [self.lhs, self.rhs]
 
     def get_math(self):
         return '(' + self.classname + ' ' + spaceiter(map(lambda o: o.get_math(), self.terms)) + ')'
@@ -759,7 +761,7 @@ class RHS(Term):
     def __init__(self,*terms):
         self.rhs = Addition(*terms)
         self.terms = [self.rhs]
-        self.args = [self.rhs]
+#        self.args = [self.rhs]
         self.side = 1
         self.rhs.side = 1
         self.rhs.parent = self
@@ -788,7 +790,7 @@ class LHS(Term):
     def __init__(self,*terms):
         self.lhs = Addition(*terms)
         self.terms = [self.lhs]
-        self.args = [self.lhs]
+#        self.args = [self.lhs]
         self.side = 0
         self.lhs.side = 0
         self.lhs.parent = self

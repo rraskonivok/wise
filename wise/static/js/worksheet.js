@@ -41,7 +41,8 @@ window.log = function(){
 
 // TODO: Just for debugging
 function showmath() {
-   return NODES[selection.nth(0)[0].id].math();
+   NODES[selection.nth(0)[0].id].math();
+   return NODES[selection.nth(0)[0].id].smath();
 }
 
 $.fn.exists = function () {
@@ -71,15 +72,20 @@ $.fn.id = function () {
 };
 
 $.fn.math = function () {
-    return $(this).attr('math')
+    window.log($(this).id());
+    node = NODES[$(this).id()];
+    node.math();
+    var sexp = node.smath();
+    console.log(sexp);
+    return sexp;
 };
 
 $.fn.group = function () {
-    return $(this).attr('group')
+    return $(this).attr('group');
 };
 
 $.fn.mathtype = function () {
-    return $(this).attr('math-type')
+    return $(this).attr('math-type');
 };
 
 $.fn.is_placeholder = function() {
@@ -392,7 +398,7 @@ function resize_parentheses() {
     ppairs = _.zip($('.left','#workspace'),$('.right','#workspace'));
     _.each(ppairs, function (obj) {
         parent_height = $(obj[0]).parent().height() * scaling_factor;
-        console.log(parent_height);
+        //window.log(parent_height);
         if(parent_height > 50) {
             parent_height = 50;
         }
@@ -559,7 +565,7 @@ function apply_rule(rule, selections) {
             error("Selection is empty.");
             return;
         }
-        data.selections = selection.list_attr('math');
+        data.selections = _.invoke(selection.list(),'math');
 
         if(data.selections.length == 1) {
             console.log('fading');
@@ -1509,43 +1515,43 @@ function update_math(object, stack_depth) {
       that point to it and then incorporate their math
       strings into ours, then ascend upwards doing the same*/
 
-    if (!stack_depth) {
-        stack_depth = 1
-    } else {
-        stack_depth += 1
-    }
+    //if (!stack_depth) {
+    //    stack_depth = 1
+    //} else {
+    //    stack_depth += 1
+    //}
 
-    if (stack_depth > 25) {
-        alert('fuck, maximum recursion depth reached' + $(object).attr('id') + ',group:' + $(object).attr('group'))
-        return null
-    }
+    //if (stack_depth > 25) {
+    //    alert('fuck, maximum recursion depth reached' + $(object).attr('id') + ',group:' + $(object).attr('group'))
+    //    return null
+    //}
 
-    var mst = new String;
+    //var mst = new String;
 
-    var members = $('[group=' + object.attr('id') + ']',object);
+    //var members = $('[group=' + object.attr('id') + ']',object);
 
-    //If we have an empty container
-    if (members.length == 0) {
-        mst = 'None';
-    }
+    ////If we have an empty container
+    //if (members.length == 0) {
+    //    mst = 'None';
+    //}
 
-    //TODO: Remove $.each
-    $.each(members, function () {
-        mth = $(this).attr('math');
-        if (mth != undefined) {
-            mst += mth + ' ';
-        }
-    });
+    ////TODO: Remove $.each
+    //$.each(members, function () {
+    //    mth = $(this).attr('math');
+    //    if (mth != undefined) {
+    //        mst += mth + ' ';
+    //    }
+    //});
 
-    mst = ['(', object.mathtype() ,' ' , mst ,')'].join('');
+    //mst = ['(', object.mathtype() ,' ' , mst ,')'].join('');
 
-    object.attr('math', mst);
-    object.attr('num_children', members.length)
+    //object.attr('math', mst);
+    //object.attr('num_children', members.length)
 
-    if (object.attr('group') != undefined) {
-        group = $('#' + object.attr('group'));
-        update_math(group, stack_depth)
-    }
+    //if (object.attr('group') != undefined) {
+    //    group = $('#' + object.attr('group'));
+    //    update_math(group, stack_depth)
+    //}
 }
 
 function visualize_tree(tree) {
