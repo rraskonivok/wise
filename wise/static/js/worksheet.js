@@ -213,36 +213,37 @@ function clear_selection() {
     ctrlPressed = false;
 }
 
+function select_parent(object) {
+    var parent_node = NODES[object.id()]._parent;
+    select_term($(parent_node.dom));
+}
+
 function select_term(object) {
-    //Since the selections have changed clear any looked-up (is that even a word?) actions
 
-    clickedon = $(object);
+    var clickedon = $('#' + object.id);
+    console.log(clickedon);
 
-    //We shouldn't be able to click on the "invisible" addition
-    //container we add to each of the RHS or LHS
-    container = get_container(clickedon);
-
-    if (container) {
-        //if (container.attr('math-type') == 'RHS' || container.attr('math-type') == 'LHS') {
-        //    return
-        //}
+    if(clickedon.length == 0) {
+        console.log('DOM correspondance not found.');
+        return;
     }
 
     if (clickedon.hasClass('selected')) {
         clickedon.removeClass('selected');
-        id = clickedon.attr("id");
+        id = object.id;
+
         //TODO: Remove $.each
         $.each($("#selectionlist button"), function () {
             if ($(this).attr('index') === id) {
                 $(this).remove();
             }
         });
+
         selection.del(id)
-    }
-    else {
+    } else {
         clickedon.addClass('selected');
-        typ = clickedon.attr('math-type');
-        li = $(document.createElement('button')).html(typ)
+        typ = object.name;
+        li = $(document.createElement('button')).html(typ);
         li.button()
 
         cancel = $(document.createElement('div'))
@@ -1145,97 +1146,6 @@ function parse_pure() {
 // Tree Traversal
 ///////////////////////////////////////////////////////////
 
-function get_common_parent(first, second) {
-/*
-       This traverses the tree upwards until it finds the branch that each element having in common
-
-                         A
-                       /   \
-                      B     C
-                     / \   / \
-                    D   E F   G
-
-     get_common_parent(D,E) = B
-     get_common_parent(F,E) = A
-
-     */
-
-    //** Check to see if our elements are in disjoint branches **//
-    //Yah, apparently the .find command can't strip the selector off a jquery() argument passed to it, lame
-    if ($(first).find(second.selector).exists()) {
-        return first;
-    }
-
-    if ($(second).find(first.selector).exists()) {
-        return second;
-    }
-
-    //** Our elements are disjoint so ascend upwards recursively until we find the common parent**//
-    first_container = get_container(first);
-    return get_common_parent(first_container, second)
-
-}
-
-function get_common_context(first, second) {
-/*
-       This traverses the tree upwards a maximum one one level to see if two nodes share the same parent
-       aka they are siblings
-
-                         A
-                       /   \
-                      B     C
-                     / \   / \
-                    D   E F   G
-
-     get_common_context(D,E) = B
-     get_common_context(F,E) = null
-
-     */
-    first_container = get_container(first)
-
-    if (!first_container) {
-        return null
-    }
-
-    if (first_container.attr('id') == get_container(second).attr('id')) {
-        return first_container
-    } else {
-        return null
-    }
-}
-
-function get_nested(first, second) {
-
-/*
-       This traverses the tree upwards to see if two elements are nested
-
-                         A
-                       /   \
-                      B     C
-                     / \   / \
-                    D   E F   G
-
-     get_nested(D,B) = B
-     get_nested(D,A) = A
-     get_nested(D,E) = null
-
-     */
-    if ($(first).find(second.selector).exists()) {
-        return first;
-    }
-
-    if ($(second).find(first.selector).exists()) {
-        return second;
-    }
-
-    return null;
-}
-
-function are_siblings(first, second) {
-    //Convenience wrapper for checking if two elements are siblings
-    return (get_common_context(first, second) != null);
-}
-
 function traverse_lines() {
     // jQuery tooltip croaks if we apply $.tooltip multiple times
     // so we just ignore elements that we've already initiated
@@ -1256,7 +1166,11 @@ function traverse_lines() {
     
     function make_selectable(obj) {
         $(obj).click(function(event) {
-            select_term(this);
+            console.log($(this).id());
+            var node = NODES[$(this).id()];
+            //$(this).data('cid', node.cid);
+            select_term(node);
+            // stopPropogation prevents stacked elements from being selected at the same time
             event.stopPropagation();
         });
         // Pass this object in subsequent interations
@@ -1281,7 +1195,7 @@ function make_sortable(object, connector, options) {
     //TODO: Add an option to disable all dragging and hover
     //states in the worksheet
     
-    group_id = $(object).attr('id');
+    var group_id = $(object).attr('id');
     $(object).sortable(options);
 }
 

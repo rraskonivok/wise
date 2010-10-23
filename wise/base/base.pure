@@ -33,7 +33,7 @@ cmp (a^b) (c^d) = if a === c then cmp b d else cmp a c ;
 cmp a (b^c) = if a === b then cmp 1 c else cmp a b ;
 cmp (a^b) c = if a === b then cmp b 1 else cmp a c ;
 cmp (x1@_ y1) (x2@_ y2) = if x1===x2 then cmp y1 y2 else cmp x1 x2;
-mp (x1@_ y1) x2 = if x1===x2 then 0 else cmp x1 x2;
+cmp (x1@_ y1) x2 = if x1===x2 then 0 else cmp x1 x2;
 cmp x1 (x2@_ y2) = if x1===x2 then 1 else cmp x1 x2;
 cmp x y = str x < str y if atomp x && atomp y ;
 cmp x y = ~(cmp y x) otherwise ;

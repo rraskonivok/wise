@@ -1,4 +1,4 @@
-#{{id}}.{{class}}.container math-meta-class="term"  math="{{math}}" math-type="{{type}}" math-meta-class="term" group="{{group}}"
+#{{id}}.{{class}}.container math-meta-class="term" math-type="{{type}}" math-meta-class="term" group="{{group}}"
 
     {% if parenthesis %}
     <span class="ui-state-disabled pnths left">

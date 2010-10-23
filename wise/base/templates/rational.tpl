@@ -1,5 +1,4 @@
-#{{id}}.{{class}}.fraction.container math-meta-class="term" math-type="{{type}}" group="{{group}}" math="{{math}}"
-
+#{{id}}.{{class}}.fraction.container math-meta-class="term" math-type="{{type}}" group="{{group}}"
     .num
         {{num}}
 

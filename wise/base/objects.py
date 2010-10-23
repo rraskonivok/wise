@@ -83,7 +83,7 @@ class Term(object):
     # Note: If no pure property is specified the object is
     # entirely internal and cannot be used except in Python
 
-    pure = None # The symbol used in pure expression
+    pure = None # A string containing the name symbol in Pure
     po = None   # Reference to the type of object
 
     #############################################################
@@ -97,7 +97,7 @@ class Term(object):
         raise Exception('Anonymous Term was caught with arguments ' + (args,kwargs))
 
     def _pure_(self):
-        raise exception.PureError('No pure representation of %s.' % self.classname)
+        raise exception.PureError('No Pure representation of %s.' % self.classname)
 
     def _latex_(self):
         raise exception.PureError('No LaTeX representation of %s.' % self.classname)
@@ -121,7 +121,7 @@ class Term(object):
             return self.html.render(c)
 
     def get_math(self):
-        '''Generates the S-exp that is parsable on the Javascript side'''
+        '''Generates the sexp that is parsable on the Javascript side'''
 
         #Container-type Objects, Example: (Addition 1 2 3)
         if len(self.terms) > 1:

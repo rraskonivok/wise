@@ -54,7 +54,6 @@ urlpatterns = patterns('',
      (r'^fun/(?P<sym_id>\d+)/$', 'wise.worksheet.views.fun'),
      (r'^fun/new/$', 'wise.worksheet.views.fun_update'),
      (r'^functions_request/$', 'wise.worksheet.ajax.functions_request'),
-     (r'^preview_function/$', 'wise.worksheeheartbeat.ajax.preview_function'),
 
      #Uncomment the next line to enable the admin:
      (r'^admin/', include(admin.site.urls)),

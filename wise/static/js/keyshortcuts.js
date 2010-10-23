@@ -9,6 +9,8 @@ function init_keyboard_shortcuts() {
         .bind('keydown', 'o', function() {new_line('eq')})
         .bind('keydown', 's', function() {apply_rule('algebra_normal',null)})
         .bind('keydown', 'c', function() {apply_rule('commute_elementary',null)})
+        .bind('keydown', 'e', function() {apply_rule('algebra_expand',null)})
+        .bind('keydown', 'p', function() {select_parent(selection.nth(0))})
         // Variable substitutions 
         .bind('keydown', 'x', function() {use_infix('x')})
         .bind('keydown', 'y', function() {use_infix('y')})
@@ -18,8 +20,10 @@ function init_keyboard_shortcuts() {
         .bind('keydown', '+', function() {use_infix('ph+ph')})
         .bind('keydown', '/', function() {use_infix('ph/ph')})
         .bind('keydown', '*', function() {use_infix('ph*ph')})
-        .bind('keydown', '-', function() {use_infix('ph-ph')})
+        .bind('keydown', '-', function() {use_infix('-ph')})
         .bind('keydown', '^', function() {use_infix('ph^ph')})
+        .bind('keydown', 'shift+I', function() {use_infix('integral ph')})
+        .bind('keydown', 'shift+D', function() {use_infix('diff ph')})
         // Number substitutions
         .bind('keydown', '2', function() {use_infix('2')})
         .bind('keydown', '1', function() {use_infix('1')})

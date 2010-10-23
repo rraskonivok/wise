@@ -1,5 +1,3 @@
-<span id='{{id}}' math-type="LHS" math-meta-class="side" math="{{math}}" group="{{group}}" class="container" >
-    {% autoescape off %}
+<span id='{{id}}' math-type="LHS" math-meta-class="side" group="{{group}}" class="container" >
     {{lhs}}
-    {% endautoescape %}
 </span>
