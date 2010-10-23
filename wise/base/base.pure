@@ -451,6 +451,7 @@ with
     a+b+c = a+c+b if cmp c b ;
     a+(b+c) = a+b+c ;
     x-x = 0;
+    (-x)+x = 0;
     (-x) + (-y) = -(x+y);
 end;
 
@@ -515,6 +516,7 @@ end;
 
 simplify_rational X = reduce X
 with
+    x/x = 1;
     0/x = 0;
     x/1 = x;
     (-x)/y = -(x/y);

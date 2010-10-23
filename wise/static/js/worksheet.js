@@ -143,7 +143,7 @@ selection.count = 0;
 selection.objs = {};
 selection.__lst = [];
 
-//For future reference Chrom(ium) and Firefox handle insertion by
+//For future reference Chromium and Firefox handle insertion by
 //differently. Firefox (sanely) just pushes new elements at the
 //end of the hash table while Chromium presorts them. This is an
 //issue since we need them to be ordered for when we build __lst.
@@ -211,6 +211,7 @@ function clear_selection() {
     $('.selected').removeClass('selected');
 
     selection.clear();
+    hide_cmdline();
 }
 
 
@@ -266,11 +267,13 @@ function select_term(object) {
             obj = selection.get(index)
             obj.css('background', '#DD9090');
         });
+
         li.bind('mouseout', function () {
             index = $(this).attr('index')
             obj = selection.get(index)
             obj.css('background', 'inherit');
         });
+
         li.bind('click', function () {
             index = $(this).attr('index')
 
@@ -353,8 +356,6 @@ function error(text) {
         pnotify_text: text,
         pnotify_delay: 5000
     });
-    //$('#error_dialog').text(text);
-    //$('#error_dialog').dialog({modal:true,dialogClass:'alert'});
 }
 
 function notify(text) {
@@ -391,11 +392,13 @@ function resize_parentheses() {
 
     var scaling_factor = 0.7;
     //Scale parentheses
-    //TODO: Remove $.each
 
     $('.pnths','#workspace').css({'fontSize':0});
     $('.pnths','#workspace').css({'height':0});
+
+    //Pairs of parentheses
     ppairs = _.zip($('.left','#workspace'),$('.right','#workspace'));
+
     _.each(ppairs, function (obj) {
         parent_height = $(obj[0]).parent().height() * scaling_factor;
         //window.log(parent_height);
@@ -407,24 +410,11 @@ function resize_parentheses() {
         $(obj[1]).css({'fontSize':String(parent_height) + 'px'});
     });
 
+    //TODO: replace $.each -> _.each
     $.each($('.sqrt-prefix','#workspace'), function (obj) {
         $(this).css({'height':0});
         parent_height = $(this).parent().height();
         $(this).css({'fontSize':String(parent_height) + 'px'});
-    });
-}
-
-function fade_and_destroy(object) {
-    $(object).fadeOut('fast', function () {
-        $(object).remove();
-    });
-}
-
-function fade_old_new(old, news) {
-    $(old).hide('slow', function () {
-        $(news).show(function () {
-            $(old).remove();
-        });
     });
 }
 
@@ -450,10 +440,6 @@ function debug_math() {
     $.each($('[math]'), function () {
         $(this).attr('title', $(this).attr('math'));
     });
-}
-
-function highlight() {
-
 }
 
 function bind_hover_toggle() {
@@ -505,53 +491,6 @@ function bind_hover_toggle() {
 ajaxqueue = $.manageAjax.create('queue', {queue: false,
                                           preventDoubbleRequests: false,
                                           cacheResponse: true});
-
-function lookup_transform() {
-    data = {}
-
-    //Get the types of the values we have selected
-    data.selections = selection.list_attr('math-type')
-
-    //Iterate through all elements
-    //if(get_nested(first,second) != null)
-    //{
-    //    data.nested = true
-    //}
-    //else
-    //{
-    //    data.nested = false
-    //}
-    //context = get_common_context(first,second)
-    //if(context != null)
-    //{
-    //    context = context.attr('math-type') 
-    //}
-    //data.context = context
-    $.post("/cmds/lookup_transform/", data, function (data) {
-        if (data.empty) {
-            notify('No transforms found for given objects');
-            return;
-        }
-
-        //Generate buttons which invoke the transformations
-        $('#options').empty();
-
-        for (var mapping in data) {
-            var pretty = data[mapping][0]
-            var internal = data[mapping][1]
-            button = $(document.createElement('button')).html(pretty)
-            button.attr('internal', internal)
-
-            button.bind('click', function () {
-                apply_transform($(this).attr('internal'))
-            })
-
-            $('#options').prepend(button);
-            $('#options').show();
-            $('#options button').button();
-        }
-    }, 'json')
-}
 
 function apply_rule(rule, selections) {
     var data = {};
@@ -760,10 +699,6 @@ function use_infix(code) {
 
     selections = selection.list();
 
-    //if(selections.length == 1) {
-    //    selections[0].fadeOut();
-    //}
-
     postdata = {};
     postdata.namespace_index = NAMESPACE_INDEX;
     postdata.code = code;
@@ -784,7 +719,10 @@ function use_infix(code) {
 
             if(!data.new_html) {
                 error("Statement is not well-formed");
+                $("#cmdinput").css('background-color','#D4A5A5');
                 return;
+            } else {
+                hide_cmdline();
             }
 
             //Iterate over the elements in the image of the
@@ -1039,7 +977,6 @@ function remove(ui, removed) {
             append_to_tree(NODES[removed.id()], data.new_json);
 
             removed.attr('locked', 'false')
-            update_math(removed);
             NAMESPACE_INDEX = data.namespace_index;
         }
     }, "json");
@@ -1473,7 +1410,6 @@ function update(object) {
             check_combinations(object);
             check_container(object);
             //check_combinations(object);
-            update_math(object);
         }
     }
 }
@@ -1508,50 +1444,6 @@ function refresh_jsmath(element) {
         //jsMath.ConvertTeX()
         //jsMath.ProcessBeforeShowing()
     }
-}
-
-function update_math(object, stack_depth) {
-/*Take a CONTAINER object iterate over all elements 
-      that point to it and then incorporate their math
-      strings into ours, then ascend upwards doing the same*/
-
-    //if (!stack_depth) {
-    //    stack_depth = 1
-    //} else {
-    //    stack_depth += 1
-    //}
-
-    //if (stack_depth > 25) {
-    //    alert('fuck, maximum recursion depth reached' + $(object).attr('id') + ',group:' + $(object).attr('group'))
-    //    return null
-    //}
-
-    //var mst = new String;
-
-    //var members = $('[group=' + object.attr('id') + ']',object);
-
-    ////If we have an empty container
-    //if (members.length == 0) {
-    //    mst = 'None';
-    //}
-
-    ////TODO: Remove $.each
-    //$.each(members, function () {
-    //    mth = $(this).attr('math');
-    //    if (mth != undefined) {
-    //        mst += mth + ' ';
-    //    }
-    //});
-
-    //mst = ['(', object.mathtype() ,' ' , mst ,')'].join('');
-
-    //object.attr('math', mst);
-    //object.attr('num_children', members.length)
-
-    //if (object.attr('group') != undefined) {
-    //    group = $('#' + object.attr('group'));
-    //    update_math(group, stack_depth)
-    //}
 }
 
 function visualize_tree(tree) {
@@ -1680,16 +1572,6 @@ function visualize_tree(tree) {
     active_graph = st;
 }
 
-function dropin(old, nwr) {
-    //Drop an element in place of another, preserving group linkings
-    group_id = old.attr('group');
-    nwr.attr('group', group_id);
-    nwr.hide();
-    old.fadeOut(function () {
-        nsym = old.after(nwr);
-    });
-}
-
 function get_equation(object) {
     eq = $(object).parents("tr");
     return (eq)
@@ -1752,51 +1634,7 @@ function next_placeholder(start) {
             }
         }
     }
-
-/*
-    if(get_container(start) != undefined)
-    {
-        console.log('Jumping up')
-        next_placeholder(get_container(start))
-    }
-    */
 }
-
-
-//function substite_addition() {
-//    placeholder = get_selection(0)
-//    if (placeholder.attr('math-type') == 'Placeholder') {
-//        if (get_container(placeholder).attr('math-type') == 'Addition') {
-//            add_after(placeholder, '(Placeholder )')
-//        }
-//        else {
-//            replace_manually(placeholder, '(Addition (Placeholder ) (Placeholder ))')
-//        }
-//    }
-//    else {
-//        if (get_container(placeholder).attr('math-type') == 'Addition') {
-//            add_after(placeholder, '(Placeholder )')
-//        }
-//    }
-//
-//}
-//
-//function substite_multiplication() {
-//    placeholder = get_selection(0)
-//    if (placeholder.attr('math-type') == 'Placeholder') {
-//        if (get_container(placeholder).attr('math-type') == 'Product') {
-//            add_after(placeholder, '(Placeholder )')
-//        }
-//        else {
-//            replace_manually(placeholder, '(Product (Placeholder ) (Placeholder ))')
-//        }
-//    }
-//    else {
-//        if (get_container(placeholder).attr('math-type') == 'Product') {
-//            add_after(placeholder, '(Placeholder )')
-//        }
-//    }
-//}
 
 function remove_element() {
     var placeholder = selection.nth(0)
@@ -1821,21 +1659,6 @@ function remove_element() {
         apply_transform('base/Delete', [placeholder]);
     }
 }
-
-//function substite_subtraction() {
-//    placeholder = get_selection(0)
-//    if (get_container(placeholder).attr('math-type') == 'Addition') {
-//        add_after(placeholder, '(Negate (nlaceholder ))')
-//    }
-//    else {
-//        replace_manually(placeholder, '(Addition (Negate (Placeholder )))')
-//    }
-//}
-//
-//function substite_division() {
-//    placeholder = get_selection(0)
-//    replace_manually(placeholder, '(Fraction (Placeholder ) (Placeholder ) )')
-//}
 
 function preview() {
     var tex = $('#texinput').val();

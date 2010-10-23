@@ -86,7 +86,7 @@
         <div id="selectionlist">
         </div>
 
-        <div class="cmd">
+        <div class="cmd" style="display: none">
             <form id="cmdline" action="#">
                 <input id="cmdinput" type="text">
             </form>
@@ -203,20 +203,35 @@
         }
     }
 
+    var cmd_visible = 0;
+
     function show_cmdline() {
        $('.cmd').fadeIn();
        $('#cmdinput').focus();
+       cmd_visible = 1;
     }
 
     function hide_cmdline() {
-       $('.cmd').fadeIn();
+       $('.cmd').fadeOut();
        $('#cmdinput').focus();
+       cmd_visible = 0;
+    }
+    
+    function toggle_cmdline() {
+        //Flip visibility bit
+
+        if(cmd_visible) {
+            hide_cmdline();
+        } else {
+            show_cmdline();                 
+        }
+        
+        cmd_visible = cmd_visible ^ 1;
     }
     
     function init()
     {
         $(document).bind( 'keydown', 'f4', function() {show_debug_menu()})
-            .bind('keydown', 't', function() {lookup_transform()})
             .bind('keydown', 'del', function() {remove_element()})
             .bind('keydown', 'd', function() {remove_element()})
             .bind('keydown', 'esc', function() {clear_selection()})
@@ -239,7 +254,7 @@
             .bind('keydown', '2', function() {use_infix('2')})
             .bind('keydown', '1', function() {use_infix('1')})
             .bind('keydown', '0', function() {use_infix('0')})
-            .bind('keydown', 'ctrl+space', function() {$("#cmdinput").focus()}
+            .bind('keydown', 'ctrl+space', function() {toggle_cmdline()}
         )
         
         $.ajax({

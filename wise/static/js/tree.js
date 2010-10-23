@@ -269,6 +269,6 @@ Expression.prototype.math = function() {
 }
 
 function sexp(head, args) {
-    // Builds an array of the form (head arg1 arg2 arg3)
+    // Builds an array of the form (head arg[1] arg[2] ...)
     return _.flatten(['(', head, args, ')']);
 }
