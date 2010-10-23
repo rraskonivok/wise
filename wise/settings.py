@@ -94,3 +94,5 @@ INSTALLED_APPS = (
 IGNORE_PATHS = False
 
 PRECOMPILE  = False
+
+import worksheet.pure.prelude

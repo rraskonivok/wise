@@ -38,6 +38,12 @@ def query_property(request):
     # Transcendental(sin(a)) = True if NotAlgebraic(a)
     pass
 
+def heartbeat(request):
+    response = HttpResponse('1')
+    response['Cache-Control'] = 'no-cache'
+    return response
+
+
 @login_required
 @errors
 @ajax_request

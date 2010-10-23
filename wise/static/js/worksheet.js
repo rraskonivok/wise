@@ -72,11 +72,9 @@ $.fn.id = function () {
 };
 
 $.fn.math = function () {
-    window.log($(this).id());
-    node = NODES[$(this).id()];
+    var node = NODES[$(this).id()];
     node.math();
     var sexp = node.smath();
-    console.log(sexp);
     return sexp;
 };
 
@@ -212,6 +210,7 @@ function clear_selection() {
 
     selection.clear();
     hide_cmdline();
+    ctrlPressed = false;
 }
 
 function select_term(object) {
@@ -506,7 +505,6 @@ function apply_rule(rule, selections) {
         data.selections = _.invoke(selection.list(),'math');
 
         if(data.selections.length == 1) {
-            console.log('fading');
             selection.nth(0).queue(function() {
                $(this).fadeTo('slow',0.1);
                $(this).dequeue();
@@ -733,8 +731,6 @@ function use_infix(code) {
                 group_id = obj.attr('group');
                 group_id_cache = String(group_id);
                 container = get_container(obj);
-                
-                console.log(obj);
 
                 if (data.new_html[i] == null) {
                     obj.remove();

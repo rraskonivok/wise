@@ -33,7 +33,7 @@ cmp (a^b) (c^d) = if a === c then cmp b d else cmp a c ;
 cmp a (b^c) = if a === b then cmp 1 c else cmp a b ;
 cmp (a^b) c = if a === b then cmp b 1 else cmp a c ;
 cmp (x1@_ y1) (x2@_ y2) = if x1===x2 then cmp y1 y2 else cmp x1 x2;
-cmp (x1@_ y1) x2 = if x1===x2 then 0 else cmp x1 x2;
+mp (x1@_ y1) x2 = if x1===x2 then 0 else cmp x1 x2;
 cmp x1 (x2@_ y2) = if x1===x2 then 1 else cmp x1 x2;
 cmp x y = str x < str y if atomp x && atomp y ;
 cmp x y = ~(cmp y x) otherwise ;
@@ -578,7 +578,7 @@ split_rational X = reduce X
     with
             (-a)/b = -(a/b);
             (a+b)/c = (a/c) + (b/c);
-            (a*b)/(c*d) = (a*d)*(c*b);
+            (a*b)/(c*d) = (a/c)*(b/d);
     end;
 
 seperate_denom X = reduce X 
@@ -597,10 +597,12 @@ end;
 
 algebra_expand X = reduce X
 with
-    mul (add a b) k = add (mul a k) (mul b k);
-    mul k (add a b) = add (mul k a) (mul k a);
-    powr (add a b) 2 = add (add (powr a 2) (mul (mul 2 a) b)) (powr b 2);
+    (a+b)*k = (a * k) + (b * k);
+    k*(a+b) = (k * a) + (k * b);
+    (a+b)^2 = a^2+2*a*b+b^2;
 end;
 
 commute_elementary (x+y) = y+x;
 commute_elementary (x-y) = (-y)+x;
+commute_elementary (x*y) = y*x;
+commute_elementary x = x;

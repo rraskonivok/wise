@@ -11,6 +11,7 @@ urlpatterns = patterns('',
 #     (r'^test$', 'wise.worksheet.views.test'),
      (r'^log$', 'wise.worksheet.views.log'),
      (r'^translate$', 'wise.worksheet.views.translate'),
+     (r'^hb$', 'wise.worksheet.ajax.heartbeat'),
 
      #Authentication
      (r'^accounts/login/$', 'wise.worksheet.views.account_login'),
@@ -53,7 +54,7 @@ urlpatterns = patterns('',
      (r'^fun/(?P<sym_id>\d+)/$', 'wise.worksheet.views.fun'),
      (r'^fun/new/$', 'wise.worksheet.views.fun_update'),
      (r'^functions_request/$', 'wise.worksheet.ajax.functions_request'),
-     (r'^preview_function/$', 'wise.worksheet.ajax.preview_function'),
+     (r'^preview_function/$', 'wise.worksheeheartbeat.ajax.preview_function'),
 
      #Uncomment the next line to enable the admin:
      (r'^admin/', include(admin.site.urls)),
