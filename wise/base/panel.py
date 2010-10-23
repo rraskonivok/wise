@@ -27,7 +27,6 @@ greek_alphabet = ['alpha', 'beta', 'gamma', 'delta', 'epsilon',
 
 greek_symbols = map(objects.Greek, greek_alphabet)
 
-
 Greeks = ArrayPanel(name='Greek',
                     objects=greek_symbols)
 

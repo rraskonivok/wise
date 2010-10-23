@@ -214,7 +214,6 @@ function clear_selection() {
     hide_cmdline();
 }
 
-
 function select_term(object) {
     //Since the selections have changed clear any looked-up (is that even a word?) actions
 

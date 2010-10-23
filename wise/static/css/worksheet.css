@@ -1,15 +1,3 @@
-/*
-.term:not(.placeholder):hover {
-    border-bottom: 5px solid #9CBD86;
-    margin-bottom: -5px;
-}
-
-.container:not(.placeholder):hover {
-    border-top: 5px solid #989CD7;
-    margin-top: -5px;
-}
-*/
-
 .term_hover {
     border-bottom: 5px solid #9CBD86;
     margin-bottom: -5px;
@@ -93,9 +81,10 @@
     margin: -5px !important;
 }
 
+/* Applied to containers when we expand them */
 .preselect {
-    border: 1px dashed #d4a5a5;
-    margin: -1px !important;
+    border: 5px solid #d4a5a5;
+    margin: -5px !important;
 }
 
 /* Override the default sidebar stylesheet to remove ugly */
@@ -241,9 +230,3 @@ html > body .ui-pnotify {
 	display: block;
 	margin: 0 auto;
 }
-
-/*
-#jsMath_button {
-	display: none;
-}
-*/

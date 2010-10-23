@@ -20,6 +20,7 @@ CombineRational = PublicRule('combine_rational')
 SplitRational = PublicRule('split_rational')
 DivisionThm = PublicRule('division_theorem')
 Expand = PublicRule('algebra_expand')
+CommuteElem = PublicRule('commute_elementary')
 
 panel = {}
 panel['Relational'] = [('Add Equation by Expression', AddSides),
@@ -34,6 +35,7 @@ panel['Algebraic'] = [('Canonical Algebraic Form', AlgebraNormal),
                       ('ComplexToRect', ComplexToRect),
                       ('Division Theorem', DivisionThm),
                       ('Expand', Expand),
+                      ('Commute', CommuteElem),
                      ]
 
 panel['Rational'] = [('Combine Rational', CombineRational),

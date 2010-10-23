@@ -576,9 +576,9 @@ end;
 
 split_rational X = reduce X
     with
-            rational (Neg a) b = -(a/b);
+            (-a)/b = -(a/b);
             (a+b)/c = (a/c) + (b/c);
-            rational (a b) (mul c d) = mul (rational a b) (rational c d);
+            (a*b)/(c*d) = (a*d)*(c*b);
     end;
 
 seperate_denom X = reduce X 
@@ -602,3 +602,5 @@ with
     powr (add a b) 2 = add (add (powr a 2) (mul (mul 2 a) b)) (powr b 2);
 end;
 
+commute_elementary (x+y) = y+x;
+commute_elementary (x-y) = (-y)+x;

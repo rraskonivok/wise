@@ -125,20 +125,6 @@ function merge_json_to_tree(old_node, json_input) {
 function append_to_tree(root, json_input) {
     var newtree = build_tree_from_json(json_input);
     root.addNode(newtree.root);
-
-    //for(var term in json_input) {
-    //   var index = term;
-    //   var term = json_input[term];
-    //   node = new Expression();
-    //   if(index == 0) {
-    //        root.addNode(node);
-    //     //   console.log("root_node: %s",root.id());
-    //   }
-    //   NODES[term.id] = node; 
-    //   node.id = term.id;
-    //   node.name = term.type;
-    //   node.dom = $('#' + term.id);
-    //}
 }
 
 ///////////////////////////////////////////////////////////
@@ -148,7 +134,6 @@ function append_to_tree(root, json_input) {
 //properties and methods are .prototyped for speed since they are
 //likely called thousands of times.
 // This is a hash trie, see http://en.wikipedia.org/wiki/Trie
-EQUATION_TREE = null;
 
 var RootedTree = Backbone.Model.extend({
     initialize: function(root) { 
