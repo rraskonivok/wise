@@ -530,8 +530,6 @@ function apply_rule(rule, selections) {
         //are deleted.
         for (var i = 0; i < data.new_html.length; i++) {
             obj = selection.nth(i);
-            group_id = obj.attr('group');
-            group_id_cache = String(group_id);
 
             obj.queue(function() {
                $(this).fadeTo('slow',1);
@@ -553,18 +551,15 @@ function apply_rule(rule, selections) {
                     build_tree_from_json(data.new_json[i])
                     //merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
                     nsym = obj.replace(data.new_html[i]).hide();
-                    //nsym.attr('group',group_id_cache);
                     refresh_jsmath($(nsym));
                     nsym.fadeIn('slow');
                     $('.equation button','#workspace').parent().buttonset();
                 } else {
                     merge_json_to_tree(NODES[obj.id()], data.new_json[i]);
                     nsym = obj.replace(data.new_html[i]).hide();
-                    nsym.attr('group', group_id_cache);
                     refresh_jsmath($(nsym));
                     nsym.fadeIn('slow');
                 }
-                update(get_container(nsym))
                 //Check to see if the uid assigning failed
                 if (nsym.find('#None').length > 0) {
                     error("Warning: some elements do not have uids");
@@ -831,9 +826,9 @@ function apply_transform(transform, selections) {
             //are deleted.
             for (var i = 0; i < data.new_html.length; i++) {
                 obj = selections[i];
-                group_id = obj.attr('group');
-                group_id_cache = String(group_id)
-                container = get_container(obj);
+                //group_id = obj.attr('group');
+                //group_id_cache = String(group_id)
+                //container = get_container(obj);
 
                 if (data.new_html[i] == null) {
                     obj.remove();
@@ -850,12 +845,10 @@ function apply_transform(transform, selections) {
                         build_tree_from_json(data.new_json[i])
                         //merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
                         nsym = obj.replace(data.new_html[i]);
-                        //nsym.attr('group',group_id_cache);
                         refresh_jsmath($(nsym))
                     } else {
                         merge_json_to_tree(NODES[obj.id()], data.new_json[i]);
                         nsym = obj.replace(data.new_html[i]);
-                        nsym.attr('group', group_id_cache);
                         refresh_jsmath($(nsym));
                     }
                     update(container)
@@ -1313,13 +1306,13 @@ function get_container(object) {
 
 //This should be called after each change to the workspace
 function update(object) {
-    if (object != undefined) {
-        if (object.attr('locked') != 'true') {
-            check_combinations(object);
-            check_container(object);
-            //check_combinations(object);
-        }
-    }
+    //if (object != undefined) {
+    //    if (object.attr('locked') != 'true') {
+    //        check_combinations(object);
+    //        check_container(object);
+    //        //check_combinations(object);
+    //    }
+    //}
 }
 
 function toggle_confluence(obj) {
