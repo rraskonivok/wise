@@ -201,6 +201,14 @@ selection.clear = function () {
     this.count = 0;
 }
 
+selection.first = function() {
+    return _.first(this.__lst);
+}
+
+selection.last = function() {
+    return _.last(this.__lst);
+}
+
 function clear_selection() {
     // Clear the selection indicator bar
     $("#selectionlist").empty();
@@ -213,9 +221,104 @@ function clear_selection() {
     ctrlPressed = false;
 }
 
-function select_parent(object) {
-    var parent_node = NODES[object.id()]._parent;
-    select_term($(parent_node.dom));
+function get_parent(node) {
+    return node._parent;
+}
+
+function get_root(node) {
+    while(node.toplevel != true) {
+        node = node.tree.root;
+    }
+    return node;
+}
+
+function get_lhs(node) {
+    return get_root(node).children[0].children[0];
+}
+
+function get_rhs(node) {
+    return get_root(node).children[1].children[0];
+}
+
+function add_shift() {
+    var start = selection.nth(0).node();
+
+    select_root(start);
+    select_term(start);
+
+    apply_rule('add_to_both_sides', null);
+}
+
+function sub_shift() {
+    var start = selection.nth(0).node();
+
+    select_root(start);
+    select_term(start);
+
+    apply_rule('sub_from_both_sides', null);
+}
+
+function mul_shift() {
+    var start = selection.nth(0).node();
+
+    select_root(start);
+    select_term(start);
+
+    apply_rule('mul_both_sides', null);
+}
+
+function div_shift() {
+    var start = selection.nth(0).node();
+
+    select_root(start);
+    select_term(start);
+
+    apply_rule('div_both_sides', null);
+}
+
+//Select the toplevel element
+function select_parent(clear) {
+    var start = selection.last().node();
+    
+    if(start.toplevel) {
+        return;
+    }
+
+    if(clear) {
+        clear_selection();
+    }
+
+    select_term(get_parent(start));
+}
+
+function select_root(clear) {
+    var start = selection.last().node();
+
+    if(clear) {
+        clear_selection();
+    }
+
+    select_term(get_root(start));
+}
+
+function select_left_root(clear) {
+    var start = selection.last().node();
+
+    if(clear) {
+        clear_selection();
+    }
+
+    select_term(get_lhs(start)); 
+}
+
+function select_right_root(clear) {
+    var start = selection.last().node();
+
+    if(clear) {
+        clear_selection();
+    }
+
+    select_term(get_rhs(start)); 
 }
 
 function select_term(object) {

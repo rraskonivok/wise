@@ -190,24 +190,11 @@ Node.prototype.addNode = function (node) {
 }
 
 Node.prototype.delNode = function (node) {
-
-    window.log('trying to delete node',this);
-    //If the node is not the root / toplevel
-
-    //if (this.depth > 1) {
-    //    this._parent.children.splice(this.index, 1);
-
-    //    //Regenerate the indices
-    //    for (var i = 0; i < this._parent.children.length; i++) {
-    //        this._parent.children[i].index = i;
-    //    }
-    //}
+    //window.log('trying to delete node',this);
 
     //Eat up the node's children recursively, quite a modest
     //proposal
-    //for (var i = 0; i < this.children.length; i++) {
-    //    this.children[i].delNode();
-    //}
+
     _.invoke(this.children,'delNode');
     //Destroy the node itself
     delete NODES[this.id];
@@ -215,9 +202,6 @@ Node.prototype.delNode = function (node) {
 }
 
 Node.prototype.swapNode = function (newNode) {
-
-    window.log('newNode');
-    window.log(newNode);
 
     newNode._parent = this._parent;
     newNode.index = this.index;
