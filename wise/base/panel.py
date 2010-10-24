@@ -1,7 +1,7 @@
 import string
 import objects
 
-from wise.worksheet.panel import TabularPanel, ArrayPanel
+from wise.worksheet.panel import TabularPanel, ArrayPanel, ButtonPanel
 #TODO: @extends decorator to append to existing panel
 
 #--------------------
@@ -27,7 +27,7 @@ greek_alphabet = ['alpha', 'beta', 'gamma', 'delta', 'epsilon',
 
 greek_symbols = map(objects.Greek, greek_alphabet)
 
-Greeks = ArrayPanel(name='Greek',
+Greeks = ButtonPanel(name='Greek',
                     objects=greek_symbols)
 
 #--------------------

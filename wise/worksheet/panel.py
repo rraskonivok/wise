@@ -56,6 +56,13 @@ array_template = haml('''
 {% endfor %}
 ''')
 
+button_template = haml('''
+{% for obj in objects %}
+        button.button onclick="subs('{{ obj.math }}');"
+            $${{ obj.latex }}$$
+{% endfor %}
+''')
+
 class TabularPanel(Panel):
     template = Template(tablular_template)
 
@@ -76,6 +83,19 @@ class ArrayPanel(Panel):
     def __init__(self, name, objects):
         self.name = name
         self.objects = map(_map_panel_types, objects)
+
+class ButtonPanel(Panel):
+    template = Template(button_template)
+
+    def __init__(self, name, objects):
+        self.name = name
+        self.objects = objects
+
+    def get_html(self):
+        interface_ui = self.template
+        objects = [obj for obj in self.objects]
+        c = Context({'name':self.name, 'objects': objects})
+        return interface_ui.render(c)
 
 
 def is_panel(obj):

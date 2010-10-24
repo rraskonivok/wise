@@ -276,9 +276,9 @@
         $('#cmdbuttons button').parent().buttonset();
     
         //Make equations sortable within each cell.
-        $(".lines tbody").sortable({
-            //handle: '.hand',
-        }).disableSelection();
+        //$(".lines tbody").sortable({
+        //    //handle: '.hand',
+        //}).disableSelection();
     
     
         for(var cell in JSON_TREE) {
@@ -305,7 +305,7 @@
           type: 'GET',
           success: function(data) {
             if(!data) {
-                error('Looking for server.');
+                error('Server is not responding.');
             }
           },
         }); 

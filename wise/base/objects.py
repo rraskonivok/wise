@@ -120,6 +120,10 @@ class Term(object):
         else:
             return self.html.render(c)
 
+    @property
+    def math(self):
+        return self.get_math()
+
     def get_math(self):
         '''Generates the sexp that is parsable on the Javascript side'''
 
@@ -363,16 +367,9 @@ class Base_Symbol(Term):
     def _pure_(self):
         return self.po()
 
-class Greek(Base_Symbol):
-    pure = 'greek'
-
-    def __init__(self,symbol):
-        self.symbol = symbol
-        self.latex = greek_alphabet[symbol]
-        self.args = "%s" % symbol
-
-    def _pure_(self):
-        return self.po(PureSymbol(self.symbol))
+# Conviencence wrapper
+def Greek(symbol):
+    return Variable(symbol)
 
 class Variable(Base_Symbol):
     '''A free variable'''
@@ -383,7 +380,7 @@ class Variable(Base_Symbol):
 
     def __init__(self,symbol):
         self.symbol = symbol
-        self.latex = '%s' % symbol
+        self.latex = '%s' % greek_lookup(symbol)
         self.args = str(symbol)
 
     def _pure_(self):

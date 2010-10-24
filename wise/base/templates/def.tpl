@@ -4,7 +4,7 @@ math-type="{{classname}}" toplevel="true" data-confluent="{{confluent}}" data-pu
 <td>
     <button class="ui-icon ui-icon-transferthick-e-w"
     onclick="apply_transform('ReverseDef',get_equation(this))">{{lhs_id}}</button>
-    <button class="ui-icon ui-icon-arrow-4" onclick="select_term(get_equation(this))">{{id}}</button>
+    <button class="ui-icon ui-icon-arrow-4" onclick="select_equation('{{id}}')">{{id}}</button>
     <button class="confluence 
     {% if confluent %} 
     ui-icon ui-icon-bullet

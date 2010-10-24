@@ -775,6 +775,10 @@ function use_infix(code) {
     cleanup_ajax_scripts();
 }
 
+function subs(obj) {
+    apply_transform('base/PlaceholderSubstitute',[selection.nth(0), obj]);
+}
+
 function apply_transform(transform, selections) {
     var data = {};
     data.transform = transform;
@@ -1189,12 +1193,7 @@ function traverse_lines() {
 // Drag & Drop
 ///////////////////////////////////////////////////////////
 
-//This is the functin django calls to init the sortable state of
-//new objects
 function make_sortable(object, connector, options) {
-    //TODO: Add an option to disable all dragging and hover
-    //states in the worksheet
-    
     var group_id = $(object).attr('id');
     $(object).sortable(options);
 }
@@ -1481,17 +1480,16 @@ function visualize_tree(tree) {
     active_graph = st;
 }
 
-function get_equation(object) {
-    eq = $(object).parents("tr");
-    return (eq)
+function select_equation(id) {
+    select_term(NODES[id]);  
 }
 
-function get_lhs(object) {
-    return $(get_equation(object).find('[math-type=LHS]'));
+function select_lhs(id) {
+    select_term(NODES[id].children[0].children[0]);
 }
 
-function get_rhs(object) {
-    return $(get_equation(object).find('[math-type=RHS]'));
+function select_rhs(id) {
+    select_term(NODES[id].children[1].children[0]);  
 }
 
 

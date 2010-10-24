@@ -1,13 +1,15 @@
 import os
 
-# Django settings for wise project.
+#Eagerly load the pure module to avoid an initial hiccup when a worker starts
+import worksheet.pure.prelude
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 LOG_FILE = 'session.log'
 
+# A quick note about security. *WISE IS ALPHA SOFTWARE AND NOT SECURE* (yet)
 ADMINS = (
-    # ('Your Name', 'your_email@domain.com'),
+    # ('Leonhard Euler', 'leuler@unibas.ch'),
 )
 
 MANAGERS = ADMINS
@@ -95,4 +97,3 @@ IGNORE_PATHS = False
 
 PRECOMPILE  = False
 
-import worksheet.pure.prelude
