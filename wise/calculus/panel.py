@@ -1,11 +1,11 @@
 import objects
-from wise.worksheet.panel import TabularPanel, ArrayPanel
+from wise.worksheet.panel import TabularPanel, ArrayPanel, ButtonPanel
 
 calculusobjs = [
-        ('Derivative',objects.Diff),
-        ('Integral', objects.Integral),
-        ('Del', objects.Del)
+        ('\\frac{d}{dx}',objects.Diff),
+        ('\\int', objects.Integral),
+        ('\\nabla', objects.Del)
         ]
 
-Calculus = TabularPanel(name='Calculus',
+Calculus = ButtonPanel(name='Calculus',
                       objects=calculusobjs)

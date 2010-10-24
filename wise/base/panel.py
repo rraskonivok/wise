@@ -8,10 +8,12 @@ from wise.worksheet.panel import TabularPanel, ArrayPanel, ButtonPanel
 # Letter Variables
 #--------------------
 
-lettervariables = [objects.Variable(letter) for letter in string.lowercase]
+letters = [letter for letter in string.lowercase]
+lettervariables = map(objects.Variable, letters)
+letter_buttons = zip(letters, lettervariables)
 
-Variables = ArrayPanel(name='Variables',
-                       objects=lettervariables)
+Variables = ButtonPanel(name='Variables',
+                       objects=letter_buttons)
 
 #--------------------
 # Greek Variables
@@ -26,72 +28,74 @@ greek_alphabet = ['alpha', 'beta', 'gamma', 'delta', 'epsilon',
 'Pi', 'Sigma', 'Upsilon', 'Phi', 'Psi', 'Omega']
 
 greek_symbols = map(objects.Greek, greek_alphabet)
+greek_latex = ['\\' + s for s in greek_alphabet]
+greek_buttons = zip(greek_latex, greek_symbols)
 
 Greeks = ButtonPanel(name='Greek',
-                    objects=greek_symbols)
+                    objects=greek_buttons)
 
 #--------------------
 # Elementary Operations
 #--------------------
 
-elem_operations = [('Addition',objects.Addition),
-              ('Multiplication',objects.Product),
-              ('Power',objects.Power),
-              ('Negate',objects.Negate),
-              ('Rational',objects.Rational),
-              ('Complex',objects.ComplexNumeric),
-              ('Sign',objects.Sgn),
-              ('Dirac Delta',objects.DiracDelta),
+elem_operations = [('x+y',objects.Addition),
+              ('x \\times y',objects.Product),
+              ('x^y',objects.Power),
+              ('-x',objects.Negate),
+              ('x / y',objects.Rational),
+              ('a + bi',objects.ComplexNumeric),
+              ('sgn',objects.Sgn),
+              ('\\delta',objects.DiracDelta),
 #              ('Abs',objects.Abs),
-              ('Sqrt',objects.Sqrt),
-              ('Exp',objects.Exp),
-              ('Ln',objects.Ln),
+              ('\\sqrt{x}',objects.Sqrt),
+              ('e^{x}',objects.Exp),
+              ('\\ln{x}',objects.Ln),
              ]
 
-Operations = TabularPanel(name='Algebraic Operations',
-                          objects=elem_operations)
+Operations = ButtonPanel(name='Algebraic Operations',
+                         objects=elem_operations)
 
 #-------------------------
 # Trigonometric Operations
 #-------------------------
 
-trig_operations = [('Sin',objects.Sin),
-                   ('Cos',objects.Cos),
-                   ('Tan',objects.Tan),
-                   ('Asin',objects.Asin),
-                   ('Acos',objects.Acos),
-                   ('Atan',objects.Atan),
-                   ('Sinh',objects.Sinh),
-                   ('Cosh',objects.Cosh),
-                   ('Tanh',objects.Tanh),
-                   ('Asinh',objects.Asinh),
-                   ('Acosh',objects.Acosh),
-                   ('Atanh',objects.Atanh),
+trig_operations = [('\\sin',objects.Sin),
+                   ('\\cos',objects.Cos),
+                   ('\\tan',objects.Tan),
+                   ('\\text{asin}',objects.Asin),
+                   ('\\text{acos}',objects.Acos),
+                   ('\\text{atan}',objects.Atan),
+                   ('\\text{sinh}',objects.Sinh),
+                   ('\\text{cosh}',objects.Cosh),
+                   ('\\text{tanh}',objects.Tanh),
+                   ('\\text{asinh}',objects.Asinh),
+                   ('\\text{acosh}',objects.Acosh),
+                   ('\\text{atanh}',objects.Atanh),
                   ]
 
-TrigOperations = TabularPanel(name='Trigonometric Functions',
+TrigOperations = ButtonPanel(name='Trigonometric Functions',
                               objects=trig_operations)
 
 #-------------------------
 # Number Theory Operations
 #-------------------------
 
-numtheory_operations = [('Gamma',objects.Gamma),
-                        ('Factorial',objects.Factorial),
-                        ('Zeta',objects.Zeta),
+numtheory_operations = [('\\Gamma',objects.Gamma),
+                        ('x!',objects.Factorial),
+                        ('\\zeta',objects.Zeta),
                        ]
 
-NumTheoryOperations = TabularPanel(name='Number Theory Functions',
+NumTheoryOperations = ButtonPanel(name='Number Theory Functions',
                                    objects=numtheory_operations)
 
 #-------------------------
 # Constants
 #-------------------------
 
-constants = [('Imaginary Unit',objects.ImaginaryUnit),
-             ('Pi',objects.Pi),
-             ('Catalan Number',objects.Catalan),
+constants = [('i',objects.ImaginaryUnit),
+             ('\\pi',objects.Pi),
+             ('C_n',objects.Catalan),
             ]
 
-Constants = TabularPanel(name='Constants',
+Constants = ButtonPanel(name='Constants',
                          objects=constants)

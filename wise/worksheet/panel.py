@@ -58,8 +58,8 @@ array_template = haml('''
 
 button_template = haml('''
 {% for obj in objects %}
-        button.button onclick="subs('{{ obj.math }}');"
-            $${{ obj.latex }}$$
+        button onclick="subs('{{ obj.math }}');"
+            $${{ obj.label }}$$
 {% endfor %}
 ''')
 
@@ -89,11 +89,15 @@ class ButtonPanel(Panel):
 
     def __init__(self, name, objects):
         self.name = name
-        self.objects = objects
+        self.objects = [(label, _map_panel_types(obj)) for label,obj in objects]
 
     def get_html(self):
         interface_ui = self.template
-        objects = [obj for obj in self.objects]
+        objects = []
+        for label, obj in self.objects:
+            obj.label = label
+            objects.append(obj)
+
         c = Context({'name':self.name, 'objects': objects})
         return interface_ui.render(c)
 

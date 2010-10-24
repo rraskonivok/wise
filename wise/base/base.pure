@@ -91,6 +91,7 @@ exponent x = 1;
 
 term (n*x) = x if numberp n ;
 term ((x*y)*z) = (term (x*y)) * z ;
+term (-x) = x;
 term x = x ;
 
 /* :Name: ``constant`` x
@@ -104,6 +105,7 @@ term x = x ;
 
 constant (n*x) = n if numberp n ;
 constant ((x*y)*z) = (constant (x*y)) ;
+constant (-x) = -1;
 constant x = 1 ;
 
 /*  ..
@@ -398,16 +400,6 @@ algebra_normal X = (simplify_multiplication .
 
 simplify_multiplication X = reduce X
 with
-    /*
-    mul 0 x = 0 ;
-    mul 1 x = x ;
-    mul x y = powr (base x) (add (exponent x) (exponent y)) if (base x) === (base y) ;
-    mul (mul a x) y = mul a ( powr (base x) (add (exponent x) (exponent y)) ) if (base x) === (base y) ;
-    mul x y = mul y x if cmp y x ;
-    mul (mul x y) z = mul (mul x z) y if cmp z y ;
-    mul x (mul y z) = mul (mul x y) z ;
-    mul x (Neg y) = mul (Neg x) y;
-    */
     0*x = 0 ;
     1*x = x ;
     x*y = (base x) ^ ((exponent x) + (exponent y)) if (base x) === (base y) ;
@@ -445,6 +437,7 @@ end;
 simplify_addition X = reduce X
 with
     0+x = x ;
+    x+0 = x ;
     a+b = ( (constant a) + (constant b) ) * (term a) if ((term a) === (term b)) and (~numberp a && ~numberp b) ;
     a+b+c = a + ((constant b) + (constant c)) * (term b) if (term b) === (term c) ;
     a+b = b+a if (cmp b a) && ~(sump a) ;
@@ -597,6 +590,7 @@ end;
 
 algebra_expand X = reduce X
 with
+    Neg (a+b)  = (-a) + (-b);
     (a+b)*k = (a * k) + (b * k);
     k*(a+b) = (k * a) + (k * b);
     (a+b)^2 = a^2+2*a*b+b^2;

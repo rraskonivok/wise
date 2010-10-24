@@ -1,3 +1,7 @@
+html {
+    overflow-y: scroll;
+}
+
 .term_hover {
     border-bottom: 5px solid #9CBD86;
     margin-bottom: -5px;
@@ -34,7 +38,6 @@
 .palette button {
     min-width: 55px;
     height: 40px;
-    float: left;
 }
 
 #math_palette { 
@@ -43,7 +46,7 @@
 }
 
 .panel_category { 
-    clear: right;
+    clear: both;
     display: block;
     padding: 10px 15px;
     margin: 0;
@@ -53,6 +56,14 @@
 .panel_frame {
     padding: 10px 15px;
     margin: 0;
+}
+
+.panel_frame button {
+    float: left;
+}
+
+.navigation hr {
+    clear: both;
 }
 
 /* Drag Helpers */
@@ -141,7 +152,7 @@
     color: white;
     position: fixed;
     bottom: 1px;
-    width: 70%;
+    width: 65%;
     /* 70% of 960px */
     min-width: 672px;
     min-height: 20px;
