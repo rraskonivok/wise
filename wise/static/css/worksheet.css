@@ -55,7 +55,7 @@ html {
 
 .panel_frame {
     padding: 10px 15px;
-    margin: 0;
+    margin: 10px;
 }
 
 .panel_frame button {
@@ -64,6 +64,7 @@ html {
 
 .navigation hr {
     clear: both;
+    margin-top: 10px;
 }
 
 /* Drag Helpers */

@@ -23,6 +23,8 @@ PureInt = pure.prelude.PureInt
 PureSymbol = pure.prelude.PureSymbol
 PureLevel = pure.prelude.PureLevel
 PureExpr = pure.prelude.PureExpr
+PureDouble = pure.prelude.PureDouble
+
 env = pure.prelude.env
 
 p2i = pure.prelude.p2i

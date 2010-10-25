@@ -8,8 +8,10 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
+from math import modf
+
 from wise.worksheet.utils import render_haml_to_response
-from wise.worksheet.pure_wrap import PureSymbol, PureInt, ProtoRule
+from wise.worksheet.pure_wrap import PureSymbol, PureInt, PureDouble, ProtoRule
 
 import worksheet.js as js
 import worksheet.exceptions as exception
@@ -404,25 +406,6 @@ class FreeFunction(Base_Symbol):
         else:
             return PureSymbol(self.symbol)(PureSymbol('u'))
 
-#Reference to a user-defined symbol
-#class RefSymbol(Variable):
-#    assumptions = None
-#    bounds = None
-#
-#    def __init__(self, obj):
-#        if isinstance(obj, unicode) or isinstance(obj,str):
-#            obj = Symbol.objects.get(id=int(obj))
-#
-#        if isinstance(obj, Numeric):
-#            obj = Symbol.objects.get(id=obj.number)
-#
-#        self.symbol = obj.tex
-#        self.latex = '$%s$' % self.symbol
-#        self.args = str(obj.id)
-#
-#    def _pure_(self):
-#        return pure.ref(PureInt(int(self.args)))
-
 class Rational(Term):
     html = load_haml_template('rational.tpl')
     pure = 'rational'
@@ -472,15 +455,30 @@ class Infinity(Base_Symbol):
     args = "'inf'"
 
 class Numeric(Term):
+    numeric_type = 'float'
 
     def __init__(self,number):
 
-        self.number = int(number)
-        self.args = str(number)
+        self.number = float(number)
+
+        if self.number == 1.0:
+            self.number = 1
+
+        fpart, ipart = modf(self.number)
+
+        if fpart == 0:
+            self.numeric_type = 'int'
+        else:
+            self.numeric_type = 'float'
+
+        self.args = number
         self.latex = number
 
     def _pure_(self):
-        return PureInt(self.number)
+        if self.numeric_type is 'float':
+            return PureDouble(self.number)
+        else:
+            return PureInt(self.number)
 
     def get_html(self):
         c = template.Context({
@@ -1079,33 +1077,6 @@ class SubOperation(Operation):
 class OutfixOperation(Operation):
     ui_style = 'outfix'
 
-class RefOperator(Operation):
-    def __init__(self, obj, *operands):
-        if isinstance(obj, unicode) or isinstance(obj,str):
-            obj = Function.objects.get(id=int(obj))
-
-        if isinstance(obj, Numeric):
-            obj = Function.objects.get(id=obj.number)
-
-        if len(operands) > 1:
-            self.terms = list(operands)
-            self.operand = self.terms
-        else:
-            self.operand = operands[0]
-            self.terms = [operands[0]]
-
-        self.symbol = obj.symbol1
-        self.ui_style = obj.notation
-        self.index = obj.id
-
-    @property
-    def classname(self):
-        return 'RefOperator__%d' % self.index
-
-    def _pure_(self):
-        args = [o._pure_() for o in self.terms]
-        return pure.refop(PureInt(int(self.index)))(*args)
-
 class Addition(InfixOperation):
     symbol = '+'
     show_parenthesis = False
@@ -1260,6 +1231,8 @@ class Interval(InfixOperation):
 class Sqrt(PrefixOperation):
     html = load_haml_template('root.tpl')
 
+    pure = 'Sqrt'
+
     def __init__(self,op,*ops):
         operands = list(ops) + [op]
         if len(operands) > 1:
@@ -1320,24 +1293,31 @@ class Cosh(PrefixOperation):
 
 class Tanh(PrefixOperation):
     symbol = '\\tanh'
+    pure = 'Tanh'
 
 class Asinh(PrefixOperation):
     symbol = '\\sinh^{-1}'
+    pure = 'Asinh'
 
 class Acosh(PrefixOperation):
     symbol = '\\cosh^{-1}'
+    pure = 'Acosh'
 
 class Atanh(PrefixOperation):
     symbol = '\\tanh^{-1}'
+    pure = 'Atanh'
 
 class Gamma(PrefixOperation):
     symbol = '\\Gamma'
+    pure = 'GammaF'
 
 class Zeta(PrefixOperation):
     symbol = '\\zeta'
+    pure = 'RiemannZeta'
 
 class Factorial(PostfixOperation):
     symbol = '!'
+    pure = 'Factorial'
 
 class Catalan(SubOperation):
     latex = 'C'

@@ -114,6 +114,13 @@ def parse(code, uid):
     evaled = parsed.eval_args()
     return evaled
 
+def is_number(s):
+    try:
+        float(s)
+    except ValueError:
+        return False
+    return True
+
 #-------------------------------------------------------------
 # HTML Generation
 #-------------------------------------------------------------
@@ -181,3 +188,9 @@ class crcdigest(object):
 
     def hexdigest(self):
         return hex(self.hash)
+def is_number(s):
+    try:
+        float(s)
+    except ValueError:
+        return False
+    return True

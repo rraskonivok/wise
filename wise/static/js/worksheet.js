@@ -663,13 +663,6 @@ function apply_rule(rule, selections) {
                     refresh_jsmath($(nsym));
                     nsym.fadeIn('slow');
                 }
-                //Check to see if the uid assigning failed
-                if (nsym.find('#None').length > 0) {
-                    error("Warning: some elements do not have uids");
-                }
-                if (nsym.find('[group="None"]').length > 0) {
-                    error("Warning: orphaned elements");
-                }
             }
         }
 

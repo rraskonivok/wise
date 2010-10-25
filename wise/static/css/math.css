@@ -141,7 +141,7 @@
 }
 
 .pnths {
-    vertical-align: middle;
+    vertical-align: baseline;
     position: relative;
     font-family: MathJax_Main;
     word-spacing: 0px;

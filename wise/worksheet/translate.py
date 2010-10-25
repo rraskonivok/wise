@@ -268,12 +268,13 @@ class Branch(object):
         def f(x):
             #Ugly Hack
             if isinstance(x,str):
-                if x.isdigit():
+                if is_number(x):
                     obj = Numeric(x)
                 elif x in translation_table:
                     obj = translate_pure(x)()
                 else:
                     obj = Variable(x)
+
                 obj.idgen = self.idgen
                 obj.id = self.idgen.next()
                 return obj
@@ -302,6 +303,7 @@ class Branch(object):
 
         return obj
 
+
 def ParseTree(str,ignore_atomic=True):
     atomic = False
     parsed = parser.eq_parse(str)
@@ -312,6 +314,8 @@ def ParseTree(str,ignore_atomic=True):
             atomic = True
             tag, args = parsed
             if tag.isdigit():
+                parsed = ('num',[tag])
+            elif is_number(tag):
                 parsed = ('num',[tag])
             else:
                 parsed = ('var',[tag])
