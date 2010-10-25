@@ -1,11 +1,11 @@
 import objects
-from wise.worksheet.panel import TabularPanel, ArrayPanel
+from wise.worksheet.panel import TabularPanel, ArrayPanel, ButtonPanel
 
-logicsymbols = [('True',objects.LogicTrue),
-                ('False', objects.LogicFalse),
-                ('And',objects.And),
-                ('Or',objects.Or),
-                ('Complement',objects.LogicNeg)]
+logicsymbols = [('\\text{True}',objects.LogicTrue),
+                ('\\text{False}', objects.LogicFalse),
+                ('\\wedge',objects.And),
+                ('\\vee',objects.Or),
+                ('\\neg',objects.LogicNeg)]
 
-Logic = TabularPanel(name='Logic',
-                   objects=logicsymbols)
+Logic = ButtonPanel(name='Logic',
+                    objects=logicsymbols)
