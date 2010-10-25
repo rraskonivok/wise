@@ -14,6 +14,10 @@ from django.conf import settings
 # in subsequent calls
 rulecache = {}
 
+packages = {}
+rulesets = {}
+ROOT_MODULE = 'wise'
+
 def ReduceWithRules( rules, expr ):
     '''Reduce the given expression with a list of PureRules
     specified as an array of strings which are translated into
@@ -81,10 +85,6 @@ class PublicRule:
 def is_rule(obj):
     return isinstance(obj,PublicRule)
 
-packages = {}
-rulesets = {}
-ROOT_MODULE = 'wise'
-
 for pack in settings.INSTALLED_MATH_PACKAGES:
     try:
         path = '.'.join([ROOT_MODULE,pack,'rules'])
@@ -95,12 +95,5 @@ for pack in settings.INSTALLED_MATH_PACKAGES:
             if name == 'panel':
                 rulesets.update(symbol)
 
-            #if is_rule(symbol):
-            #    if settings.DEBUG:
-            #        print "Importing ruleset ... %s/%s" % (pack, name)
-
-            #    rulesets[name] = symbol
     except ImportError:
         raise exception.IncompletePackage(pack,'rules.py')
-
-print 'RuleSets',rulesets

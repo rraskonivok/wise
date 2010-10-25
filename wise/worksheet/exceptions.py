@@ -21,7 +21,7 @@ class PureError(Exception):
 
 class PlaceholderInExpression(Exception):
     def __init__(self):
-        self.value = 'A Placeholder was found in the equation and cannot be evaluated'
+        self.value = 'Remove Placeholder.'
 
     def __str__(self):
         return self.value

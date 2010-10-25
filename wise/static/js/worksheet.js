@@ -594,6 +594,19 @@ ajaxqueue = $.manageAjax.create('queue', {queue: false,
                                           preventDoubbleRequests: false,
                                           cacheResponse: true});
 
+function heartbeat() {
+    $.ajax({
+      url: '/hb',
+      dataType: 'html',
+      type: 'GET',
+      success: function(data) {
+        if(!data) {
+            error('Server is not responding.');
+        }
+      },
+    }); 
+}
+
 function apply_rule(rule, selections) {
     var data = {};
     data.rule = rule;
@@ -654,13 +667,13 @@ function apply_rule(rule, selections) {
                     build_tree_from_json(data.new_json[i])
                     //merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
                     nsym = obj.replace(data.new_html[i]).hide();
-                    refresh_jsmath($(nsym));
+                    mathjax_typeset($(nsym));
                     nsym.fadeIn('slow');
                     $('.equation button','#workspace').parent().buttonset();
                 } else {
                     merge_json_to_tree(NODES[obj.id()], data.new_json[i]);
                     nsym = obj.replace(data.new_html[i]).hide();
-                    refresh_jsmath($(nsym));
+                    mathjax_typeset($(nsym));
                     nsym.fadeIn('slow');
                 }
             }
@@ -670,7 +683,6 @@ function apply_rule(rule, selections) {
 
         clear_selection();
         traverse_lines();
-        //update(get_container(obj))
         resize_parentheses();
     }, "json");
 
@@ -747,17 +759,16 @@ function apply_def(def, selections) {
                     //merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
                     nsym = obj.replace(data.new_html[i]).hide();
                     //nsym.attr('group',group_id_cache);
-                    refresh_jsmath($(nsym));
+                    mathjax_typeset($(nsym));
                     nsym.fadeIn('slow');
                     $('.equation button','#workspace').parent().buttonset();
                 } else {
                     merge_json_to_tree(NODES[obj.id()], data.new_json[i]);
                     nsym = obj.replace(data.new_html[i]).hide();
                     nsym.attr('group', group_id_cache);
-                    refresh_jsmath($(nsym));
+                    mathjax_typeset($(nsym));
                     nsym.fadeIn('slow');
                 }
-                update(get_container(nsym))
                 //Check to see if the uid assigning failed
                 if (nsym.find('#None').length > 0) {
                     error("Warning: some elements do not have uids");
@@ -772,12 +783,13 @@ function apply_def(def, selections) {
 
         clear_selection();
         traverse_lines();
-        //update(get_container(obj))
         resize_parentheses();
     }, "json");
 
     cleanup_ajax_scripts();
 }
+
+
 
 function use_infix(code) {
 
@@ -840,14 +852,13 @@ function use_infix(code) {
                         //merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
                         nsym = obj.replace(data.new_html[i]);
                         //nsym.attr('group',group_id_cache);
-                        refresh_jsmath($(nsym))
+                        mathjax_typeset($(nsym))
                     } else {
                         merge_json_to_tree(NODES[obj.id()], data.new_json[i]);
                         nsym = obj.replace(data.new_html[i]);
                         nsym.attr('group', group_id_cache);
-                        refresh_jsmath($(nsym));
+                        mathjax_typeset($(nsym));
                     }
-                    update(container)
                     //Check to see if the uid assigning failed
                     if (nsym.find('#None').length > 0) {
                         error("Warning: some elements do not have uids");
@@ -860,7 +871,6 @@ function use_infix(code) {
             clear_selection();
             traverse_lines();
             resize_parentheses();
-            //update(get_container(obj))
         }});
 
     cleanup_ajax_scripts();
@@ -941,13 +951,12 @@ function apply_transform(transform, selections) {
                         build_tree_from_json(data.new_json[i])
                         //merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
                         nsym = obj.replace(data.new_html[i]);
-                        refresh_jsmath($(nsym))
+                        mathjax_typeset($(nsym))
                     } else {
                         merge_json_to_tree(NODES[obj.id()], data.new_json[i]);
                         nsym = obj.replace(data.new_html[i]);
-                        refresh_jsmath($(nsym));
+                        mathjax_typeset($(nsym));
                     }
-                    update(container)
                     //Check to see if the uid assigning failed
                     if (nsym.find('#None').length > 0) {
                         error("Warning: some elements do not have uids");
@@ -960,7 +969,6 @@ function apply_transform(transform, selections) {
             clear_selection();
             traverse_lines();
             resize_parentheses();
-            //update(get_container(obj))
         }});
 
     cleanup_ajax_scripts();
@@ -1011,10 +1019,8 @@ function receive(ui, receiver, group_id) {
         nsym = obj.replace(data.new_html);
         nsym.attr('group', group_id);
 
-        refresh_jsmath($(nsym));
+        mathjax_typeset($(nsym));
         receiver.attr('locked', 'false');
-
-        update(get_container(nsym))
 
         //append_json_to_tree(NODES[receiver.id()],data.new_json);
         append_to_tree(NODES[receiver.id()], data.new_json);
@@ -1062,7 +1068,7 @@ function remove(ui, removed) {
             nsym = $(data.new_html).appendTo(removed);
             nsym.attr('group', group_id);
 
-            refresh_jsmath(nsym);
+            mathjax_typeset(nsym);
             append_to_tree(NODES[removed.id()], data.new_json);
 
             removed.attr('locked', 'false')
@@ -1100,7 +1106,7 @@ function combine(first, second, context) {
         nsym = first.after(data.new_html).next();
 
         //Render the TeX
-        refresh_jsmath(container);
+        mathjax_typeset(container);
 
         //Find the root node and associate it with the
         //new container, the root node should be the only
@@ -1127,8 +1133,6 @@ function combine(first, second, context) {
             merge_json_to_tree(second_node, data.new_json[1]);
         }
 
-        update(container);
-
         traverse_lines();
         cleanup_ajax_scripts();
 
@@ -1152,7 +1156,7 @@ function new_line(type) {
             new_cell_html = $(data.new_html);
             $("#workspace").append(new_cell_html);
             $('.lines').show();
-            refresh_jsmath(new_cell_html);
+            mathjax_typeset(new_cell_html);
             traverse_lines();
 
             var new_cell = new Cell();
@@ -1217,7 +1221,7 @@ function parse_pure() {
             new_cell_html = $(data.new_html);
             $("#workspace").append(new_cell_html);
             $('.lines').show();
-            refresh_jsmath(new_cell_html);
+            mathjax_typeset(new_cell_html);
             traverse_lines();
 
             var new_cell = new Cell();
@@ -1400,17 +1404,6 @@ function get_container(object) {
     }
 }
 
-//This should be called after each change to the workspace
-function update(object) {
-    //if (object != undefined) {
-    //    if (object.attr('locked') != 'true') {
-    //        check_combinations(object);
-    //        check_container(object);
-    //        //check_combinations(object);
-    //    }
-    //}
-}
-
 function toggle_confluence(obj) {
     if (obj.attr('data-confluent') == 0) {
         obj.attr('data-confluent', 1)
@@ -1423,7 +1416,7 @@ function toggle_confluence(obj) {
     }
 }
 
-function refresh_jsmath(element) {
+function mathjax_typeset(element) {
     //Refresh math for a specific element
     if (element) {
         MathJax.Hub.Queue(["Typeset",MathJax.Hub,element[0]]);
@@ -1659,7 +1652,7 @@ function remove_element() {
 function preview() {
     var tex = $('#texinput').val();
     $('#preview').html('$$' + tex + '$$');
-    refresh_jsmath();
+    mathjax_typeset();
 }
 
 var ctrlPressed = false;
@@ -1685,3 +1678,120 @@ $('.container','#workspace').live('mouseover mouseout', function(e) {
             ths.removeClass('preselect');
   }
 });
+
+///////////////////////////////////////////////////////////
+// Palette Loading / Handeling
+///////////////////////////////////////////////////////////
+
+function load_rules_palette() {
+    $.ajax({
+            url: '/rule_request',
+            success: function(data) {
+                $("#rules_palette").replace(data);
+                $(".panel_category","#rules_palette").bind('click',function() {
+                        $(this).next().toggle();
+                        // Only typeset when needed
+                        MathJax.Hub.Typeset($(this).next()[0]);
+                        return false
+                }).next().hide();
+
+            }
+    });
+}
+
+function load_math_palette() {
+    //Load the math palette
+    $.ajax({
+        url: '/palette/',
+        success: function(data) {
+            $("#math_palette").replace(data)
+    
+    
+            //Make the palette sections collapsable
+            $(".panel_category","#math_palette").bind('click',function() {
+                    $(this).next().toggle();
+                    // Only typeset when needed
+                    MathJax.Hub.Typeset($(this).next()[0]);
+                    return false
+            }).next().hide();
+    
+            //Make the math terms interactive
+            traverse_lines();
+            resize_parentheses()
+        }
+    });
+}
+
+function palette(num) {
+    if(num == 1) {
+        $('#math_palette').show();
+        $('#rules_palette').hide();
+        $('#tab_math_palette').addClass('active');
+        $('#tab_rules_palette').removeClass('active');
+    }
+    else {
+        $('#math_palette').hide();
+        $('#rules_palette').show();
+        $('#tab_rules_palette').addClass('active');
+        $('#tab_math_palette').removeClass('active');
+    }
+}
+
+
+///////////////////////////////////////////////////////////
+// Command Line
+///////////////////////////////////////////////////////////
+
+var cmd_visible = 0;
+
+function show_cmdline() {
+   $('.cmd').fadeIn();
+   $('#cmdinput').focus();
+   cmd_visible = 1;
+}
+
+function hide_cmdline() {
+   $('.cmd').fadeOut();
+   $('#cmdinput').focus();
+   cmd_visible = 0;
+}
+
+function toggle_cmdline() {
+    //Flip visibility bit
+
+    if(cmd_visible) {
+        hide_cmdline();
+    } else {
+        show_cmdline();                 
+    }
+    
+    cmd_visible = cmd_visible ^ 1;
+}
+
+$('#cmdline').submit(function() {
+    use_infix($("#cmdinput").val());
+    $("#cmdinput").blur();
+    return false;
+});
+
+///////////////////////////////////////////////////////////
+// Initialize the Term DB
+///////////////////////////////////////////////////////////
+
+function init_nodes() {
+
+    for(var cell in JSON_TREE) {
+        cell_index = cell;
+        var cell = JSON_TREE[cell];
+        var new_cell = new Cell();
+        //new_cell.dom = $('#workspace').find('[data-index='+cell_index+']');
+        for(var eq in cell){
+            var eq_index = eq;
+            var eq = cell[eq];
+            EQUATIONS[eq_index] = build_tree_from_json(eq);
+            new_cell.equations.add(eq);
+        }
+        CELLS.push(new_cell);
+    }
+
+}

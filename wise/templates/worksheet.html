@@ -113,7 +113,7 @@
     </div>
   </div>
 
-  <!-- Load jsMath -->
+  <!-- Load MathJax -->
  <script type="text/javascript" src="/static/mathjax/MathJax.js"></script>
 
   <!-- Worksheet functionality -->
@@ -232,84 +232,26 @@
     
     function init()
     {
+        init_nodes();
+        load_math_palette();
+        load_rules_palette();
+
         init_keyboard_shortcuts();
 
         setInterval( "heartbeat()", 10000 );
-        
-        $.ajax({
-                url: '/rule_request',
-                success: function(data) {
-                    $("#rules_palette").replace(data);
-                    $(".panel_category","#rules_palette").bind('click',function() {
-                            $(this).next().toggle();
-                            // Only typeset when needed
-                            MathJax.Hub.Typeset($(this).next()[0]);
-                            return false
-                    }).next().hide();
-
-                }
-        });
-
-        //Load the math palette
-        $.ajax({
-            url: '/palette/',
-            success: function(data) {
-                $("#math_palette").replace(data)
-        
-        
-                //Make the palette sections collapsable
-                $(".panel_category","#math_palette").bind('click',function() {
-                        $(this).next().toggle();
-                        // Only typeset when needed
-                        MathJax.Hub.Typeset($(this).next()[0]);
-                        return false
-                }).next().hide();
-        
-                //Make the math terms interactive
-                traverse_lines();
-                resize_parentheses()
-            }
-        });
     
         //Make buttons pretty
         $('.equation button','#workspace').parent().buttonset();
-        $('#cmdbuttons button').parent().buttonset();
+        $('button','#workspace').parent().buttonset();
     
         //Make equations sortable within each cell.
         //$(".lines tbody").sortable({
         //    //handle: '.hand',
         //}).disableSelection();
     
-    
-        for(var cell in JSON_TREE) {
-            cell_index = cell;
-            var cell = JSON_TREE[cell];
-            var new_cell = new Cell();
-            new_cell.dom = $('#workspace').find('[data-index='+cell_index+']');
-            for(var eq in cell){
-                var eq_index = eq;
-                var eq = cell[eq];
-                EQUATIONS[eq_index] = build_tree_from_json(eq);
-                new_cell.equations.add(eq);
-            }
-            CELLS.push(new_cell);
-        }
-        
         bind_hover_toggle();
     }
     
-    function heartbeat() {
-        $.ajax({
-          url: '/hb',
-          dataType: 'html',
-          type: 'GET',
-          success: function(data) {
-            if(!data) {
-                error('Server is not responding.');
-            }
-          },
-        }); 
-    }
 
 
  </script>
