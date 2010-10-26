@@ -86,15 +86,18 @@ def generate_pure_objects(root):
 # called at the root definition level it applies globally
 class ProtoRule:
     _proto = None
+    lhs = None
+    rhs = None
 
     def __init__(self, lhs, rhs, guards=None):
-        # Construct ( lhs --> rhs )
-        self._proto = proto_op(lhs,rhs)
+        self.lhs = p2i(lhs)
+        self.rhs = p2i(rhs)
 
     def __call__(self):
-        print 'Init rule', self._proto
+        self._proto = proto_op(self.lhs, self.rhs)
+        print 'Init rule:', self._proto
         # instance ( lhs --> rhs )
-        print instance(self._proto)
+        instance(self._proto)
 
     def __repr__(self):
         return str(self._proto)

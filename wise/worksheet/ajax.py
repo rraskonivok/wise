@@ -122,7 +122,8 @@ def apply_def(request):
     def_pure()
 
     # Evaluate the selection in the context of the definition
-    pure_expr = purify(args[0])
+    pure_expr = pure_wrap.p2i(purify(args[0]))
+    print 'Acting on', pure_expr
 
     # Close the closure and return to the main level
     pure_wrap.restore_level()

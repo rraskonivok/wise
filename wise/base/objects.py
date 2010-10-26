@@ -11,7 +11,7 @@
 from math import modf
 
 from wise.worksheet.utils import render_haml_to_response
-from wise.worksheet.pure_wrap import PureSymbol, PureInt, PureDouble, ProtoRule
+from wise.worksheet.pure_wrap import PureSymbol, PureInt, PureDouble, ProtoRule, p2i, i2p
 
 import worksheet.js as js
 import worksheet.exceptions as exception
@@ -825,7 +825,11 @@ class Definition(Equation):
 
     def _pure_(self):
         if self.lhs.hash != self.rhs.hash:
-            return ProtoRule(self.lhs._pure_(),self.rhs._pure_())
+
+            lhs = self.lhs._pure_()
+            rhs = self.rhs._pure_()
+
+            return ProtoRule(lhs , rhs)
         else:
             print "Definition is infinitely recursive."
 
