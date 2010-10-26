@@ -877,7 +877,11 @@ function use_infix(code) {
 }
 
 function subs(obj) {
-    apply_transform('base/PlaceholderSubstitute',[selection.nth(0), obj]);
+    if(selection.count > 0) {
+        apply_transform('base/PlaceholderSubstitute',[selection.nth(0), obj]);
+    } else {
+        error('Select an object to substitute into.');
+    }
 }
 
 function apply_transform(transform, selections) {
@@ -1205,39 +1209,6 @@ function save_workspace() {
     }, 'json')
 }
 
-function parse_pure() {
-    var data = {};
-    data.code = $('#pure_input').val()
-    data.namespace_index = NAMESPACE_INDEX;
-    data.cell_index = CELL_INDEX;
-
-    $.post("/cmds/pure_parse/", data, function (data) {
-        if (data.error) {
-            error(data.error);
-        }
-
-        if (data.new_html) {
-            //TOOD Simplify this mess
-            new_cell_html = $(data.new_html);
-            $("#workspace").append(new_cell_html);
-            $('.lines').show();
-            mathjax_typeset(new_cell_html);
-            traverse_lines();
-
-            var new_cell = new Cell();
-            new_cell.dom = new_cell_html;
-            var eq = build_tree_from_json(data.new_json);
-            new_cell.equations.push(eq);
-
-            CELLS.push(new_cell);
-            CELL_INDEX = data.cell_index;
-
-        }
-
-        NAMESPACE_INDEX = data.namespace_index;
-    }, 'json')
-    cleanup_ajax_scripts();
-}
 
 ///////////////////////////////////////////////////////////
 // Tree Traversal
@@ -1699,6 +1670,24 @@ function load_rules_palette() {
     });
 }
 
+//Stupid function to make buttons in each panel have the same height
+function make_buttons_uniform(obj) {
+    var heights = [];
+    buttons = $(obj).find('button');
+
+    _.each(buttons, function(btn) {
+        heights.push($(btn).height()); 
+    });
+
+    var max = _.max(heights);
+    if(max != 0) {
+        _.each(buttons, function(btn) {
+            $(btn).height(max + 5); 
+            $(btn).width($(btn).width() + 5); 
+        });
+    }
+}
+
 function load_math_palette() {
     //Load the math palette
     $.ajax({
@@ -1706,20 +1695,23 @@ function load_math_palette() {
         success: function(data) {
             $("#math_palette").replace(data)
     
-    
             //Make the palette sections collapsable
             $(".panel_category","#math_palette").bind('click',function() {
                     $(this).next().toggle();
-                    // Only typeset when needed
-                    MathJax.Hub.Typeset($(this).next()[0]);
-                    return false
+                    _.map($(this).next(), make_buttons_uniform);
+                    return false;
             }).next().hide();
+
+            //Typeset the panel
+            MathJax.Hub.Typeset($(this).next()[0]);
     
             //Make the math terms interactive
             traverse_lines();
             resize_parentheses()
+            $("#math_palette").resizable({ handles: 's' });
         }
     });
+
 }
 
 function palette(num) {
@@ -1793,5 +1785,4 @@ function init_nodes() {
         }
         CELLS.push(new_cell);
     }
-
 }

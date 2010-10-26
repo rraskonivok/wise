@@ -37,25 +37,24 @@ html {
 
 .palette button {
     min-width: 55px;
-    height: 40px;
+    min-height: 40px;
+    height: inherit;
 }
 
 #math_palette { 
-    max-height: 500px;
     overflow: auto;
 }
 
 .panel_category { 
     clear: both;
     display: block;
-    padding: 10px 15px;
+    padding: 5px 15px;
     margin: 0;
     font-size: 13px;
 }
 
 .panel_frame {
-    padding: 10px 15px;
-    margin: 10px;
+    padding: 10px;
 }
 
 .panel_frame button {
@@ -169,15 +168,8 @@ html {
 }
 #tooltip h3, #tooltip div { margin: 0; }
 
-/* 
-	Document   : jquery.pnotify.default.css
-	Created on : Nov 23, 2009, 3:14:10 PM
-	Author     : Hunter Perrin
-	Description:
-		Default styling for Pines Notify jQuery plugin.
-*/
 
-/* Notice
+/* Notices from pnotify.js
 ----------------------------------*/
 .ui-pnotify {
 	top: 18px;
@@ -188,7 +180,6 @@ html {
 	z-index: 9999;
 }
 
-/* This hides position: fixed from IE6, which doesn't understand it. */
 html > body .ui-pnotify {
 	position: fixed;
 }
@@ -233,7 +224,6 @@ html > body .ui-pnotify {
 	right: 18px;
 	width: 70px;
 	border-top: none;
-	/* Ensure that the history container is on top of the notices. */
 	z-index: 10000;
 }
 .ui-pnotify-history-container .ui-pnotify-history-header {
