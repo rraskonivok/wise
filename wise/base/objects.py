@@ -1465,3 +1465,7 @@ class FunctionAppl(PrefixOperation):
         self.terms = [func, args]
         self.symbol = func.head.symbol
         self.operand = args
+
+class Quote(PrefixOperation):
+    symbol = '!'
+    pure = 'quote'

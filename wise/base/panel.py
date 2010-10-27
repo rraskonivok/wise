@@ -97,6 +97,7 @@ constants = [('i',objects.ImaginaryUnit),
              ('\\pi',objects.Pi),
              ('(a,b)',objects.Tuple(Placeholder(),Placeholder())),
 #             ('f(x)',objects.FunctionAppl(objects.Variable('f'),Placeholder())),
+             ('Quote',objects.Quote),
              ('C_n',objects.Catalan),
             ]
 
