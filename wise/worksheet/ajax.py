@@ -128,7 +128,7 @@ def apply_def(request):
     # Close the closure and return to the main level
     pure_wrap.restore_level()
 
-    new = translate.pure_to_python(pure_expr,args[0].idgen)
+    new = translate.pure_to_python(pure_wrap.i2p(pure_expr),args[0].idgen)
 
     new.idgen = uid
     new.ensure_id()
@@ -293,6 +293,13 @@ def combine(request):
 @errors
 @ajax_request
 def use_infix(request):
+    # TODO: We should preparse this and define a lookup table 
+    # for a bunch of common macros instead of just passing
+    # this off to Pure eval, otherwise we get kind of unwiedly
+    # constructions of things ex: Tuple x y z could be better
+    # written as x y z and there really isn't any reason the
+    # user would need to init a Pure tuple from the cmdline
+
     code = request.POST.get('code')
     transform = unencode( request.POST.get('transform') )
     namespace_index = int( request.POST.get('namespace_index') )
@@ -519,6 +526,8 @@ def new_line(request):
     # and inefficent
     if newtype == u'def':
         new = translate.parse_sexp('(Definition (LHS (Placeholder )) (RHS (Placeholder )))',uid)
+    elif newtype == u'func':
+        new = translate.parse_sexp('(Function (Placeholder ) (LHS (Placeholder )) (RHS (Placeholder )))',uid)
     elif newtype == u'eq':
         new = translate.parse_sexp('(Equation (LHS (Placeholder )) (RHS (Placeholder )))',uid)
     else:

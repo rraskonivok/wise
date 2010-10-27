@@ -99,6 +99,10 @@ class Term(object):
         raise Exception('Anonymous Term was caught with arguments ' + (args,kwargs))
 
     def _pure_(self):
+        # This is not defeind explicityly for the reason that inheriting
+        # the method to generate a Pure object will often result in very
+        # unexpected consequences if you not well thought out. Just define
+        # one for every object
         raise exception.PureError('No Pure representation of %s.' % self.classname)
 
     def _latex_(self):
@@ -280,6 +284,32 @@ class Empty(Term):
 #-------------------------------------------------------------
 # Lower Level Elements 
 #-------------------------------------------------------------
+
+class Tuple(Term):
+    show_parenthesis = True
+    html = load_haml_template('tuple.tpl')
+    symbol = ','
+    pure = 'Tuple'
+
+    def __init__(self, x, *xs):
+        self.terms = [x] + list(xs)
+
+    def _pure_(self):
+        return self.po(*purify(self.terms))
+
+    def get_html(self):
+        objects = [o.get_html() for o in self.terms]
+
+        c = template.Context({
+            'id': self.id,
+            'math': self.get_math(),
+            'operand': objects,
+            'symbol': self.symbol,
+            'parenthesis': self.show_parenthesis,
+            'class': self.css_class,
+            })
+
+        return self.html.render(c)
 
 class Text(Term):
     type = 'text'
@@ -578,7 +608,7 @@ class Pi(Base_Symbol):
     latex = '\pi'
     symbol = '\pi'
     pure = 'Pi'
-    args = "'\pi'"
+    args = '\pi'
 
 #-------------------------------------------------------------
 # Top Level Elements
@@ -861,6 +891,60 @@ class Definition(Equation):
             'symbol': self.symbol,
             'confluent': int(self.confluent),
             'public': self.public,
+            'classname': self.classname
+            })
+
+        return self.html.render(c)
+
+class Function(Equation):
+    symbol = "\\rightarrow"
+    sortable = False
+    html = load_haml_template('function.tpl')
+    confluent = True
+    public = True
+    pure = None
+
+    def __init__(self,head=None,lhs=None,rhs=None):
+
+        # Conviencence definition so that we can call Equation()
+        # to spit out an empty equation
+        if not lhs:
+            lhs = LHS(Placeholder())
+        if not rhs:
+            rhs = RHS(Placeholder())
+
+        if not isinstance(lhs,LHS):
+            lhs = LHS(lhs)
+
+        if not isinstance(rhs,RHS):
+            rhs = RHS(rhs)
+
+        self.head = head
+        self.lhs = lhs
+        self.rhs = rhs
+
+        self.terms = [self.head, self.lhs, self.rhs]
+
+    def _pure_(self):
+        if self.lhs.hash != self.rhs.hash:
+
+            lhs = self.lhs._pure_()
+            rhs = self.rhs._pure_()
+
+            return ProtoRule(lhs , rhs)
+        else:
+            print "Definition is infinitely recursive."
+
+    def get_html(self):
+
+        c = template.Context({
+            'id': self.id,
+            'math': self.math,
+            'head': self.head.get_html(),
+            'lhs': self.lhs.get_html(),
+            'rhs': self.rhs.get_html(),
+            'annotation': self.annotation,
+            'symbol': self.symbol,
             'classname': self.classname
             })
 
@@ -1373,3 +1457,11 @@ class Negate(PrefixOperation):
 
     def negate(self):
         return self.operand
+
+class FunctionAppl(PrefixOperation):
+
+    def __init__(self, func, args):
+        # the math spit out by func get_math is not well-formed
+        self.terms = [func, args]
+        self.symbol = func.head.symbol
+        self.operand = args

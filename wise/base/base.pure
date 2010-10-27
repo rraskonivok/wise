@@ -601,3 +601,8 @@ commute_elementary (x+y) = y+x;
 commute_elementary (x-y) = (-y)+x;
 commute_elementary (x*y) = y*x;
 commute_elementary x = x;
+
+nfunc f n p = nfunc (f p) (n-1) p if n > 1;
+            = f p otherwise;
+
+ntuple n p = nfunc Tuple n p;

@@ -13,6 +13,9 @@ def PlaceholderSubstitute( ph, tm ):
 
 PlaceholderSubstitute.pretty = 'Substitute'
 
+def GenFunc( func, term ):
+    return 'pass', objects.FunctionAppl(func, Placeholder())
+
 @Map( _( Term , Term ) >> _( Term ) )
 def CommandLine( old, cmd ):
     new = pure_to_python(env.eval(cmd))

@@ -735,8 +735,6 @@ function apply_def(def, selections) {
         //are deleted.
         for (var i = 0; i < data.new_html.length; i++) {
             obj = selections[i];
-            group_id = obj.attr('group');
-            group_id_cache = String(group_id);
 
             obj.queue(function() {
                $(this).fadeTo('slow',1);
@@ -747,7 +745,7 @@ function apply_def(def, selections) {
                 obj.remove();
             }
             else if (data.new_html[i] == 'pass') {
-                //onsole.log("Doing nothing");
+                //console.log("Doing nothing");
             }
             else if (data.new_html[i] == 'delete') {
                 //console.log("Deleting - at some point in the future");
@@ -765,16 +763,8 @@ function apply_def(def, selections) {
                 } else {
                     merge_json_to_tree(NODES[obj.id()], data.new_json[i]);
                     nsym = obj.replace(data.new_html[i]).hide();
-                    nsym.attr('group', group_id_cache);
                     mathjax_typeset($(nsym));
                     nsym.fadeIn('slow');
-                }
-                //Check to see if the uid assigning failed
-                if (nsym.find('#None').length > 0) {
-                    error("Warning: some elements do not have uids");
-                }
-                if (nsym.find('[group="None"]').length > 0) {
-                    error("Warning: orphaned elements");
                 }
             }
         }
@@ -924,6 +914,12 @@ function apply_transform(transform, selections) {
         data: postdata, 
         datatype: 'json',
         success: function(data) {
+
+            if(!data) {
+                error('Server side error in processing apply_transform.');
+                return;
+            }
+
             if (data.error) {
                 error(data.error);
                 clear_selection();
@@ -960,10 +956,6 @@ function apply_transform(transform, selections) {
                         merge_json_to_tree(NODES[obj.id()], data.new_json[i]);
                         nsym = obj.replace(data.new_html[i]);
                         mathjax_typeset($(nsym));
-                    }
-                    //Check to see if the uid assigning failed
-                    if (nsym.find('#None').length > 0) {
-                        error("Warning: some elements do not have uids");
                     }
                 }
             }

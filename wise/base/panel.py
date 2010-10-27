@@ -1,6 +1,7 @@
 import string
 import objects
 
+from objects import Placeholder
 from wise.worksheet.panel import TabularPanel, ArrayPanel, ButtonPanel
 #TODO: @extends decorator to append to existing panel
 
@@ -94,6 +95,8 @@ NumTheoryOperations = ButtonPanel(name='Number Theory Functions',
 
 constants = [('i',objects.ImaginaryUnit),
              ('\\pi',objects.Pi),
+             ('(a,b)',objects.Tuple(Placeholder(),Placeholder())),
+#             ('f(x)',objects.FunctionAppl(objects.Variable('f'),Placeholder())),
              ('C_n',objects.Catalan),
             ]
 
