@@ -1413,20 +1413,6 @@ class Catalan(SubOperation):
     pure = 'catalan'
     args = "'n'"
 
-#class Integral(PrefixOperation):
-#    symbol = '\\int'
-#    show_parenthesis = False
-#    pure = 'integral'
-
-#class Diff(PrefixOperation):
-#    symbol = '\\frac{d}{dx}'
-#    show_parenthesis = False
-#    pure = 'diff'
-
-#class Del(PrefixOperation):
-#    symbol = '\\nabla'
-#    show_parenthesis = False
-
 class Negate(PrefixOperation):
     symbol = '-'
     show_parenthesis = False

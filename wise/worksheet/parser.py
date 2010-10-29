@@ -43,7 +43,6 @@ class Token(object):
     def __eq__(self, other):
         return (self.code, self.value) == (other.code, other.value)
 
-#Lexar parser
 def tokenize(s):
     'str -> [Token]'
     return list(Token(*t)
@@ -60,16 +59,28 @@ const = lambda x: lambda _: x
 makeop = lambda s, f: op(s) >> const(f)
 
 number = some(lambda tok: tok.type == 'NUMBER') >> tokval
+
 var = some(lambda tok: tok.type == 'NAME') >> tokval
 string = some(lambda tok: tok.type == 'STRING') >> tokval
 po = op_('(')
 pc = op_(')')
 
+negnum = maybe(po) + op('-') + number + maybe(pc)
+realnum = negnum | number
+
 #TODO: Make this into two parsers...
 
 @with_forward_decls
 def primary():
-    return ((var|string|number) + many(var|string|number|primary)) | (po + primary + pc)
+    return ((var|string|realnum) + many(var|string|realnum|primary)) | (po + primary + pc)
+
+@with_forward_decls
+def sexp_parser():
+    return ((var|string|realnum) + many(var|string|realnum|primary)) | (po + primary + pc)
+
+@with_forward_decls
+def pure_parser():
+    return ((var|string|realnum) + many(var|string|realnum|primary)) | (po + primary + pc)
 
 toplevel = primary
 

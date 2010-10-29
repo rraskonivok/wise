@@ -40,6 +40,10 @@ function build_tree_from_json(json_input) {
         node.name = term.type;
         node.toplevel = term.toplevel;
         node.args = term.args;
+        
+        if(term.toplevel) {
+            node.index = 0;
+        }
 
         node.dom = $('#' + node.id,"#workspace");
     }
@@ -49,9 +53,10 @@ function build_tree_from_json(json_input) {
     for (term in json_input) {
         index = term;
         term = json_input[term];
-        prent = NODES[term.id]
+        prent = NODES[term.id];
+
         if (index == 0) {
-            T = new RootedTree(prent)
+            T = new RootedTree(prent);
         };
         for (var child in term.children) {
             child = term.children[child];
@@ -65,66 +70,66 @@ function build_tree_from_json(json_input) {
 
 //Nested JSON Tree (InfoVis requires this)
 
-function recurse(node, stack_depth) {
+//function recurse(node, stack_depth) {
+//
+//    if (!stack_depth) {
+//        stack_depth = 1
+//    } else {
+//        stack_depth += 1
+//    }
+//
+//    if (stack_depth > 25) {
+//        alert('fuck, maximum recursion depth reached' + $(object).attr('id') + ',group:' + $(object).attr('group'))
+//        return null
+//    }
+//    else {
+//        var json = {};
+//        json.id = 'node' + node.id;
+//        json.data = node;
+//        json.name = node.name;
+//        json.children = []
+//
+//        console.log(json, stack_depth);
+//
+//        for (child in node.children) {
+//            child = node.children[child];
+//            if (child) {
+//                json.children.push(recurse(child, stack_depth));
+//            }
+//        }
+//
+//        return json
+//    }
+//}
 
-    if (!stack_depth) {
-        stack_depth = 1
-    } else {
-        stack_depth += 1
-    }
+//function nested_json(T) {
+//    //Returns the nested JSON form a (sub)tree.
+//    //
+//    // The nested JSON is of the form:
+//    //  var json = {  
+//    //      "id": "aUniqueIdentifier",  
+//    //      "name": "usually a nodes name",  
+//    //      "data": {
+//    //          "some key": "some value",
+//    //          "some other key": "some other value"
+//    //       },  
+//    //      "children": [ 'other nodes or empty' ]  
+//    //  }; 
+//    return recurse(T.root);
+//}
 
-    if (stack_depth > 25) {
-        alert('fuck, maximum recursion depth reached' + $(object).attr('id') + ',group:' + $(object).attr('group'))
-        return null
-    }
-    else {
-        var json = {};
-        json.id = 'node' + node.id;
-        json.data = node;
-        json.name = node.name;
-        json.children = []
-
-        console.log(json, stack_depth);
-
-        for (child in node.children) {
-            child = node.children[child];
-            if (child) {
-                json.children.push(recurse(child, stack_depth));
-            }
-        }
-
-        return json
-    }
-}
-
-function nested_json(T) {
-    //Returns the nested JSON form a (sub)tree.
-    //
-    // The nested JSON is of the form:
-    //  var json = {  
-    //      "id": "aUniqueIdentifier",  
-    //      "name": "usually a nodes name",  
-    //      "data": {
-    //          "some key": "some value",
-    //          "some other key": "some other value"
-    //       },  
-    //      "children": [ 'other nodes or empty' ]  
-    //  }; 
-    return recurse(T.root);
-}
-
+//Graft a tree onto a node.
 function merge_json_to_tree(old_node, json_input) {
     var newtree = build_tree_from_json(json_input);
     if (!old_node) {
         //error('Could not attach branch');
         return;
     }
-    old_node.swapNode(newtree.root);
-}
+    old_node.math();
+    newtree.prev_state = old_node.smath();
+//    console.log(newtree);
 
-function append_to_tree(root, json_input) {
-    var newtree = build_tree_from_json(json_input);
-    root.addNode(newtree.root);
+    old_node.swapNode(newtree.root);
 }
 
 ///////////////////////////////////////////////////////////
@@ -185,20 +190,30 @@ Node.prototype.addNode = function (node) {
     node.depth = this.depth + 1;
     node._parent = this
     node.index = this.children.length;
+
     this.children.push(node);
     (this.tree.levels[node.depth - 1]).push(node);
 }
 
 Node.prototype.delNode = function (node) {
-    //window.log('trying to delete node',this);
-
     //Eat up the node's children recursively, quite a modest
     //proposal
-
     _.invoke(this.children,'delNode');
     //Destroy the node itself
     delete NODES[this.id];
     delete this;
+}
+
+Node.prototype.treeIndex = function() {
+    if(this.toplevel) {
+        this._treeindex = [0];
+        return this._treeindex;
+    } else {
+        //Clone the parent's treeIndex
+        this._treeindex = this._parent.treeIndex().splice(0);
+        this._treeindex.push(this.index);
+        return this._treeindex;
+    }
 }
 
 Node.prototype.swapNode = function (newNode) {

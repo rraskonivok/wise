@@ -22,7 +22,7 @@ from wise.base.objects import *
 from wise.logic.objects import *
 from wise.calculus.objects import *
 
-translation_table = {'num':Numeric,'var':Variable}
+translation_table = {'num':Numeric,'var':Variable,'-':Negate}
 
 def generate_translation(root):
     if root.pure:

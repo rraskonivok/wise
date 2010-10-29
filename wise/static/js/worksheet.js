@@ -45,6 +45,10 @@ function showmath() {
    return NODES[selection.nth(0)[0].id].smath();
 }
 
+function shownode() {
+   return NODES[selection.nth(0)[0].id];
+}
+
 $.fn.exists = function () {
     return jQuery(this).length > 0;
 }
@@ -665,7 +669,7 @@ function apply_rule(rule, selections) {
                 toplevel = (data.new_json[i][0].type)
                 if (toplevel == 'Definition' | toplevel == 'Equation') {
                     build_tree_from_json(data.new_json[i])
-                    //merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
+                    merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
                     nsym = obj.replace(data.new_html[i]).hide();
                     mathjax_typeset($(nsym));
                     nsym.fadeIn('slow');
@@ -949,7 +953,7 @@ function apply_transform(transform, selections) {
                     toplevel = (data.new_json[i][0].type)
                     if (toplevel == 'Definition' | toplevel == 'Equation') {
                         build_tree_from_json(data.new_json[i])
-                        //merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
+                        merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
                         nsym = obj.replace(data.new_html[i]);
                         mathjax_typeset($(nsym))
                     } else {
