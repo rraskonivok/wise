@@ -692,7 +692,7 @@ function apply_rule(rule, selections) {
             }
         }
 
-        NAMESPACE_INDEX = data.namespace_index;
+        NAMESPACE_INDEX = response.namespace_index;
 
         clear_selection();
         traverse_lines();
@@ -764,21 +764,32 @@ function apply_def(def, selections) {
                 //console.log("Deleting - at some point in the future");
             }
             else {
-                toplevel = (data.new_json[i][0].type)
-                if (toplevel == 'Definition' | toplevel == 'Equation') {
+
+                //changed this
+                toplevel = (data.new_json[i][0].toplevel)
+                if (toplevel) {
                     build_tree_from_json(data.new_json[i])
-                    //merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
-                    nsym = obj.replace(data.new_html[i]).hide();
-                    //nsym.attr('group',group_id_cache);
-                    mathjax_typeset($(nsym));
-                    nsym.fadeIn('slow');
+
+                    merge_json_to_tree(
+                        NODES[obj.id()], 
+                        data.new_json[i],
+                        'apply_def'
+                    );
+
                     $('.equation button','#workspace').parent().buttonset();
                 } else {
-                    merge_json_to_tree(NODES[obj.id()], data.new_json[i]);
-                    nsym = obj.replace(data.new_html[i]).hide();
-                    mathjax_typeset($(nsym));
-                    nsym.fadeIn('slow');
+
+                    merge_json_to_tree(
+                        NODES[obj.id()], 
+                        data.new_json[i],
+                        'apply_def'
+                    );
+
                 }
+
+                var nsym = obj.replace(data.new_html[i]).hide();
+                nsym.fadeIn('slow');
+                mathjax_typeset($(nsym));
             }
         }
 
@@ -926,15 +937,15 @@ function apply_transform(transform, selections) {
         url: "/cmds/apply_transform/", 
         data: postdata, 
         datatype: 'json',
-        success: function(data) {
+        success: function(response) {
 
-            if(!data) {
+            if(!response) {
                 error('Server side error in processing apply_transform.');
                 return;
             }
 
-            if (data.error) {
-                error(data.error);
+            if (response.error) {
+                error(response.error);
                 clear_selection();
                 return
             }
@@ -943,37 +954,45 @@ function apply_transform(transform, selections) {
             //transformation, attempt to map them 1:1 with the
             //elements in the domain. Elements mapped to 'null'
             //are deleted.
-            for (var i = 0; i < data.new_html.length; i++) {
+            for (var i = 0; i < response.new_html.length; i++) {
                 obj = selections[i];
                 //group_id = obj.attr('group');
                 //group_id_cache = String(group_id)
                 //container = get_container(obj);
 
-                if (data.new_html[i] == null) {
+                if (response.new_html[i] == null) {
                     obj.remove();
                 }
-                else if (data.new_html[i] == 'pass') {
+                else if (response.new_html[i] == 'pass') {
                     //console.log("Doing nothing");
                 }
-                else if (data.new_html[i] == 'delete') {
+                else if (response.new_html[i] == 'delete') {
                     //console.log("Deleting - at some point in the future");
                 }
                 else {
-                    toplevel = (data.new_json[i][0].type)
+                    toplevel = (response.new_json[i][0].type)
                     if (toplevel == 'Definition' | toplevel == 'Equation') {
-                        build_tree_from_json(data.new_json[i])
-                        merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
-                        nsym = obj.replace(data.new_html[i]);
+                        build_tree_from_json(response.new_json[i])
+                        merge_json_to_tree(
+                            NODES[obj.id()],
+                            response.new_json[i],
+                            data.transform
+                        );
+                        nsym = obj.replace(response.new_html[i]);
                         mathjax_typeset($(nsym))
                     } else {
-                        merge_json_to_tree(NODES[obj.id()], data.new_json[i]);
-                        nsym = obj.replace(data.new_html[i]);
+                        merge_json_to_tree(
+                            NODES[obj.id()], 
+                            response.new_json[i],
+                            data.transform
+                        );
+                        nsym = obj.replace(response.new_html[i]);
                         mathjax_typeset($(nsym));
                     }
                 }
             }
 
-            NAMESPACE_INDEX = data.namespace_index;
+            NAMESPACE_INDEX = response.namespace_index;
 
             clear_selection();
             traverse_lines();

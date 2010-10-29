@@ -223,7 +223,11 @@ Node.prototype.swapNode = function (newNode) {
     newNode.index = this.index;
     newNode.depth = this.depth;
     newNode.tree = this.tree;
-    this._parent.children[this.index] = newNode;
+    newNode.toplevel = this.toplevel;
+
+    if(this._parent.children) {
+        this._parent.children[this.index] = newNode;
+    }
 }
 
 var Expression = Node.extend({
