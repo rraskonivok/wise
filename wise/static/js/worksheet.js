@@ -616,7 +616,6 @@ function apply_rule(rule, selections) {
     data.rule = rule;
     data.namespace_index = NAMESPACE_INDEX;
 
-
     if (selections == null) {
         //Fetch the math for each of the selections
         if(selection.count == 0) {
@@ -631,14 +630,13 @@ function apply_rule(rule, selections) {
                $(this).dequeue();
             });
         }
-    }
-    else {
+    } else {
         data.selections = selections;
     }
 
-    $.post("/cmds/apply_rule/", data, function (data) {
+    $.post("/cmds/apply_rule/", data, function (response) {
 
-        if (data.error) {
+        if (response.error) {
             error(data.error);
             clear_selection();
             return;
@@ -648,7 +646,7 @@ function apply_rule(rule, selections) {
         //transformation, attempt to map them 1:1 with the
         //elements in the domain. Elements mapped to 'null'
         //are deleted.
-        for (var i = 0; i < data.new_html.length; i++) {
+        for (var i = 0; i < response.new_html.length; i++) {
             obj = selection.nth(i);
 
             obj.queue(function() {
@@ -656,27 +654,38 @@ function apply_rule(rule, selections) {
                $(this).dequeue();
             });
 
-            if (data.new_html[i] == null) {
+            if (response.new_html[i] == null) {
                 obj.remove();
             }
-            else if (data.new_html[i] == 'pass') {
+            else if (response.new_html[i] == 'pass') {
                 //onsole.log("Doing nothing");
             }
-            else if (data.new_html[i] == 'delete') {
+            else if (response.new_html[i] == 'delete') {
                 //console.log("Deleting - at some point in the future");
             }
             else {
-                toplevel = (data.new_json[i][0].type)
+                toplevel = (response.new_json[i][0].type)
                 if (toplevel == 'Definition' | toplevel == 'Equation') {
-                    build_tree_from_json(data.new_json[i])
-                    merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
-                    nsym = obj.replace(data.new_html[i]).hide();
+                    build_tree_from_json(response.new_json[i])
+                    merge_json_to_tree(
+                        NODES[obj.id()],
+                        response.new_json[i],
+                        data.rule
+                    );
+
+                    console.log(data.rule);
+
+                    nsym = obj.replace(response.new_html[i]).hide();
                     mathjax_typeset($(nsym));
                     nsym.fadeIn('slow');
                     $('.equation button','#workspace').parent().buttonset();
                 } else {
-                    merge_json_to_tree(NODES[obj.id()], data.new_json[i]);
-                    nsym = obj.replace(data.new_html[i]).hide();
+                    merge_json_to_tree(
+                        NODES[obj.id()], 
+                        response.new_json[i],
+                        data.rule
+                    );
+                    nsym = obj.replace(response.new_html[i]).hide();
                     mathjax_typeset($(nsym));
                     nsym.fadeIn('slow');
                 }

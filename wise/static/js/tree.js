@@ -119,15 +119,16 @@ function build_tree_from_json(json_input) {
 //}
 
 //Graft a tree onto a node.
-function merge_json_to_tree(old_node, json_input) {
+function merge_json_to_tree(old_node, json_input, transformation) {
     var newtree = build_tree_from_json(json_input);
     if (!old_node) {
         //error('Could not attach branch');
         return;
     }
     old_node.math();
-    newtree.prev_state = old_node.smath();
-//    console.log(newtree);
+    newtree.root.transformed_by = transformation;
+    newtree.root.prev_state = old_node.smath();
+    console.log(newtree);
 
     old_node.swapNode(newtree.root);
 }
@@ -239,6 +240,7 @@ var Expression = Node.extend({
 
 //Expression.prototype = new Node();
 Expression.prototype.smath = function () {
+    if(this._math.length == 0) { this.math(); }
     return _.flatten(this._math).join(' ')
 }
 
