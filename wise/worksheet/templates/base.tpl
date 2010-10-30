@@ -34,6 +34,9 @@
  <!-- Hotkeys Plugin -->
  <script src="/static/js/keys.js" type="text/javascript"></script>
 
+{% block includes %}
+{% endblock %}
+
 </head>
 <body>
   <div id="container">
@@ -59,15 +62,13 @@
         {% endblock %}
       </div>
       <div id="sidebar">
-        <div class="block">
-          <h3>Simple Block</h3>
-          <div class="content">
-            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-          </div>
-        </div>
+        {% block sidebar %}
+        {% endblock %}
       </div>
     </div>
   </div>
+  {% block inline-script %}
+  {% endblock %}
 </body>
 </html>
 

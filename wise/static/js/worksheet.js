@@ -16,12 +16,27 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// Array of cells, index corresponds to order on page. Each
-// element contains another array of equations in that cell.
-var CELLS = [];
+///////////////////////////////////////////////////////////
+// Initalization
+///////////////////////////////////////////////////////////
 
-// Dictionary of equations indexed by uid
-var EQUATIONS = {};
+var a = $.manageAjax.create('queue', {queue: true});
+
+$(document).ajaxError(function() {
+    error("Error connecting to server");
+});
+
+$(document).ready(function () {
+    init();
+});
+
+$(document).ajaxStart(function () {
+    $('#ajax_loading').show();
+});
+
+$(document).ajaxStop(function () {
+    $('#ajax_loading').hide();
+});
 
 ///////////////////////////////////////////////////////////
 // Utilities
