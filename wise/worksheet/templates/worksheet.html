@@ -1,8 +1,5 @@
 {% extends "base.tpl" %}
 
-
-
-
 {# --------------------------
 Worksheet specific javascript 
 -------------------------- #}
@@ -23,9 +20,6 @@ Worksheet specific javascript
  <script src="/static/js/keyshortcuts.js" type="text/javascript"></script>
 {% endblock %}
 
-
-
-
 {# --------------------------
 Worksheet Palettes
 -------------------------- #}
@@ -45,8 +39,6 @@ Worksheet Palettes
 
 </div>
 {% endblock %}
-
-
 
 {# --------------------------
 Init Function + Global Vars
@@ -90,6 +82,11 @@ Init Function + Global Vars
 
     var cmd_visible = 0;
 
+    $('#cmdline').submit(function() {
+        use_infix($("#cmdinput").val());
+        $("#cmdinput").blur();
+        return false;
+    });
     
     function init()
     {
