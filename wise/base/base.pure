@@ -409,6 +409,7 @@ with
     x*y*z = x*z*y if cmp z y ;
     x*(y*z) = x*y*z ;
     x*(-y) = (-x)*y ;
+    -(k*x) = (-k)*x if numberp k;
 end;
 
 /* :Name: ``simplify_addition`` x
