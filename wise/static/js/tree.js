@@ -180,6 +180,7 @@ Node.prototype.tree = null;
 Node.prototype.hasChildren = function () {
     return this.children.length > 0
 }
+
 Node.prototype.depth = null;
 
 Node.prototype.addNode = function (node) {
