@@ -28,32 +28,19 @@ urlpatterns = patterns('',
      (r'^cmds/new_line/$', 'wise.worksheet.ajax.new_line'),
      (r'^cmds/receive/$', 'wise.worksheet.ajax.receive'),
      (r'^cmds/remove/$', 'wise.worksheet.ajax.remove'),
+
+     #Transformations
      (r'^cmds/apply_rule/$', 'wise.worksheet.ajax.apply_rule'),
      (r'^cmds/apply_def/$', 'wise.worksheet.ajax.apply_def'),
      (r'^cmds/apply_transform/$', 'wise.worksheet.ajax.apply_transform'),
      (r'^cmds/pure_parse/$', 'wise.worksheet.ajax.pure_parse'),
      (r'^cmds/use_infix/$', 'wise.worksheet.ajax.use_infix'),
-#     (r'^cmds/json_tree/$', 'wise.worksheet.views.json_tree'),
-     (r'^cmds/combine/$', 'wise.worksheet.ajax.combine'),
 
      #Rules
      (r'^rule/$', 'wise.worksheet.views.rules_list'),
      (r'^rule/(?P<rule_id>\d+)/$', 'wise.worksheet.views.rule'),
      (r'^rule/(?P<rule_id>\d+)/save/$', 'wise.worksheet.ajax.save_ruleset'),
-     (r'^rule/new/$', 'wise.worksheet.views.sym_update'),
      (r'^rule_request/$', 'wise.worksheet.ajax.rules_request'),
-
-     #Symbols
-     (r'^sym/$', 'wise.worksheet.views.symbols_list'),
-     (r'^sym/(?P<sym_id>\d+)/$', 'wise.worksheet.views.sym'),
-     (r'^sym/new/$', 'wise.worksheet.views.sym_update'),
-     (r'^symbol_request/$', 'wise.worksheet.ajax.symbols_request'),
-
-     #Functions
-     (r'^fun/$', 'wise.worksheet.views.fun_list'),
-     (r'^fun/(?P<sym_id>\d+)/$', 'wise.worksheet.views.fun'),
-     (r'^fun/new/$', 'wise.worksheet.views.fun_update'),
-     (r'^functions_request/$', 'wise.worksheet.ajax.functions_request'),
 
      #Uncomment the next line to enable the admin:
      (r'^admin/', include(admin.site.urls)),

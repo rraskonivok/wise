@@ -20,7 +20,3 @@ class VersionedWorkspace(VersionAdmin):
 admin.site.register(Workspace,VersionedWorkspace)
 admin.site.register(MathematicalEquation)
 admin.site.register(Cell)
-admin.site.register(Symbol)
-admin.site.register(Function)
-admin.site.register(Rule)
-admin.site.register(RuleSet)

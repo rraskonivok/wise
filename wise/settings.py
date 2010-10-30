@@ -41,7 +41,7 @@ MEDIA_ROOT = os.path.join(SITE_ROOT, 'static')
 
 MEDIA_URL = '/static'
 
-ADMIN_MEDIA_PREFIX = '/media/'
+ADMIN_MEDIA_PREFIX = '/static/admin/'
 
 SECRET_KEY = 'changeme'
 

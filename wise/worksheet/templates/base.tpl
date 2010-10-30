@@ -40,13 +40,15 @@
 </head>
 <body>
   <div id="container">
+
+    {% block header %}
     <div id="header">
       <h1><a href="/">Wise</a></h1>
       <div id="user-navigation">
         <ul class="wat-cf">
           <li><a href="#">Profile</a></li>
           <li><a href="#">Settings</a></li>
-          <li><a class="logout" href="#">Logout</a></li>
+          <li><a class="logout" href="/accounts/logout">Logout</a></li>
         </ul>
       </div>
       <div id="main-navigation">
@@ -56,6 +58,8 @@
         </ul>
       </div>
     </div>
+    {% endblock %}
+
     <div id="wrapper" class="wat-cf">
       <div id="main">
         {% block main %}
@@ -63,6 +67,10 @@
       </div>
       <div id="sidebar">
         {% block sidebar %}
+        {% endblock %}
+      </div>
+      <div id="box">
+        {% block box %}
         {% endblock %}
       </div>
     </div>

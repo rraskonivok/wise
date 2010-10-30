@@ -1,3 +1,6 @@
+{% extends "base.tpl" %}
+
+<!--
 <html>
     
 <head>
@@ -38,3 +41,49 @@
 
 </body>
 </html>
+
+
+-->
+
+{% block header %}
+{% endblock %}
+
+{% block box %}
+<div class="block" id="block-login">
+        <h2>Login Box</h2>
+        <div class="content login">
+          <div class="flash">
+              {% for error in errors %}
+            <div class="message notice">
+              <p{{ error }}</p
+            </div>
+              {% endfor %}
+          </div>
+          <form action="" method="post" class="form login">
+            <div class="group wat-cf">
+              <div class="left">
+                <label class="label right">Login</label>
+              </div>
+              <div class="right">
+                {{ form.username }}
+              </div>
+            </div>
+            <div class="group wat-cf">
+              <div class="left">
+                <label class="label right">Password</label>
+              </div>
+              <div class="right">
+                {{ form.password }}
+              </div>
+            </div>
+            <div class="group navform wat-cf">
+              <div class="right">
+                <button class="button" type="submit">
+                  <img src="/static/img/icons/key.png" alt="Save"> Login
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+{% endblock %}

@@ -58,7 +58,7 @@ array_template = haml('''
 
 button_template = haml('''
 {% for obj in objects %}
-        button onclick="subs('{{ obj.math }}');"
+        button.button onclick="subs('{{ obj.math }}');"
             $${{ obj.label }}$$
 {% endfor %}
 ''')

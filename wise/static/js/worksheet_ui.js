@@ -37,8 +37,3 @@ function toggle_cmdline() {
     cmd_visible = cmd_visible ^ 1;
 }
 
-$('#cmdline').submit(function() {
-    use_infix($("#cmdinput").val());
-    $("#cmdinput").blur();
-    return false;
-});

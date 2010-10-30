@@ -48,7 +48,10 @@ def account_login(request):
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
-        redirect = request.GET['next']
+        if 'next' in request.GET:
+            redirect = request.GET['next']
+        else:
+            redirect = '/'
 
         user = authenticate(username=username, password=password)
         if user is not None:
@@ -64,11 +67,10 @@ def account_login(request):
     else:
         return render_to_response('login.html', {'form': form})
 
-
 def account_logout(request):
     logout(request)
     # Redirect to a success page.
-    return HttpResponse('Logged Out')
+    return HttpResponseRedirect('/accounts/login')
 
 @login_required
 def home(request):
@@ -79,12 +81,14 @@ def home(request):
 def users(request):
     return render_to_response('users.html',{'users':User.objects.all()})
 
+@login_required
 def log(request):
     log = open('session.log').read()
     log_html = log.replace("\n","<br />\n")
 
     return render_to_response('log.html', {'log': log_html})
 
+@login_required
 def translate(request):
     return render_to_response('translate.html')
 
@@ -146,89 +150,6 @@ def rule(request, rule_id):
         'json_cells': json.dumps(json_cells),
         })
 
-#---------------------------
-# Symbols ------------------
-#---------------------------
-
-@login_required
-def sym(request, sym_id):
-
-    try:
-        symbol = Symbol.objects.get(id=sym_id)
-
-        if ( symbol.owner.id != request.user.id ) and not symbol.public:
-            return HttpResponse('You do not have permission to access this symbol.')
-
-    except ObjectDoesNotExist:
-        symbol = None
-    return render_to_response('symbol_edit.html', {'symbol': symbol})
-
-@login_required
-def sym_update(request):
-    sym_id = request.POST.get('sym_id')
-
-    name = request.POST.get('name')
-    tex = request.POST.get('tex')
-    desc = request.POST.get('desc')
-    public = request.POST.get('public') is not None
-
-    sym = Symbol.objects.filter(id=sym_id)
-
-    if sym:
-        sym.update(name=name,tex=tex,public=public,desc=desc,owner=request.user)
-    else:
-        Symbol(name=name,tex=tex,public=public,desc=desc,owner=request.user).save()
-
-    return HttpResponseRedirect('/sym')
-
-@errors
-@login_required
-def symbols_list(request):
-    try:
-        symbols = Symbol.objects.filter(owner=request.user)
-    except ObjectDoesNotExist:
-        pass
-
-    return render_to_response('symbols_list.html', {'symbols': symbols})
-
-#---------------------------
-# Functions ----------------
-#---------------------------
-
-def fun_list(request):
-    functions = Function.objects.filter(owner=request.user)
-    return render_to_response('fun_list.html', {'functions': functions})
-
-@login_required
-def fun(request, sym_id):
-    try:
-        function = Function.objects.get(id=sym_id)
-
-        if ( function.owner.id != request.user.id ) and not function.public:
-            return HttpResponse('You do not have permission to access this function.')
-
-    except ObjectDoesNotExist:
-        function = None
-    return render_to_response('fun_edit.html', {'function': function})
-
-@login_required
-def fun_update(request, sym_id):
-    new = request.GET.get('new')
-    name = request.GET.get('name')
-    tex = request.GET.get('tex')
-    desc = request.GET.get('desc')
-    public = request.GET.get('public') is not None
-
-    sym = Symbol.objects.filter(id=sym_id)
-
-    if sym:
-        sym.update(name=name,tex=tex,public=public,desc=desc,owner=request.user)
-    else:
-        Symbol(name=name,tex=tex,public=public,desc=desc,owner=request.user).save()
-
-    return HttpResponseRedirect('/sym')
-
-
 @login_required
 @errors
 def ws(request, eq_id):
@@ -280,22 +201,6 @@ def ws(request, eq_id):
         'cell_index': len(cells),
         'json_cells': json.dumps(json_cells),
         })
-
-#@errors
-#def json_tree(request, eq_id):
-#    print 'JSON TREE'
-#    eqs = MathematicalEquation.objects.filter(workspace=eq_id)
-#    uid = uidgen()
-#    json_list = []
-#
-#    for eq in eqs:
-#        code = eq.code
-#        tree = mathobjects.ParseTree(code)
-#        tree.gen_uids(uid)
-#
-#        json_list.append(tree.json_flat())
-#
-#    return JSONResponse(json_list)
 
 @login_required
 @errors
