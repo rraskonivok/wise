@@ -25,6 +25,11 @@ function RootedTree(root) {
     this.levels[0] = [root];
 }
 
+_.uniqueId = function(prefix) {
+    var id = NAMESPACE_INDEX++;
+    return prefix ? prefix + id : id;
+};
+
 function build_tree_from_json(json_input) {
     //Build an expression from the output of the python function json_flat
     var T;
@@ -34,12 +39,16 @@ function build_tree_from_json(json_input) {
     //Create a hash table: { 'uid3': Node of uid3 }
     for (var term in json_input) {
         term = json_input[term];
-        var node = new Expression();
+
+        var node = new Expression({
+            id:       term.id,
+            type:     term.type,
+            toplevel: term.toplevel,
+            args:     term.args,
+            sid:      term.sid
+        });
+
         NODES[term.id] = node;
-        node.id = term.id;
-        node.name = term.type;
-        node.toplevel = term.toplevel;
-        node.args = term.args;
         
         if(term.toplevel) {
             node.index = 0;
@@ -136,10 +145,9 @@ function merge_json_to_tree(old_node, json_input, transformation) {
 ///////////////////////////////////////////////////////////
 // Term Handling
 ///////////////////////////////////////////////////////////
-//This is the key algorithm that makes everything run, the
-//properties and methods are .prototyped for speed since they are
-//likely called thousands of times.
-// This is a hash trie, see http://en.wikipedia.org/wiki/Trie
+// This is the key algorithm that makes everything run, the
+// properties and methods are .prototyped for speed since they are
+// likely called thousands of times.
 
 var RootedTree = Backbone.Model.extend({
     initialize: function(root) { 
@@ -237,8 +245,6 @@ var Expression = Node.extend({
         this.children = [];
         this._parent = null;
         this._math = [];
-        this.dom = null;
-        this.hash = null;
     }
 
 });
@@ -250,11 +256,12 @@ Expression.prototype.smath = function () {
 }
 
 Expression.prototype.math = function() {
+    var head = this.get('type')
 
     if(!this.hasChildren()) {
-        this._math = sexp(this.name, this.args);
+        this._math = sexp(head, this.get('args'));
     } else {
-        this._math = ['(', this.name, _.invoke(this.children,'math'), ')'];
+        this._math = sexp(head, _.invoke(this.children,'math') );
     }
     return this._math;
 }

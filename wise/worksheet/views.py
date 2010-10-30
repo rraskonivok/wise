@@ -179,7 +179,9 @@ def ws(request, eq_id):
 
         for eq in eqs:
             try:
+                # Build up the object from the sexp in the database
                 etree = parse_sexp(eq.code, uid)
+                etree.sid = eq.id
             except NameError:
                 if settings.DEBUG:
                     print 'Some symbols could not be rendered'

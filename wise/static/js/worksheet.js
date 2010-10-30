@@ -364,7 +364,7 @@ function select_term(object) {
         selection.del(id)
     } else {
         clickedon.addClass('selected');
-        typ = object.name;
+        typ = object.get('type');
         li = $(document.createElement('button')).html(typ);
         li.button()
 

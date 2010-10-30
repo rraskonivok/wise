@@ -47,8 +47,12 @@ class Term(object):
     group = None # Expressions that object is embeeded in
     parent = None
 
+    # TODO: change id -> cid
     id = None # The unique ID used to track the object clientside
     idgen = None # A instance of a uid generator
+
+    # Database index
+    sid = None
 
     # HTML / HAML template used to render object
     html = load_haml_template('term.tpl')
@@ -239,10 +243,6 @@ class Term(object):
 
     def combine(self,other,context):
         return self.combine_fallback(other,context)
-
-    def ui_id(self):
-        '''Returns the jquery code to reference to the html tag'''
-        return '$("#workspace").find("#%s")' % (self.id)
 
     def ui_sortable(self,other=None):
         self.ensure_id()
@@ -465,19 +465,6 @@ class Rational(Term):
 
         return self.html.render(c)
 
-    @fallback(Term.combine_fallback)
-    def combine(self,other,context):
-        pass
-        #TODO: This breaks a heck of a lot
-        #if isinstance(other,Fraction):
-        #    num = Addition(Product(self.num,other.den),Product(self.den,other.num))
-        #    den = Product(self.den,other.den)
-        #    return Fraction(num,den).get_html()
-        #elif isinstance(other,Numeric):
-        #    num = Addition(self.num,Product(self.den,other))
-        #    den = self.den
-        #    return Fraction(num,den).get_html()
-
 class Infinity(Base_Symbol):
     latex = '\\infty'
     symbol = 'inf'
@@ -575,9 +562,7 @@ class ComplexNumeric(Term):
             'class': self.css_class,
             're': self.re.get_html(),
             'im': self.im.get_html(),
-            'math': self.get_math(),
-            'type': self.classname,
-            'group': self.group})
+        })
 
         return self.html.render(c)
 
@@ -619,18 +604,26 @@ class Relational(object):
     pass
 
 class Equation(object):
-    '''A statement relating some LHS to RHS'''
+    html = load_haml_template('equation.tpl')
+
     lhs = None
     rhs = None
-    html = load_haml_template('equation.tpl')
     id = None
+
     symbol = "="
-    sortable = True
+
+    sortable = False
     parent = None
+
     side = None
     annotation = ''
+
     pure = 'eq'
+
     po = None
+
+    # Database index
+    sid = None
 
     def __init__(self,lhs=None,rhs=None):
 
@@ -679,10 +672,11 @@ class Equation(object):
         if not lst:
             lst = []
 
-        lst.append({"id": self.id,
-                    "type": self.classname,
-                    "toplevel": True,
-                    "children": [term.id for term in self.terms]})
+        lst.append({'id': self.id,
+                    'type': self.classname,
+                    'toplevel': True,
+                    'sid': self.sid,
+                    'children': [term.id for term in self.terms]})
 
         for term in self.terms:
             term.json_flat(lst)
@@ -710,49 +704,6 @@ class Equation(object):
             s2 = self.rhs.rhs.ui_sortable(self.lhs.lhs)
 
             javascript = s1 + s2
-
-            #If we have an Equation of the form A/B = C/D then we can
-            #drag terms between the numerator and denominator
-            if self.lhs.lhs.has_single_term() and self.rhs.rhs.has_single_term():
-                #TODO: Change these to isinstance
-                if type(self.lhs.lhs.terms[0]) is Rational and type(self.rhs.rhs.terms[0]) is Rational:
-
-                   lfrac = self.lhs.lhs.terms[0]
-                   rfrac = self.rhs.rhs.terms[0]
-
-                   lden = lfrac.den
-                   rden = rfrac.den
-
-                   lnum = lfrac.num
-                   rnum = rfrac.num
-
-                   #lnumm, ldenm = lnum.wrap(Product) , lden.wrap(Product)
-                   #rnumm, rdenm = rnum.wrap(Product) , rden.wrap(Product)
-
-                   if type(lnum) is not Product:
-                       lfrac.num = lfrac.num.wrap(Product)
-
-                   if type(rnum) is not Product:
-                       rfrac.num = rfrac.num.wrap(Product)
-
-                   if type(lden) is not Product:
-                       lfrac.den = lfrac.den.wrap(Product)
-
-                   if type(rden) is not Product:
-                       rfrac.den = rfrac.den.wrap(Product)
-
-                   if type(lnum) is Product or type(lnum) is Variable:
-                       javascript += lnum.ui_sortable(rfrac.den)
-
-                   if type(rnum) is Product or type(rnum) is Variable:
-                       javascript += rnum.ui_sortable(lfrac.den)
-
-                   if type(lden) is Product or type(lden) is Variable:
-                       javascript += lden.ui_sortable(rfrac.num)
-
-                   if type(rden) is Product or type(rden) is Variable:
-                       javascript += rden.ui_sortable(lfrac.num)
-
 
         c = template.Context({
             'id': self.id,
@@ -819,13 +770,6 @@ class LHS(Term):
         self.side = 0
         self.lhs.side = 0
         self.lhs.parent = self
-
-    #TODO: we NEED hashes on these, but because the Addition
-    #contiainer is not created with the parser it doesn't get a
-    #hash so we need to figure out a way to do that.
-    #@property
-    #def hash(self):
-    #    pass
 
     def _pure_(self):
         return self.lhs._pure_()
