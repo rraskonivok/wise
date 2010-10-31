@@ -826,9 +826,6 @@ class Definition(Equation):
 
         c = template.Context({
             'id': self.id,
-            'rhs_id': self.rhs.id,
-            'lhs_id': self.lhs.id,
-            'math': self.math,
             'lhs': self.lhs.get_html(),
             'rhs': self.rhs.get_html(),
             'annotation': self.annotation,

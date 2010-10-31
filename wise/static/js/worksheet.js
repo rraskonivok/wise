@@ -56,12 +56,11 @@ window.log = function(){
 
 // TODO: Just for debugging
 function showmath() {
-   NODES[selection.nth(0)[0].id].math();
-   return NODES[selection.nth(0)[0].id].smath();
+   return NODES.get(selection.nth(0)[0].id).smath();
 }
 
 function shownode() {
-   return NODES[selection.nth(0)[0].id];
+   return NODES.get(selection.nth(0)[0].id);
 }
 
 $.fn.exists = function () {
@@ -91,7 +90,7 @@ $.fn.id = function () {
 };
 
 $.fn.math = function () {
-    var node = NODES[$(this).id()];
+    var node = NODES.get($(this).id());
     node.math();
     var sexp = node.smath();
     return sexp;
@@ -122,7 +121,7 @@ $.fn.is_toplevel = function() {
 }
 
 $.fn.node = function () {
-    return NODES[$(this).id()]
+    return NODES.get($(this).id())
 };
 
 $.extend($.fn.disableTextSelect = function () {
@@ -683,7 +682,7 @@ function apply_rule(rule, selections) {
                 if (toplevel == 'Definition' | toplevel == 'Equation') {
                     build_tree_from_json(response.new_json[i])
                     merge_json_to_tree(
-                        NODES[obj.id()],
+                        NODES.get(obj.id()),
                         response.new_json[i],
                         data.rule
                     );
@@ -696,7 +695,7 @@ function apply_rule(rule, selections) {
                     $('.equation button','#workspace').parent().buttonset();
                 } else {
                     merge_json_to_tree(
-                        NODES[obj.id()], 
+                        NODES.get(obj.id()), 
                         response.new_json[i],
                         data.rule
                     );
@@ -721,7 +720,6 @@ function apply_def(def, selections) {
     var data = {};
 
     data.def = def.math()
-
     data.namespace_index = NAMESPACE_INDEX;
 
     if (selections == null) {
@@ -786,7 +784,7 @@ function apply_def(def, selections) {
                     build_tree_from_json(data.new_json[i])
 
                     merge_json_to_tree(
-                        NODES[obj.id()], 
+                        NODES.get(obj.id()), 
                         data.new_json[i],
                         'apply_def'
                     );
@@ -795,7 +793,7 @@ function apply_def(def, selections) {
                 } else {
 
                     merge_json_to_tree(
-                        NODES[obj.id()], 
+                        NODES.get(obj.id()), 
                         data.new_json[i],
                         'apply_def'
                     );
@@ -861,9 +859,6 @@ function use_infix(code) {
             //are deleted.
             for (var i = 0; i < data.new_html.length; i++) {
                 obj = selections[i];
-                group_id = obj.attr('group');
-                group_id_cache = String(group_id);
-                container = get_container(obj);
 
                 if (data.new_html[i] == null) {
                     obj.remove();
@@ -883,14 +878,9 @@ function use_infix(code) {
                         //nsym.attr('group',group_id_cache);
                         mathjax_typeset($(nsym))
                     } else {
-                        merge_json_to_tree(NODES[obj.id()], data.new_json[i]);
+                        merge_json_to_tree(NODES.get(obj.id()), data.new_json[i]);
                         nsym = obj.replace(data.new_html[i]);
-                        nsym.attr('group', group_id_cache);
                         mathjax_typeset($(nsym));
-                    }
-                    //Check to see if the uid assigning failed
-                    if (nsym.find('#None').length > 0) {
-                        error("Warning: some elements do not have uids");
                     }
                 }
             }
@@ -989,7 +979,7 @@ function apply_transform(transform, selections) {
                     if (toplevel == 'Definition' | toplevel == 'Equation') {
                         build_tree_from_json(response.new_json[i])
                         merge_json_to_tree(
-                            NODES[obj.id()],
+                            NODES.get(obj.id()),
                             response.new_json[i],
                             data.transform
                         );
@@ -997,7 +987,7 @@ function apply_transform(transform, selections) {
                         mathjax_typeset($(nsym))
                     } else {
                         merge_json_to_tree(
-                            NODES[obj.id()], 
+                            NODES.get(obj.id()), 
                             response.new_json[i],
                             data.transform
                         );
@@ -1015,172 +1005,6 @@ function apply_transform(transform, selections) {
         }});
 
     cleanup_ajax_scripts();
-}
-
-function receive(ui, receiver, group_id) {
-    group_id = receiver.attr('id');
-
-    obj = ui.item;
-    //If we drop an element in make sure we associate it with the group immediately
-    obj.attr('group', group_id);
-
-    //If we drag from a jquery draggable then the ui.item doesn't exist here yet
-    //so just remap all the children with the group... this should be safe (right?)
-    receiver.children('[math]').attr('group', group_id);
-
-    //Make sure nothing is changed while we process the request
-    receiver.attr('locked', 'true');
-
-    data = {
-        //The math of the dragged object 
-        obj: ui.item.attr('math'),
-        obj_type: ui.item.attr('math-type'),
-
-        //The math of the receiving object
-        receiver: receiver.attr('math'),
-        receiver_type: receiver.attr('math-type'),
-        receiver_context: get_container(receiver).attr('math-type'),
-
-        //The math of the sender objec
-        sender: ui.sender.attr('math'),
-        sender_type: ui.sender.attr('math-type'),
-        sender_context: get_container(ui.sender).attr('math-type'),
-
-        //The new position of the dragged obect inside receiver
-        new_position: ui.item.parent().children("[math]").index(ui.item),
-
-        namespace_index: NAMESPACE_INDEX
-    }
-
-    $.post("/cmds/receive/", data, function (data) {
-
-        if (data.error) {
-            error(data.error);
-            return
-        }
-
-        nsym = obj.replace(data.new_html);
-        nsym.attr('group', group_id);
-
-        mathjax_typeset($(nsym));
-        receiver.attr('locked', 'false');
-
-        //append_json_to_tree(NODES[receiver.id()],data.new_json);
-        append_to_tree(NODES[receiver.id()], data.new_json);
-
-        //Remove the old element from the tree
-        NODES[obj.id()].delNode();
-
-        NAMESPACE_INDEX = data.namespace_index;
-        resize_parentheses();
-    }, "json");
-
-    cleanup_ajax_scripts();
-}
-
-function remove(ui, removed) {
-    //Rather unintuitivly this handles transformations that are
-    //induced after a object is removed from a container. The
-    //best example is when the last element from a equation side
-    //(i.e. LHS) is removed, this induces the remove method on
-    //LHS and appends a zero.
-    group_id = removed.attr('id');
-    obj = ui.item;
-    removed.attr('locked', 'true');
-
-    data = {
-        //The math of the dragged object 
-        obj: ui.item.attr('math'),
-        obj_type: ui.item.attr('math-type'),
-
-        //The math of the sender object
-        sender: removed.attr('math'),
-        sender_type: removed.attr('math-type'),
-        sender_context: get_container(removed).attr('math-type'),
-
-        namespace_index: NAMESPACE_INDEX
-    }
-
-    $.post("/cmds/remove/", data, function (data) {
-        if (data.error) {
-            error(data.error);
-            return;
-        }
-
-        if (data.new_html) {
-            nsym = $(data.new_html).appendTo(removed);
-            nsym.attr('group', group_id);
-
-            mathjax_typeset(nsym);
-            append_to_tree(NODES[removed.id()], data.new_json);
-
-            removed.attr('locked', 'false')
-            NAMESPACE_INDEX = data.namespace_index;
-        }
-    }, "json");
-    cleanup_ajax_scripts()
-}
-
-function combine(first, second, context) {
-    data = {};
-    data.context = context
-    data.first = $(first).attr('math');
-    data.second = $(second).attr('math');
-    data.namespace_index = NAMESPACE_INDEX;
-
-    if ($(first).attr('group') != $(second).attr('group')) {
-        alert('Mismatched group ids in same context')
-        return null
-    } else {
-        group_id = $(first).attr('group')
-    }
-
-    container = get_container(first)
-    group_id = container.attr('id')
-    group_id_cache = String(group_id)
-
-    $.post("/cmds/combine/", data, function (data) {
-
-        if (data.error) {
-            error(data.error)
-            return
-        }
-
-        nsym = first.after(data.new_html).next();
-
-        //Render the TeX
-        mathjax_typeset(container);
-
-        //Find the root node and associate it with the
-        //new container, the root node should be the only
-        //one which the server didn't automatically
-        //assign a new id to.
-        container.find('[group=None]').attr('group', group_id_cache)
-
-        first.remove();
-        second.remove();
-
-        var first_node = NODES[first.id()];
-        var second_node = NODES[second.id()];
-
-        //Make appropriate changes to the tree
-        if (!data.new_json[0]) {
-            first_node.delNode();
-        } else {
-            merge_json_to_tree(first_node, data.new_json[0]);
-        }
-
-        if (!data.new_json[1]) {
-            second_node.delNode();
-        } else {
-            merge_json_to_tree(second_node, data.new_json[1]);
-        }
-
-        traverse_lines();
-        cleanup_ajax_scripts();
-
-        NAMESPACE_INDEX = data.namespace_index;
-    }, "json");
 }
 
 function new_line(type) {
@@ -1273,9 +1097,8 @@ function traverse_lines() {
     
     function make_selectable(obj) {
         $(obj).click(function(event) {
-            console.log($(this).id());
-            var node = NODES[$(this).id()];
-            //$(this).data('cid', node.cid);
+            // Take the id of the DOM object clicked on and match it to a expression Node
+            var node = NODES.get($(this).id());
             select_term(node);
             // stopPropogation prevents stacked elements from being selected at the same time
             event.stopPropagation();
@@ -1573,15 +1396,15 @@ function visualize_tree(tree) {
 }
 
 function select_equation(id) {
-    select_term(NODES[id]);  
+    select_term(NODES.get(id));  
 }
 
 function select_lhs(id) {
-    select_term(NODES[id].children[0].children[0]);
+    select_term(NODES.get(id).children[0].children[0]);
 }
 
 function select_rhs(id) {
-    select_term(NODES[id].children[1].children[0]);  
+    select_term(NODES.get(id).children[1].children[0]);  
 }
 
 
@@ -1640,7 +1463,7 @@ function remove_element() {
     var container = get_container(placeholder)
 
     if (placeholder.node().depth == 1 && selection.__lst.length == 1) {
-        NODES[placeholder.id()].delNode();
+        NODES.get(placeholder.id()).delNode();
         placeholder.remove()
         clear_selection()
         return;

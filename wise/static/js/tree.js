@@ -17,6 +17,8 @@ var Cell = Backbone.Model.extend({
     length: 0,
 });
 
+NODES = new Backbone.Collection();
+
 function RootedTree(root) {
     root.tree = this;
     root.depth = 1;
@@ -37,6 +39,7 @@ function build_tree_from_json(json_input) {
     //Lookup table which establishes a correspondance between the DOM
     //ids (i.e. uid314 ) and the Node objects in the expression tree.
     //Create a hash table: { 'uid3': Node of uid3 }
+
     for (var term in json_input) {
         term = json_input[term];
 
@@ -48,13 +51,16 @@ function build_tree_from_json(json_input) {
             sid:      term.sid
         });
 
-        NODES[term.id] = node;
+        //NODES[term.id] = node;
         
         if(term.toplevel) {
-            node.index = 0;
+//            node.index = 0;
+            node.set({index: 0});
         }
 
         node.dom = $('#' + node.id,"#workspace");
+
+        NODES.add(node);
     }
 
     //Iterate through the children and lookup their corresponding
@@ -62,15 +68,15 @@ function build_tree_from_json(json_input) {
     for (term in json_input) {
         index = term;
         term = json_input[term];
-        prent = NODES[term.id];
+        prent = NODES.get(term.id);
 
         if (index == 0) {
             T = new RootedTree(prent);
-        };
+        }
+
         for (var child in term.children) {
             child = term.children[child];
-            //console.log(nodes[child]);
-            prent.addNode(NODES[child]);
+            prent.addNode( NODES.get(child) );
         }
     }
 
@@ -210,7 +216,7 @@ Node.prototype.delNode = function (node) {
     //proposal
     _.invoke(this.children,'delNode');
     //Destroy the node itself
-    delete NODES[this.id];
+    delete NODES.remove(this.id);
     delete this;
 }
 
