@@ -1,3 +1,3 @@
-<span id='{{id}}' math-type="RHS" math-meta-class="side" group="{{group}}" class="container">
+<span id='{{id}}' class="container">
     {{rhs}}
 </span>

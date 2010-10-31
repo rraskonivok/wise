@@ -244,7 +244,7 @@ function get_parent(node) {
 }
 
 function get_root(node) {
-    while(node.toplevel != true) {
+    while(node.get('toplevel') != true) {
         node = node.tree.root;
     }
     return node;
@@ -342,7 +342,6 @@ function select_right_root(clear) {
 function select_term(object) {
 
     var clickedon = $('#' + object.id);
-    console.log(clickedon);
 
     if(clickedon.length == 0) {
         console.log('DOM correspondance not found.');
@@ -525,7 +524,6 @@ function resize_parentheses() {
         if(parent_height > 50) {
             parent_height = 50;
         }
-        console.log(obj);
         $(obj[0]).css({'fontSize':String(parent_height) + 'px'});
         $(obj[1]).css({'fontSize':String(parent_height) + 'px'});
     });
@@ -873,9 +871,8 @@ function use_infix(code) {
                     toplevel = (data.new_json[i][0].type)
                     if (toplevel == 'Definition' | toplevel == 'Equation') {
                         build_tree_from_json(data.new_json[i])
-                        //merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
+                        merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
                         nsym = obj.replace(data.new_html[i]);
-                        //nsym.attr('group',group_id_cache);
                         mathjax_typeset($(nsym))
                     } else {
                         merge_json_to_tree(NODES.get(obj.id()), data.new_json[i]);
@@ -961,9 +958,6 @@ function apply_transform(transform, selections) {
             //are deleted.
             for (var i = 0; i < response.new_html.length; i++) {
                 obj = selections[i];
-                //group_id = obj.attr('group');
-                //group_id_cache = String(group_id)
-                //container = get_container(obj);
 
                 if (response.new_html[i] == null) {
                     obj.remove();
@@ -1026,14 +1020,13 @@ function new_line(type) {
             mathjax_typeset(new_cell_html);
             traverse_lines();
 
-            var new_cell = new Cell();
-            new_cell.dom = new_cell_html;
+            var eqs = new Backbone.Collection();
             var eq = build_tree_from_json(data.new_json);
-            new_cell.equations.add(eq);
+            eqs.add(eq);
+            var new_cell = new Cell({equations: eqs});
 
             CELLS.push(new_cell);
             CELL_INDEX = data.cell_index;
-
         }
 
         NAMESPACE_INDEX = data.namespace_index;
@@ -1225,18 +1218,6 @@ function check_combinations(object) {
     });
 }
 
-function get_container(object) {
-    if (object.attr('group') == object.attr('id')) {
-        //console.log('Object: '+$(object).attr('math')+' is own parent.');
-    }
-    if (object.attr('group') != undefined && object.attr('toplevel') != 'true') {
-        return $('#' + object.attr('group'))
-    }
-    else {
-        //console.log('Object: '+$(object).attr('math')+' is orphaned.');
-    }
-}
-
 function toggle_confluence(obj) {
     if (obj.attr('data-confluent') == 0) {
         obj.attr('data-confluent', 1)
@@ -1407,20 +1388,6 @@ function select_rhs(id) {
     select_term(NODES.get(id).children[1].children[0]);  
 }
 
-
-function duplicate_placeholder(placeholder) {
-    //This is used for duplicating placeholders in container type
-    //objects i.e. (Addition, Multiplication)
-    //placeholder = get_selection(0)
-    if (placeholder.attr('math-type') == 'Placeholder') {
-        nsym = placeholder.clone()
-        nsym.unbind()
-        nsym.attr('id', 'destroyme')
-        placeholder.after(nsym)
-        check_combinations(get_container(placeholder))
-    }
-}
-
 function next_placeholder(start) {
     last = $('.lines .placeholder:last')
     first = $('.lines .placeholder:first')
@@ -1460,26 +1427,16 @@ function next_placeholder(start) {
 
 function remove_element() {
     var placeholder = selection.nth(0)
-    var container = get_container(placeholder)
 
-    if (placeholder.node().depth == 1 && selection.__lst.length == 1) {
+    if (placeholder.node().get('depth') == 1 && selection.__lst.length == 1) {
         NODES.get(placeholder.id()).delNode();
         placeholder.remove()
         clear_selection()
         return;
-    }
-
-    if (placeholder.attr('math-type') == 'RHS' || placeholder.attr('math-type') == 'LHS') {
-        return;
-    }
-
-    if (container) {
-        if (container.attr('math-type') == 'RHS' || container.attr('math-type') == 'LHS') {
-            return;
-        }
-
+    } else {
         apply_transform('base/Delete', [placeholder]);
-    }
+    }    
+
 }
 
 function preview() {
@@ -1637,14 +1594,15 @@ function init_nodes() {
     for(var cell in JSON_TREE) {
         cell_index = cell;
         var cell = JSON_TREE[cell];
-        var new_cell = new Cell();
+        var eqs = new Backbone.Collection();
         //new_cell.dom = $('#workspace').find('[data-index='+cell_index+']');
         for(var eq in cell){
             var eq_index = eq;
             var eq = cell[eq];
-            EQUATIONS[eq_index] = build_tree_from_json(eq);
-            new_cell.equations.add(eq);
+            var top_node = build_tree_from_json(eq);
+            eqs.add(top_node);
         }
+        var new_cell = new Cell({ equations: eqs });
         CELLS.push(new_cell);
     }
 }

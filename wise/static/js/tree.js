@@ -2,21 +2,11 @@
 // Expression Tree Handling
 ///////////////////////////////////////////////////////////
 
-var EquationCollection = Backbone.Collection;
+var WORKSHEET = Backbone.Collection;
 
-var Equation = Backbone.Model.extend({
-    tree : null,
-    cell : null,
-    next : null,
-    prev : null,
-    index : null
-});
+var Cell = Backbone.Model;
 
-var Cell = Backbone.Model.extend({
-    equations: new EquationCollection(),
-    length: 0,
-});
-
+// Lookup Table for translation between DOM objects and Node objects
 NODES = new Backbone.Collection();
 
 function RootedTree(root) {
@@ -26,11 +16,6 @@ function RootedTree(root) {
     this.root = root;
     this.levels[0] = [root];
 }
-
-_.uniqueId = function(prefix) {
-    var id = NAMESPACE_INDEX++;
-    return prefix ? prefix + id : id;
-};
 
 function build_tree_from_json(json_input) {
     //Build an expression from the output of the python function json_flat
@@ -50,12 +35,9 @@ function build_tree_from_json(json_input) {
             args:     term.args,
             sid:      term.sid
         });
-
-        //NODES[term.id] = node;
         
         if(term.toplevel) {
-//            node.index = 0;
-            node.set({index: 0});
+            node.index = 0;
         }
 
         node.dom = $('#' + node.id,"#workspace");
@@ -83,56 +65,6 @@ function build_tree_from_json(json_input) {
     return T;
 }
 
-//Nested JSON Tree (InfoVis requires this)
-
-//function recurse(node, stack_depth) {
-//
-//    if (!stack_depth) {
-//        stack_depth = 1
-//    } else {
-//        stack_depth += 1
-//    }
-//
-//    if (stack_depth > 25) {
-//        alert('fuck, maximum recursion depth reached' + $(object).attr('id') + ',group:' + $(object).attr('group'))
-//        return null
-//    }
-//    else {
-//        var json = {};
-//        json.id = 'node' + node.id;
-//        json.data = node;
-//        json.name = node.name;
-//        json.children = []
-//
-//        console.log(json, stack_depth);
-//
-//        for (child in node.children) {
-//            child = node.children[child];
-//            if (child) {
-//                json.children.push(recurse(child, stack_depth));
-//            }
-//        }
-//
-//        return json
-//    }
-//}
-
-//function nested_json(T) {
-//    //Returns the nested JSON form a (sub)tree.
-//    //
-//    // The nested JSON is of the form:
-//    //  var json = {  
-//    //      "id": "aUniqueIdentifier",  
-//    //      "name": "usually a nodes name",  
-//    //      "data": {
-//    //          "some key": "some value",
-//    //          "some other key": "some other value"
-//    //       },  
-//    //      "children": [ 'other nodes or empty' ]  
-//    //  }; 
-//    return recurse(T.root);
-//}
-
 //Graft a tree onto a node.
 function merge_json_to_tree(old_node, json_input, transformation) {
     var newtree = build_tree_from_json(json_input);
@@ -143,7 +75,6 @@ function merge_json_to_tree(old_node, json_input, transformation) {
     old_node.math();
     newtree.root.transformed_by = transformation;
     newtree.root.prev_state = old_node.smath();
-    console.log(newtree);
 
     old_node.swapNode(newtree.root);
 }
@@ -202,6 +133,7 @@ Node.prototype.addNode = function (node) {
         this.tree.depth = this.depth + 1;
         this.tree.levels[this.depth] = [];
     }
+
     node.tree = this.tree;
     node.depth = this.depth + 1;
     node._parent = this
@@ -212,16 +144,15 @@ Node.prototype.addNode = function (node) {
 }
 
 Node.prototype.delNode = function (node) {
-    //Eat up the node's children recursively, quite a modest
-    //proposal
+
+    //Eat up the node's children recursively
     _.invoke(this.children,'delNode');
     //Destroy the node itself
-    delete NODES.remove(this.id);
-    delete this;
+    NODES.remove(this);
 }
 
 Node.prototype.treeIndex = function() {
-    if(this.toplevel) {
+    if(this.get('toplevel')) {
         this._treeindex = [0];
         return this._treeindex;
     } else {
@@ -241,8 +172,12 @@ Node.prototype.swapNode = function (newNode) {
     newNode.toplevel = this.toplevel;
 
     if(this._parent.children) {
+        // Assign the new node the index of the old node 
+        // and inform the parent
         this._parent.children[this.index] = newNode;
     }
+
+    this.delNode();
 }
 
 var Expression = Node.extend({
