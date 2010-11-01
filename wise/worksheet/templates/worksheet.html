@@ -142,13 +142,11 @@ Equations
     <div class="inner">
       <hr />
       <p> <span class="gray"><a href="javascript:$('.equation button').toggle()">Toggle Controls</a> | <a id="hovertoggle" href="#">Show Containers</a></span></p>
-      <p class="first">
         <div id="workspace">
             {% for equation in equations %}
                 {{equation|safe}} 
             {% endfor %}
         </div>
-      </p>
     </div>
   </div>
 </div>

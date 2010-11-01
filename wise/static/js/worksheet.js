@@ -1013,7 +1013,7 @@ function new_line(type) {
         }
 
         if (data.new_html) {
-            //TOOD Simplify this mess
+
             new_cell_html = $(data.new_html);
             $("#workspace").append(new_cell_html);
             $('.lines').show();
