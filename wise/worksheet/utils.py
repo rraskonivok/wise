@@ -12,7 +12,7 @@ import os.path
 import traceback
 from decorator import decorator
 from logger import debug, getlogger
-from operator import xor 
+from operator import xor
 from binascii import crc32
 
 from django import template
@@ -140,7 +140,7 @@ def html(obj):
 
 def uidgen(i=0):
     while True:
-        yield 'uid%i' % i
+        yield 'cid%i' % i
         i += 1
 
 def cellify(s,index):

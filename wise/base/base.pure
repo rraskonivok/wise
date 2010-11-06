@@ -592,7 +592,7 @@ end;
 
 algebra_expand X = reduce X
 with
-    Neg (a+b)  = (-a) + (-b);
+    -(a+b)  = (-a) + (-b);
     (a+b)*k = (a * k) + (b * k);
     k*(a+b) = (k * a) + (k * b);
     (a+b)^2 = a^2+2*a*b+b^2;

@@ -56,11 +56,11 @@ window.log = function(){
 
 // TODO: Just for debugging
 function showmath() {
-   return NODES.get(selection.nth(0)[0].id).smath();
+   return NODES.getByCid(selection.nth(0).cid()).smath();
 }
 
 function shownode() {
-   return NODES.get(selection.nth(0)[0].id);
+   return NODES.getByCid(selection.nth(0).cid());
 }
 
 $.fn.exists = function () {
@@ -85,12 +85,17 @@ $.fn.swap = function (b) {
     return this;
 };
 
+//TODO: This is here for compatability reasons, move to fn.cid
 $.fn.id = function () {
     return $(this).attr('id')
 };
 
+$.fn.cid = function () {
+    return $(this).attr('id')
+};
+
 $.fn.math = function () {
-    var node = NODES.get($(this).id());
+    var node = NODES.getByCid($(this).id());
     node.math();
     var sexp = node.smath();
     return sexp;
@@ -121,7 +126,7 @@ $.fn.is_toplevel = function() {
 }
 
 $.fn.node = function () {
-    return NODES.get($(this).id())
+    return NODES.getByCid($(this).id())
 };
 
 $.extend($.fn.disableTextSelect = function () {
@@ -341,7 +346,7 @@ function select_right_root(clear) {
 
 function select_term(object) {
 
-    var clickedon = $('#' + object.id);
+    var clickedon = $('#' + object.cid);
 
     if(clickedon.length == 0) {
         console.log('DOM correspondance not found.');
@@ -680,7 +685,7 @@ function apply_rule(rule, selections) {
                 if (toplevel == 'Definition' | toplevel == 'Equation') {
                     build_tree_from_json(response.new_json[i])
                     merge_json_to_tree(
-                        NODES.get(obj.id()),
+                        NODES.getByCid(obj.id()),
                         response.new_json[i],
                         data.rule
                     );
@@ -693,7 +698,7 @@ function apply_rule(rule, selections) {
                     $('.equation button','#workspace').parent().buttonset();
                 } else {
                     merge_json_to_tree(
-                        NODES.get(obj.id()), 
+                        NODES.getByCid(obj.id()), 
                         response.new_json[i],
                         data.rule
                     );
@@ -782,7 +787,7 @@ function apply_def(def, selections) {
                     build_tree_from_json(data.new_json[i])
 
                     merge_json_to_tree(
-                        NODES.get(obj.id()), 
+                        NODES.getByCid(obj.id()), 
                         data.new_json[i],
                         'apply_def'
                     );
@@ -791,7 +796,7 @@ function apply_def(def, selections) {
                 } else {
 
                     merge_json_to_tree(
-                        NODES.get(obj.id()), 
+                        NODES.getByCid(obj.id()), 
                         data.new_json[i],
                         'apply_def'
                     );
@@ -871,11 +876,11 @@ function use_infix(code) {
                     toplevel = (data.new_json[i][0].type)
                     if (toplevel == 'Definition' | toplevel == 'Equation') {
                         build_tree_from_json(data.new_json[i])
-                        merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
+                        merge_json_to_tree(NODES.getByCid(obj.id()),data.new_json[i]);
                         nsym = obj.replace(data.new_html[i]);
                         mathjax_typeset($(nsym))
                     } else {
-                        merge_json_to_tree(NODES.get(obj.id()), data.new_json[i]);
+                        merge_json_to_tree(NODES.getByCid(obj.id()), data.new_json[i]);
                         nsym = obj.replace(data.new_html[i]);
                         mathjax_typeset($(nsym));
                     }
@@ -973,7 +978,7 @@ function apply_transform(transform, selections) {
                     if (toplevel == 'Definition' | toplevel == 'Equation') {
                         build_tree_from_json(response.new_json[i])
                         merge_json_to_tree(
-                            NODES.get(obj.id()),
+                            NODES.getByCid(obj.id()),
                             response.new_json[i],
                             data.transform
                         );
@@ -981,7 +986,7 @@ function apply_transform(transform, selections) {
                         mathjax_typeset($(nsym))
                     } else {
                         merge_json_to_tree(
-                            NODES.get(obj.id()), 
+                            NODES.getByCid(obj.id()), 
                             response.new_json[i],
                             data.transform
                         );
@@ -1008,6 +1013,7 @@ function new_line(type) {
     data.type = type;
 
     $.post("/cmds/new_line/", data, function (data) {
+
         if (data.error) {
             error(data.error);
         }
@@ -1020,13 +1026,12 @@ function new_line(type) {
             mathjax_typeset(new_cell_html);
             traverse_lines();
 
-            var eqs = new Backbone.Collection();
             var eq = build_tree_from_json(data.new_json);
-            eqs.add(eq);
-            var new_cell = new Cell({equations: eqs});
+            var new_cell = new Cell([eq]);
+            console.log(new_cell);
 
-            CELLS.push(new_cell);
-            CELL_INDEX = data.cell_index;
+            WORKSHEET.add(new_cell);
+            //CELL_INDEX = data.cell_index;
         }
 
         NAMESPACE_INDEX = data.namespace_index;
@@ -1091,7 +1096,7 @@ function traverse_lines() {
     function make_selectable(obj) {
         $(obj).click(function(event) {
             // Take the id of the DOM object clicked on and match it to a expression Node
-            var node = NODES.get($(this).id());
+            var node = NODES.getByCid($(this).id());
             select_term(node);
             // stopPropogation prevents stacked elements from being selected at the same time
             event.stopPropagation();
@@ -1128,7 +1133,8 @@ function check_container(object) {
     //container. So just remove them... until I fix it.
   
     $('[type=math/tex; mode=display]',object).remove();
-    //This handles stupid expression checking that is too expensive to do via Ajax, ie removing infix sugar 
+    // This handles stupid expression checking that is too expensive 
+    // to do via Ajax, ie removing infix sugar 
     _.each(object.children(':not(script)'), function () {
         var prev = $(this).prev();
         var cur = $(this);
@@ -1250,142 +1256,16 @@ function mathjax_typeset(element) {
     }
 }
 
-function visualize_tree(tree) {
-
-    if (!tree) {
-        if (NODES[selection.nth(0).id()]) {
-            tree = NODES[selection.nth(0).id()].tree;
-        }
-        else {
-            error('Could not create tree from selection');
-            return;
-        }
-    }
-
-    var json = nested_json(tree);
-
-    if (!json) {
-        error('Could not generate JSON from object');
-        return;
-    }
-
-    if (active_graph) {
-        st = active_graph;
-        st.canvas.clear();
-
-        var lbs = st.fx.labels;
-        for (var label in lbs) {
-            if (lbs[label]) {
-                lbs[label].parentNode.removeChild(lbs[label]);
-            }
-        }
-
-        st.fx.labels = {};
-
-        st.loadJSON(json);
-        st.compute();
-        st.onClick(st.root);
-        active_graph = st;
-
-        //active_graph.op.morph(json, {  
-        //      type: 'replot',  
-        //      duration: 1500, 
-        //      hideLabels: false
-        //});   
-        return;
-    }
-
-    var canvas = __CANVAS__;
-    canvas.clear();
-
-    var st = new ST(canvas, {
-        duration: 100,
-        transition: Trans.Quart.easeInOut,
-        levelDistance: 50,
-        orientation: 'top',
-        clearCanvas: true,
-
-        Node: {
-            height: 20,
-            width: 60,
-            type: 'rectangle',
-            color: '#F7FBFF',
-            overridable: true,
-        },
-
-        Edge: {
-            type: 'bezier',
-            overridable: true,
-            lineWidth: 2,
-            color: '#ccc',
-        },
-
-        onCreateLabel: function (label, node) {
-            label.id = node.id;
-            label.innerHTML = node.name;
-
-            label.onclick = function () {
-                st.onClick(node.id);
-            };
-
-            $(label).bind('mouseover', function () {
-                node.data.dom.addClass('ui-state-highlight');
-            })
-            $(label).bind('mouseout', function () {
-                node.data.dom.removeClass('ui-state-highlight');
-            })
-            var style = label.style;
-            style.width = 60 + 'px';
-            style.height = 17 + 'px';
-            style.cursor = 'pointer';
-            style.color = '#333';
-            style.fontSize = '0.8em';
-            style.textAlign = 'center';
-            style.paddingTop = '3px';
-        },
-
-        onBeforePlotNode: function (node) {
-            if (node.selected) {
-                node.data.$color = "#ff7";
-            }
-            else {
-                delete node.data.$color;
-                var GUtil = Graph.Util;
-                if (!GUtil.anySubnode(node, "exist")) {
-                    depth = node._depth
-                    node.data.$color = ['#F7FBFF', '#DEEBF7', '#C6DBEF', '#9ECAE1', '#6BAED6', '#4292C6'][depth];
-                }
-            }
-        },
-
-        onBeforePlotLine: function (adj) {
-            if (adj.nodeFrom.selected && adj.nodeTo.selected) {
-                adj.data.$color = '#000';
-                adj.data.$lineWidth = 3;
-            }
-            else {
-                delete adj.data.$color;
-                delete adj.data.$lineWidth;
-            }
-        }
-    });
-    st.loadJSON(json);
-    st.compute();
-    st.onClick(st.root);
-
-    active_graph = st;
-}
-
 function select_equation(id) {
-    select_term(NODES.get(id));  
+    select_term(NODES.getByCid(id));  
 }
 
 function select_lhs(id) {
-    select_term(NODES.get(id).children[0].children[0]);
+    select_term(NODES.getByCid(id).children[0].children[0]);
 }
 
 function select_rhs(id) {
-    select_term(NODES.get(id).children[1].children[0]);  
+    select_term(NODES.getByCid(id).children[1].children[0]);  
 }
 
 function next_placeholder(start) {
@@ -1429,7 +1309,7 @@ function remove_element() {
     var placeholder = selection.nth(0)
 
     if (placeholder.node().get('depth') == 1 && selection.__lst.length == 1) {
-        NODES.get(placeholder.id()).delNode();
+        NODES.getByCid(placeholder.id()).delNode();
         placeholder.remove()
         clear_selection()
         return;
@@ -1589,20 +1469,25 @@ $('#cmdline').submit(function() {
 // Initialize the Term DB
 ///////////////////////////////////////////////////////////
 
+// Takes the inital JSON that Django injects into the page
+// and calls build_tree_from_json to initialize the term
+// database
+
 function init_nodes() {
+    WORKSHEET = new Worksheet();
 
     for(var cell in JSON_TREE) {
         cell_index = cell;
         var cell = JSON_TREE[cell];
-        var eqs = new Backbone.Collection();
+        //var eqs = [];
         //new_cell.dom = $('#workspace').find('[data-index='+cell_index+']');
+        var new_cell = new Cell();
         for(var eq in cell){
             var eq_index = eq;
             var eq = cell[eq];
             var top_node = build_tree_from_json(eq);
-            eqs.add(top_node);
+            new_cell.add(top_node);
         }
-        var new_cell = new Cell({ equations: eqs });
-        CELLS.push(new_cell);
+        WORKSHEET.add(new_cell);
     }
 }

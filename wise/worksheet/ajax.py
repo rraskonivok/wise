@@ -22,6 +22,7 @@ from django.shortcuts import render_to_response
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 
+# uidgen is imported from utils
 from wise.worksheet.utils import *
 from wise.worksheet.models import Workspace, MathematicalEquation, Cell, Symbol, Function, Rule, RuleSet
 import wise.worksheet.exceptions as exception

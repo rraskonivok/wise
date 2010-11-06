@@ -2,11 +2,38 @@
 // Expression Tree Handling
 ///////////////////////////////////////////////////////////
 
-var WORKSHEET = Backbone.Collection;
+var Worksheet = Backbone.Collection.extend({
+    url: '/ws',
 
-var Cell = Backbone.Model;
+    initialize: function() { 
+        this.children = [];
+        this._parent = null;
+    },
+
+});
+
+// This isn't a Collection but we add some functions
+// to make it behave like one...
+var Cell = Backbone.Model.extend({
+    url: '/cell',
+        
+    initialize: function(eqs) { 
+        this.equations = eqs;
+    },
+
+    add: function(eq) {
+        this.change();
+        this.equations.push(eq);
+    },
+
+    at: function(index) {
+        return this.equations[index];
+    }
+
+});
 
 // Lookup Table for translation between DOM objects and Node objects
+
 NODES = new Backbone.Collection();
 
 function RootedTree(root) {
@@ -29,18 +56,20 @@ function build_tree_from_json(json_input) {
         term = json_input[term];
 
         var node = new Expression({
-            id:       term.id,
+//            cid:      term.id,
             type:     term.type,
             toplevel: term.toplevel,
             args:     term.args,
-            sid:      term.sid
+//            id:       term.sid
         });
+
+        node.cid = term.id;
         
         if(term.toplevel) {
             node.index = 0;
         }
 
-        node.dom = $('#' + node.id,"#workspace");
+//        node.dom = $('#' + node.id,"#workspace");
 
         NODES.add(node);
     }
@@ -50,7 +79,7 @@ function build_tree_from_json(json_input) {
     for (term in json_input) {
         index = term;
         term = json_input[term];
-        prent = NODES.get(term.id);
+        prent = NODES.getByCid(term.id);
 
         if (index == 0) {
             T = new RootedTree(prent);
@@ -58,7 +87,7 @@ function build_tree_from_json(json_input) {
 
         for (var child in term.children) {
             child = term.children[child];
-            prent.addNode( NODES.get(child) );
+            prent.addNode( NODES.getByCid(child) );
         }
     }
 
@@ -94,6 +123,10 @@ var RootedTree = Backbone.Model.extend({
         this.root = root;
         this.levels[0] = [root];
     },
+
+    smath: function () {
+        return this.root.smath();
+    }
 });
 
 RootedTree.prototype.walk = function (node) {
@@ -113,6 +146,7 @@ RootedTree.prototype.levels = [];
 RootedTree.prototype.depth = 0;
 
 var Node = Backbone.Model.extend({
+    url: '/eq',
 
     initialize: function() { 
         this.children = [];
