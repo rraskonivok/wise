@@ -152,11 +152,25 @@ Equations
     <h2 class="title">{{title|title}}</h2>
     <div class="inner">
       <hr />
-      <p> <span class="gray"><a href="javascript:$('.equation button').toggle()">Toggle Controls</a> | <a id="hovertoggle" href="#">Show Containers</a></span></p>
+      <p> 
+      <!--<span class="gray"><a href="javascript:$('.equation
+              button').toggle()">Toggle Controls</a> | <a
+              id="hovertoggle" href="#">Show
+              Containers</a></span> -->
+      </p>
         <div id="workspace">
             {% for equation in equations %}
                 {{equation|safe}} 
             {% endfor %}
+        </div>
+        <div class="actions-bar wat-cf">
+                  <div class="actions">
+                    <button class="button" type="submit">
+                      <img src="/static/img/icons/cross.png" alt="Delete"> Delete
+                    </button>
+                  </div>
+                  <div id="cell_selection" class="pagination">
+                  </div>
         </div>
     </div>
   </div>

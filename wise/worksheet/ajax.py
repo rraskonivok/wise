@@ -564,6 +564,7 @@ def new_cell(request):
     new_eq = translate.parse_sexp('(Equation (LHS (Placeholder )) (RHS (Placeholder )))',uid)
 
     new_cell = PyCell([new_eq])
+    new_cell.index = cell_index + 1;
     cell_html = html(new_cell)
 
     return JsonResponse({'new_html': cell_html,

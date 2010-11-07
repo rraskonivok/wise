@@ -175,8 +175,12 @@ selection.add = function (obj) {
 }
 
 selection.del = function (key) {
-    delete this.objs[key]
     this.count -= 1;
+    if(this.count == 0) {
+        base_mode();
+    }
+
+    delete this.objs[key]
 }
 
 selection.get = function (key) {
@@ -360,7 +364,7 @@ function select_term(object) {
 
     if (clickedon.hasClass('selected')) {
         clickedon.removeClass('selected');
-        id = object.id;
+        id = object.cid;
 
         //TODO: Remove $.each
         $.each($("#selectionlist button"), function () {
@@ -1039,7 +1043,9 @@ function new_line(type) {
             console.log(new_cell);
 
             WORKSHEET.add(new_cell);
-            //CELL_INDEX = data.cell_index;
+            //CELL_INDEX = response.cell_index;
+
+
         }
 
         NAMESPACE_INDEX = data.namespace_index;
@@ -1073,6 +1079,12 @@ function new_cell() {
             CELL_INDEX = response.cell_index;
             NAMESPACE_INDEX = response.namespace_index;
             $('.equation button','#workspace').parent().buttonset();
+
+            li = $( document.createElement('a') );
+            li.html(CELL_INDEX);
+            li.addClass('current');
+
+            $('#cell_selection').append(li);
         }
     });
 }
