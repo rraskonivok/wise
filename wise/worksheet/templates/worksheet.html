@@ -137,6 +137,7 @@ Equations
     <ul class="wat-cf">
       <li class="active first"><a href="#block-text">Worksheet</a></li>
       <li><a href="javascript:new_cell()">New Cell</a></li>
+      <li><a href="javascript:new_line('eq')">New Equation</a></li>
       <li><a href="javascript:new_line('def')">New Definition</a></li>
       <li><a href="javascript:new_line('func')">New Function</a></li>
     </ul>
@@ -164,11 +165,6 @@ Equations
             {% endfor %}
         </div>
         <div class="actions-bar wat-cf">
-                  <div class="actions">
-                    <button class="button" type="submit">
-                      <img src="/static/img/icons/cross.png" alt="Delete"> Delete
-                    </button>
-                  </div>
                   <div id="cell_selection" class="pagination">
                   </div>
         </div>

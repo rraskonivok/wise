@@ -106,27 +106,33 @@ $.fn.group = function () {
 };
 
 $.fn.mathtype = function () {
-    return $(this).attr('math-type');
+    return this.node().get('type');
 };
 
 $.fn.is_placeholder = function() {
-    return $(this).attr('math-type') == 'Placeholder';
+    return this.mathtype() == 'Placeholder';
 }
 
 $.fn.is_definition = function() {
-    return $(this).attr('math-type') == 'Definition';
+    return this.mathtype() == 'Definition';
 }
 
 $.fn.is_assumption = function() {
-    return $(this).attr('math-type') == 'Assumption';
+    return this.type() == 'Assumption';
 }
 
 $.fn.is_toplevel = function() {
     return $(this).attr('toplevel') == 'true';
 }
 
+// Extract the id of an object and lookup 
 $.fn.node = function () {
-    return NODES.getByCid($(this).id())
+    var node = NODES.getByCid($(this).id())
+    if(!node) {
+        window.log($(this).id(),'not initalized in term db.');
+        return;
+    }
+    return node;
 };
 
 $.extend($.fn.disableTextSelect = function () {
@@ -562,11 +568,6 @@ function term_spacing(x, y) {
     }
 }
 
-function cleanup_ajax_scripts() {
-    //The ensures that any <script> tags inserted via ajax don't get executed more than once
-    $("script[data-type=ajax]").remove();
-}
-
 function debug_math() {
     //TODO: Remove $.each
     $.each($('[math]'), function () {
@@ -725,8 +726,6 @@ function apply_rule(rule, selections) {
         traverse_lines();
         resize_parentheses();
     }, "json");
-
-    cleanup_ajax_scripts();
 }
 
 function apply_def(def, selections) {
@@ -826,8 +825,6 @@ function apply_def(def, selections) {
         traverse_lines();
         resize_parentheses();
     }, "json");
-
-    cleanup_ajax_scripts();
 }
 
 
@@ -905,8 +902,6 @@ function use_infix(code) {
             traverse_lines();
             resize_parentheses();
         }});
-
-    cleanup_ajax_scripts();
 }
 
 function subs(obj) {
@@ -1014,15 +1009,15 @@ function apply_transform(transform, selections) {
             traverse_lines();
             resize_parentheses();
         }});
-
-    cleanup_ajax_scripts();
 }
 
 function new_line(type) {
-    data = {};
+    var data = {};
     data.namespace_index = NAMESPACE_INDEX;
     data.cell_index = CELL_INDEX;
     data.type = type;
+
+    var active_cell = 1;
 
     $.post("/cmds/new_line/", data, function (data) {
 
@@ -1033,25 +1028,23 @@ function new_line(type) {
         if (data.new_html) {
 
             new_cell_html = $(data.new_html);
-            $("#workspace").append(new_cell_html);
+            $("#cell" + active_cell + ' table').append(new_cell_html);
             $('.lines').show();
             mathjax_typeset(new_cell_html);
             traverse_lines();
 
             var eq = build_tree_from_json(data.new_json);
-            var new_cell = new Cell([eq]);
-            console.log(new_cell);
+            //var new_cell = new Cell([eq]);
+            //console.log(new_cell);
 
-            WORKSHEET.add(new_cell);
+            WORKSHEET.at(0).add(eq);
             //CELL_INDEX = response.cell_index;
-
 
         }
 
         NAMESPACE_INDEX = data.namespace_index;
         $('.equation button','#workspace').parent().buttonset();
     }, 'json')
-    cleanup_ajax_scripts();
 }
 
 function new_cell() {
@@ -1083,6 +1076,7 @@ function new_cell() {
             li = $( document.createElement('a') );
             li.html(CELL_INDEX);
             li.addClass('current');
+            li.attr('href','javascript:toggle_cell('+CELL_INDEX+')');
 
             $('#cell_selection').append(li);
         }

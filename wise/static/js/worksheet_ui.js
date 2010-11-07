@@ -66,3 +66,7 @@ function base_mode() {
     clear_selection();
     hide_tooltips();
 }
+
+function toggle_cell(index) {
+    $('#cell'+index).toggle();
+}

@@ -50,7 +50,6 @@ class Term(object):
 
     side = None # 0 if on LHS, 1 if on RHS
 
-
     #############################################################
     ######### Pure Translation ##################################
     #############################################################
@@ -110,10 +109,10 @@ class Term(object):
             'group': self.group
             })
 
-        if self.javascript:
-            return self.html.render(c) + self.get_javascript()
-        else:
-            return self.html.render(c)
+        #if self.javascript:
+        #    return self.html.render(c) + self.get_javascript()
+        #else:
+        return self.html.render(c)
 
     @property
     def math(self):

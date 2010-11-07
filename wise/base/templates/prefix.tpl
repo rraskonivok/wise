@@ -1,5 +1,5 @@
-<span id="{{id}}" math-meta-class="term" class="container {{class}}{{sensitive}}" math-meta-class="term"
-    <span class="operator" math-type="operator" math-meta-class="operator" group="{{id}}" title="{{type}}" >
+<span id="{{id}}" math-meta-class="term" class="container {{class}}{{sensitive}}" math-meta-class="term">
+    <span class="operator" math-type="operator" math-meta-class="operator" >
         $${{symbol}}$$
     </span>
 

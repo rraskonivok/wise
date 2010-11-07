@@ -535,7 +535,7 @@ def new_line(request):
         new = translate.parse_sexp('(Equation (LHS (Placeholder )) (RHS (Placeholder )))',uid)
     else:
         error('invalid type of inline')
-    newline_html = cellify(html(new),cell_index+1)
+    newline_html = html(new)
 
     return JsonResponse({'new_html': newline_html,
                          'new_json': json_flat(new),
