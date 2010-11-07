@@ -3,7 +3,7 @@ function init_keyboard_shortcuts() {
     $(document).bind( 'keydown', 'f4', function() {show_debug_menu()})
         .bind('keydown', 'del', function() {remove_element()})
         .bind('keydown', 'd', function() {remove_element()})
-        .bind('keydown', 'esc', function() {clear_selection()})
+        .bind('keydown', 'esc', function() {base_mode();})
         .bind('keydown', 'r', function() {refresh_jsmath()})
         .bind('keydown', 'w', function() {next_placeholder()})
         .bind('keydown', 'o', function() {new_line('eq')})

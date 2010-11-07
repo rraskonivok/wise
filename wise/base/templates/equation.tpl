@@ -14,6 +14,6 @@ tr#{{id}}.equation math-type="{{classname}}" toplevel="true"
         {{rhs}}
     td.guard 
         {{guard}}
-    td.annotation
+    td.annotation.last 
         div contenteditable=true
             {{annotation}}

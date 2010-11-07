@@ -1,4 +1,4 @@
-#{{id}}.{{class}}.container math-meta-class="term" math-type="{{type}}" math-meta-class="term"
+#{{id}}.{{class}}.container title="{{type}}" math-meta-class="term"
 
     {% if parenthesis %}
     <span class="ui-state-disabled pnths left">
@@ -19,5 +19,3 @@
         )
     </span>
     {% endif %}
-
-{{jscript}}

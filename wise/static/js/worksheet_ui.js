@@ -37,11 +37,32 @@ function toggle_cmdline() {
     cmd_visible = cmd_visible ^ 1;
 }
 
-function make_tooltips() {
-    $('[title]').qtip({ 
+active_tooltips = [];
+
+function make_tooltips(obj) {
+
+    if(!obj) {
+       obj = $('*[title]'); 
+    }
+
+    $(obj).qtip({ 
         style: { 
             name: 'cream', 
-            tip: true 
+            tip: true,
         }, 
+        hide: { when: { event: 'inactive' }, delay: 1000 }
     });
+    active_tooltips.push($(obj).qtip);
+}
+
+function hide_tooltips() {
+    $('[qtip]').hide();
+}
+
+// Set the interface from quasimode into base mode.
+function base_mode() {
+    $('#quasimode-indicator').fadeTo('fast',0.1);
+    $('#basemode-indicator').fadeTo('fast',1);
+    clear_selection();
+    hide_tooltips();
 }

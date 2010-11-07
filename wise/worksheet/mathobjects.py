@@ -18,10 +18,24 @@ from pure_wrap import generate_pure_objects
 # Pure Wrapper
 #-------------------------------------------------------------
 
-from wise.base.objects import *
-from wise.logic.objects import *
-from wise.calculus.objects import *
+ROOT_MODULE = 'wise'
 
+for pack in settings.INSTALLED_MATH_PACKAGES:
+    #path = '.'.join([ROOT_MODULE,pack,'objects'])
+    #mod = __import__(str(path),globals(),locals())
+    #for k in dir(mod):
+    #    print mod.__dict__[k]
+    #    globals()[k] = mod.__dict__[k]
+
+    # I give up
+    exec('from %s.%s.objects import *' % (ROOT_MODULE,pack))
+
+# Specific keywords strategically inserted by the parser to to
+# map atomic objects into their appropriate types even though
+# they don't have a sexp head. It reduces the load on Pure
+# when doing infix translation to just leave -2 in place instead
+# of having (Neg x) or (Numeric 3.14) so instead we just leave it
+# as 3.14 and -x and have Python does some quick type checking
 translation_table = {'num':Numeric,'var':Variable,'-':Negate}
 
 def generate_translation(root):

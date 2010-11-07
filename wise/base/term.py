@@ -161,9 +161,6 @@ class Term(object):
         for term in self.terms:
             term.group = self.id
 
-    def negate(self):
-        return Negate(self)
-
     @property
     def classname(self):
         return self.__class__.__name__

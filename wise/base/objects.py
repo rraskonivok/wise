@@ -9,6 +9,7 @@
 # License, or (at your option) any later version.
 
 # Import the base term class, that all non-relational terms inherit from
+from wise.base.cell import Cell
 from wise.base.term import Term
 
 from math import modf

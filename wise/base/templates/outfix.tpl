@@ -1,4 +1,4 @@
-    <span id="{{id}}" math-meta-class="term" class="container {{class}}{{sensitive}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
+    <span id="{{id}}" math-meta-class="term" class="container {{class}}{{sensitive}}" title="{{type}}" math-meta-class="term" 
 
     {{symbol1}}
 

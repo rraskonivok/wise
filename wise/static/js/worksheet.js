@@ -308,7 +308,7 @@ function select_parent(clear) {
     }
 
     if(clear) {
-        clear_selection();
+        base_mode();
     }
 
     select_term(get_parent(start));
@@ -318,7 +318,7 @@ function select_root(clear) {
     var start = selection.last().node();
 
     if(clear) {
-        clear_selection();
+        base_mode();
     }
 
     select_term(get_root(start));
@@ -328,7 +328,7 @@ function select_left_root(clear) {
     var start = selection.last().node();
 
     if(clear) {
-        clear_selection();
+        base_mode();
     }
 
     select_term(get_lhs(start)); 
@@ -338,13 +338,18 @@ function select_right_root(clear) {
     var start = selection.last().node();
 
     if(clear) {
-        clear_selection();
+        base_mode();
     }
 
     select_term(get_rhs(start)); 
 }
 
 function select_term(object) {
+
+    hide_tooltips();
+
+    $('#quasimode-indicator').fadeTo('fast',1);
+    $('#basemode-indicator').fadeTo('fast',0.01);
 
     var clickedon = $('#' + object.cid);
 
@@ -655,7 +660,7 @@ function apply_rule(rule, selections) {
 
         if (response.error) {
             error(data.error);
-            clear_selection();
+            base_mode();
             return;
         }
 
@@ -712,7 +717,7 @@ function apply_rule(rule, selections) {
             }
         }
 
-        clear_selection();
+        base_mode();
         traverse_lines();
         resize_parentheses();
     }, "json");
@@ -755,7 +760,7 @@ function apply_def(def, selections) {
 
         if (data.error) {
             error(data.error);
-            clear_selection();
+            base_mode();
             return;
         }
 
@@ -813,7 +818,7 @@ function apply_def(def, selections) {
 
         NAMESPACE_INDEX = data.namespace_index;
 
-        clear_selection();
+        base_mode();
         traverse_lines();
         resize_parentheses();
     }, "json");
@@ -846,7 +851,7 @@ function use_infix(code) {
 
             if (data.error) {
                 error(data.error);
-                clear_selection();
+                base_mode();
                 return;
             }
 
@@ -892,7 +897,7 @@ function use_infix(code) {
 
             NAMESPACE_INDEX = data.namespace_index;
 
-            clear_selection();
+            base_mode();
             traverse_lines();
             resize_parentheses();
         }});
@@ -956,7 +961,7 @@ function apply_transform(transform, selections) {
 
             if (response.error) {
                 error(response.error);
-                clear_selection();
+                base_mode();
                 return
             }
 
@@ -1001,7 +1006,7 @@ function apply_transform(transform, selections) {
 
             NAMESPACE_INDEX = response.namespace_index;
 
-            clear_selection();
+            base_mode();
             traverse_lines();
             resize_parentheses();
         }});
@@ -1081,18 +1086,7 @@ function save_workspace() {
 function traverse_lines() {
     // jQuery tooltip croaks if we apply $.tooltip multiple times
     // so we just ignore elements that we've already initiated
-    untooltiped = _.reject($('[math-type]','#workspace'), function(obj){ return obj.tooltipText });
-
-    //function make_tooltip(obj) {
-    //    $(obj).tooltip({
-    //        track:true,
-    //        bodyHandler: $(this).attr('math-type'),
-    //        fade: 250,
-    //        delay: 1000,
-    //    });
-    //}
-
-    //_.each(untooltiped, make_tooltip);
+//    untooltiped = _.reject($('[math-type]','#workspace'), function(obj){ return obj.tooltipText });
 
     unselectable = _.reject($('[math-meta-class=term]','#workspace'), function(obj){ return obj.selectable });
     
@@ -1114,6 +1108,8 @@ function traverse_lines() {
     _.each(unselectable, make_selectable);
 
     resize_parentheses();
+
+    //_.map($('span[title]'),make_tooltips);
 }
 
 ///////////////////////////////////////////////////////////
@@ -1286,7 +1282,7 @@ function next_placeholder(start) {
 
 
     if ($(last).attr('id') == $(start).attr('id')) {
-        clear_selection()
+        base_mode();
         select_term(first)
         return
     }
@@ -1297,15 +1293,14 @@ function next_placeholder(start) {
     for (i = 0; i <= placeholders.length; i++) {
         if ($(placeholders[i]).attr('id') == $(start).attr('id')) {
             if (i === placeholders.length) {
-                clear_selection()
                 select_term($(placeholders[1]))
             }
             else {
-                clear_selection()
                 select_term($(placeholders[i + 1]))
             }
         }
     }
+    base_mode();
 }
 
 function remove_element() {
@@ -1314,7 +1309,7 @@ function remove_element() {
     if (placeholder.node().get('depth') == 1 && selection.__lst.length == 1) {
         NODES.getByCid(placeholder.id()).delNode();
         placeholder.remove()
-        clear_selection()
+        clear()
         return;
     } else {
         apply_transform('base/Delete', [placeholder]);

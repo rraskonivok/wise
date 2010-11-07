@@ -28,7 +28,8 @@ for pack in settings.INSTALLED_MATH_PACKAGES:
             # isinstance is potentially costly
             if is_mapping(symbol) and isinstance(symbol,FunctionType):
                 if settings.DEBUG:
-                    print "Importing transform ... %s/%s" % (pack, name)
+                    pass
+                    #print "Importing transform ... %s/%s" % (pack, name)
 
                 transforms[name] = symbol
     except ImportError:

@@ -112,18 +112,6 @@ Init Function + Global Vars
     
         bind_hover_toggle();
 
-        $('[title]').qtip({ 
-            style: { 
-                name: 'cream', 
-                tip: true 
-            }, 
-
-            hide: { when: { event: 'mousemove' }, 
-                delay: 2000, 
-                effect: function() { $(this).qtip("destroy"); }
-            }
-
-        });
     }
 </script>
 {% endblock %}
@@ -154,6 +142,13 @@ Equations
     </ul>
   </div>
   <div class="content">
+    <img id="quasimode-indicator" style="float: right; opacity: 0.1"
+    src="/static/img/icons/bullet_red.png" 
+    title="You are in BASE mode, clicking will not have any side-effects."/>
+
+    <img id="basemode-indicator" style="float: right" src="/static/img/icons/bullet_green.png" 
+    title="You are in ACTION mode, clicking may have side-effects."/>
+
     <h2 class="title">{{title|title}}</h2>
     <div class="inner">
       <hr />
