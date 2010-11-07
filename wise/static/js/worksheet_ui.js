@@ -37,3 +37,11 @@ function toggle_cmdline() {
     cmd_visible = cmd_visible ^ 1;
 }
 
+function make_tooltips() {
+    $('[title]').qtip({ 
+        style: { 
+            name: 'cream', 
+            tip: true 
+        }, 
+    });
+}

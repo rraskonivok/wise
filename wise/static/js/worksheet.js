@@ -784,6 +784,7 @@ function apply_def(def, selections) {
 
                 //changed this
                 toplevel = (data.new_json[i][0].toplevel)
+
                 if (toplevel) {
                     build_tree_from_json(data.new_json[i])
 
@@ -874,7 +875,8 @@ function use_infix(code) {
                     //console.log("Deleting - at some point in the future");
                 }
                 else {
-                    toplevel = (data.new_json[i][0].type)
+                    toplevel = (data.new_json[i][0].toplevel)
+
                     if (toplevel == 'Definition' | toplevel == 'Equation') {
                         build_tree_from_json(data.new_json[i])
                         merge_json_to_tree(NODES.getByCid(obj.id()),data.new_json[i]);
