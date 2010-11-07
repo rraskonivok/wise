@@ -27,6 +27,8 @@ from wise.worksheet.utils import *
 from wise.worksheet.models import Workspace, MathematicalEquation, Cell, Symbol, Function, Rule, RuleSet
 import wise.worksheet.exceptions as exception
 
+from wise.base.cell import Cell as PyCell
+
 CACHE_INTERVAL = 30*60 # 5 Minutes
 
 def query_property(request):
@@ -537,5 +539,34 @@ def new_line(request):
 
     return JsonResponse({'new_html': newline_html,
                          'new_json': json_flat(new),
+                         'namespace_index': uid.next()[3:],
+                         'cell_index': cell_index + 1})
+
+@errors
+def new_cell(request):
+    namespace_index = request.POST.get('namespace_index')
+    cell_index = request.POST.get('cell_index')
+
+    # Map into indices if given, otherwise assume 0
+    if not namespace_index:
+        namespace_index = 0
+    else:
+        namespace_index = int(namespace_index)
+
+    if not cell_index:
+        cell_index = 0
+    else:
+        cell_index = int(cell_index)
+
+    # Create a new uid generator
+    uid = uidgen(namespace_index)
+
+    new_eq = translate.parse_sexp('(Equation (LHS (Placeholder )) (RHS (Placeholder )))',uid)
+
+    new_cell = PyCell([new_eq])
+    cell_html = html(new_cell)
+
+    return JsonResponse({'new_html': cell_html,
+                         'new_json': json_flat(new_cell),
                          'namespace_index': uid.next()[3:],
                          'cell_index': cell_index + 1})

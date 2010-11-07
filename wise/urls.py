@@ -26,6 +26,7 @@ urlpatterns = patterns('',
 
      #Worksheet Commands
      (r'^cmds/new_line/$', 'wise.worksheet.ajax.new_line'),
+     (r'^cmds/new_cell/$', 'wise.worksheet.ajax.new_cell'),
      (r'^cmds/receive/$', 'wise.worksheet.ajax.receive'),
      (r'^cmds/remove/$', 'wise.worksheet.ajax.remove'),
 
