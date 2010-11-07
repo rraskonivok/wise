@@ -44,6 +44,15 @@ function RootedTree(root) {
     this.levels[0] = [root];
 }
 
+function build_cell_from_json(json_input) {
+    var cell = _.first(json_input);
+    var eqs_json = _.rest(json_input);
+    var top_node = build_tree_from_json(eqs_json);
+    var new_cell = new Cell([top_node]);
+
+    return new_cell;
+}
+
 function build_tree_from_json(json_input) {
     //Build an expression from the output of the python function json_flat
     var T;

@@ -1048,6 +1048,35 @@ function new_line(type) {
     cleanup_ajax_scripts();
 }
 
+function new_cell() {
+    data = {};
+    data.namespace_index = NAMESPACE_INDEX;
+    data.cell_index = CELL_INDEX;
+
+    $.post("/cmds/new_cell/", data, function (response) {
+
+        if (response.error) {
+            error(response.error);
+        }
+
+        if (response.new_html) {
+
+            new_cell_html = $(response.new_html);
+            $("#workspace").append(new_cell_html);
+            mathjax_typeset(new_cell_html);
+            traverse_lines();
+
+            var new_cell = build_cell_from_json(response.new_json);
+            console.log(new_cell);
+
+            WORKSHEET.add(new_cell);
+            CELL_INDEX = response.cell_index;
+            NAMESPACE_INDEX = response.namespace_index;
+            $('.equation button','#workspace').parent().buttonset();
+        }
+    });
+}
+
 function save_workspace() {
     data = {};
     i = 0;
