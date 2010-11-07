@@ -659,6 +659,8 @@ function apply_rule(rule, selections) {
             return;
         }
 
+        NAMESPACE_INDEX = response.namespace_index;
+
         //Iterate over the elements in the image of the
         //transformation, attempt to map them 1:1 with the
         //elements in the domain. Elements mapped to 'null'
@@ -675,41 +677,40 @@ function apply_rule(rule, selections) {
                 obj.remove();
             }
             else if (response.new_html[i] == 'pass') {
-                //onsole.log("Doing nothing");
+                //console.log("Doing nothing");
             }
             else if (response.new_html[i] == 'delete') {
                 //console.log("Deleting - at some point in the future");
             }
             else {
-                toplevel = (response.new_json[i][0].type)
-                if (toplevel == 'Definition' | toplevel == 'Equation') {
-                    build_tree_from_json(response.new_json[i])
+                toplevel = (response.new_json[i][0].toplevel)
+
+                if (toplevel) {
+
                     merge_json_to_tree(
                         NODES.getByCid(obj.id()),
                         response.new_json[i],
                         data.rule
                     );
 
-                    console.log(data.rule);
-
                     nsym = obj.replace(response.new_html[i]).hide();
                     mathjax_typeset($(nsym));
                     nsym.fadeIn('slow');
                     $('.equation button','#workspace').parent().buttonset();
                 } else {
+
                     merge_json_to_tree(
                         NODES.getByCid(obj.id()), 
                         response.new_json[i],
                         data.rule
                     );
+
                     nsym = obj.replace(response.new_html[i]).hide();
                     mathjax_typeset($(nsym));
                     nsym.fadeIn('slow');
                 }
             }
         }
-
-        NAMESPACE_INDEX = response.namespace_index;
 
         clear_selection();
         traverse_lines();

@@ -49,8 +49,7 @@ function build_tree_from_json(json_input) {
     var T;
 
     //Lookup table which establishes a correspondance between the DOM
-    //ids (i.e. uid314 ) and the Node objects in the expression tree.
-    //Create a hash table: { 'uid3': Node of uid3 }
+    //ids (i.e. cidd314 ) and the Node objects in the expression tree.
 
     for (var term in json_input) {
         term = json_input[term];
@@ -60,7 +59,7 @@ function build_tree_from_json(json_input) {
             type:     term.type,
             toplevel: term.toplevel,
             args:     term.args,
-//            id:       term.sid
+            id:       term.sid
         });
 
         node.cid = term.id;
@@ -69,9 +68,10 @@ function build_tree_from_json(json_input) {
             node.index = 0;
         }
 
-//        node.dom = $('#' + node.id,"#workspace");
-
-        NODES.add(node);
+        console.log(node.cid);
+        if(!NODES.getByCid(node.cid)){
+            NODES.add(node);
+        }
     }
 
     //Iterate through the children and lookup their corresponding
@@ -97,6 +97,7 @@ function build_tree_from_json(json_input) {
 //Graft a tree onto a node.
 function merge_json_to_tree(old_node, json_input, transformation) {
     var newtree = build_tree_from_json(json_input);
+
     if (!old_node) {
         //error('Could not attach branch');
         return;
