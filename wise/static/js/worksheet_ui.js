@@ -68,9 +68,3 @@ function base_mode() {
 }
 
 active_cells = {};
-
-function toggle_cell(index) {
-    active_cells[index] ^= 1;
-    $('#cell'+index).toggleFade();
-    $('#cell_selection a[data-index='+index+']').toggleClass('active');
-}

@@ -1074,23 +1074,28 @@ function new_cell() {
             traverse_lines();
 
             var new_cell = build_cell_from_json(response.new_json);
-            console.log(new_cell);
+            new_cell_html.attr('id',new_cell.cid);
 
             WORKSHEET.add(new_cell);
             CELL_INDEX = response.cell_index;
             NAMESPACE_INDEX = response.namespace_index;
             $('.equation button','#workspace').parent().buttonset();
 
-            li = $( document.createElement('a') );
-            li.html(CELL_INDEX);
-            li.addClass('current');
-            li.attr('href','javascript:toggle_cell('+CELL_INDEX+')');
-            li.attr('data-index',CELL_INDEX);
-            li.addClass('active');
+            //li = $( document.createElement('a') );
+            //li.html(CELL_INDEX);
+            //li.addClass('current');
+            //li.attr('href','javascript:toggle_cell('+CELL_INDEX+')');
+            //li.attr('data-index',CELL_INDEX);
+            //li.addClass('active');
+
+            var cs = new CellSelection({
+                model: new_cell,
+            });
+            cs.render();
 
             active_cells[CELL_INDEX] = 1;
 
-            $('#cell_selection').append(li);
+            $('#cell_selection').append(cs.el);
         }
     });
 }
@@ -1283,6 +1288,10 @@ function toggle_confluence(obj) {
 }
 
 function mathjax_typeset(element) {
+    //if(DISABLE_TYPESETTING) {
+    //    return;
+    //}
+
     //Refresh math for a specific element
     if (element) {
         MathJax.Hub.Queue(["Typeset",MathJax.Hub,element[0]]);
