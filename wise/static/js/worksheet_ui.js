@@ -67,6 +67,10 @@ function base_mode() {
     hide_tooltips();
 }
 
+active_cells = {};
+
 function toggle_cell(index) {
-    $('#cell'+index).toggle();
+    active_cells[index] ^= 1;
+    $('#cell'+index).toggleFade();
+    $('#cell_selection a[data-index='+index+']').toggleClass('active');
 }

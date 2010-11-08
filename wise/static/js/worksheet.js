@@ -125,6 +125,14 @@ $.fn.is_toplevel = function() {
     return $(this).attr('toplevel') == 'true';
 }
 
+$.fn.toggleFade = function(settings) {
+  	return this.each(function()
+  	{
+  	  var isHidden = jQuery(this).is(":hidden");
+      jQuery(this)[ isHidden ? "fadeIn" : "fadeOut" ]( isHidden ? 'fast' : 'fast');
+    });
+};
+
 // Extract the id of an object and lookup 
 $.fn.node = function () {
     var node = NODES.getByCid($(this).id())
@@ -1077,6 +1085,10 @@ function new_cell() {
             li.html(CELL_INDEX);
             li.addClass('current');
             li.attr('href','javascript:toggle_cell('+CELL_INDEX+')');
+            li.attr('data-index',CELL_INDEX);
+            li.addClass('active');
+
+            active_cells[CELL_INDEX] = 1;
 
             $('#cell_selection').append(li);
         }

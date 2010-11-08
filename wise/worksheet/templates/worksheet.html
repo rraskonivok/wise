@@ -143,13 +143,8 @@ Equations
     </ul>
   </div>
   <div class="content">
-    <img id="quasimode-indicator" style="float: right; opacity: 0.1"
-    src="/static/img/icons/bullet_red.png" 
-    title="You are in BASE mode, clicking will not have any side-effects."/>
 
-    <img id="basemode-indicator" style="float: right" src="/static/img/icons/bullet_green.png" 
-    title="You are in ACTION mode, clicking may have side-effects."/>
-
+    <div id="cell_selection" class="pagination"></div>
     <h2 class="title">{{title|title}}</h2>
     <div class="inner">
       <hr />
@@ -164,10 +159,13 @@ Equations
                 {{equation|safe}} 
             {% endfor %}
         </div>
-        <div class="actions-bar wat-cf">
-                  <div id="cell_selection" class="pagination">
-                  </div>
-        </div>
+        <!-- State indicators -->
+        <img id="quasimode-indicator" style="float: right; opacity: 0.1"
+        src="/static/img/icons/bullet_red.png" 
+        title="You are in BASE mode, clicking will not have any side-effects."/>
+
+        <img id="basemode-indicator" style="float: right" src="/static/img/icons/bullet_green.png" 
+        title="You are in ACTION mode, clicking may have side-effects."/>
     </div>
   </div>
 </div>

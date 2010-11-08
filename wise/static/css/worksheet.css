@@ -98,6 +98,17 @@ html {
     margin: -5px !important;
 }
 
+#cell_selection {
+    margin: 10px 0px 5px;
+    padding: 5px 5px 5px 15px;
+    float: right;
+}
+
+.pagination .active {
+    background-color: #576C82;
+    color: white;
+}
+
 /* Applied to containers when we expand them */
 .preselect {
     border: 5px solid #d4a5a5;
