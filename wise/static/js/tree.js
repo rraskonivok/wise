@@ -77,7 +77,6 @@ function build_tree_from_json(json_input) {
             node.index = 0;
         }
 
-        console.log(node.cid);
         if(!NODES.getByCid(node.cid)){
             NODES.add(node);
         }
@@ -162,6 +161,10 @@ var Node = Backbone.Model.extend({
         this.children = [];
         this._parent = null;
     },
+
+    dom: function() {
+        return $('#'+this.cid);
+    }
 
 });
 
@@ -254,4 +257,15 @@ Expression.prototype.math = function() {
 function sexp(head, args) {
     // Builds an array of the form (head arg[1] arg[2] ...)
     return _.flatten(['(', head, args, ')']);
+}
+
+function garbage_collect() {
+    // This is sort of expensive since it involves #(NODES.length)
+    // of jquery lookups, don't call it much.
+    NODES.each( function(node) {
+        if(!node.dom()) {
+            window.log('Garbage collecting',node.cid);
+            NODES.del(node);
+        }
+    });
 }

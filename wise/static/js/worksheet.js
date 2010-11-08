@@ -56,11 +56,14 @@ window.log = function(){
 
 // TODO: Just for debugging
 function showmath() {
-   return NODES.getByCid(selection.nth(0).cid()).smath();
+   return selection.at(0).smath();
 }
 
 function shownode() {
-   return NODES.getByCid(selection.nth(0).cid());
+    if(selection.isEmpty()) {
+        window.log('Select something stupid!');
+    }
+    return selection.at(0);
 }
 
 $.fn.exists = function () {
@@ -183,72 +186,73 @@ selection.__lst = [];
 //end of the hash table while Chromium presorts them. This is an
 //issue since we need them to be ordered for when we build __lst.
 //Fix this at some point.
-selection.add = function (obj) {
-    this.objs[obj.id()] = obj;
-    this.count += 1;
-}
+//selection.add = function (obj) {
+//    this.objs[obj.id()] = obj;
+//    this.count += 1;
+//}
 
-selection.del = function (key) {
-    this.count -= 1;
-    if(this.count == 0) {
-        base_mode();
-    }
+//selection.del = function (key) {
+//    this.count -= 1;
+//    if(this.count == 0) {
+//        base_mode();
+//    }
+//
+//    delete this.objs[key]
+//}
 
-    delete this.objs[key]
-}
+//selection.get = function (key) {
+//    return this.objs[key];
+//}
 
-selection.get = function (key) {
-    return this.objs[key];
-}
-
-selection.list = function () {
-    var lst = [];
-    for (i in this.objs) {
-        lst.push(this.objs[i]);
-    }
-    this.__lst = lst;
-    return lst;
-}
+//selection.list = function () {
+//    var lst = [];
+//    for (i in this.objs) {
+//        lst.push(this.objs[i]);
+//    }
+//    this.__lst = lst;
+//    return lst;
+//}
 
 //Return a list of the given attribute of the elements
 //Ex: selection.list_attr('math')
-selection.list_attr = function (prop) {
-    var lst = [];
-    for (i in this.objs) {
-        lst.push(this.objs[i].attr(prop));
-    }
-    return lst;
-}
 
-selection.nth = function (n) {
-    if (this.__lst.length == 0) {
-        this.list();
-    }
-    this.list();
-    var nth = this.__lst[n];
+//selection.list_attr = function (prop) {
+//    var lst = [];
+//    for (i in this.objs) {
+//        lst.push(this.objs[i].attr(prop));
+//    }
+//    return lst;
+//}
 
-    //We do this so that selection.nth(0).exists will return
-    //false if the value is not in the array
-    if (nth == undefined) {
-        return $();
-    } else {
-        return nth;
-    }
-}
+//selection.nth = function (n) {
+//    if (this.__lst.length == 0) {
+//        this.list();
+//    }
+//    this.list();
+//    var nth = this.__lst[n];
+//
+//    //We do this so that selection.nth(0).exists will return
+//    //false if the value is not in the array
+//    if (nth == undefined) {
+//        return $();
+//    } else {
+//        return nth;
+//    }
+//}
 
-selection.clear = function () {
-    this.objs = {};
-    this.__lst = [];
-    this.count = 0;
-}
-
-selection.first = function() {
-    return _.first(this.__lst);
-}
-
-selection.last = function() {
-    return _.last(this.__lst);
-}
+//selection.clear = function () {
+//    this.objs = {};
+//    this.__lst = [];
+//    this.count = 0;
+//}
+//
+//selection.first = function() {
+//    return _.first(this.__lst);
+//}
+//
+//selection.last = function() {
+//    return _.last(this.__lst);
+//}
 
 function clear_selection() {
     // Clear the selection indicator bar
@@ -282,7 +286,7 @@ function get_rhs(node) {
 }
 
 function add_shift() {
-    var start = selection.nth(0).node();
+    var start = selection.get(0);
 
     select_root(start);
     select_term(start);
@@ -291,7 +295,7 @@ function add_shift() {
 }
 
 function sub_shift() {
-    var start = selection.nth(0).node();
+    var start = selection.nth(0);
 
     select_root(start);
     select_term(start);
@@ -300,7 +304,7 @@ function sub_shift() {
 }
 
 function mul_shift() {
-    var start = selection.nth(0).node();
+    var start = selection.nth(0);
 
     select_root(start);
     select_term(start);
@@ -309,7 +313,7 @@ function mul_shift() {
 }
 
 function div_shift() {
-    var start = selection.nth(0).node();
+    var start = selection.nth(0);
 
     select_root(start);
     select_term(start);
@@ -319,7 +323,7 @@ function div_shift() {
 
 //Select the toplevel element
 function select_parent(clear) {
-    var start = selection.last().node();
+    var start = selection.last();
     
     if(start.toplevel) {
         return;
@@ -333,7 +337,7 @@ function select_parent(clear) {
 }
 
 function select_root(clear) {
-    var start = selection.last().node();
+    var start = selection.last();
 
     if(clear) {
         base_mode();
@@ -343,7 +347,7 @@ function select_root(clear) {
 }
 
 function select_left_root(clear) {
-    var start = selection.last().node();
+    var start = selection.last();
 
     if(clear) {
         base_mode();
@@ -353,7 +357,7 @@ function select_left_root(clear) {
 }
 
 function select_right_root(clear) {
-    var start = selection.last().node();
+    var start = selection.last();
 
     if(clear) {
         base_mode();
@@ -387,7 +391,7 @@ function select_term(object) {
             }
         });
 
-        selection.del(id)
+        selection.remove(id)
     } else {
         clickedon.addClass('selected');
         typ = object.get('type');
@@ -403,16 +407,14 @@ function select_term(object) {
         li.prepend(cancel)
         index = clickedon.attr('id')
 
-        selection.add(clickedon);
+        selection.add(object);
 
         li.attr('index', index)
 
         cancel.attr('index', index)
 
         li.bind('mouseover', function () {
-            index = $(this).attr('index')
-            obj = selection.get(index)
-            obj.css('background', '#DD9090');
+            object.dom().css('background', '#DD9090');
         });
 
         li.bind('mouseout', function () {
@@ -422,13 +424,10 @@ function select_term(object) {
         });
 
         li.bind('click', function () {
-            index = $(this).attr('index')
+            object.dom().removeClass('selected');
+            object.dom().css('background', 'inherit');
 
-            obj = selection.get(index)
-            obj.removeClass('selected');
-            obj.css('background', 'inherit');
-
-            selection.del(index)
+            selection.remove(object);
 
             $(this).remove()
             format_selection()
@@ -443,7 +442,7 @@ function select_term(object) {
         placeholder_substitute();
     }
 
-    if (selection.nth(0).is_definition()) {
+    if (selection.first().get('type') == 'Definition') {
         definition_apply();
     }
 }
@@ -651,20 +650,24 @@ function apply_rule(rule, selections) {
     data.rule = rule;
     data.namespace_index = NAMESPACE_INDEX;
 
-    if (selections == null) {
+    // If nodes are not explicitely passed then use 
+    // the workspace's current selection
+    if (!selections) {
         //Fetch the math for each of the selections
-        if(selection.count == 0) {
+        if(selection.isEmpty()) {
             error("Selection is empty.");
             return;
         }
-        data.selections = _.invoke(selection.list(),'math');
 
-        if(data.selections.length == 1) {
-            selection.nth(0).queue(function() {
-               $(this).fadeTo('slow',0.1);
-               $(this).dequeue();
-            });
-        }
+        // Get the sexp for each the selected nodes
+        data.selections = selection.sexps();
+
+        //if(data.selections.length == 1) {
+        //    selection.nth(0).queue(function() {
+        //       $(this).fadeTo('slow',0.1);
+        //       $(this).dequeue();
+        //    });
+        //}
     } else {
         data.selections = selections;
     }
@@ -684,12 +687,12 @@ function apply_rule(rule, selections) {
         //elements in the domain. Elements mapped to 'null'
         //are deleted.
         for (var i = 0; i < response.new_html.length; i++) {
-            obj = selection.nth(i);
+            obj = selection.at(i);
 
-            obj.queue(function() {
-               $(this).fadeTo('slow',1);
-               $(this).dequeue();
-            });
+            //obj.queue(function() {
+            //   $(this).fadeTo('slow',1);
+            //   $(this).dequeue();
+            //});
 
             if (response.new_html[i] == null) {
                 obj.remove();
@@ -706,24 +709,26 @@ function apply_rule(rule, selections) {
                 if (toplevel) {
 
                     merge_json_to_tree(
-                        NODES.getByCid(obj.id()),
+                        NODES.getByCid(obj.cid),
                         response.new_json[i],
                         data.rule
                     );
 
-                    nsym = obj.replace(response.new_html[i]).hide();
+                    nsym = obj.dom().replace(response.new_html[i]).hide();
                     mathjax_typeset($(nsym));
                     nsym.fadeIn('slow');
                     $('.equation button','#workspace').parent().buttonset();
                 } else {
 
                     merge_json_to_tree(
-                        NODES.getByCid(obj.id()), 
+                        NODES.getByCid(obj.cid), 
                         response.new_json[i],
                         data.rule
                     );
 
-                    nsym = obj.replace(response.new_html[i]).hide();
+                    console.log(obj);
+
+                    nsym = obj.dom().replace(response.new_html[i]).hide();
                     mathjax_typeset($(nsym));
                     nsym.fadeIn('slow');
                 }
@@ -844,7 +849,7 @@ function use_infix(code) {
         return;
     }
 
-    selections = selection.list();
+    selections = selection.toArray();
 
     postdata = {};
     postdata.namespace_index = NAMESPACE_INDEX;
@@ -891,14 +896,17 @@ function use_infix(code) {
                 else {
                     toplevel = (data.new_json[i][0].toplevel)
 
-                    if (toplevel == 'Definition' | toplevel == 'Equation') {
+                    if (toplevel) {
+                        if(!obj.toplevel) {
+                            error('Cannot replace toplevel node with non-toplevel node');
+                        }
                         build_tree_from_json(data.new_json[i])
-                        merge_json_to_tree(NODES.getByCid(obj.id()),data.new_json[i]);
-                        nsym = obj.replace(data.new_html[i]);
+                        merge_json_to_tree(NODES.getByCid(obj.cid),data.new_json[i]);
+                        nsym = obj.dom().replace(data.new_html[i]);
                         mathjax_typeset($(nsym))
                     } else {
-                        merge_json_to_tree(NODES.getByCid(obj.id()), data.new_json[i]);
-                        nsym = obj.replace(data.new_html[i]);
+                        merge_json_to_tree(NODES.getByCid(obj.cid), data.new_json[i]);
+                        nsym = obj.dom().replace(data.new_html[i]);
                         mathjax_typeset($(nsym));
                     }
                 }
@@ -913,34 +921,34 @@ function use_infix(code) {
 }
 
 function subs(obj) {
-    if(selection.count > 0) {
+    if(selection.length > 0) {
         apply_transform('base/PlaceholderSubstitute',[selection.nth(0), obj]);
     } else {
         error('Select an object to substitute into.');
     }
 }
 
-function apply_transform(transform, selections) {
-    var data = {};
-    data.transform = transform;
-    data.namespace_index = NAMESPACE_INDEX;
+function apply_transform(transform, operands) {
+    var postdata = {};
+    postdata.transform = transform;
+    postdata.namespace_index = NAMESPACE_INDEX;
 
-    if(selections.length == 1) {
-        selections[0].fadeOut();
-    }
+    //if(operands.length == 1) {
+    //    selections[0].fadeOut();
+    //}
 
-    if (selections == null) {
+    if (!operands) {
         //Fetch the math for each of the selections
-        if(selection.count == 0) {
+        if(selection.isEmpty()) {
             error("No selection to apply transform to");
             return;
         }
-        selections = selections.list();
-        data.selections = selection.list_attr('math')
+        // Get the sexps of the selected nodes
+        postdata.selections = selection.sexps();
     }
     else {
-        //data.selections = _.invoke(selections,'math');
-        data.selections = _.map(selections, 
+        //TODO: change data.selections -> data.operands
+        postdata.selections = _.map(operands, 
             function(obj) { 
                 if(obj.constructor == String) {
                     return obj
@@ -950,8 +958,6 @@ function apply_transform(transform, selections) {
             }
         );
     }
-
-    postdata = data;
 
     ajaxqueue.add({
         type: 'POST',
@@ -977,7 +983,7 @@ function apply_transform(transform, selections) {
             //elements in the domain. Elements mapped to 'null'
             //are deleted.
             for (var i = 0; i < response.new_html.length; i++) {
-                obj = selections[i];
+                obj = selections;
 
                 if (response.new_html[i] == null) {
                     obj.remove();
@@ -1156,8 +1162,8 @@ function traverse_lines() {
 
     _.each(unselectable, make_selectable);
 
-    unselectable = _.reject($('[math-meta-class=term]:not(.placeholder)','#math_palette'), function(obj){ return obj.selectable });
-    _.each(unselectable, make_selectable);
+    //unselectable = _.reject($('[math-meta-class=term]:not(.placeholder)','#math_palette'), function(obj){ return obj.selectable });
+    //_.each(unselectable, make_selectable);
 
     resize_parentheses();
 
