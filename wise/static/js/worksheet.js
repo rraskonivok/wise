@@ -177,9 +177,6 @@ function sleep(milliseconds) {
 
 // Out global selection container
 var selection = {};
-selection.count = 0;
-selection.objs = {};
-selection.__lst = [];
 
 //For future reference Chromium and Firefox handle insertion by
 //differently. Firefox (sanely) just pushes new elements at the
@@ -373,7 +370,7 @@ function select_term(object) {
     $('#quasimode-indicator').fadeTo('fast',1);
     $('#basemode-indicator').fadeTo('fast',0.01);
 
-    var clickedon = $('#' + object.cid);
+    var clickedon = object.dom();
 
     if(clickedon.length == 0) {
         console.log('DOM correspondance not found.');
@@ -391,7 +388,7 @@ function select_term(object) {
             }
         });
 
-        selection.remove(id)
+        selection.remove(object)
     } else {
         clickedon.addClass('selected');
         typ = object.get('type');
@@ -418,9 +415,7 @@ function select_term(object) {
         });
 
         li.bind('mouseout', function () {
-            index = $(this).attr('index')
-            obj = selection.get(index)
-            obj.css('background', 'inherit');
+            object.dom().css('background', 'inherit');
         });
 
         li.bind('click', function () {
@@ -438,25 +433,26 @@ function select_term(object) {
         format_selection();
     }
     
-    if (clickedon.mathtype() != 'Placeholder') {
-        placeholder_substitute();
-    }
+    //if (clickedon.mathtype() != 'Placeholder') {
+    //    placeholder_substitute();
+    //}
 
-    if (selection.first().get('type') == 'Definition') {
-        definition_apply();
-    }
+    //if (selection.first().get('type') == 'Definition') {
+    //    definition_apply();
+    //}
 }
 
 substitute_stoplist = ['Placeholder'];
 
 // ( Placeholder, Placeholder , ... , Expression )
 function placeholder_substitute() {
-    if (selection.count >= 2) {
-        heads = _.first(selection.list(), selection.count-1);
-        last = _.last(selection.list());
+    if (selection.length >= 2) {
+//        heads = _.first(selection.list(), selection.count-1);
+        var heads = selection.first(selection.length - 1);
+        var last = selection.last();
 
-        if(last.is_toplevel()) {
-            //error('Cannot substitute toplevel element into expression');
+        if(last.get('toplevel')) {
+            error('Cannot substitute toplevel element into expression');
             return;
         }
 
@@ -715,7 +711,6 @@ function apply_rule(rule, selections) {
                     );
 
                     nsym = obj.dom().replace(response.new_html[i]).hide();
-                    mathjax_typeset($(nsym));
                     nsym.fadeIn('slow');
                     $('.equation button','#workspace').parent().buttonset();
                 } else {
@@ -729,9 +724,11 @@ function apply_rule(rule, selections) {
                     console.log(obj);
 
                     nsym = obj.dom().replace(response.new_html[i]).hide();
-                    mathjax_typeset($(nsym));
                     nsym.fadeIn('slow');
                 }
+
+                //Typeset any latex in the html the server just spit out
+                mathjax_typeset($(nsym));
             }
         }
 
@@ -900,15 +897,26 @@ function use_infix(code) {
                         if(!obj.toplevel) {
                             error('Cannot replace toplevel node with non-toplevel node');
                         }
+
                         build_tree_from_json(data.new_json[i])
-                        merge_json_to_tree(NODES.getByCid(obj.cid),data.new_json[i]);
+
+                        merge_json_to_tree(
+                            NODES.getByCid(obj.cid),
+                            data.new_json[i]
+                        );
+
                         nsym = obj.dom().replace(data.new_html[i]);
-                        mathjax_typeset($(nsym))
                     } else {
-                        merge_json_to_tree(NODES.getByCid(obj.cid), data.new_json[i]);
+
+                        merge_json_to_tree(
+                            NODES.getByCid(obj.cid), 
+                            data.new_json[i]
+                        );
+
                         nsym = obj.dom().replace(data.new_html[i]);
-                        mathjax_typeset($(nsym));
                     }
+                    //Typeset any latex in the html the server just spit out
+                    mathjax_typeset($(nsym));
                 }
             }
 
@@ -922,7 +930,7 @@ function use_infix(code) {
 
 function subs(obj) {
     if(selection.length > 0) {
-        apply_transform('base/PlaceholderSubstitute',[selection.nth(0), obj]);
+        apply_transform('base/PlaceholderSubstitute',[selection.at(0), obj]);
     } else {
         error('Select an object to substitute into.');
     }
@@ -945,15 +953,14 @@ function apply_transform(transform, operands) {
         }
         // Get the sexps of the selected nodes
         postdata.selections = selection.sexps();
-    }
-    else {
+    } else {
         //TODO: change data.selections -> data.operands
         postdata.selections = _.map(operands, 
             function(obj) { 
                 if(obj.constructor == String) {
-                    return obj
+                    return obj;
                 } else {
-                    return obj.math();
+                    return obj.smath();
                 } 
             }
         );
@@ -983,7 +990,7 @@ function apply_transform(transform, operands) {
             //elements in the domain. Elements mapped to 'null'
             //are deleted.
             for (var i = 0; i < response.new_html.length; i++) {
-                obj = selections;
+                obj = operands[i];
 
                 if (response.new_html[i] == null) {
                     obj.remove();
@@ -995,25 +1002,26 @@ function apply_transform(transform, operands) {
                     //console.log("Deleting - at some point in the future");
                 }
                 else {
-                    toplevel = (response.new_json[i][0].type)
-                    if (toplevel == 'Definition' | toplevel == 'Equation') {
+                    var toplevel = (response.new_json[i][0].toplevel);
+                    if (toplevel) {
                         build_tree_from_json(response.new_json[i])
                         merge_json_to_tree(
-                            NODES.getByCid(obj.id()),
+                            NODES.getByCid(obj.cid),
                             response.new_json[i],
                             data.transform
                         );
-                        nsym = obj.replace(response.new_html[i]);
-                        mathjax_typeset($(nsym))
+
+                        nsym = obj.dom().replace(response.new_html[i]);
                     } else {
                         merge_json_to_tree(
-                            NODES.getByCid(obj.id()), 
+                            NODES.getByCid(obj.cid), 
                             response.new_json[i],
                             data.transform
                         );
-                        nsym = obj.replace(response.new_html[i]);
-                        mathjax_typeset($(nsym));
+                        nsym = obj.dom().replace(response.new_html[i]);
                     }
+
+                    mathjax_typeset($(nsym));
                 }
             }
 
@@ -1042,8 +1050,7 @@ function new_line(type) {
         if (data.new_html) {
 
             new_cell_html = $(data.new_html);
-            $("#cell" + active_cell + ' table').append(new_cell_html);
-            $('.lines').show();
+            $('#'+WORKSHEET.at(0).cid).append(new_cell_html);
             mathjax_typeset(new_cell_html);
             traverse_lines();
 

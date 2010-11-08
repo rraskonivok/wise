@@ -9,7 +9,7 @@ var CellSelection = Backbone.View.extend({
   },
 
   initialize: function() {
-      this.model.bind('change', this.render);
+      //this.model.bind('change', this.render);
       _.bindAll(this,'render','make');
   },
 
