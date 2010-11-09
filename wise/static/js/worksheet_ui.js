@@ -65,6 +65,9 @@ function base_mode() {
     $('#basemode-indicator').fadeTo('fast',1);
     clear_selection();
     hide_tooltips();
+    selection.clear();
+    hide_cmdline();
+    ctrlPressed = false;
 }
 
 active_cells = {};

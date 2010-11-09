@@ -88,6 +88,25 @@ html {
 
 /* Selection highlighting */
 
+.modal {
+    opacity: 0.2;
+}
+
+.highlight {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin: 5px;
+}
+
+.shadow {
+	-moz-box-shadow: 3px 3px 4px #000;
+	-webkit-box-shadow: 3px 3px 4px #000;
+	box-shadow: 3px 3px 4px #000;
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin: 5px;
+}
+
 .placeholder.selected {
     background-color: #d4a5a5;
     margin: 0px !important;

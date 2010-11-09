@@ -192,6 +192,10 @@ Node.prototype.addNode = function (node) {
 
 Node.prototype.delNode = function (node) {
 
+    // The node is about to be destroyed so fire any ui events
+    // that occur when a node is unselected
+    this.set({selected: false});
+
     //Eat up the node's children recursively
     _.invoke(this.children,'delNode');
     //Destroy the node itself

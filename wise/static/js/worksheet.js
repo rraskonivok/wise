@@ -61,7 +61,7 @@ function showmath() {
 
 function shownode() {
     if(selection.isEmpty()) {
-        window.log('Select something stupid!');
+        window.log('Select something idiot!');
     }
     return selection.at(0);
 }
@@ -252,15 +252,15 @@ var selection = {};
 //}
 
 function clear_selection() {
-    // Clear the selection indicator bar
-    $("#selectionlist").empty();
+    //// Clear the selection indicator bar
+    //$("#selectionlist").empty();
 
-    // Clear the selection highlighting in the workspace
-    $('.selected').removeClass('selected');
+    //// Clear the selection highlighting in the workspace
+    //$('.selected').removeClass('selected');
 
-    selection.clear();
-    hide_cmdline();
-    ctrlPressed = false;
+    //selection.clear();
+    //hide_cmdline();
+    //ctrlPressed = false;
 }
 
 function get_parent(node) {
@@ -372,70 +372,38 @@ function select_term(object) {
 
     var clickedon = object.dom();
 
+    // Shouldn't happen since select_term is induced by a jquery
+    // binding on a DOM object, but we'll check anyways
     if(clickedon.length == 0) {
         console.log('DOM correspondance not found.');
         return;
     }
 
-    if (clickedon.hasClass('selected')) {
+    if(selection.getByCid(object.cid) != null) {
         clickedon.removeClass('selected');
-        id = object.cid;
-
-        //TODO: Remove $.each
-        $.each($("#selectionlist button"), function () {
-            if ($(this).attr('index') === id) {
-                $(this).remove();
-            }
-        });
-
         selection.remove(object)
+        object.set({selected: false});
+
     } else {
+        object.set({selected: true});
         clickedon.addClass('selected');
-        typ = object.get('type');
-        li = $(document.createElement('button')).html(typ);
-        li.button()
-
-        cancel = $(document.createElement('div'))
-        cancel.addClass('ui-icon')
-        cancel.addClass('ui-icon-close')
-        cancel.css('float', 'left')
-        cancel.css('cursor', 'pointer')
-
-        li.prepend(cancel)
-        index = clickedon.attr('id')
 
         selection.add(object);
 
-        li.attr('index', index)
-
-        cancel.attr('index', index)
-
-        li.bind('mouseover', function () {
-            object.dom().css('background', '#DD9090');
+        var bt = new NodeSelectionView({
+            model: object,
         });
 
-        li.bind('mouseout', function () {
-            object.dom().css('background', 'inherit');
-        });
+        bt.render();
 
-        li.bind('click', function () {
-            object.dom().removeClass('selected');
-            object.dom().css('background', 'inherit');
-
-            selection.remove(object);
-
-            $(this).remove()
-            format_selection()
-        });
-
-        $("#selectionlist").append(li);
-
-        format_selection();
+        $("#selectionlist").append(bt.el);
     }
     
-    //if (clickedon.mathtype() != 'Placeholder') {
-    //    placeholder_substitute();
-    //}
+    // If the object we just selected is not a placeholder then
+    // go ahead and try chain substitution
+    if (object.get('type') != 'Placeholder') {
+        placeholder_substitute();
+    }
 
     //if (selection.first().get('type') == 'Definition') {
     //    definition_apply();
@@ -456,11 +424,13 @@ function placeholder_substitute() {
             return;
         }
 
-        //Yah, this hoses Chromium unless we add == true at
-        //the end, don't understand why
-        run_of_ph = ( _.all(_.invoke(heads,'is_placeholder')) == true );
+        stream_of_phs = _.all(heads, 
+            function(s) {
+                return s.get('type') == 'Placeholder';
+            }
+        );
 
-        if(run_of_ph == true) {
+        if(stream_of_phs) {
             _.each(heads, function(slt) {
                 apply_transform('base/PlaceholderSubstitute',[slt,last]);
             });
@@ -841,7 +811,7 @@ function apply_def(def, selections) {
 
 function use_infix(code) {
 
-    if(selection.count == 0) {
+    if(selection.isEmpty()) {
         error('No object selected');
         return;
     }
