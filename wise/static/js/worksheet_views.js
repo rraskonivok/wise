@@ -5,7 +5,7 @@ var CellSelection = Backbone.View.extend({
   className: 'active',
 
   events: {
-     "click": "toggle_visible"
+     "mousedown": "toggle_visible"
   },
 
   initialize: function() {
@@ -15,12 +15,24 @@ var CellSelection = Backbone.View.extend({
 
   render: function() {
       $(this.el).html(this.model.cid);
+      $(this.el).bind("contextmenu", function(e) {
+        return false;
+      });
       return this;
   },
 
   toggle_visible: function(e) {
-    $('#'+this.model.cid).toggle();
-    $(this.el).toggleClass('active');
+    //Right click - Toggle visibility of the cell
+    if(e.button == 2) {
+        this.model.dom().toggle();
+        $(this.el).toggleClass('active');
+        e.preventDefault();
+        return false;
+    //Left click - Select cell
+    } else {
+        active_cell = this.model;
+        this.model.dom().toggleClass('active');
+    }
   },
 
 });

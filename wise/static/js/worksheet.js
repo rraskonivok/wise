@@ -269,9 +269,8 @@ function get_parent(node) {
 
 function get_root(node) {
     while(node.get('toplevel') != true) {
-        node = node.tree.root;
+        return node.tree.root;
     }
-    return node;
 }
 
 function get_lhs(node) {
@@ -283,7 +282,7 @@ function get_rhs(node) {
 }
 
 function add_shift() {
-    var start = selection.get(0);
+    var start = selection.at(0);
 
     select_root(start);
     select_term(start);
@@ -292,7 +291,7 @@ function add_shift() {
 }
 
 function sub_shift() {
-    var start = selection.nth(0);
+    var start = selection.at(0);
 
     select_root(start);
     select_term(start);
@@ -301,7 +300,7 @@ function sub_shift() {
 }
 
 function mul_shift() {
-    var start = selection.nth(0);
+    var start = selection.at(0);
 
     select_root(start);
     select_term(start);
@@ -310,7 +309,7 @@ function mul_shift() {
 }
 
 function div_shift() {
-    var start = selection.nth(0);
+    var start = selection.at(0);
 
     select_root(start);
     select_term(start);
@@ -625,15 +624,8 @@ function apply_rule(rule, selections) {
             return;
         }
 
-        // Get the sexp for each the selected nodes
         data.selections = selection.sexps();
 
-        //if(data.selections.length == 1) {
-        //    selection.nth(0).queue(function() {
-        //       $(this).fadeTo('slow',0.1);
-        //       $(this).dequeue();
-        //    });
-        //}
     } else {
         data.selections = selections;
     }
@@ -1009,7 +1001,10 @@ function new_line(type) {
     data.cell_index = CELL_INDEX;
     data.type = type;
 
-    var active_cell = 1;
+    if(!active_cell) {
+        error("Select a cell to insert into");
+        return;
+    }
 
     $.post("/cmds/new_line/", data, function (data) {
 
@@ -1020,7 +1015,7 @@ function new_line(type) {
         if (data.new_html) {
 
             new_cell_html = $(data.new_html);
-            $('#'+WORKSHEET.at(0).cid).append(new_cell_html);
+            active_cell.dom().append(new_cell_html);
             mathjax_typeset(new_cell_html);
             traverse_lines();
 
@@ -1343,23 +1338,32 @@ function next_placeholder(start) {
 }
 
 function remove_element() {
-    var placeholder = selection.nth(0)
-
-    if (placeholder.node().get('depth') == 1 && selection.__lst.length == 1) {
-        NODES.getByCid(placeholder.id()).delNode();
-        placeholder.remove()
-        clear()
+    if(selection.isEmpty()) {
+        error('Selection is empty.');
         return;
-    } else {
-        apply_transform('base/Delete', [placeholder]);
-    }    
+    }
 
-}
+    //$( "#dialog-ask" ).dialog({
+    //    closeOnEscape: true,
+    //    modal: true,
+    //    resizable: false,
+    //    buttons: {
+    //        Ok: function() {
+    //            $( this ).dialog( "close" );
+    //        }
+    //    }
+    //}); 
 
-function preview() {
-    var tex = $('#texinput').val();
-    $('#preview').html('$$' + tex + '$$');
-    mathjax_typeset();
+    selection.each(function(elem) {
+
+        if(elem.get('toplevel')) {
+            elem.dom().remove();
+            elem.delNode();
+        } else {
+            apply_transform('base/Delete', [elem]);
+        }
+
+    });
 }
 
 var ctrlPressed = false;

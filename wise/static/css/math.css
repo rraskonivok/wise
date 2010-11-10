@@ -169,4 +169,9 @@
 .cell {
     border-right: 5px solid #07B;
     margin-bottom: 3px;
+    min-height: 25px;
+}
+
+.cell.active {
+    border-right: 5px solid red;
 }

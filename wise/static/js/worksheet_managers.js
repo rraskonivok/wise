@@ -14,7 +14,7 @@ var NodeSelectionManager = Backbone.Collection.extend({
                model.set({selected: false}); 
             }
         );
-        this.remove(this.models);
+//        this.remove(this.models);
     },
 
     // Convenience wrappers to get the sexp of the 

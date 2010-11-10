@@ -8,6 +8,7 @@ var Worksheet = Backbone.Collection.extend({
     initialize: function() { 
         this.children = [];
         this._parent = null;
+//        this.bind('add',function() { alert('cow') });
     },
 
 });
@@ -28,6 +29,10 @@ var Cell = Backbone.Model.extend({
 
     at: function(index) {
         return this.equations[index];
+    },
+
+    dom: function() {
+        return $('#'+this.cid);
     }
 
 });
