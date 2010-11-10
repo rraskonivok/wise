@@ -54,7 +54,7 @@ window.log = function(){
   }
 };
 
-// TODO: Just for debugging
+// Begin Debuggin' Stuff
 function showmath() {
    return selection.at(0).smath();
 }
@@ -65,6 +65,12 @@ function shownode() {
     }
     return selection.at(0);
 }
+
+function rebuild_node() {
+    //Shit went down, so rebuild the whole node from the sexp 
+    apply_transform('base/Rebuild',[selection.at(0)]);
+}
+// End Debuggin' Stuff
 
 $.fn.exists = function () {
     return jQuery(this).length > 0;
@@ -251,25 +257,15 @@ var selection = {};
 //    return _.last(this.__lst);
 //}
 
-function clear_selection() {
-    //// Clear the selection indicator bar
-    //$("#selectionlist").empty();
-
-    //// Clear the selection highlighting in the workspace
-    //$('.selected').removeClass('selected');
-
-    //selection.clear();
-    //hide_cmdline();
-    //ctrlPressed = false;
-}
-
 function get_parent(node) {
     return node._parent;
 }
 
 function get_root(node) {
-    while(node.get('toplevel') != true) {
-        return node.tree.root;
+    if(node.get('toplevel') != true) {
+        return get_root(node.tree.root);
+    } else {
+        return node;
     }
 }
 
@@ -282,39 +278,49 @@ function get_rhs(node) {
 }
 
 function add_shift() {
-    var start = selection.at(0);
+    var node = selection.at(0);
+    var root = get_root(node);
 
-    select_root(start);
-    select_term(start);
+    console.log([node,root]);
 
-    apply_rule('add_to_both_sides', null);
+    if(node && root) {
+        apply_rule('add_to_both_sides', [root, node]);
+    } else {
+        error('Could not find toplevel expression');
+    }
 }
 
 function sub_shift() {
-    var start = selection.at(0);
+    var node = selection.at(0);
+    var root = get_root(node);
 
-    select_root(start);
-    select_term(start);
-
-    apply_rule('sub_from_both_sides', null);
+    if(node && root) {
+        apply_rule('sub_from_both_sides', [root, node]);
+    } else {
+        error('Could not find toplevel expression');
+    }
 }
 
 function mul_shift() {
-    var start = selection.at(0);
+    var node = selection.at(0);
+    var root = get_root(node);
 
-    select_root(start);
-    select_term(start);
-
-    apply_rule('mul_both_sides', null);
+    if(node && root) {
+        apply_rule('mul_both_sides', [root, node]);
+    } else {
+        error('Could not find toplevel expression');
+    }
 }
 
 function div_shift() {
-    var start = selection.at(0);
+    var node = selection.at(0);
+    var root = get_root(node);
 
-    select_root(start);
-    select_term(start);
-
-    apply_rule('div_both_sides', null);
+    if(node && root) {
+        apply_rule('div_both_sides', [root, node]);
+    } else {
+        error('Could not find toplevel expression');
+    }
 }
 
 //Select the toplevel element
@@ -610,30 +616,31 @@ function heartbeat() {
     }); 
 }
 
-function apply_rule(rule, selections) {
+function apply_rule(rule, operands) {
     var data = {};
     data.rule = rule;
     data.namespace_index = NAMESPACE_INDEX;
 
     // If nodes are not explicitely passed then use 
     // the workspace's current selection
-    if (!selections) {
-        //Fetch the math for each of the selections
+    if (!operands) {
         if(selection.isEmpty()) {
             error("Selection is empty.");
             return;
         }
 
+        //Fetch the math for each of the selections
         data.selections = selection.sexps();
+        operands = selection.toArray();
 
     } else {
-        data.selections = selections;
+        data.selections = _.invoke(operands,'sexp');
     }
 
     $.post("/cmds/apply_rule/", data, function (response) {
 
         if (response.error) {
-            error(data.error);
+            error(response.error);
             base_mode();
             return;
         }
@@ -645,7 +652,7 @@ function apply_rule(rule, selections) {
         //elements in the domain. Elements mapped to 'null'
         //are deleted.
         for (var i = 0; i < response.new_html.length; i++) {
-            obj = selection.at(i);
+            obj = operands[i];
 
             //obj.queue(function() {
             //   $(this).fadeTo('slow',1);
@@ -666,7 +673,7 @@ function apply_rule(rule, selections) {
 
                 if (toplevel) {
 
-                    merge_json_to_tree(
+                    graft_tree_from_json(
                         NODES.getByCid(obj.cid),
                         response.new_json[i],
                         data.rule
@@ -677,7 +684,7 @@ function apply_rule(rule, selections) {
                     $('.equation button','#workspace').parent().buttonset();
                 } else {
 
-                    merge_json_to_tree(
+                    graft_tree_from_json(
                         NODES.getByCid(obj.cid), 
                         response.new_json[i],
                         data.rule
@@ -768,7 +775,7 @@ function apply_def(def, selections) {
                 if (toplevel) {
                     build_tree_from_json(data.new_json[i])
 
-                    merge_json_to_tree(
+                    graft_tree_from_json(
                         NODES.getByCid(obj.id()), 
                         data.new_json[i],
                         'apply_def'
@@ -777,7 +784,7 @@ function apply_def(def, selections) {
                     $('.equation button','#workspace').parent().buttonset();
                 } else {
 
-                    merge_json_to_tree(
+                    graft_tree_from_json(
                         NODES.getByCid(obj.id()), 
                         data.new_json[i],
                         'apply_def'
@@ -862,7 +869,7 @@ function use_infix(code) {
 
                         build_tree_from_json(data.new_json[i])
 
-                        merge_json_to_tree(
+                        graft_tree_from_json(
                             NODES.getByCid(obj.cid),
                             data.new_json[i]
                         );
@@ -870,7 +877,7 @@ function use_infix(code) {
                         nsym = obj.dom().replace(data.new_html[i]);
                     } else {
 
-                        merge_json_to_tree(
+                        graft_tree_from_json(
                             NODES.getByCid(obj.cid), 
                             data.new_json[i]
                         );
@@ -966,8 +973,9 @@ function apply_transform(transform, operands) {
                 else {
                     var toplevel = (response.new_json[i][0].toplevel);
                     if (toplevel) {
-                        build_tree_from_json(response.new_json[i])
-                        merge_json_to_tree(
+                        build_tree_from_json(response.new_json[i]);
+
+                        graft_tree_from_json(
                             NODES.getByCid(obj.cid),
                             response.new_json[i],
                             data.transform
@@ -975,7 +983,8 @@ function apply_transform(transform, operands) {
 
                         nsym = obj.dom().replace(response.new_html[i]);
                     } else {
-                        merge_json_to_tree(
+
+                        graft_tree_from_json(
                             NODES.getByCid(obj.cid), 
                             response.new_json[i],
                             data.transform

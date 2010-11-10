@@ -11,10 +11,12 @@ Term = objects.Term
 def PlaceholderSubstitute( ph, tm ):
     return tm, 'pass'
 
-PlaceholderSubstitute.pretty = 'Substitute'
-
 def GenFunc( func, term ):
     return 'pass', objects.FunctionAppl(func, Placeholder())
+
+@Map( _( Term ) >> _( Term ) )
+def Rebuild( term ):
+    return term
 
 @Map( _( Term , Term ) >> _( Term ) )
 def CommandLine( old, cmd ):

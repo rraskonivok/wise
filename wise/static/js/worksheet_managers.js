@@ -20,7 +20,7 @@ var NodeSelectionManager = Backbone.Collection.extend({
     // Convenience wrappers to get the sexp of the 
     // selected nodes
     sexps: function() {
-        return this.invoke('smath');
+        return this.invoke('sexp');
     },
 
     types: function() {

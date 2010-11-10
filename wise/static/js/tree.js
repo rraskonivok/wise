@@ -108,7 +108,7 @@ function build_tree_from_json(json_input) {
 }
 
 //Graft a tree onto a node.
-function merge_json_to_tree(old_node, json_input, transformation) {
+function graft_tree_from_json(old_node, json_input, transformation) {
     var newtree = build_tree_from_json(json_input);
 
     if (!old_node) {
@@ -261,6 +261,11 @@ Expression.prototype.math = function() {
         this._math = sexp(head, _.invoke(this.children,'math') );
     }
     return this._math;
+}
+
+Expression.prototype.sexp = function() {
+    if(this._math.length == 0) { this.math(); }
+    return _.flatten(this._math).join(' ')
 }
 
 function sexp(head, args) {

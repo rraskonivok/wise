@@ -63,7 +63,6 @@ var NodeSelectionView = Backbone.View.extend({
   },
 
   unselect: function(e) {
-      console.log('unselect')
       selection.remove(this.model);
       //this.model.dom().removeClass('highlight');
       //this.model.set({selected: false});
