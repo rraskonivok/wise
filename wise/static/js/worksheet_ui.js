@@ -67,6 +67,10 @@ function base_mode() {
     selection.clear();
     hide_cmdline();
     ctrlPressed = false;
+
+    WORKSHEET.each(function(cell) {
+        cell.set({active: false}); 
+    });
 }
 
 active_cells = {};

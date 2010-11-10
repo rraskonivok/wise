@@ -42,7 +42,7 @@ class Branch(object):
         self.id = None
 
         self.valid = False
-        self.hash = False
+        #self.hash = False
         self.commutative = False
 
         if self.type == 'Addition':
@@ -69,8 +69,8 @@ class Branch(object):
     def __getitem__(self,n):
         return self.args[n]
 
-    def __hash__(self):
-        return self.gethash()
+    #def __hash__(self):
+    #    return self.gethash()
 
     def gethash(self):
 
@@ -93,8 +93,8 @@ class Branch(object):
         #                = hash( 0 ) + hash ( 1 )
         #
         # Mathematical structures are in general much too
-        # complex for this to always work, but it is very useful
-        # for substitutions on toplevel nodes like Equation.
+        # complex for this to be very usefull, but it is very 
+        # usefulfor substitutions on toplevel nodes like Equation.
 
         #HASH_ALGORITHM = sha1
         HASH_ALGORITHM = crcdigest
@@ -249,7 +249,7 @@ class Branch(object):
         else:
             obj = apply(eval(self.type),(map(f,self.args)))
 
-        obj.hash = self.gethash()
+        #obj.hash = self.gethash()
         obj.id = self.id
         obj.idgen = self.idgen
 
@@ -290,16 +290,16 @@ class Branch(object):
         #print 'HERE IT IS',self,type(self.args[0])
         typ = translate_pure(self.type)
 
-        #try:
-        if self.atomic:
-            obj = typ(*self.args)
-        else:
-            obj = apply(typ,(map(f,self.args)))
-        #except TypeError:
-        #    raise exception.ParseError("Invalid function arguments: %s, %s" % (self.args, typ))
+        try:
+            if self.atomic:
+                obj = typ(*self.args)
+            else:
+                obj = apply(typ,(map(f,self.args)))
 
-        obj.id = self.id
-        obj.idgen = self.idgen
+            obj.id = self.id
+            obj.idgen = self.idgen
+        except TypeError:
+            raise exception.ParseError("Invalid function arguments: %s, %s" % (self.args, typ))
 
         return obj
 

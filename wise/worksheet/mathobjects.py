@@ -36,7 +36,9 @@ for pack in settings.INSTALLED_MATH_PACKAGES:
 # when doing infix translation to just leave -2 in place instead
 # of having (Neg x) or (Numeric 3.14) so instead we just leave it
 # as 3.14 and -x and have Python does some quick type checking
-translation_table = {'num':Numeric,'var':Variable,'-':Negate}
+translation_table = {'num' : Numeric,
+                     'var' : Variable,
+                     '-'   : Negate}
 
 def generate_translation(root):
     if root.pure:

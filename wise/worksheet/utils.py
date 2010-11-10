@@ -188,6 +188,7 @@ class crcdigest(object):
 
     def hexdigest(self):
         return hex(self.hash)
+
 def is_number(s):
     try:
         float(s)

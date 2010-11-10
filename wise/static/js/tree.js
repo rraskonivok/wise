@@ -54,6 +54,7 @@ function build_cell_from_json(json_input) {
     var eqs_json = _.rest(json_input);
     var top_node = build_tree_from_json(eqs_json);
     var new_cell = new Cell([top_node]);
+    new_cell.at(0).cell = new_cell;
 
     return new_cell;
 }
@@ -246,9 +247,12 @@ var Expression = Node.extend({
 
 });
 
-//Expression.prototype = new Node();
 Expression.prototype.smath = function () {
-    if(this._math.length == 0) { this.math(); }
+    //TODO: Until we implement sexp bubbling, just call this.math
+    //everytime we need the sexp
+    //if(this._math.length == 0) { this.math(); }
+   
+    this.math();
     return _.flatten(this._math).join(' ')
 }
 

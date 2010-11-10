@@ -5,12 +5,13 @@ var CellSelection = Backbone.View.extend({
   className: 'active',
 
   events: {
-     "mousedown": "toggle_visible"
+     "mousedown": "toggle_visible",
   },
 
   initialize: function() {
       //this.model.bind('change', this.render);
       _.bindAll(this,'render','make');
+      this.model.bind('change:active',this.handle_active);
   },
 
   render: function() {
@@ -34,6 +35,15 @@ var CellSelection = Backbone.View.extend({
         this.model.dom().toggleClass('active');
     }
   },
+
+  handle_active: function(cell,is_active) {
+      active_cell = cell;
+      if(is_active) {
+          cell.dom().addClass('active');
+      } else {
+          cell.dom().removeClass('active');
+      }
+  }
 
 });
 

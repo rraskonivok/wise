@@ -568,14 +568,10 @@ class Definition(Equation):
     pure = None
 
     def _pure_(self):
-        if self.lhs.hash != self.rhs.hash:
+        lhs = self.lhs._pure_()
+        rhs = self.rhs._pure_()
 
-            lhs = self.lhs._pure_()
-            rhs = self.rhs._pure_()
-
-            return ProtoRule(lhs , rhs)
-        else:
-            print "Definition is infinitely recursive."
+        return ProtoRule(lhs , rhs)
 
     def get_html(self):
 
@@ -637,14 +633,10 @@ class Function(Equation):
         self.terms = [self.head, self.lhs, self.rhs]
 
     def _pure_(self):
-        if self.lhs.hash != self.rhs.hash:
+        lhs = self.lhs._pure_()
+        rhs = self.rhs._pure_()
 
-            lhs = self.lhs._pure_()
-            rhs = self.rhs._pure_()
-
-            return ProtoRule(lhs , rhs)
-        else:
-            print "Definition is infinitely recursive."
+        return ProtoRule(lhs , rhs)
 
     def get_html(self):
 

@@ -67,8 +67,9 @@ function shownode() {
 }
 
 function rebuild_node() {
-    //Shit went down, so rebuild the whole node from the sexp 
-    apply_transform('base/Rebuild',[selection.at(0)]);
+    //Shit went down, so rebuild the sexp
+    //apply_transform('base/Rebuild',[selection.at(0)]);
+    selection.at(0).math();
 }
 // End Debuggin' Stuff
 
@@ -110,25 +111,21 @@ $.fn.math = function () {
     return sexp;
 };
 
-$.fn.group = function () {
-    return $(this).attr('group');
-};
-
-$.fn.mathtype = function () {
-    return this.node().get('type');
-};
-
-$.fn.is_placeholder = function() {
-    return this.mathtype() == 'Placeholder';
-}
-
-$.fn.is_definition = function() {
-    return this.mathtype() == 'Definition';
-}
-
-$.fn.is_assumption = function() {
-    return this.type() == 'Assumption';
-}
+//$.fn.mathtype = function () {
+//    return this.node().get('type');
+//};
+//
+//$.fn.is_placeholder = function() {
+//    return this.mathtype() == 'Placeholder';
+//}
+//
+//$.fn.is_definition = function() {
+//    return this.mathtype() == 'Definition';
+//}
+//
+//$.fn.is_assumption = function() {
+//    return this.type() == 'Assumption';
+//}
 
 $.fn.is_toplevel = function() {
     return $(this).attr('toplevel') == 'true';
@@ -281,8 +278,6 @@ function add_shift() {
     var node = selection.at(0);
     var root = get_root(node);
 
-    console.log([node,root]);
-
     if(node && root) {
         apply_rule('add_to_both_sides', [root, node]);
     } else {
@@ -376,6 +371,8 @@ function select_term(object) {
     $('#basemode-indicator').fadeTo('fast',0.01);
 
     var clickedon = object.dom();
+    cell = get_root(object).tree.cell;
+    cell.set({active: true});
 
     // Shouldn't happen since select_term is induced by a jquery
     // binding on a DOM object, but we'll check anyways
@@ -402,6 +399,8 @@ function select_term(object) {
         bt.render();
 
         $("#selectionlist").append(bt.el);
+
+        active_cell = cell;
     }
     
     // If the object we just selected is not a placeholder then
@@ -1032,6 +1031,7 @@ function new_line(type) {
             //var new_cell = new Cell([eq]);
             //console.log(new_cell);
 
+            eq.cell = active_cell;
             WORKSHEET.at(0).add(eq);
             //CELL_INDEX = response.cell_index;
 
@@ -1063,26 +1063,20 @@ function new_cell() {
             var new_cell = build_cell_from_json(response.new_json);
             new_cell_html.attr('id',new_cell.cid);
 
+            active_cell = new_cell;
+
             WORKSHEET.add(new_cell);
             CELL_INDEX = response.cell_index;
             NAMESPACE_INDEX = response.namespace_index;
             $('.equation button','#workspace').parent().buttonset();
-
-            //li = $( document.createElement('a') );
-            //li.html(CELL_INDEX);
-            //li.addClass('current');
-            //li.attr('href','javascript:toggle_cell('+CELL_INDEX+')');
-            //li.attr('data-index',CELL_INDEX);
-            //li.addClass('active');
 
             var cs = new CellSelection({
                 model: new_cell,
             });
             cs.render();
 
-            active_cells[CELL_INDEX] = 1;
-
             $('#cell_selection').append(cs.el);
+            //new_cell.set({active: true});
         }
     });
 }

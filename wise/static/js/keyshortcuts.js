@@ -4,7 +4,7 @@ function init_keyboard_shortcuts() {
         .bind('keydown', 'del', function() {remove_element()})
         .bind('keydown', 'd', function() {remove_element()})
         .bind('keydown', 'esc', function() {base_mode();})
-        .bind('keydown', 'r', function() {refresh_jsmath()})
+        .bind('keydown', 'r', function() {rebuild_node()})
         .bind('keydown', 'w', function() {next_placeholder()})
         .bind('keydown', 'o', function() {new_line('eq')})
         .bind('keydown', 's', function() {apply_rule('algebra_normal',null)})
