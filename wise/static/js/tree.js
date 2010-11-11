@@ -17,6 +17,8 @@ var Worksheet = Backbone.Collection.extend({
 // to make it behave like one...
 var Cell = Backbone.Model.extend({
     url: '/cell',
+    equations: null,
+    assumptions: null,
         
     initialize: function(eqs) { 
         this.equations = eqs;
@@ -38,8 +40,6 @@ var Cell = Backbone.Model.extend({
 });
 
 // Lookup Table for translation between DOM objects and Node objects
-
-NODES = new Backbone.Collection();
 
 function RootedTree(root) {
     root.tree = this;
@@ -131,37 +131,44 @@ function graft_tree_from_json(old_node, json_input, transformation) {
 // likely called thousands of times.
 
 var RootedTree = Backbone.Model.extend({
+
     initialize: function(root) { 
         root.tree = this; 
         root.depth = 1;
         root._parent = this;
+
+        this.tree = this;
+        this.nodes = []
+        this.levels = [];
+        this.depth = 0;
+
         this.root = root;
         this.levels[0] = [root];
     },
 
     smath: function () {
         return this.root.smath();
-    }
-});
+    },
 
-RootedTree.prototype.walk = function (node) {
-    if (!node) {
-        node = this.root;
-    }
-    if (node.hasChildren()) {
-        for (child in node.children) {
-            this.walk(node.children[child])
+    walk: function() {
+
+        if (!node) {
+            node = this.root;
         }
-    }
-}
 
-RootedTree.prototype.tree = this;
-RootedTree.prototype.nodes = [];
-RootedTree.prototype.levels = [];
-RootedTree.prototype.depth = 0;
+        if (node.hasChildren()) {
+            for (child in node.children) {
+                this.walk(node.children[child]);
+            }
+        }
+
+    },
+});
 
 var Node = Backbone.Model.extend({
     url: '/eq',
+    tree: null,
+    depth: null,
 
     initialize: function() { 
         this.children = [];
@@ -170,107 +177,109 @@ var Node = Backbone.Model.extend({
 
     dom: function() {
         return $('#'+this.cid);
+    },
+
+    hasChildren: function () {
+        return this.children.length > 0;
+    },
+
+    treeIndex: function() {
+        if(this.get('toplevel')) {
+            this._treeindex = [0];
+            return this._treeindex;
+        } else {
+            //Clone the parent's treeIndex
+            this._treeindex = this._parent.treeIndex().splice(0);
+            this._treeindex.push(this.index);
+            return this._treeindex;
+        }
+    },
+
+    //     O           O  
+    //    / \   ->   / | \ 
+    //   O   O      O  O  O
+    addNode: function(node) {
+        if (this.tree.depth < this.depth + 1) {
+            this.tree.depth = this.depth + 1;
+            this.tree.levels[this.depth] = [];
+        }
+
+        node.tree = this.tree;
+        node.depth = this.depth + 1;
+        node._parent = this
+        node.index = this.children.length;
+
+        this.children.push(node);
+        (this.tree.levels[node.depth - 1]).push(node);
+    },
+
+    //      O           O   
+    //    / | \   ->   / \  
+    //   O  O  O      O   O 
+    delNode: function() {
+        // The node is about to be destroyed so fire any ui events
+        // that occur when a node is unselected
+        this.set({selected: false});
+
+        //Eat up the node's children recursively
+        _.invoke(this.children,'delNode');
+        //Destroy the node itself
+        NODES.remove(this);
+    },
+
+    //         O          O   
+    // <O> +  / \   ->   / \  
+    //       O   O      O  <O> 
+    swapNode: function(newNode) {
+        //This is your standard tree graft
+
+        newNode._parent = this._parent;
+        newNode.index = this.index;
+        newNode.depth = this.depth;
+        newNode.tree = this.tree;
+        newNode.toplevel = this.toplevel;
+
+        if(this._parent.children) {
+            // Assign the new node the index of the old node 
+            // and inform the parent
+            this._parent.children[this.index] = newNode;
+        }
+
+        this.delNode();
+
     }
 
 });
-
-Node.prototype.tree = null;
-Node.prototype.hasChildren = function () {
-    return this.children.length > 0
-}
-
-Node.prototype.depth = null;
-
-Node.prototype.addNode = function (node) {
-    if (this.tree.depth < this.depth + 1) {
-        this.tree.depth = this.depth + 1;
-        this.tree.levels[this.depth] = [];
-    }
-
-    node.tree = this.tree;
-    node.depth = this.depth + 1;
-    node._parent = this
-    node.index = this.children.length;
-
-    this.children.push(node);
-    (this.tree.levels[node.depth - 1]).push(node);
-}
-
-Node.prototype.delNode = function (node) {
-
-    // The node is about to be destroyed so fire any ui events
-    // that occur when a node is unselected
-    this.set({selected: false});
-
-    //Eat up the node's children recursively
-    _.invoke(this.children,'delNode');
-    //Destroy the node itself
-    NODES.remove(this);
-}
-
-Node.prototype.treeIndex = function() {
-    if(this.get('toplevel')) {
-        this._treeindex = [0];
-        return this._treeindex;
-    } else {
-        //Clone the parent's treeIndex
-        this._treeindex = this._parent.treeIndex().splice(0);
-        this._treeindex.push(this.index);
-        return this._treeindex;
-    }
-}
-
-Node.prototype.swapNode = function (newNode) {
-
-    newNode._parent = this._parent;
-    newNode.index = this.index;
-    newNode.depth = this.depth;
-    newNode.tree = this.tree;
-    newNode.toplevel = this.toplevel;
-
-    if(this._parent.children) {
-        // Assign the new node the index of the old node 
-        // and inform the parent
-        this._parent.children[this.index] = newNode;
-    }
-
-    this.delNode();
-}
 
 var Expression = Node.extend({
+    _math: [],
 
-    initialize: function(root) { 
-        this.children = [];
-        this._parent = null;
-        this._math = [];
-    }
+    smath: function() {
+        //TODO: Until we implement sexp bubbling, just call this.math
+        //everytime we need the sexp
+        //if(this._math.length == 0) { this.math(); }
+       
+        this.math();
+        return _.flatten(this._math).join(' ')
+    },
+
+    math: function() {
+        var head = this.get('type')
+
+        if(!this.hasChildren()) {
+            this._math = sexp(head, this.get('args'));
+        } else {
+            this._math = sexp(head, _.invoke(this.children,'math') );
+        }
+        return this._math;
+    },
+
+    sexp: function() {
+        if(this._math.length == 0) { this.math(); }
+        return _.flatten(this._math).join(' ')
+    },
 
 });
-
-Expression.prototype.smath = function () {
-    //TODO: Until we implement sexp bubbling, just call this.math
-    //everytime we need the sexp
-    //if(this._math.length == 0) { this.math(); }
-   
-    this.math();
-    return _.flatten(this._math).join(' ')
-}
-
-Expression.prototype.math = function() {
-    var head = this.get('type')
-
-    if(!this.hasChildren()) {
-        this._math = sexp(head, this.get('args'));
-    } else {
-        this._math = sexp(head, _.invoke(this.children,'math') );
-    }
-    return this._math;
-}
-
-Expression.prototype.sexp = function() {
-    if(this._math.length == 0) { this.math(); }
-    return _.flatten(this._math).join(' ')
-}
 
 function sexp(head, args) {
     // Builds an array of the form (head arg[1] arg[2] ...)
