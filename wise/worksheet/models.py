@@ -35,12 +35,16 @@ class Rule(models.Model):
         return str(self.set) + ' ' + self.sexp[0:25]
 
 class Cell(models.Model):
-    workspace = models.ForeignKey(Workspace, primary_key=True, blank=False,null=False)
+    workspace = models.ForeignKey(Workspace, blank=False,null=False)
     #TODO: Remove this
     index = models.IntegerField(blank=False,null=False)
 
     def __unicode__(self):
         return self.workspace.name + ('[%s]' % (self.index))
+
+    #@property
+    #def id(self):
+    #    return self.id
 
 class Function(models.Model):
     name = models.CharField(max_length=200)

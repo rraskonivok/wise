@@ -46,10 +46,15 @@ urlpatterns = patterns('',
      #Uncomment the next line to enable the admin:
      (r'^admin/', include(admin.site.urls)),
      (r'^docs/(?P<path>.*)$', 'django.views.static.serve', {'document_root': 'docs/_build/html','show_indexes': True}),
+
+     (r'^api/', include('wise.api.urls')),
 )
 
 from django.conf import settings
 
+# TODO: Firefox 4 has some issue with OpenType fonts being loaded 
+# from /static when the current page is /ws since it is one level 
+# up... still looking into how to fix this.
 if settings.DEBUG:
     urlpatterns += patterns('',
         (r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),

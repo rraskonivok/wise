@@ -57,6 +57,10 @@ Init Function + Global Vars
 -------------------------- #}
 {% block inline-script %}
 <script>
+    // The id of the Worksheet corresponding to its index in the
+    // database
+    var WORKSHEET_ID = {{ ws_id }};
+
     // This is passed by Django to help us keep track of the #uid
     // counter
     

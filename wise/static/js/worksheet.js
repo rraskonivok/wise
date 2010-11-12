@@ -71,8 +71,13 @@ function rebuild_node() {
     //apply_transform('base/Rebuild',[selection.at(0)]);
     selection.at(0).math();
 }
+
+DISABLE_SIDEBAR = true;
 // End Debuggin' Stuff
 
+//----------------------
+//Some JQuery Extensions
+//----------------------
 $.fn.exists = function () {
     return jQuery(this).length > 0;
 }
@@ -111,22 +116,6 @@ $.fn.math = function () {
     return sexp;
 };
 
-//$.fn.mathtype = function () {
-//    return this.node().get('type');
-//};
-//
-//$.fn.is_placeholder = function() {
-//    return this.mathtype() == 'Placeholder';
-//}
-//
-//$.fn.is_definition = function() {
-//    return this.mathtype() == 'Definition';
-//}
-//
-//$.fn.is_assumption = function() {
-//    return this.type() == 'Assumption';
-//}
-
 $.fn.is_toplevel = function() {
     return $(this).attr('toplevel') == 'true';
 }
@@ -139,17 +128,18 @@ $.fn.toggleFade = function(settings) {
     });
 };
 
-// Extract the id of an object and lookup 
+// Extract the id of an object and lookup its node
 $.fn.node = function () {
     var node = NODES.getByCid($(this).id())
     if(!node) {
+        error("The term you selected is 'broken', try refreshing its corresponding equation.");
         window.log($(this).id(),'not initalized in term db.');
         return;
     }
     return node;
 };
 
-$.extend($.fn.disableTextSelect = function () {
+$.fn.disableTextSelect = function () {
     return this.each(function () {
         if ($.browser.mozilla) { //Firefox
             $(this).css('MozUserSelect', 'none');
@@ -163,7 +153,7 @@ $.extend($.fn.disableTextSelect = function () {
             });
         }
     });
-});
+};
 
 function sleep(milliseconds) {
     var start = new Date().getTime();
@@ -177,102 +167,6 @@ function sleep(milliseconds) {
 ///////////////////////////////////////////////////////////
 // Selection Handling
 ///////////////////////////////////////////////////////////
-
-// Out global selection container
-var selection = {};
-
-//For future reference Chromium and Firefox handle insertion by
-//differently. Firefox (sanely) just pushes new elements at the
-//end of the hash table while Chromium presorts them. This is an
-//issue since we need them to be ordered for when we build __lst.
-//Fix this at some point.
-//selection.add = function (obj) {
-//    this.objs[obj.id()] = obj;
-//    this.count += 1;
-//}
-
-//selection.del = function (key) {
-//    this.count -= 1;
-//    if(this.count == 0) {
-//        base_mode();
-//    }
-//
-//    delete this.objs[key]
-//}
-
-//selection.get = function (key) {
-//    return this.objs[key];
-//}
-
-//selection.list = function () {
-//    var lst = [];
-//    for (i in this.objs) {
-//        lst.push(this.objs[i]);
-//    }
-//    this.__lst = lst;
-//    return lst;
-//}
-
-//Return a list of the given attribute of the elements
-//Ex: selection.list_attr('math')
-
-//selection.list_attr = function (prop) {
-//    var lst = [];
-//    for (i in this.objs) {
-//        lst.push(this.objs[i].attr(prop));
-//    }
-//    return lst;
-//}
-
-//selection.nth = function (n) {
-//    if (this.__lst.length == 0) {
-//        this.list();
-//    }
-//    this.list();
-//    var nth = this.__lst[n];
-//
-//    //We do this so that selection.nth(0).exists will return
-//    //false if the value is not in the array
-//    if (nth == undefined) {
-//        return $();
-//    } else {
-//        return nth;
-//    }
-//}
-
-//selection.clear = function () {
-//    this.objs = {};
-//    this.__lst = [];
-//    this.count = 0;
-//}
-//
-//selection.first = function() {
-//    return _.first(this.__lst);
-//}
-//
-//selection.last = function() {
-//    return _.last(this.__lst);
-//}
-
-function get_parent(node) {
-    return node._parent;
-}
-
-function get_root(node) {
-    if(node.get('toplevel') != true) {
-        return get_root(node.tree.root);
-    } else {
-        return node;
-    }
-}
-
-function get_lhs(node) {
-    return get_root(node).children[0].children[0];
-}
-
-function get_rhs(node) {
-    return get_root(node).children[1].children[0];
-}
 
 function add_shift() {
     var node = selection.at(0);
@@ -377,7 +271,7 @@ function select_term(object) {
     // Shouldn't happen since select_term is induced by a jquery
     // binding on a DOM object, but we'll check anyways
     if(clickedon.length == 0) {
-        console.log('DOM correspondance not found.');
+        window.log('DOM correspondance not found.');
         return;
     }
 
@@ -689,8 +583,6 @@ function apply_rule(rule, operands) {
                         data.rule
                     );
 
-                    console.log(obj);
-
                     nsym = obj.dom().replace(response.new_html[i]).hide();
                     nsym.fadeIn('slow');
                 }
@@ -723,7 +615,7 @@ function apply_def(def, selections) {
         data.selections = selection.list_attr('math');
 
         if(data.selections.length == 1) {
-            console.log('fading');
+            window.log('fading');
             selection.nth(0).queue(function() {
                $(this).fadeTo('slow',0.1);
                $(this).dequeue();
@@ -735,7 +627,7 @@ function apply_def(def, selections) {
         data.selections = _.invoke(selections,'math');
     }
 
-    console.log(data);
+    window.log(data);
 
     $.post("/cmds/apply_def/", data, function (data) {
 
@@ -1398,6 +1290,10 @@ $('.container','#workspace').live('mouseover mouseout', function(e) {
 ///////////////////////////////////////////////////////////
 
 function load_rules_palette() {
+    if(DISABLE_SIDEBAR) {
+        return;
+    }
+
     $.ajax({
             url: '/rule_request',
             success: function(data) {
@@ -1413,26 +1309,11 @@ function load_rules_palette() {
     });
 }
 
-//Stupid function to make buttons in each panel have the same height
-function make_buttons_uniform(obj) {
-    var heights = [];
-    buttons = $(obj).find('button');
-
-    _.each(buttons, function(btn) {
-        heights.push($(btn).height()); 
-    });
-
-    var max = _.max(heights);
-    if(max != 0) {
-        _.each(buttons, function(btn) {
-            $(btn).height(max + 5); 
-            $(btn).width($(btn).width() + 5); 
-        });
-    }
-}
-
 function load_math_palette() {
-    //Load the math palette
+    if(DISABLE_SIDEBAR) {
+        return;
+    }
+
     $.ajax({
         url: '/palette/',
         success: function(data) {
@@ -1457,6 +1338,24 @@ function load_math_palette() {
 
 }
 
+//Stupid function to make buttons in each panel have the same height
+function make_buttons_uniform(obj) {
+    var heights = [];
+    buttons = $(obj).find('button');
+
+    _.each(buttons, function(btn) {
+        heights.push($(btn).height()); 
+    });
+
+    var max = _.max(heights);
+    if(max != 0) {
+        _.each(buttons, function(btn) {
+            $(btn).height(max + 5); 
+            $(btn).width($(btn).width() + 5); 
+        });
+    }
+}
+
 function palette(num) {
     if(num == 1) {
         $('#math_palette').show();
@@ -1477,32 +1376,6 @@ function palette(num) {
 // Command Line
 ///////////////////////////////////////////////////////////
 
-var cmd_visible = 0;
-
-function show_cmdline() {
-   $('.cmd').fadeIn();
-   $('#cmdinput').focus();
-   cmd_visible = 1;
-}
-
-function hide_cmdline() {
-   $('.cmd').fadeOut();
-   $('#cmdinput').focus();
-   cmd_visible = 0;
-}
-
-function toggle_cmdline() {
-    //Flip visibility bit
-
-    if(cmd_visible) {
-        hide_cmdline();
-    } else {
-        show_cmdline();                 
-    }
-    
-    cmd_visible = cmd_visible ^ 1;
-}
-
 $('#cmdline').submit(function() {
     use_infix($("#cmdinput").val());
     $("#cmdinput").blur();
@@ -1518,6 +1391,7 @@ $('#cmdline').submit(function() {
 // database
 
 function init_nodes() {
+    NODES     = new Backbone.Collection();
     WORKSHEET = new Worksheet();
 
     for(var cell in JSON_TREE) {

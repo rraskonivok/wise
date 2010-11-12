@@ -22,6 +22,3 @@ absorbtion2 = absorbtion cup cup;
 
 push_left = [cap_assoc_left, cup_assoc_left];
 push_right = [cap_assoc_right, cup_assoc_right];
-
-// The composition of two Noetherian term rewrite systems is
-// Noetherian

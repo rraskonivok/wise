@@ -86,7 +86,8 @@ INSTALLED_APPS = (
     # ' import gunicorn ' form this directory then it will fail
     'gunicorn',
     'debug_toolbar',
-    'reversion'
+    'reversion',
+    'piston'
 )
 
 # Sphinx sometimes complains about paths if it is run from a

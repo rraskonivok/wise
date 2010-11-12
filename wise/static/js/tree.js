@@ -54,6 +54,8 @@ var Worksheet = Backbone.Collection.extend({
     url: '/ws',
 
     initialize: function() { 
+        this.url = 'ws/' + WORKSHEET_ID;
+        this.id = WORKSHEET_ID;
         this.children = [];
         this._parent = null;
 //        this.bind('add',function() { alert('cow') });
@@ -61,10 +63,8 @@ var Worksheet = Backbone.Collection.extend({
 
 });
 
-// This isn't a Collection but we add some functions
-// to make it behave like one...
 var Cell = Backbone.Model.extend({
-    url: '/cell',
+//    url: '/cell',
     equations: null,
     assumptions: null,
         
@@ -72,6 +72,8 @@ var Cell = Backbone.Model.extend({
         this.equations = eqs;
     },
 
+    // This isn't a Collection but we add some functions
+    // to make it behave like one...
     add: function(eq) {
         this.change();
         this.equations.push(eq);
@@ -97,15 +99,6 @@ function RootedTree(root) {
     this.levels[0] = [root];
 }
 
-function build_cell_from_json(json_input) {
-    var cell = _.first(json_input);
-    var eqs_json = _.rest(json_input);
-    var top_node = build_tree_from_json(eqs_json);
-    var new_cell = new Cell([top_node]);
-    new_cell.at(0).cell = new_cell;
-
-    return new_cell;
-}
 
 function build_tree_from_json(json_input) {
     //Build an expression from the output of the python function json_flat
@@ -156,20 +149,6 @@ function build_tree_from_json(json_input) {
     return T;
 }
 
-//Graft a tree onto a node.
-function graft_tree_from_json(old_node, json_input, transformation) {
-    var newtree = build_tree_from_json(json_input);
-
-    if (!old_node) {
-        //error('Could not attach branch');
-        return;
-    }
-    old_node.math();
-    newtree.root.transformed_by = transformation;
-    newtree.root.prev_state = old_node.smath();
-
-    old_node.swapNode(newtree.root);
-}
 
 var RootedTree = Backbone.Model.extend({
 
@@ -304,6 +283,8 @@ var Expression = Node.extend({
         return _.flatten(this._math).join(' ')
     },
 
+    //Generates the array of strings which is compiled iff we
+    //need to get a sexp.
     math: function() {
         var head = this.get('type')
 
@@ -322,6 +303,33 @@ var Expression = Node.extend({
 
 });
 
+// Utilities for JSON <-> Expression Trees
+
+function build_cell_from_json(json_input) {
+    var cell = _.first(json_input);
+    var eqs_json = _.rest(json_input);
+    var top_node = build_tree_from_json(eqs_json);
+    var new_cell = new Cell([top_node]);
+    new_cell.at(0).cell = new_cell;
+
+    return new_cell;
+}
+
+//Graft a tree onto a node.
+function graft_tree_from_json(old_node, json_input, transformation) {
+    var newtree = build_tree_from_json(json_input);
+
+    if (!old_node) {
+        //error('Could not attach branch');
+        return;
+    }
+    old_node.math();
+    newtree.root.transformed_by = transformation;
+    newtree.root.prev_state = old_node.smath();
+
+    old_node.swapNode(newtree.root);
+}
+
 function sexp(head, args) {
     // Builds an array of the form (head arg[1] arg[2] ...)
     return _.flatten(['(', head, args, ')']);
@@ -336,4 +344,26 @@ function garbage_collect() {
             NODES.del(node);
         }
     });
+}
+
+// Tree Traversal
+function get_parent(node) {
+    return node._parent;
+}
+
+function get_root(node) {
+    if(node.get('toplevel') != true) {
+        return get_root(node.tree.root);
+    } else {
+        return node;
+    }
+}
+
+// Equation Traversal
+function get_lhs(node) {
+    return get_root(node).children[0].children[0];
+}
+
+function get_rhs(node) {
+    return get_root(node).children[1].children[0];
 }
