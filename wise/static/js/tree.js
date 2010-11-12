@@ -1,6 +1,54 @@
 ///////////////////////////////////////////////////////////
 // Expression Tree Handling
 ///////////////////////////////////////////////////////////
+//
+// These models are what make *everything* on the clientside run,
+// they all inherit from Backbone.js Models or Collections. In
+// principle most of these are your standard n-trees and most of
+// the algorithms are fairly naive, but in practice they work
+// fine
+//
+// See: http://xw2k.nist.gov/dads//HTML/tree.html
+//                                                                 
+//  -----------------------------------------------------------   
+//  |                      Worksheet                          |                   
+//  |---------------------------------------------------------|   
+//  |           Cell           |             Cell             |             
+//  |                          |                              |  
+//  |---------------------------------------------------------|   
+//  |                          |                              |  
+//  |         Equation         |           Equation           |  
+//  |                          |                              |  
+//  |                          |                              |  
+//  |         Equation         |           Equation           |  
+//  |                          |                              |  
+//  |            .             |              .               |  
+//  |            .             |              .               |  
+//  |            .             |              .               |  
+//  |                          |                              |  
+//  -----------------------------------------------------------   
+//                                                                
+//  As a graph the structure of the workshet looks like:                                                              
+//                                                                
+//                    Worksheet                                    
+//                        |                               
+//                       / \                              
+//                      /   \                             
+//                    Cell  Cell  ...                                 
+//                     |                                  
+//                     |          .                       
+//                 RootedTree      .                             
+//                     |            .                       
+//                     |                                   
+//                 Expression ( toplevel Node i.e Equation )
+//                     |                                   
+//                    / \
+//                   /   \                              
+//                 LHS   RHS  ( Child expression Nodes )
+//                  |     |
+//                  .     .
+//                  .     .
+//                  .     .
 
 var Worksheet = Backbone.Collection.extend({
     url: '/ws',
@@ -122,13 +170,6 @@ function graft_tree_from_json(old_node, json_input, transformation) {
 
     old_node.swapNode(newtree.root);
 }
-
-///////////////////////////////////////////////////////////
-// Term Handling
-///////////////////////////////////////////////////////////
-// This is the key algorithm that makes everything run, the
-// properties and methods are .prototyped for speed since they are
-// likely called thousands of times.
 
 var RootedTree = Backbone.Model.extend({
 
