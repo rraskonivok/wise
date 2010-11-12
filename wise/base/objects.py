@@ -434,7 +434,7 @@ class Equation(object):
         return self.__class__.__name__
 
     def set_side(self, side):
-        for term in self.temrms:
+        for term in self.terms:
             term.side = side
             term.set_side(side)
 

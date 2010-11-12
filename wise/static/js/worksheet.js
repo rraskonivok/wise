@@ -120,14 +120,6 @@ $.fn.is_toplevel = function() {
     return $(this).attr('toplevel') == 'true';
 }
 
-$.fn.toggleFade = function(settings) {
-  	return this.each(function()
-  	{
-  	  var isHidden = jQuery(this).is(":hidden");
-      jQuery(this)[ isHidden ? "fadeIn" : "fadeOut" ]( isHidden ? 'fast' : 'fast');
-    });
-};
-
 // Extract the id of an object and lookup its node
 $.fn.node = function () {
     var node = NODES.getByCid($(this).id())
