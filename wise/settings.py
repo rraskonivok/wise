@@ -3,6 +3,7 @@ import os
 #Eagerly load the pure module to avoid an initial hiccup when a worker starts
 import worksheet.pure.prelude
 
+APPEND_SLASH = True
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 LOG_FILE = 'session.log'

@@ -4,10 +4,10 @@ from piston.authentication import HttpBasicAuthentication
 
 from wise.api.handlers import CellHandeler
 
-auth = HttpBasicAuthentication(realm='Wise API')
-cells = Resource(handler=CellHandeler, authentication=auth)
+#auth = HttpBasicAuthentication(realm='Wise API')
+cells = Resource(handler=CellHandeler)
 
 urlpatterns = patterns('',
    url(r'^cell/(?P<id>[^/]+)/', cells, name='cells'),
-   url(r'^cells/', cells),
+   url(r'^cell/', cells),
 )

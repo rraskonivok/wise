@@ -154,65 +154,57 @@ def rule(request, rule_id):
 @errors
 def ws(request, eq_id):
 
-    if request.method == 'GET':
+    ws = Workspace.objects.get(id=eq_id)
 
-        ws = Workspace.objects.get(id=eq_id)
+    if ( ws.owner.id != request.user.id ) and not ws.public:
+        return HttpResponse('You do not have permission to access this worksheet.')
 
-        if ( ws.owner.id != request.user.id ) and not ws.public:
-            return HttpResponse('You do not have permission to access this worksheet.')
+    try:
+        cells = Cell.objects.filter(workspace=eq_id)
+    except ObjectDoesNotExist:
+        return HttpResponse('No cells found in worksheet')
+
+    uid = uidgen()
+
+    json_cells = []
+    html_cells = []
+
+    for index,cell in enumerate(cells):
+        json_cell = []
+        html_eq = []
 
         try:
-            cells = Cell.objects.filter(workspace=eq_id)
+            eqs = MathematicalEquation.objects.filter(cell=cell).order_by('index')
         except ObjectDoesNotExist:
-            return HttpResponse('No cells found in worksheet')
+            return HttpResponse('Cell is empty.')
 
-        uid = uidgen()
-
-        json_cells = []
-        html_cells = []
-
-        for index,cell in enumerate(cells):
-            json_cell = []
-            html_eq = []
-
+        for eq in eqs:
             try:
-                eqs = MathematicalEquation.objects.filter(cell=cell).order_by('index')
-            except ObjectDoesNotExist:
-                return HttpResponse('Cell is empty.')
+                # Build up the object from the sexp in the database
+                etree = parse_sexp(eq.code, uid)
+                etree.sid = eq.id
+            except NameError:
+                if settings.DEBUG:
+                    print 'Some symbols could not be rendered'
+                else:
+                    return HttpResponse('This worksheet contains symbols that are not installed')
 
-            for eq in eqs:
-                try:
-                    # Build up the object from the sexp in the database
-                    etree = parse_sexp(eq.code, uid)
-                    etree.sid = eq.id
-                except NameError:
-                    if settings.DEBUG:
-                        print 'Some symbols could not be rendered'
-                    else:
-                        return HttpResponse('This worksheet contains symbols that are not installed')
+            etree.annotation = eq.annotation
+            html_eq.append(html(etree))
+            json_cell.append(etree.json_flat())
 
-                etree.annotation = eq.annotation
-                html_eq.append(html(etree))
-                json_cell.append(etree.json_flat())
+        html_cells.append(cellify(''.join(html_eq),index))
+        json_cells.append(json_cell)
 
-            html_cells.append(cellify(''.join(html_eq),index))
-            json_cells.append(json_cell)
-
-        return render_to_response('worksheet.html', {
-            'title': ws.name,
-            'ws_id': ws.id,
-            'equations': html_cells,
-            'username': request.user.username,
-            'namespace_index': uid.next()[3:],
-            'cell_index': len(cells),
-            'json_cells': json.dumps(json_cells),
-            })
-
-    elif request.method == 'POST':
-        ws = Workspace.objects.get(id=eq_id)
-
-        if ( ws.owner.id != request.user.id ) and not ws.public:
-            return HttpResponse('You do not have permission to access this worksheet.')
+    return render_to_response('worksheet.html', {
+        'title': ws.name,
+        'ws_id': ws.id,
+        'equations': html_cells,
+        'username': request.user.username,
+        'namespace_index': uid.next()[3:],
+        'cell_index': len(cells),
+        'json_cells': json.dumps(json_cells),
+        })
 
 @login_required
 @errors

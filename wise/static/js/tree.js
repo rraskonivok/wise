@@ -54,7 +54,7 @@ var Worksheet = Backbone.Collection.extend({
     url: '/ws',
 
     initialize: function() { 
-        this.url = 'ws/' + WORKSHEET_ID;
+        this.url = '/ws/' + WORKSHEET_ID;
         this.id = WORKSHEET_ID;
         this.children = [];
         this._parent = null;
@@ -67,15 +67,19 @@ var Cell = Backbone.Model.extend({
 //    url: '/cell',
     equations: null,
     assumptions: null,
+    equations: [],
+    url: '/api/cell/',
         
-    initialize: function(eqs) { 
-        this.equations = eqs;
+    initialize: function() {
+        this.set({
+            ws: WORKSHEET_ID,
+        })
     },
 
     // This isn't a Collection but we add some functions
     // to make it behave like one...
     add: function(eq) {
-        this.change();
+        //this.change();
         this.equations.push(eq);
     },
 
@@ -309,7 +313,8 @@ function build_cell_from_json(json_input) {
     var cell = _.first(json_input);
     var eqs_json = _.rest(json_input);
     var top_node = build_tree_from_json(eqs_json);
-    var new_cell = new Cell([top_node]);
+    var new_cell = new Cell();
+    new_cell.add(top_node);
     new_cell.at(0).cell = new_cell;
 
     return new_cell;

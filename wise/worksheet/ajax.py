@@ -532,7 +532,7 @@ def new_line(request):
     elif newtype == u'func':
         new = translate.parse_sexp('(Function (Placeholder ) (LHS (Placeholder )) (RHS (Placeholder )))',uid)
     elif newtype == u'eq':
-        new = translate.parse_sexp('(Equation (LHS (Placeholder )) (RHS (Placeholder )))',uid)
+        new = translate.parse_sexp('(Equation (Placeholder ) (Placeholder ))',uid)
     else:
         error('invalid type of inline')
     newline_html = html(new)
