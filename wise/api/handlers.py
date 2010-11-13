@@ -9,6 +9,7 @@ class CellHandeler(BaseHandler):
     fields = ()
     allowed_methods = ('GET', 'PUT', 'DELETE', 'POST')
     exclude = ('workspace')
+    fields = ('index', 'id', ('workspace', ('id',)))
 
     def read(self, request, id=None):
         cells = Cell.objects
@@ -43,7 +44,7 @@ class CellHandeler(BaseHandler):
 class ExpressionHandeler(BaseHandler):
     model = Expression
 
-    fields = ()
+    fields = ('index', 'code', 'annotation', ('cell', ('id',)))
     exclude = ()
 
     allowed_methods = ('GET', 'PUT', 'DELETE', 'POST')
@@ -63,13 +64,6 @@ class ExpressionHandeler(BaseHandler):
     def create(self, request):
         request_data = self.flatten_dict(request.data)
 
-        #cell_id = request_data['cell']
-        #index = request_data['index']
-
-        ws = Workspace.objects.get(id=cell_id)
-        #em = self.model(workspace=ws,index=1)
-        #em.save()
-
         # Return the JSON of the new model for Backbone to inject
         # into the model
         return None
@@ -77,3 +71,37 @@ class ExpressionHandeler(BaseHandler):
     @classmethod
     def resource_uri(self):
         return ('exps', [ 'id', ])
+
+class WorkspaceHandeler(BaseHandler):
+    model = Workspace
+
+    fields = ('name',
+              'timestamp',
+              'public',
+                 ('owner', ( 'username',))
+             )
+    #exclude = ('owner')
+
+    allowed_methods = ('GET', 'PUT', 'DELETE', 'POST')
+
+    def read(self, request, id=None):
+        wss = Workspace.objects
+
+        if id:
+            try:
+                return wss.get(id=id)
+            except ObjectDoesNotExist:
+                return rc.NOT_FOUND
+        else:
+            return wss.all()
+
+    def create(self, request):
+        request_data = self.flatten_dict(request.data)
+
+        # Return the JSON of the new model for Backbone to inject
+        # into the model
+        return None
+
+    @classmethod
+    def resource_uri(self):
+        return ('workspaces', [ 'id', ])
