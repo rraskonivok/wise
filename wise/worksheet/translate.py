@@ -8,6 +8,8 @@ from mathobjects import *
 from wise.worksheet.utils import *
 import wise.worksheet.exceptions as exception
 
+# i2p ~ Infix to Prefix
+# p2i ~ Prefix to Infix
 from pure_wrap import p2i, i2p
 
 #-------------------------------------------------------------
@@ -233,15 +235,6 @@ class Branch(object):
                     raise exception.InternalMathObjectNotFound(x)
             else:
                 print 'something strange is being passed'
-
-        #Ugly hack to pass database indices
-        #if '__' in self.type:
-        #    ref,id = self.type.split('__')
-        #    self.args.insert(0,id)
-        #    obj = apply(eval(ref),(map(f,self.args)))
-        #    obj.hash = self.gethash()
-        #    obj.idgen = self.idgen
-        #else:
 
         if self.atomic:
             print self.type

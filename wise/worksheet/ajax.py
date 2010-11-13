@@ -24,7 +24,7 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404
 
 # uidgen is imported from utils
 from wise.worksheet.utils import *
-from wise.worksheet.models import Workspace, MathematicalEquation, Cell, Symbol, Function, Rule, RuleSet
+from wise.worksheet.models import Workspace, Expression, Cell
 import wise.worksheet.exceptions as exception
 
 from wise.base.cell import Cell as PyCell
@@ -399,7 +399,7 @@ def save_workspace(request,eq_id):
         math, annotation = request.POST.getlist(''.join([str(i),'[]']))
 
         #TODO: Do some fancy string parsing to transform [[ x^2 ]] -> $$ x^2 $$
-        MathematicalEquation(code=math,
+        Expression(code=math,
                 annotation=annotation,
                 cell=newcell,
                 index=i).save()

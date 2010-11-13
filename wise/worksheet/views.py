@@ -37,7 +37,7 @@ from django.views.decorators.cache import cache_page
 
 from wise.worksheet.utils import *
 from wise.worksheet.forms import LoginForm
-from wise.worksheet.models import Workspace, MathematicalEquation, Cell, Symbol, Function, Rule, RuleSet
+from wise.worksheet.models import Workspace, Expression, Cell
 from django.contrib.auth.models import User
 
 CACHE_INTERVAL = 30*60 # 5 Minutes
@@ -174,7 +174,7 @@ def ws(request, eq_id):
         html_eq = []
 
         try:
-            eqs = MathematicalEquation.objects.filter(cell=cell).order_by('index')
+            eqs = Expression.objects.filter(cell=cell).order_by('index')
         except ObjectDoesNotExist:
             return HttpResponse('Cell is empty.')
 
@@ -211,7 +211,7 @@ def ws(request, eq_id):
 def del_workspace(request):
     #TODO this is crazy dangerous
     for id,s in request.POST.iteritems():
-        MathematicalEquation.objects.filter(workspace=id).delete()
+        Expression.objects.filter(workspace=id).delete()
         Workspace.objects.get(id=id).delete()
     return HttpResponseRedirect('/home')
 
@@ -232,7 +232,7 @@ def new_workspace(request):
     else:
         equation = mathobjects.Placeholder().get_math()
 
-    init_eq = MathematicalEquation(code=equation, workspace=new_workspace).save()
+    init_eq = Expression(code=equation, workspace=new_workspace).save()
     return HttpResponseRedirect('/home')
 
 #---------------------------

@@ -9,7 +9,6 @@
 # License, or (at your option) any later version.
 
 from wise.worksheet.utils import *
-from wise.worksheet.models import Symbol, Function, Rule
 import wise.worksheet.exceptions as exception
 
 from pure_wrap import generate_pure_objects
