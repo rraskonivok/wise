@@ -148,71 +148,7 @@ def apply_def(request):
 #@cache_page(CACHE_INTERVAL)
 def rules_request(request):
 
-    #if settings.DEBUG:
-    #    ruleslist = [(rule.ref, rule) for rule in rules.rulesets.itervalues()]
-    #else:
-    #    ruleslist = [(name, rule) for (name,rule) in rules.rulesets.iteritems()]
-
     return render_haml_to_response('ruleslist.tpl',{'rulesets':rules.rulesets})
-
-#---------------------------
-# Symbols ------------------
-#---------------------------
-
-@login_required
-@errors
-#@cache_page(CACHE_INTERVAL)
-def symbols_request(request):
-    symbols = Symbol.objects.filter(owner=request.user)
-    symbols_html = [mathobjects.RefSymbol(sym).get_html() for sym in symbols]
-    descriptions = [sym.desc for sym in symbols]
-
-    return render_haml_to_response('symbolslist.tpl',{'symbols':zip(symbols_html,descriptions)})
-
-#---------------------------
-# Functions ----------------
-#---------------------------
-
-@login_required
-@errors
-#@cache_page(CACHE_INTERVAL)
-def functions_request(request):
-    ph = mathobjects.Placeholder()
-    functions = Function.objects.filter(owner=request.user)
-    functions_html = [mathobjects.RefOperator(fun,ph).get_html() for fun in functions]
-    descriptions = [fun.desc for fun in functions]
-
-    return render_haml_to_response('functionslist.tpl',{'functions':zip(functions_html,descriptions)})
-
-@login_required
-@errors
-@ajax_request
-@cache_page(CACHE_INTERVAL)
-def preview_function(request):
-    symbol1 = request.POST.get('symbol1')
-    notation = request.POST.get('notation')
-    pnths = request.POST.get('pnths')
-    notation = request.POST.get('notation').lower()
-    arity = request.POST.get('arity')
-
-    if not arity:
-        arity = 1
-    else:
-        arity = int(arity)
-
-    ph = mathobjects.Placeholder()
-
-    if notation == 'infix':
-        prvw = mathobjects.Operation(ph,ph)
-    else:
-        prvw = mathobjects.Operation(*([ph]*arity))
-
-    prvw.symbol = symbol1
-    prvw.notation = notation
-    prvw.show_parenthesis = pnths is not None
-    prvw.ui_style = notation
-
-    return HttpResponse(html(prvw))
 
 @login_required
 @errors
@@ -267,30 +203,6 @@ def pure_parse(request):
 #
 #    return JsonResponse(mappings_list)
 
-@login_required
-@errors
-@ajax_request
-@cache_page(CACHE_INTERVAL)
-def combine(request):
-    first = unencode( request.POST.get('first') )
-    second = unencode( request.POST.get('second') )
-    context = unencode( request.POST.get('context') )
-    namespace_index = int( request.POST.get('namespace_index') )
-
-    uid = uidgen(namespace_index)
-
-    first = translate.parse_sexp(first,uid)
-    second = translate.parse_sexp(second,uid)
-
-    # The combination of the two elements (if a rule exists),
-    # otherwise default to just the whatever the container the
-    # two objects coexist in requires.
-    new_html, objs = first.combine(second,context)
-    new_json = map(json_flat, objs)
-
-    return JsonResponse({'new_html': new_html,
-                         'new_json': new_json,
-                         'namespace_index': uid.next()[3:]})
 
 @login_required
 @errors
@@ -300,7 +212,7 @@ def use_infix(request):
     # for a bunch of common macros instead of just passing
     # this off to Pure eval, otherwise we get kind of unwiedly
     # constructions of things ex: Tuple x y z could be better
-    # written as x y z and there really isn't any reason the
+    # written as (x,y,z) and there really isn't any reason the
     # user would need to init a Pure tuple from the cmdline
 
     code = request.POST.get('code')
@@ -405,108 +317,6 @@ def save_workspace(request,eq_id):
                 index=i).save()
 
     return JsonResponse({'success': True})
-
-@login_required
-@errors
-@ajax_request
-@cache_page(CACHE_INTERVAL)
-def save_ruleset(request,rule_id):
-    try:
-        ruleset = RuleSet.objects.get(id=rule_id)
-    except ObjectDoesNotExist:
-        return JsonResponse({'error':'Rule Set is missing'})
-
-    rules = Rule.objects.filter(set=rule_id)
-
-    for rule in rules:
-        rule.delete()
-
-    #TODO this is crazy dangerous
-    indexes = len(request.POST)
-    uid = uidgen()
-
-    for i in xrange(indexes):
-        math, annotation, is_confluent, is_public = request.POST.getlist(''.join([str(i),'[]']))
-        pure = translate.parse_sexp(math,uid)._pure_()
-
-        is_confluent = (is_confluent == '1')
-        is_public = (is_public == '1')
-
-        print is_confluent, is_public
-
-        newrule = Rule(sexp=math,
-                pure=pure,
-                annotation=annotation,
-                set=ruleset,
-                public=True,
-                confluent=is_confluent,
-                index=i).save()
-
-    return JsonResponse({'success': True})
-
-@login_required
-@errors
-@ajax_request
-@cache_page(CACHE_INTERVAL)
-def receive(request):
-    obj = unencode( request.POST.get(u'obj') )
-    obj_type = unencode( request.POST.get('obj_type') )
-
-    receiver = unencode( request.POST.get('receiver') )
-    receiver_type = unencode( request.POST.get('receiver_type') )
-    receiver_context = unencode( request.POST.get('receiver_context') )
-
-    sender = unencode( request.POST.get('sender') )
-    sender_type = unencode( request.POST.get('sender_type') )
-    sender_context = unencode( request.POST.get('sender_context') )
-
-    new_position = unencode( request.POST.get('new_position') )
-
-    namespace_index = request.POST.get('namespace_index')
-
-    if not namespace_index:
-        raise exception.PostDataCorrupt('namespace_index')
-
-    uid = uidgen(int(namespace_index))
-
-    inserted = translate.parse_sexp(obj, uid )
-    received = translate.parse_sexp(receiver, uid )
-
-    new = received.receive(inserted,receiver_context,sender_type,sender_context,new_position)
-    new.idgen = uid
-    new.ensure_id()
-
-    return JsonResponse({'new_html': html(new),
-                         'new_json': json_flat(new),
-                         'namespace_index': uid.next()[3:]})
-
-@login_required
-@errors
-@ajax_request
-@cache_page(CACHE_INTERVAL)
-def remove(request):
-    obj = unencode( request.POST.get(u'obj') )
-    obj_type = unencode( request.POST.get('obj_type') )
-
-    sender = unencode( request.POST.get('sender') )
-    sender_type = unencode( request.POST.get('sender_type') )
-    sender_context = unencode( request.POST.get('sender_context') )
-
-    namespace_index = int( request.POST.get('namespace_index') )
-
-    uid = uidgen(namespace_index)
-
-    obj = translate.parse_sexp(obj,uid)
-    sender = translate.parse_sexp(sender,uid)
-
-    new = sender.remove(obj,sender_context)
-    if new:
-        new.idgen = uid
-        new.ensure_id()
-
-    return JsonResponse({'new_html': html(new),
-                         'new_json': json_flat(new),
-                         'namespace_index': uid.next()[3:]})
 
 @login_required
 @errors
