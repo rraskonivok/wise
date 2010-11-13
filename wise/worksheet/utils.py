@@ -24,7 +24,7 @@ from django.utils import simplejson as json
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_page
 
-from worksheet.shpaml import convert_text
+import worksheet.shpaml
 
 def errors(f):
     '''Wraps errors out to server log and javascript popup'''
@@ -122,26 +122,43 @@ def is_number(s):
     return True
 
 #-------------------------------------------------------------
+# Client ID Generator
+#-------------------------------------------------------------
+
+def uidgen(i=0):
+    '''Auto incrementing generator which returns a string
+    cid1, cid2. Used by Backbone.js to keep track of elements on
+    the clientside worksheet.'''
+
+    while True:
+        yield 'cid%i' % i
+        i += 1
+
+#-------------------------------------------------------------
 # HTML Generation
 #-------------------------------------------------------------
 
+def cat(*strs):
+    '''Quick string concatentation'''
+    return ''.join(strs)
+
 def haml(code):
-    return convert_text(code)
+    '''Render Haml to an HTML string'''
+    return shpaml.convert_text(code)
 
 def minimize_html(html):
+    '''Remove whitespace between html tags and remove all
+    newlines'''
     if not html:
         return None
     return strip_whitespace(html.rstrip('\n'))
 
 def html(obj):
+    '''Prefix form of obj.get_html(), returns a string.'''
     if not obj:
         return None
     return minimize_html(obj.get_html())
 
-def uidgen(i=0):
-    while True:
-        yield 'cid%i' % i
-        i += 1
 
 def cellify(s,index):
     return '<div class="cell" data-index="%s"><table class="lines" style="display: none">%s</table></div>' % (index, s)
@@ -151,12 +168,15 @@ def spaceiter(list):
     return ' '.join(list)
 
 def purify(obj):
+    '''Prefix form of obj.get_html(), returns a Pure object.'''
     if hasattr(obj,'__iter__'):
         return map(purify,obj)
     else:
         return obj._pure_()
 
 def load_haml_template(fname):
+    '''Returns a haml template specified by filename from the
+    locations specified in TEMPLATE_DIRS '''
     if settings.IGNORE_PATHS:
         return False
     else:
@@ -190,6 +210,8 @@ class crcdigest(object):
         return hex(self.hash)
 
 def is_number(s):
+    ''' Return true if the given string argument can be cast into
+    a numeric type'''
     try:
         float(s)
     except ValueError:
