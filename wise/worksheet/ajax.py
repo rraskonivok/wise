@@ -46,21 +46,51 @@ def heartbeat(request):
     response['Cache-Control'] = 'no-cache'
     return response
 
-
 @login_required
 @errors
 @ajax_request
 #@cache_page(CACHE_INTERVAL)
 def apply_rule(request):
+    """
+    Applies a Pure rule to tuple of elements. The codomain tuple
+    is always mapped to the same size of the domain tuple.
+
+    For example a rule to commute addition maps 1-tuples to
+    1-tuples.
+
+        (Addition x y) → (Addition y x)
+             1         →        1
+
+    A rule to add an element to both sides of an equation maps
+    2-tuples to 2-tuples but one element of the image is null.
+
+       ( (Equation lhs rhs) , x ) →  ( (Equation lhs+x rhs+x) , pass )
+                 2                →                 2
+
+    In this case the 'pass' element tells the worksheet to do
+    not expect a new element in the image of the rule and leave
+    that element inplace.
+    """
+
+    # The sexps of elements from worksheet, i.e. the
+    # preimage/operands of the rule
     code = tuple(request.POST.getlist('selections[]'))
 
+    # The name of the rule to apply in form package/name
     rule = request.POST.get('rule')
 
+    # The uniqe client id ( cid ) used to refer to objets in the
+    # workspace.
     namespace_index = int( request.POST.get('namespace_index') )
 
     if not namespace_index:
         raise Exception('No namespace index given in request')
+
+    # Spawn a new generator to give out new cids to newly created
+    # objects
     uid = uidgen(namespace_index)
+
+
     args = [translate.parse_sexp(cde, uid) for cde in code]
 
     #Ugly hack to allow us to pass the uid generator and use it
@@ -119,6 +149,7 @@ def apply_def(request):
         arg.idgen = uid
 
     # Init a new lexical closure
+    # >>>>>>>>>>>>>>>>>>>>>>>>>>
     pure_wrap.new_level()
 
     # Init the local definition
@@ -128,8 +159,9 @@ def apply_def(request):
     pure_expr = pure_wrap.p2i(purify(args[0]))
     print 'Acting on', pure_expr
 
-    # Close the closure and return to the main level
     pure_wrap.restore_level()
+    # <<<<<<<<<<<<<<<<<<<<<<<<<<
+    # Close the closure and return to the main level
 
     new = translate.pure_to_python(pure_wrap.i2p(pure_expr),args[0].idgen)
 
@@ -147,8 +179,8 @@ def apply_def(request):
 @errors
 #@cache_page(CACHE_INTERVAL)
 def rules_request(request):
-
-    return render_haml_to_response('ruleslist.tpl',{'rulesets':rules.rulesets})
+    return render_haml_to_response('ruleslist.tpl',
+            {'rulesets':rules.rulesets})
 
 @login_required
 @errors
@@ -220,7 +252,7 @@ def use_infix(request):
     namespace_index = int( request.POST.get('namespace_index') )
     uid = uidgen(namespace_index)
 
-    # TOOD: This is dangerous
+    # TODO: This is dangerous
     pure_expr = pure_wrap.i2p(pure_wrap.env.eval(code))
     new = translate.pure_to_python(pure_expr, uid)
 
