@@ -13,7 +13,6 @@ class Workspace(models.Model):
 
 class Cell(models.Model):
     workspace = models.ForeignKey(Workspace, blank=False,null=False)
-    #TODO: Remove this
     index = models.IntegerField(blank=False,null=False)
 
     def __unicode__(self):
@@ -21,6 +20,7 @@ class Cell(models.Model):
 
 class Expression(models.Model):
     cell = models.ForeignKey(Cell,blank=False,null=False)
+    # TODO: code -> sexp
     code = models.TextField(max_length=10000,blank=False, null=False)
     annotation = models.TextField(max_length=100)
     index = models.IntegerField(blank=False,null=False)
