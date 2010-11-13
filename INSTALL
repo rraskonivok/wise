@@ -1,0 +1,66 @@
+General Installation on Linux / OS X:
+-------------------------------------
+
+1) Install:
+
+        python 2.x 
+        pip 
+        sqlite3
+
+    from your distributions repository. On Ubuntu these are
+    installed by default. 
+
+    *Note, if you are using Python2.7 then you will need to
+    adjust the Makefile in (4) to use '/usr/include/python2.7'.
+
+
+2) Install Pure and LLVM:
+
+   a) There are packages are source code available for Fedora, Arch,
+   OS X and a few other package managers available here:
+
+       http://code.google.com/p/pure-lang 
+
+   If your distribution does not carry pure then you can find
+   directions for compiling from source here:
+        
+        http://pure-lang.googlecode.com/hg/pure/INSTALL
+
+   b) It is highly likely that your distribution has a package for
+   LLVM, but if you need to compile from source you can find
+   directions on the pure site:
+
+        http://pure-lang.googlecode.com/hg/pure/INSTALL
+
+
+3) Install python libraries:
+
+    $ sudo pip install django gunicorn cython pysqlite
+
+4) Build the Pure module
+    
+    $ cd wise/worksheet/pure
+    $ make
+
+    You may need to adjust the the include directory in Makefile
+    if you have a nonstandard install of Python 2.6, the default
+    search path is '/usr/include/python2.6'
+
+5) Create the database:
+    
+    $ cd wise/
+    $ python mange.py syncdb
+
+    This will prompt you to create a admin user and create
+    the local database in wise.db
+
+6) Run Wise:
+    
+    $ gunicorn_django 
+
+    This will run the Wise worksheet at 'localhost:8000' by
+    default. To use a different address or port use the -b switch
+
+    Example:
+
+    $ gunicorn_django -b 192.168.0.1:1234
