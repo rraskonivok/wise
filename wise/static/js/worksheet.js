@@ -257,11 +257,11 @@ function select_term(object) {
     $('#basemode-indicator').fadeTo('fast',0.01);
 
     var clickedon = object.dom();
-    cell = get_root(object).tree.cell;
-    if(!cell) {
-        window.log(object);
-        return;
-    }
+
+    var root = get_root(object);
+
+    cell = root.tree.cell;
+
     cell.set({active: true});
 
     // Shouldn't happen since select_term is induced by a jquery

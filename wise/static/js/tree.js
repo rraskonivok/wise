@@ -136,9 +136,9 @@ function build_tree_from_json(json_input) {
     //Iterate through the children and lookup their corresponding
     //nodes and attach to tree
     for (term in json_input) {
-        index = term;
-        term = json_input[term];
-        prent = NODES.getByCid(term.id);
+        var index = term;
+        var term = json_input[term];
+        var prent = NODES.getByCid(term.id);
 
         if (index == 0) {
             T = new RootedTree(prent);
@@ -312,13 +312,15 @@ var Expression = Node.extend({
 /// Initialize a cell and all its attached nodes from a JSON
 // represenattion of the cell generateed by json_flat(PyCell)
 function build_cell_from_json(json_input) {
-    var cell = _.first(json_input);
-    var eqs_json = _.rest(json_input);
-    var top_node = build_tree_from_json(eqs_json);
+    var eqs_json = json_input[1];
+
     var new_cell = new Cell();
 
-    new_cell.add(top_node);
-    top_node.cell = new_cell;
+    _.each(eqs_json, function(eq_json) {
+            var topnode = build_tree_from_json(eq_json)
+            topnode.cell = new_cell;
+            new_cell.add(topnode);
+    });
 
     return new_cell;
 }

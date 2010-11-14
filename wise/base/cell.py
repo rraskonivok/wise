@@ -48,7 +48,8 @@ class Cell(object):
                     #'assumptions': None,
                     'eqs': [eq.id for eq in self.eqs]})
 
-        for term in self.eqs:
-            term.json_flat(lst)
+        #for term in self.eqs:
+        #    term.json_flat(lst)
+        lst.append([eq.json_flat() for eq in self.eqs])
 
         return lst
