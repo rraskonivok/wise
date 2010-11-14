@@ -201,6 +201,8 @@ def ws(request, eq_id):
         # Build the cell and link it to the top nodes of the
         # expressions inside it.
         cell = PyCell(top_nodes)
+        cell.index = index
+        cell.cid = 'cell' + str(index)
 
         py_cells.append(cell)
         json_cells.append(cell)

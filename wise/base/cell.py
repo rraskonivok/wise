@@ -44,8 +44,9 @@ class Cell(object):
         if not lst:
             lst = []
 
-        lst.append({'index': self.id,
+        lst.append({'index': self.index,
                     #'assumptions': None,
+                    'cid': 'cell'+str(self.index),
                     'eqs': [eq.id for eq in self.eqs]})
 
         #for term in self.eqs:

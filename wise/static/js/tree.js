@@ -312,12 +312,13 @@ var Expression = Node.extend({
 /// Initialize a cell and all its attached nodes from a JSON
 // represenattion of the cell generateed by json_flat(PyCell)
 function build_cell_from_json(json_input) {
+    var cell_spec = json_input[0];
     var eqs_json = json_input[1];
-
     var new_cell = new Cell();
+    new_cell.cid = cell_spec.cid;
 
     _.each(eqs_json, function(eq_json) {
-            var topnode = build_tree_from_json(eq_json)
+            var topnode = build_tree_from_json(eq_json);
             topnode.cell = new_cell;
             new_cell.add(topnode);
     });
