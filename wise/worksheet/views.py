@@ -38,6 +38,8 @@ from wise.worksheet.forms import LoginForm
 from wise.worksheet.models import Workspace, Expression, Cell
 from django.contrib.auth.models import User
 
+from wise.base.cell import Cell as PyCell
+
 CACHE_INTERVAL = 30*60 # 5 Minutes
 
 def account_login(request):
@@ -167,8 +169,9 @@ def ws(request, eq_id):
     json_cells = []
     html_cells = []
 
+    py_cells = []
+
     for index,cell in enumerate(cells):
-        json_cell = []
         html_eq = []
 
         try:
@@ -176,32 +179,40 @@ def ws(request, eq_id):
         except ObjectDoesNotExist:
             return HttpResponse('Cell is empty.')
 
+        top_nodes = []
+
         for eq in eqs:
             try:
                 # Build up the object from the sexp in the database
                 etree = parse_sexp(eq.code, uid)
                 etree.sid = eq.id
+                etree.annotation = eq.annotation
+
+                top_nodes.append(etree)
             except NameError:
                 if settings.DEBUG:
                     print 'Some symbols could not be rendered'
                 else:
                     return HttpResponse('This worksheet contains symbols that are not installed')
 
-            etree.annotation = eq.annotation
-            html_eq.append(html(etree))
-            json_cell.append(etree.json_flat())
+            #html_eq.append(html(etree))
+            #json_cell.append(etree.json_flat())
 
-        html_cells.append(cellify(''.join(html_eq),index))
-        json_cells.append(json_cell)
+        # Build the cell and link it to the top nodes of the
+        # expressions inside it.
+        cell = PyCell(top_nodes)
+
+        py_cells.append(cell)
+        json_cells.append(cell)
 
     return render_to_response('worksheet.html', {
         'title': ws.name,
         'ws_id': ws.id,
-        'equations': html_cells,
+        'equations': [html(cell) for cell in py_cells],
         'username': request.user.username,
         'namespace_index': uid.next()[3:],
         'cell_index': len(cells),
-        'json_cells': json.dumps(json_cells),
+        'json_cells': json.dumps([json_flat(cell) for cell in py_cells]),
         })
 
 @login_required

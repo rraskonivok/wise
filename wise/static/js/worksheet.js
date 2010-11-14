@@ -258,6 +258,10 @@ function select_term(object) {
 
     var clickedon = object.dom();
     cell = get_root(object).tree.cell;
+    if(!cell) {
+        window.log(object);
+        return;
+    }
     cell.set({active: true});
 
     // Shouldn't happen since select_term is induced by a jquery
@@ -912,12 +916,9 @@ function new_line(type) {
             traverse_lines();
 
             var eq = build_tree_from_json(data.new_json);
-            //var new_cell = new Cell([eq]);
-            //console.log(new_cell);
 
             eq.cell = active_cell;
-            WORKSHEET.at(0).add(eq);
-            //CELL_INDEX = response.cell_index;
+            active_cell.add(eq);
 
         }
 
@@ -1386,18 +1387,33 @@ function init_nodes() {
     NODES     = new Backbone.Collection();
     WORKSHEET = new Worksheet();
 
-    for(var cell in JSON_TREE) {
-        cell_index = cell;
-        var cell = JSON_TREE[cell];
-        //var eqs = [];
-        //new_cell.dom = $('#workspace').find('[data-index='+cell_index+']');
-        var new_cell = new Cell();
-        for(var eq in cell){
-            var eq_index = eq;
-            var eq = cell[eq];
-            var top_node = build_tree_from_json(eq);
-            new_cell.add(top_node);
-        }
+    _.each(JSON_TREE, function(cell_json) {
+        var new_cell = build_cell_from_json(cell_json);
         WORKSHEET.add(new_cell);
-    }
+
+        var cs = new CellSelection({
+            model: new_cell,
+        });
+        cs.render();
+
+        $('#cell_selection').append(cs.el);
+    });
+
+    // Make the new elements selectable
+    traverse_lines();
+
+    //for(var cell in JSON_TREE) {
+    //    cell_index = cell;
+    //    var cell = JSON_TREE[cell];
+    //    //var eqs = [];
+    //    //new_cell.dom = $('#workspace').find('[data-index='+cell_index+']');
+    //    var new_cell = new Cell();
+    //    for(var eq in cell){
+    //        var eq_index = eq;
+    //        var eq = cell[eq];
+    //        var top_node = build_cell_from_json(eq);
+    //        new_cell.add(top_node);
+    //    }
+    //    WORKSHEET.add(new_cell);
+    //}
 }

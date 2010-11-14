@@ -309,13 +309,16 @@ var Expression = Node.extend({
 
 // Utilities for JSON <-> Expression Trees
 
+/// Initialize a cell and all its attached nodes from a JSON
+// represenattion of the cell generateed by json_flat(PyCell)
 function build_cell_from_json(json_input) {
     var cell = _.first(json_input);
     var eqs_json = _.rest(json_input);
     var top_node = build_tree_from_json(eqs_json);
     var new_cell = new Cell();
+
     new_cell.add(top_node);
-    new_cell.at(0).cell = new_cell;
+    top_node.cell = new_cell;
 
     return new_cell;
 }
@@ -357,6 +360,10 @@ function get_parent(node) {
 }
 
 function get_root(node) {
+    if(!node.tree) {
+        window.log('Node is unattached',node);
+        return;
+    }
     if(node.get('toplevel') != true) {
         return get_root(node.tree.root);
     } else {
