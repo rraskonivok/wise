@@ -20,8 +20,6 @@ import panel
 
 from logger import debug, getlogger
 
-from decorator import decorator
-
 from django.template import Template, Context
 from django.conf import settings
 from django.core import serializers

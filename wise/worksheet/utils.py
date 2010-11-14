@@ -24,7 +24,7 @@ from django.utils import simplejson as json
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_page
 
-import worksheet.shpaml
+from worksheet import shpaml
 
 def errors(f):
     '''Wraps errors out to server log and javascript popup'''

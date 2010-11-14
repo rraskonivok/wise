@@ -23,12 +23,7 @@ Wise includes source from many open source projects including:
 
 * jQuery / jQuery UI - <http://jquery.com/>
 * Django - <http://www.djangoproject.com/>
-* underscore.js - <http://documentcloud.github.com/underscore>
 * backbone.js - <http://documentcloud.github.com/backbone>
-* django-reversion <http://code.google.com/p/django-reversion>
-* web-app-theme <http://github.com/pilu/web-app-theme>
+* underscore.js - <http://documentcloud.github.com/underscore>
+* MathJax - <http://www.mathjax.org>
 * Funcparserlib - <http://code.google.com/p/funcparserlib>
-* SHPAML - <http://shpaml.webfactional.com>
-* jQuery Hotkeys - <http://github.com/tzuryby/hotkeys>
-* jQuery pnotify - <http://plugins.jquery.com/project/pnotify>
-* Decorator module - <http://pypi.python.org/pypi/decorator>

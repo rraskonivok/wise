@@ -399,7 +399,7 @@ MathJax.Hub.Config({
     //  This controls the global scaling of mathematics as compared to the 
     //  surrounding text.  Values between 100 and 133 are usually good choices.
     //
-    scale: 100,
+    scale: 150,
     
     //
     //  This is a list of the fonts to look for on a user's computer in
@@ -460,7 +460,7 @@ MathJax.Hub.Config({
     //  Set this to false to disable the menu.  When true, the MathMenu 
     //  items below configure the actions of the menu.
     //  
-    showMathMenu: true,
+    showMathMenu: false,
 
     //
     //  This allows you to define or modify the styles used to display
