@@ -46,6 +46,7 @@ class Cell(object):
 
         lst.append({'index': self.index,
                     #'assumptions': None,
+                    'id' : self.id,
                     'cid': 'cell'+str(self.index),
                     'eqs': [eq.id for eq in self.eqs]})
 

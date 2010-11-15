@@ -911,6 +911,8 @@ function new_line(type) {
             var eq = build_tree_from_json(data.new_json);
 
             eq.cell = active_cell;
+            eq.set({cell: active_cell.id});
+
             active_cell.addExpression(eq);
 
         }

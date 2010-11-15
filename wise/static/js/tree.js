@@ -37,7 +37,7 @@
 //               Cell  Cell  ...                                 
 //                |                                  
 //                |          .                       
-//            RootedTree      .                             
+//         Expression Tree    .                             
 //                |            .                       
 //                |                                   
 //            Expression ( toplevel Node i.e Equation )
@@ -73,29 +73,25 @@ var Cell = Backbone.Model.extend({
             workspace: WORKSHEET_ID,
             active: false,
         });
-        this._expressions = new Backbone.Collection(exs);
+
+        this._expressions = [];
     },
 
     addExpression: function(exs) {
-        this._expressions.add(exs);
+        exs.set({index: this._expressions.length});
+        this._expressions.push(exs);
         this.change();
+    },
+
+    sexps: function() {
+        return _.invoke(this._expressions, 'sexp');
     },
 
     dom: function() {
         return $('#'+this.cid);
-    }
+    },
 
 });
-
-// Lookup Table for translation between DOM objects and Node objects
-
-function RootedTree(root) {
-    root.tree = this;
-    root.depth = 1;
-    root._parent = this;
-    this.root = root;
-    this.levels[0] = [root];
-}
 
 
 function build_tree_from_json(json_input) {
@@ -146,8 +142,13 @@ function build_tree_from_json(json_input) {
         var prent = NODES.getByCid(term.id);
 
         if (index == 0) {
-            T = new RootedTree(prent);
+            T = new ExpressionTree(prent);
+            T.set({
+                sexp: 'testing',
+                annotation: 'was here',
+            })
         }
+
 
         for (var child in term.children) {
             child = term.children[child];
@@ -175,9 +176,6 @@ var RootedTree = Backbone.Model.extend({
         this.levels[0] = [root];
     },
 
-    sexp: function () {
-        return this.root.sexp();
-    },
 
     walk: function() {
 
@@ -192,6 +190,17 @@ var RootedTree = Backbone.Model.extend({
         }
 
     },
+});
+
+ExpressionTree = RootedTree.extend({
+    
+    url: '/api/exp/',
+
+    sexp: function () {
+        return this.root.sexp();
+    },
+
+
 });
 
 // This a generic Node ( of which ExpressionNode ) inherits.
@@ -279,10 +288,10 @@ var Node = Backbone.Model.extend({
             // Assign the new node the index of the old node 
             // and inform the parent
             this._parent.children[this.index] = newNode;
+            this._parent.childrenChanged();
         }
 
         this.delNode();
-        this.childrenChanged();
     }
 
 });
@@ -292,7 +301,7 @@ var Expression = Node.extend({
 
     childrenChanged: function() {
         console.log('math changed');
-        //this.msexp();
+        this.msexp();
     },
 
     //Generates the array of strings which is compiled iff we
@@ -311,7 +320,11 @@ var Expression = Node.extend({
     },
 
     sexp: function() {
-        if(this._math.length == 0) { this.msexp(); }
+//        if(this._math.length == 0) { this.msexp(); }
+
+        //TODO: REMOVE THIS!!!!!
+        this.msexp();
+
         return _.flatten(this._math).join(' ')
     },
 
@@ -326,11 +339,16 @@ function build_cell_from_json(json_input) {
     var eqs_json = json_input[1];
     var new_cell = new Cell();
     new_cell.cid = cell_spec.cid;
+    new_cell.set({id: cell_spec.id})
 
     _.each(eqs_json, function(eq_json) {
-            var topnode = build_tree_from_json(eq_json);
-            topnode.cell = new_cell;
-            new_cell.addExpression(topnode);
+            var expr_tree = build_tree_from_json(eq_json);
+            expr_tree.cell = new_cell;
+
+            expr_tree.set({cell: new_cell.id});
+            expr_tree.set({index: 3});
+
+            new_cell.addExpression(expr_tree);
     });
 
     return new_cell;

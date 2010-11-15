@@ -26,15 +26,24 @@ class CellHandeler(BaseHandler):
     def create(self, request):
         request_data = self.flatten_dict(request.data)
 
-        ws_id = request_data['ws']
-        #index = request_data['index']
+        ws_id = request_data['workspace']
+        index = request_data['index']
 
         ws = Workspace.objects.get(id=ws_id)
-        em = self.model(workspace=ws,index=1)
+        em = self.model(workspace=ws,index=index)
         em.save()
 
         # Return the JSON of the new model for Backbone to inject
         # into the model
+        return em
+
+    def update(self, request):
+        request_data = self.flatten_dict(request.data)
+
+        cell_id = request_data['id']
+        em = self.model.objects.get(id=cell_id)
+        em.save()
+
         return em
 
     @classmethod
@@ -63,6 +72,13 @@ class ExpressionHandeler(BaseHandler):
 
     def create(self, request):
         request_data = self.flatten_dict(request.data)
+
+        cell_id = request_data['cell']
+        sexp = request_data['sexp']
+        annotation = request_data['annotation']
+        index = request_data['index']
+
+        print cell_id, sexp, annotation, index
 
         # Return the JSON of the new model for Backbone to inject
         # into the model
