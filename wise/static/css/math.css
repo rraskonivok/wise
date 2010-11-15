@@ -167,11 +167,23 @@
 }
 
 .cell {
+    border-top: 1px solid #07B;
     border-right: 5px solid #07B;
     margin-bottom: 3px;
     min-height: 25px;
+    margin-bottom: 20px;
+}
+
+.cell .lines {
+    margin-top: 3px;
+    margin-bottom: 3px;
+    border-left: 5px solid #07B;
 }
 
 .cell.active {
     border-right: 5px solid red;
+}
+
+.cell .cellbuttons {
+    float :right;
 }

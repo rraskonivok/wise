@@ -13,6 +13,9 @@ Worksheet specific javascript
   <!-- Worksheet UI functionality -->
  <script src="/static/js/worksheet_ui.js" type="text/javascript"></script>
 
+  <!-- Worksheet UI functionality -->
+ <script src="/static/js/editable.js" type="text/javascript"></script>
+
   <!-- Worksheet Controllers -->
  <script src="/static/js/worksheet_managers.js" type="text/javascript"></script>
 
@@ -120,11 +123,14 @@ Init Function + Global Vars
         $('button','#workspace').parent().buttonset();
     
         //Make equations sortable within each cell.
-        //$(".lines tbody").sortable({
-        //    //handle: '.hand',
-        //}).disableSelection();
+        $(".cell table").sortable({
+            handle: '.hand',
+        });
+
+        $('.lines').disableSelection();
     
         bind_hover_toggle();
+        //$('.editable').editable({loadurl: '#', loadtype: 'POST'})
 
     }
 </script>
