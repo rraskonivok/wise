@@ -56,7 +56,7 @@ window.log = function(){
 
 // Begin Debuggin' Stuff
 function showmath() {
-   return selection.at(0).smath();
+   return selection.at(0).sexp();
 }
 
 function shownode() {
@@ -69,7 +69,7 @@ function shownode() {
 function rebuild_node() {
     //Shit went down, so rebuild the sexp
     //apply_transform('base/Rebuild',[selection.at(0)]);
-    selection.at(0).math();
+    selection.at(0).msexp();
 }
 
 DISABLE_SIDEBAR = true;
@@ -107,13 +107,6 @@ $.fn.id = function () {
 
 $.fn.cid = function () {
     return $(this).attr('id')
-};
-
-$.fn.math = function () {
-    var node = NODES.getByCid($(this).id());
-    node.math();
-    var sexp = node.smath();
-    return sexp;
 };
 
 $.fn.is_toplevel = function() {
@@ -597,7 +590,7 @@ function apply_rule(rule, operands) {
 function apply_def(def, selections) {
     var data = {};
 
-    data.def = def.math()
+    data.def = def.sexp()
     data.namespace_index = NAMESPACE_INDEX;
 
     if (selections == null) {
@@ -816,7 +809,7 @@ function apply_transform(transform, operands) {
                 if(obj.constructor == String) {
                     return obj;
                 } else {
-                    return obj.smath();
+                    return obj.sexp();
                 } 
             }
         );
@@ -865,7 +858,7 @@ function apply_transform(transform, operands) {
                         graft_tree_from_json(
                             NODES.getByCid(obj.cid),
                             response.new_json[i],
-                            data.transform
+                            postdata.transform
                         );
 
                         nsym = obj.dom().replace(response.new_html[i]);
@@ -874,7 +867,7 @@ function apply_transform(transform, operands) {
                         graft_tree_from_json(
                             NODES.getByCid(obj.cid), 
                             response.new_json[i],
-                            data.transform
+                            postdata.transform
                         );
                         nsym = obj.dom().replace(response.new_html[i]);
                     }
@@ -918,7 +911,7 @@ function new_line(type) {
             var eq = build_tree_from_json(data.new_json);
 
             eq.cell = active_cell;
-            active_cell.add(eq);
+            active_cell.addExpression(eq);
 
         }
 
@@ -1401,19 +1394,4 @@ function init_nodes() {
 
     // Make the new elements selectable
     traverse_lines();
-
-    //for(var cell in JSON_TREE) {
-    //    cell_index = cell;
-    //    var cell = JSON_TREE[cell];
-    //    //var eqs = [];
-    //    //new_cell.dom = $('#workspace').find('[data-index='+cell_index+']');
-    //    var new_cell = new Cell();
-    //    for(var eq in cell){
-    //        var eq_index = eq;
-    //        var eq = cell[eq];
-    //        var top_node = build_cell_from_json(eq);
-    //        new_cell.add(top_node);
-    //    }
-    //    WORKSHEET.add(new_cell);
-    //}
 }

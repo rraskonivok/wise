@@ -30,25 +30,25 @@
 //                                                                
 //  As a graph the structure of the workshet looks like:                                                              
 //                                                                
-//                    Worksheet                                    
-//                        |                               
-//                       / \                              
-//                      /   \                             
-//                    Cell  Cell  ...                                 
-//                     |                                  
-//                     |          .                       
-//                 RootedTree      .                             
-//                     |            .                       
-//                     |                                   
-//                 Expression ( toplevel Node i.e Equation )
-//                     |                                   
-//                    / \
-//                   /   \                              
-//                 LHS   RHS  ( Child expression Nodes )
-//                  |     |
-//                  .     .
-//                  .     .
-//                  .     .
+//               Worksheet                                    
+//                   |                               
+//                  / \                              
+//                 /   \                             
+//               Cell  Cell  ...                                 
+//                |                                  
+//                |          .                       
+//            RootedTree      .                             
+//                |            .                       
+//                |                                   
+//            Expression ( toplevel Node i.e Equation )
+//                |                                   
+//               / \
+//              /   \                              
+//            LHS   RHS  ( Child expression Nodes )
+//             |     |
+//             .     .
+//             .     .
+//             .     .
 
 var Worksheet = Backbone.Collection.extend({
     url: '/ws',
@@ -65,26 +65,20 @@ var Worksheet = Backbone.Collection.extend({
 
 var Cell = Backbone.Model.extend({
 //    url: '/cell',
-    equations: null,
-    assumptions: null,
-    equations: [],
     url: '/api/cell/',
         
-    initialize: function() {
+    initialize: function(exs) {
         this.set({
-            ws: WORKSHEET_ID,
-        })
+            index: CELL_INDEX,
+            workspace: WORKSHEET_ID,
+            active: false,
+        });
+        this._expressions = new Backbone.Collection(exs);
     },
 
-    // This isn't a Collection but we add some functions
-    // to make it behave like one...
-    add: function(eq) {
-        //this.change();
-        this.equations.push(eq);
-    },
-
-    at: function(index) {
-        return this.equations[index];
+    addExpression: function(exs) {
+        this._expressions.add(exs);
+        this.change();
     },
 
     dom: function() {
@@ -110,6 +104,17 @@ function build_tree_from_json(json_input) {
 
     //Lookup table which establishes a correspondance between the DOM
     //ids (i.e. cidd314 ) and the Node objects in the expression tree.
+
+    //                                          
+    //    (1)                     (3)          
+    //    (2)                   /               
+    //    (3)      --->  T - (1)       (5)  .....
+    //    (4)                   \    /          
+    //    (5)                     (2)           
+    //     .                         \           
+    //     .                          (4)       
+    //     .
+    //                                         
 
     for (var term in json_input) {
         term = json_input[term];
@@ -170,8 +175,8 @@ var RootedTree = Backbone.Model.extend({
         this.levels[0] = [root];
     },
 
-    smath: function () {
-        return this.root.smath();
+    sexp: function () {
+        return this.root.sexp();
     },
 
     walk: function() {
@@ -189,6 +194,7 @@ var RootedTree = Backbone.Model.extend({
     },
 });
 
+// This a generic Node ( of which ExpressionNode ) inherits.
 var Node = Backbone.Model.extend({
     url: '/eq',
     tree: null,
@@ -230,11 +236,13 @@ var Node = Backbone.Model.extend({
 
         node.tree = this.tree;
         node.depth = this.depth + 1;
-        node._parent = this
+        node._parent = this;
         node.index = this.children.length;
 
         this.children.push(node);
         (this.tree.levels[node.depth - 1]).push(node);
+
+        this.childrenChanged();
     },
 
     //      O           O   
@@ -245,8 +253,12 @@ var Node = Backbone.Model.extend({
         // that occur when a node is unselected
         this.set({selected: false});
 
+        // Destroy all callbacks
+        this.unbind();
+
         //Eat up the node's children recursively
         _.invoke(this.children,'delNode');
+
         //Destroy the node itself
         NODES.remove(this);
     },
@@ -270,7 +282,7 @@ var Node = Backbone.Model.extend({
         }
 
         this.delNode();
-
+        this.childrenChanged();
     }
 
 });
@@ -278,30 +290,28 @@ var Node = Backbone.Model.extend({
 var Expression = Node.extend({
     _math: [],
 
-    smath: function() {
-        //TODO: Until we implement sexp bubbling, just call this.math
-        //everytime we need the sexp
-        //if(this._math.length == 0) { this.math(); }
-       
-        this.math();
-        return _.flatten(this._math).join(' ')
+    childrenChanged: function() {
+        console.log('math changed');
+        //this.msexp();
     },
 
     //Generates the array of strings which is compiled iff we
     //need to get a sexp.
-    math: function() {
+    msexp: function() {
         var head = this.get('type')
 
+        // Recursivly apply msexp on the children and flatten the
+        // array
         if(!this.hasChildren()) {
             this._math = sexp(head, this.get('args'));
         } else {
-            this._math = sexp(head, _.invoke(this.children,'math') );
+            this._math = sexp(head, _.invoke(this.children,'msexp') );
         }
         return this._math;
     },
 
     sexp: function() {
-        if(this._math.length == 0) { this.math(); }
+        if(this._math.length == 0) { this.msexp(); }
         return _.flatten(this._math).join(' ')
     },
 
@@ -320,7 +330,7 @@ function build_cell_from_json(json_input) {
     _.each(eqs_json, function(eq_json) {
             var topnode = build_tree_from_json(eq_json);
             topnode.cell = new_cell;
-            new_cell.add(topnode);
+            new_cell.addExpression(topnode);
     });
 
     return new_cell;
@@ -334,9 +344,9 @@ function graft_tree_from_json(old_node, json_input, transformation) {
         //error('Could not attach branch');
         return;
     }
-    old_node.math();
+    old_node.msexp();
     newtree.root.transformed_by = transformation;
-    newtree.root.prev_state = old_node.smath();
+    newtree.root.prev_state = old_node.sexp();
 
     old_node.swapNode(newtree.root);
 }
