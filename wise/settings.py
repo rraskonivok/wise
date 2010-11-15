@@ -4,7 +4,7 @@ import os
 import worksheet.pure.prelude
 
 APPEND_SLASH = True
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 LOG_FILE = 'session.log'
 
@@ -17,8 +17,8 @@ MANAGERS = ADMINS
 
 # Set your database information here
 
-DATABASE_ENGINE = 'sqlite3'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-DATABASE_NAME = 'wise.db'             # Or path to database file if using sqlite3.
+DATABASE_ENGINE = 'sqlite3'    # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+DATABASE_NAME = 'wise.db'      # Or path to database file if using sqlite3.
 DATABASE_USER = ''             # Not used with sqlite3.
 DATABASE_PASSWORD = ''         # Not used with sqlite3.
 DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
@@ -74,6 +74,7 @@ MIDDLEWARE_CLASSES = (
 )
 
 ROOT_URLCONF = 'wise.urls'
+ROOTDIR = os.path.abspath(os.path.dirname(__file__))
 
 # Template directories include:
 #
@@ -82,9 +83,11 @@ ROOT_URLCONF = 'wise.urls'
 # worksheet/$PACKAGES/templates
 
 TEMPLATE_DIRS = tuple(
-        ['templates'] +
-        [('%s/templates' % pack) for pack in INSTALLED_MATH_PACKAGES]
+        [ROOTDIR +'/templates'] +
+        [ROOTDIR + ('/%s/templates' % pack) for pack in INSTALLED_MATH_PACKAGES]
 )
+
+print TEMPLATE_DIRS
 
 INSTALLED_APPS = (
     'django.contrib.auth',

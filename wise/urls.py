@@ -1,6 +1,6 @@
 from django.conf.urls.defaults import *
-
 from django.contrib import admin
+from django.conf import settings
 
 admin.autodiscover()
 
@@ -46,14 +46,11 @@ urlpatterns = patterns('',
      (r'^docs/(?P<path>.*)$', 'django.views.static.serve', {'document_root': 'docs/_build/html','show_indexes': True}),
 
      (r'^api/', include('wise.api.urls')),
+
+     # TODO: Firefox 4 has some issue with OpenType fonts being loaded 
+     # from /static when the current page is /ws since it is one level 
+     # up... still looking into how to fix this.
+     (r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
+     (r'^ws/mathjax/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT + '/mathjax'}),
 )
 
-from django.conf import settings
-
-# TODO: Firefox 4 has some issue with OpenType fonts being loaded 
-# from /static when the current page is /ws since it is one level 
-# up... still looking into how to fix this.
-if settings.DEBUG:
-    urlpatterns += patterns('',
-        (r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
-    )
