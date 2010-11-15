@@ -39,18 +39,18 @@ Greeks = ButtonPanel(name='Greek',
 # Elementary Operations
 #--------------------
 
-elem_operations = [('x+y',objects.Addition),
-              ('x \\times y',objects.Product),
-              ('x^y',objects.Power),
-              ('-x',objects.Negate),
-              ('x / y',objects.Rational),
-              ('a + bi',objects.ComplexNumeric),
-              ('\\text{sgn}',objects.Sgn),
+elem_operations = [('add.svg',objects.Addition),
+              ('mul.svg',objects.Product),
+              ('pow.svg',objects.Power),
+              ('neg.svg',objects.Negate),
+              ('div.svg',objects.Rational),
+              ('complex.svg',objects.ComplexNumeric),
+#              ('\\text{sgn}',objects.Sgn),
 #              ('\\delta',objects.DiracDelta),
 #              ('Abs',objects.Abs),
-              ('\\sqrt{x}',objects.Sqrt),
-              ('e^{x}',objects.Exp),
-              ('\\ln{x}',objects.Ln),
+              ('sqrt.svg',objects.Sqrt),
+              ('exp.svg',objects.Exp),
+              ('log.svg',objects.Ln),
              ]
 
 Operations = ButtonPanel(name='Algebraic Operations',

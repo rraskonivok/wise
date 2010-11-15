@@ -23,6 +23,7 @@ urlpatterns = patterns('',
      (r'^ws/(?P<eq_id>\d+)/$', 'wise.worksheet.views.ws'),
      (r'^ws/(?P<eq_id>\d+)/save/$', 'wise.worksheet.ajax.save_workspace'),
      (r'^palette/$', 'wise.worksheet.views.palette'),
+     (r'^rule_request/$', 'wise.worksheet.ajax.rules_request'),
      (r'^new_workspace/$', 'wise.worksheet.views.new_workspace'),
      (r'^del_workspace/$', 'wise.worksheet.views.del_workspace'),
 

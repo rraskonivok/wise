@@ -40,9 +40,7 @@ html {
 }
 
 .palette button {
-    min-width: 55px;
-    min-height: 40px;
-    height: inherit;
+    margin: 0px !important;
 }
 
 #math_palette { 

@@ -72,7 +72,7 @@ function rebuild_node() {
     selection.at(0).msexp();
 }
 
-DISABLE_SIDEBAR = true;
+DISABLE_SIDEBAR = false;
 // End Debuggin' Stuff
 
 //----------------------
@@ -1328,20 +1328,20 @@ function load_math_palette() {
 
 //Stupid function to make buttons in each panel have the same height
 function make_buttons_uniform(obj) {
-    var heights = [];
-    buttons = $(obj).find('button');
+    //var heights = [];
+    //buttons = $(obj).find('button');
 
-    _.each(buttons, function(btn) {
-        heights.push($(btn).height()); 
-    });
+    //_.each(buttons, function(btn) {
+    //    heights.push($(btn).height()); 
+    //});
 
-    var max = _.max(heights);
-    if(max != 0) {
-        _.each(buttons, function(btn) {
-            $(btn).height(max + 5); 
-            $(btn).width($(btn).width() + 5); 
-        });
-    }
+    //var max = _.max(heights);
+    //if(max != 0) {
+    //    _.each(buttons, function(btn) {
+    //        $(btn).height(max + 5); 
+    //        $(btn).width($(btn).width() + 5); 
+    //    });
+    //}
 }
 
 function palette(num) {

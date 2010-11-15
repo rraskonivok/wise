@@ -300,7 +300,6 @@ var Expression = Node.extend({
     _math: [],
 
     childrenChanged: function() {
-        console.log('math changed');
         this.msexp();
     },
 
