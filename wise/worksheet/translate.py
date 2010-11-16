@@ -365,6 +365,7 @@ def python_to_pure(obj,wrap_infix=True):
     else:
         return obj._pure_()
 
+@memoize
 def parse_sexp(code, uid):
     parsed = ParseTree(code)
     parsed.gen_uids(uid)

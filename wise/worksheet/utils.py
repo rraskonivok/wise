@@ -41,6 +41,24 @@ def errors(f):
                 return HttpResponse(json.dumps({'error': 'A server-side error occured'}))
     return wrapper
 
+def _memoize(func, *args, **kw):
+    if kw: # frozenset is used to ensure hashability
+        key = args, frozenset(kw.iteritems())
+    else:
+        key = args
+    cache = func.cache # attributed added by memoize
+    if key in cache:
+        if settings.DEBUG:
+            print 'Using cached for key:', str(key)
+        return cache[key]
+    else:
+        cache[key] = result = func(*args, **kw)
+        return result
+
+def memoize(f):
+    f.cache = {}
+    return decorator(_memoize, f)
+
 def fallback(fallback):
     '''Try to run f, if f returns None or False then run fallback'''
     def options(f):
@@ -174,6 +192,8 @@ def purify(obj):
     else:
         return obj._pure_()
 
+
+@memoize
 def load_haml_template(fname):
     '''Returns a haml template specified by filename from the
     locations specified in TEMPLATE_DIRS '''
@@ -182,6 +202,8 @@ def load_haml_template(fname):
     else:
         tps, tpo = loader.find_template_source(fname)
         return template.Template(haml(tps))
+
+
 
 #-------------------------------------------------------------
 # Hashing

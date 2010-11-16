@@ -1,10 +1,15 @@
+try:
+    from gevent import monkey; monkey.patch_all()
+except:
+    pass
+
 import os
 
 #Eagerly load the pure module to avoid an initial hiccup when a worker starts
 import worksheet.pure.prelude
 
 APPEND_SLASH = True
-DEBUG = False
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 LOG_FILE = 'session.log'
 
@@ -25,7 +30,8 @@ DATABASE_HOST = ''             # Set to empty string for localhost. Not used wit
 DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
 
 # ('base') is the minimum needed to run
-INSTALLED_MATH_PACKAGES = ('base','logic','calculus')
+#INSTALLED_MATH_PACKAGES = ('base','logic','calculus')
+INSTALLED_MATH_PACKAGES = ('base',)
 
 # Change to your desired cache or disable. Initially you may need
 # to run 
@@ -121,4 +127,4 @@ IGNORE_PATHS = False
 # aren't any hiccups when executing Pure functions initially.
 # This is experimental and is also quite slow and breaks
 # more often then not.
-PRECOMPILE  = False
+PRECOMPILE  = True

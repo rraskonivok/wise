@@ -54,7 +54,8 @@ cmp x y = ~(cmp y x) otherwise ;
 */
 
 
-sump x+y = 1 ; sump x = 0 ;
+//sump x+y = 1 ; 
+sump x = 0 ;
 
 
 /* :Name: ``base`` x
@@ -197,7 +198,7 @@ atan2 y x = atan (rational y x) if numberp x && x > 0;
     ------------ 
 */
 
-abs (mul x y) = mul (abs x) (abs y);
+//abs (mul x y) = mul (abs x) (abs y);
 
 /*  ..
     Complex Manipulation
@@ -442,7 +443,7 @@ with
     x+0 = x ;
     a+b = ( (constant a) + (constant b) ) * (term a) if ((term a) === (term b)) and (~numberp a && ~numberp b) ;
     a+b+c = a + ((constant b) + (constant c)) * (term b) if (term b) === (term c) ;
-    a+b = b+a if (cmp b a) && ~(sump a) ;
+//    a+b = b+a if (cmp b a) && ~(sump a) ;
     a+b+c = a+c+b if cmp c b ;
     a+(b+c) = a+b+c ;
     x-x = 0;

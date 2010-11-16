@@ -72,6 +72,15 @@ function rebuild_node() {
     selection.at(0).msexp();
 }
 
+// Beat on the server
+function stress_test() {
+    while(true) {
+        apply_rule('algebra_normal',['( Addition (Variable x) (Addition (Variable x) (Variable x)))']);
+        sleep(300);
+        console.log('done');
+    }    
+}
+
 DISABLE_SIDEBAR = false;
 // End Debuggin' Stuff
 
@@ -520,7 +529,16 @@ function apply_rule(rule, operands) {
         operands = selection.toArray();
 
     } else {
-        data.selections = _.invoke(operands,'sexp');
+        data.selections = _.map(operands, 
+            function(obj) { 
+                if(obj.constructor == String) {
+                    return obj;
+                } else {
+                    return obj.sexp();
+                } 
+            }
+        );
+        //data.selections = _.invoke(operands,'sexp');
     }
 
     $.post("/cmds/apply_rule/", data, function (response) {
