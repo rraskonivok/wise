@@ -1,6 +1,6 @@
 <div class="cell" id="cell{{index}}">
     <div class="cellbuttons">
-        <img src="/static/img/icons/add.png">
+    <span onclick="javascript:new_line('eq','cell{{index}}');" class="ui-icon ui-icon-circle-plus"></span>
     </div>
         {% for eq in eqs %}
             {{ eq }}

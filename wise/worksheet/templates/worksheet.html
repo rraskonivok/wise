@@ -5,7 +5,12 @@ Worksheet specific javascript
 -------------------------- #}
 {% block includes %}
   <!-- Load MathJax -->
- <script type="text/javascript" src="/static/mathjax/MathJax.js"></script>
+
+ <!--<script type="text/javascript" src="/static/js/mathjax/MathJax.js"></script>-->
+
+ <!-- Using /ws/mathjax/ avoids Firefox strange same-origin
+ policy for otf web fonts -->
+ <script type="text/javascript" src="/ws/mathjax/MathJax.js"></script>
 
   <!-- Worksheet functionality -->
  <script src="/static/js/worksheet.js" type="text/javascript"></script>
@@ -160,15 +165,13 @@ Equations
   <div class="secondary-navigation">
     <ul class="wat-cf">
       <li class="active first"><a href="#block-text">Worksheet</a></li>
-      <li><a href="javascript:new_cell()">New Cell</a></li>
-      <li><a href="javascript:new_line('eq')">New Equation</a></li>
-      <li><a href="javascript:new_line('def')">New Definition</a></li>
-      <li><a href="javascript:new_line('func')">New Function</a></li>
     </ul>
   </div>
   <div class="content">
 
-    <div id="cell_selection" class="pagination"></div>
+    <div id="cell_selection" class="pagination">
+        <a class="active" href="javascript:new_cell()">New Cell</a>
+    </div>
     <h2 class="title">{{title|title}}</h2>
     <div class="inner">
       <hr />

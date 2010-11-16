@@ -253,8 +253,12 @@ function select_term(object) {
 
     var root = get_root(object);
 
-    cell = root.tree.cell;
+    // If there is a active cell make it inactive
+    if(active_cell) {
+        active_cell.set({active: false});
+    }
 
+    cell = root.tree.cell;
     cell.set({active: true});
 
     // Shouldn't happen since select_term is induced by a jquery
@@ -884,11 +888,15 @@ function apply_transform(transform, operands) {
         }});
 }
 
-function new_line(type) {
+function new_line(type, index) {
     var data = {};
     data.namespace_index = NAMESPACE_INDEX;
     data.cell_index = CELL_INDEX;
     data.type = type;
+
+    if(index != undefined) {
+        active_cell = WORKSHEET.getByCid(index);
+    }
 
     if(!active_cell) {
         error("Select a cell to insert into");

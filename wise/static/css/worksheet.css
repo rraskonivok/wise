@@ -126,8 +126,6 @@ html {
 }
 
 .pagination .active {
-    background-color: #576C82;
-    color: white;
 }
 
 /* Applied to containers when we expand them */

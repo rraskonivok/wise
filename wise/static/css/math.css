@@ -167,11 +167,14 @@
 }
 
 .cell {
-    border-top: 1px solid #07B;
-    border-right: 5px solid #07B;
-    margin-bottom: 3px;
+    margin-bottom: 3px; 
+    border-right: 5px solid #ccc;
+    border-top: 5px solid #ccc;  
     min-height: 25px;
     margin-bottom: 20px;
+}
+
+.cell:hover {
 }
 
 .cell .lines {
