@@ -1,12 +1,12 @@
-try:
-    from gevent import monkey; monkey.patch_all()
-except:
-    pass
+#try:
+#    from gevent import monkey; monkey.patch_all()
+#except:
+#    pass
 
 import os
 
 #Eagerly load the pure module to avoid an initial hiccup when a worker starts
-import worksheet.pure.prelude
+import pure.prelude
 
 APPEND_SLASH = True
 DEBUG = True
@@ -29,7 +29,7 @@ DATABASE_PASSWORD = ''         # Not used with sqlite3.
 DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
 DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
 
-# ('base') is the minimum needed to run
+# ('base',) is the minimum needed to run
 #INSTALLED_MATH_PACKAGES = ('base','logic','calculus')
 INSTALLED_MATH_PACKAGES = ('base',)
 
@@ -127,4 +127,4 @@ IGNORE_PATHS = False
 # aren't any hiccups when executing Pure functions initially.
 # This is experimental and is also quite slow and breaks
 # more often then not.
-PRECOMPILE  = True
+PRECOMPILE  = False

@@ -8,14 +8,14 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
-import pure_wrap
-
 import traceback
 import parser
 from transforms import get_transform_by_path
 
-import mathobjects
-from translate import parse_sexp
+import wise.translators.mathobjects as mathobjects
+import wise.translators.pure_wrap as pure_wrap
+from wise.translators.pytopure import parse_sexp
+
 import panel
 
 from logger import debug, getlogger
@@ -32,12 +32,11 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.views.decorators.cache import cache_page
+from django.contrib.auth.models import User
 
 from wise.worksheet.utils import *
 from wise.worksheet.forms import LoginForm
 from wise.worksheet.models import Workspace, Expression, Cell
-from django.contrib.auth.models import User
-
 from wise.base.cell import Cell as PyCell
 
 CACHE_INTERVAL = 30*60 # 5 Minutes
@@ -182,18 +181,12 @@ def ws(request, eq_id):
         top_nodes = []
 
         for eq in eqs:
-            try:
-                # Build up the object from the sexp in the database
-                etree = parse_sexp(eq.code, uid)
-                etree.sid = eq.id
-                etree.annotation = eq.annotation
+            # Build up the object from the sexp in the database
+            etree = parse_sexp(eq.code, uid)
+            etree.sid = eq.id
+            etree.annotation = eq.annotation
 
-                top_nodes.append(etree)
-            except NameError:
-                if settings.DEBUG:
-                    print 'Some symbols could not be rendered'
-                else:
-                    return HttpResponse('This worksheet contains symbols that are not installed')
+            top_nodes.append(etree)
 
             #html_eq.append(html(etree))
             #json_cell.append(etree.json_flat())

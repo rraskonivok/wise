@@ -1,7 +1,6 @@
-import translate
-
-import pure_wrap
-from pure_wrap import PureLevel, PureSymbol, reduce_with_pure_rules
+import wise.translators.pytopure as translate
+import wise.translators.pure_wrap as pure_wrap
+from wise.translators.pure_wrap import PureLevel, PureSymbol, reduce_with_pure_rules
 
 from worksheet.utils import hasharray
 import wise.worksheet.exceptions as exception
@@ -74,7 +73,6 @@ class PublicRule:
         #self.po = pure_wrap.objects[pure_symbol_name]
         self.po = PureSymbol(pure_symbol_name)
         pure_wrap.objects[pure_symbol_name] = self.po
-
 
     def get_html(self):
         interface_ui = self.template

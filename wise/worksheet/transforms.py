@@ -20,7 +20,7 @@ transforms = {}
 # since only Mapping types can be called by the ajax apply_transform request
 
 for pack in settings.INSTALLED_MATH_PACKAGES:
-    try:
+#    try:
         path = '.'.join([ROOT_MODULE,pack,'transforms'])
         packages[pack] = importlib.import_module(path)
         for name, symbol in packages[pack].__dict__.iteritems():
@@ -32,8 +32,8 @@ for pack in settings.INSTALLED_MATH_PACKAGES:
                     #print "Importing transform ... %s/%s" % (pack, name)
 
                 transforms[name] = symbol
-    except ImportError:
-        raise exception.IncompletePackage(pack,'transforms.py')
+#    except ImportError:
+#        raise exception.IncompletePackage(pack,'transforms.py')
 
 def get_transform_by_path(pack, fun):
     return packages[pack].__dict__[fun]

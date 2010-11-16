@@ -8,15 +8,13 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
-import translate
-
-import mathobjects
+import wise.translators.pytopure as translate
+import wise.translators.mathobjects
+import wise.translators.pure_wrap as pure_wrap
 import transforms
 import rules
-import pure_wrap
 
 from django import template
-
 from django.conf import settings
 from django.shortcuts import render_to_response
 from django.core.exceptions import ObjectDoesNotExist

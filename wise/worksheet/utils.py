@@ -39,6 +39,7 @@ def errors(f):
                 return HttpResponse(json.dumps({'error': str(e)}))
             else:
                 return HttpResponse(json.dumps({'error': 'A server-side error occured'}))
+            raise e
     return wrapper
 
 def _memoize(func, *args, **kw):

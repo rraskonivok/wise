@@ -2,7 +2,7 @@ from wise.library_utils import *
 from wise.library_utils import _
 
 import objects
-from wise.worksheet.pure_wrap import i2p, env
+from wise.translators.pure_wrap import i2p, env
 
 Placeholder = objects.Placeholder
 Term = objects.Term

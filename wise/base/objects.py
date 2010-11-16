@@ -15,7 +15,7 @@ from wise.base.term import Term
 from math import modf
 
 from wise.worksheet.utils import render_haml_to_response
-from wise.worksheet.pure_wrap import PureSymbol, PureInt, PureDouble, ProtoRule, p2i, i2p
+from wise.translators.pure_wrap import PureSymbol, PureInt, PureDouble, ProtoRule, p2i, i2p
 
 import worksheet.exceptions as exception
 from worksheet.utils import *
@@ -456,9 +456,6 @@ class Equation(object):
     def get_html(self):
         self.rhs.id = self.idgen.next()
         self.lhs.id = self.idgen.next()
-
-        self.rhs.group = self.id
-        self.lhs.group = self.id
 
         self.lhs.javascript = None
         self.rhs.javascript = None
