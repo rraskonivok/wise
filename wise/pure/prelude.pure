@@ -1,3 +1,4 @@
+export PURE_STACK=1024;
 
 //neg x = Neg x;
 

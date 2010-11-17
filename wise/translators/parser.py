@@ -13,9 +13,8 @@ import token
 # Special thanks to fellow Arch Linux user Andrey Vlasovskikh for
 # writing this genius library, it scales wonderfully and has been
 # the one fixed point in my code for 6 months of development.
-import funcparserlib
-from funcparserlib.parser import some, a, many, skip, finished, maybe, forward_decl, with_forward_decls
-from funcparserlib.util import pretty_tree
+from wise.translators.funcparserlib.parser import some, a, many, skip, finished, maybe, forward_decl, with_forward_decls
+from wise.translators.funcparserlib.util import pretty_tree
 
 from tokenize import generate_tokens
 from StringIO import StringIO

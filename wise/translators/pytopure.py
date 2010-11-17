@@ -1,4 +1,4 @@
-from worksheet.parser import eq_parse
+from wise.translators.parser import eq_parse
 
 #Used for hashing trees
 from hashlib import sha1
@@ -317,25 +317,6 @@ def ParseTree(str,ignore_atomic=True):
     branch.atomic = atomic
 
     return branch
-
-def pretty(t):
-    '''Prints out a tree diagram of the parse tree with the
-    hashes for each objects'''
-    from funcparserlib.util import pretty_tree
-
-    def kids(x):
-        if isinstance(x,Branch):
-            return x.args
-        else:
-            return []
-
-    def show(x):
-        if isinstance(x,Branch):
-            return str(x.type) + '  ::  ' +  hash(x)
-        else:
-            return repr(x)
-
-    return pretty_tree(t,kids,show)
 
 def parse_pure_exp(expr, uidgen=None):
     #Get the string representation of the pure expression

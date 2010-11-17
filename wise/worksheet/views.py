@@ -9,7 +9,6 @@
 # License, or (at your option) any later version.
 
 import traceback
-import parser
 from transforms import get_transform_by_path
 
 import wise.translators.mathobjects as mathobjects
