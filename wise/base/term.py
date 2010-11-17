@@ -99,6 +99,9 @@ class Term(object):
     def _sage_(self):
         raise exception.PureError('No Sage representation of %s.' % self.classname)
 
+    def _isabelle_(self):
+        raise exception.PureError('No Isabelle representation of %s.' % self.classname)
+
     def get_html(self):
         c = template.Context({
             'id': self.id,
