@@ -26,13 +26,13 @@ var CellSelection = Backbone.View.extend({
     //Right click - Toggle visibility of the cell
     if(e.button == 2) {
         this.model.dom().toggle();
-        $(this.el).toggleClass('active');
+//        $(this.el).toggleClass('active');
         e.preventDefault();
         return false;
     //Left click - Select cell
     } else {
-        active_cell = this.model;
-        this.model.dom().toggleClass('active');
+        activate_cell(this.model);
+ //       this.model.dom().toggleClass('active');
     }
   },
 

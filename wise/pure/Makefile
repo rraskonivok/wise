@@ -3,8 +3,8 @@ PYSRC  := pure.pyx
 CSRC    := ${PYSRC:.pyx=.c} 
 OBJS   := ${PYSRC:.pyx=.o} 
 
-PYTHONPATH = /usr/include/python2.6
-#PYTHONPATH = /usr/include/python2.7
+#PYTHONPATH = /usr/include/python2.6
+PYTHONPATH = /usr/include/python2.7
 
 CCFLAGS = -O3 -Wall -fPIC -I$(PYTHONPATH)
 LDFLAGS = -shared

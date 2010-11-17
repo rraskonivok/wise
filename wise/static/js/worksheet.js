@@ -251,6 +251,15 @@ function select_right_root(clear) {
     select_term(get_rhs(start)); 
 }
 
+function activate_cell(cell) {
+    // If there is a active cell make it inactive
+    if(active_cell) {
+        active_cell.set({active: false});
+    }
+    cell.set({active: true});
+    active_cell = cell;
+}
+
 function select_term(object) {
 
     hide_tooltips();
@@ -262,13 +271,8 @@ function select_term(object) {
 
     var root = get_root(object);
 
-    // If there is a active cell make it inactive
-    if(active_cell) {
-        active_cell.set({active: false});
-    }
-
     cell = root.tree.cell;
-    cell.set({active: true});
+    activate_cell(cell);
 
     // Shouldn't happen since select_term is induced by a jquery
     // binding on a DOM object, but we'll check anyways
@@ -542,6 +546,10 @@ function apply_rule(rule, operands) {
     }
 
     $.post("/cmds/apply_rule/", data, function (response) {
+        if (!response) {
+            error('Server did not repsond to request.');
+            return;
+        }
 
         if (response.error) {
             error(response.error);

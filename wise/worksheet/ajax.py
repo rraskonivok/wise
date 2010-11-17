@@ -11,8 +11,6 @@
 import wise.translators.pytopure as translate
 import wise.translators.mathobjects
 import wise.translators.pure_wrap as pure_wrap
-import transforms
-import rules
 
 from django import template
 from django.conf import settings
@@ -23,21 +21,12 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404
 # uidgen is imported from utils
 from wise.worksheet.utils import *
 from wise.worksheet.models import Workspace, Expression, Cell
+from wise.worksheet import transforms, rules
 import wise.worksheet.exceptions as exception
 
 from wise.base.cell import Cell as PyCell
 
 CACHE_INTERVAL = 30*60 # 5 Minutes
-
-def query_property(request):
-    # Should query the description framework to determine whether
-    # the object has the given property
-    # Example: IsRational( Sqrt 2 ) -> False
-    # Example: IsTranscendental( Pi ) -> True
-    # Example: IsZero( Pi + -Pi ) -> Unknown -> Backward Chain # IsZero( X + -X) = True
-    # PossibleZeroQ[E^(I Pi/4) - (-1)^(1/4)]
-    # Transcendental(sin(a)) = True if NotAlgebraic(a)
-    pass
 
 def heartbeat(request):
     response = HttpResponse('1')

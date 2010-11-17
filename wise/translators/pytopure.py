@@ -296,7 +296,6 @@ class Branch(object):
 
         return obj
 
-
 def ParseTree(str,ignore_atomic=True):
     atomic = False
     parsed = eq_parse(str)
@@ -346,10 +345,8 @@ def python_to_pure(obj,wrap_infix=True):
     else:
         return obj._pure_()
 
-@memoize
 def parse_sexp(code, uid):
     parsed = ParseTree(code)
     parsed.gen_uids(uid)
     evaled = parsed.eval_args()
     return evaled
-

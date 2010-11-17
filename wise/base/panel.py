@@ -50,7 +50,7 @@ elem_operations = [('add.svg',objects.Addition),
 #              ('Abs',objects.Abs),
               ('sqrt.svg',objects.Sqrt),
               ('exp.svg',objects.Exp),
-              ('log.svg',objects.Ln),
+              ('integral.svg',objects.Ln),
              ]
 
 Operations = ButtonPanel(name='Algebraic Operations',
