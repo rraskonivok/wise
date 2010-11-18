@@ -159,6 +159,34 @@ function sleep(milliseconds) {
 }
 
 ///////////////////////////////////////////////////////////
+// Initialize the Term DB
+///////////////////////////////////////////////////////////
+
+// Takes the inital JSON that Django injects into the page in the
+// variable JSON_TREE and calls build_tree_from_json to initialize 
+// the term database
+
+function init_nodes() {
+    NODES     = new Backbone.Collection();
+    WORKSHEET = new Worksheet();
+
+    _.each(JSON_TREE, function(cell_json) {
+        var new_cell = build_cell_from_json(cell_json);
+        WORKSHEET.add(new_cell);
+
+        var cs = new CellSelection({
+            model: new_cell,
+        });
+        cs.render();
+
+        $('#cell_selection').append(cs.el);
+    });
+
+    // Make the new elements selectable
+    traverse_lines();
+}
+
+///////////////////////////////////////////////////////////
 // Selection Handling
 ///////////////////////////////////////////////////////////
 
@@ -365,6 +393,16 @@ function format_selection() {
 // UI Handling
 ///////////////////////////////////////////////////////////
 
+function ask(message, yescallback, nocallack) {
+    $( "#dialog-ask" ).dialog({
+        closeOnEscape: true,
+        modal: true,
+        resizable: false,
+        buttons: {
+            Ok: yescallback,
+        }
+    }); 
+}
 
 function error(text) {
     $.pnotify({
@@ -387,20 +425,6 @@ function dialog(text) {
     $('#error_dialog').dialog({
         modal: true,
         dialogClass: 'alert'
-    });
-}
-
-function show_debug_menu() {
-    $('#debug_menu').dialog();
-    $('#horizslider').slider({
-        slide: function (e, ui) {
-            term_spacing(ui.value, null)
-        }
-    });
-    $('#vertslider').slider({
-        slide: function (e, ui) {
-            term_spacing(null, ui.value)
-        }
     });
 }
 
@@ -433,67 +457,6 @@ function resize_parentheses() {
     });
 }
 
-function term_spacing(x, y) {
-    if (x) {
-        $('.term').css('padding-right', x)
-        $('.term').css('padding-left', x)
-    }
-
-    if (y) {
-        $('.term').css('padding-top', y)
-        $('.term').css('padding-bottom', y)
-    }
-}
-
-function debug_math() {
-    //TODO: Remove $.each
-    $.each($('[math]'), function () {
-        $(this).attr('title', $(this).attr('math'));
-    });
-}
-
-function bind_hover_toggle() {
-    $('#hovertoggle').toggle(
-
-        // ---- On State ---
-        function () {
-            $('#workspace .term[math]').hover(
-
-            function () {
-//                $(this).fadeTo('slow',1);
-//                $(this).addClass('term_hover');
-//                $(this).dequeue();
-            }, function () {
-//                $(this).fadeTo('slow',0.3);
-//                $(this).removeClass('term_hover');
-//                $(this).dequeue();
-            });
-
-            $('#workspace .container[math]').hover(
-                function () {
-                    $(this).addClass('container_hover')
-                    $(this).dequeue();
-                }, function () {
-                    $(this).removeClass('container_hover')
-                    $(this).dequeue();
-            });
-
-        // ---- Off State ---
-        }, function () {
-            $('#workspace .term[math]').hover(
-
-                function () {
-                    $(this).removeClass('term_hover')
-                })
-
-                $('#workspace .container[math]').hover(
-                    function () {
-                        $(this).removeClass('container_hover')
-                    }
-                )
-        })
-}
-
 ///////////////////////////////////////////////////////////
 // Server Queries
 ///////////////////////////////////////////////////////////
@@ -502,6 +465,7 @@ ajaxqueue = $.manageAjax.create('queue', {queue: false,
                                           preventDoubbleRequests: false,
                                           cacheResponse: true});
 
+// Heartbeat to check to see whether the server is alive
 function heartbeat() {
     $.ajax({
       url: '/hb',
@@ -523,27 +487,35 @@ function apply_rule(rule, operands) {
     // If nodes are not explicitely passed then use 
     // the workspace's current selection
     if (!operands) {
+
         if(selection.isEmpty()) {
             error("Selection is empty.");
             return;
         }
-
-        //Fetch the math for each of the selections
-        data.selections = selection.sexps();
+        //Fetch the sexps for each of the selections and pass it
+        //as a JSON array
+        data.operands = selection.sexps();
         operands = selection.toArray();
 
     } else {
-        data.selections = _.map(operands, 
+        // Operands can a mix of Expression objects or literal string 
+        // sexp in either case we pass the sexp to the sever
+        data.operands = _.map(operands, 
             function(obj) { 
                 if(obj.constructor == String) {
                     return obj;
                 } else {
                     return obj.sexp();
-                } 
+                }
             }
         );
         //data.selections = _.invoke(operands,'sexp');
     }
+
+    // Fade elements while we wait for the server's response
+    //_.each(operands, function(elem) {
+    //    elem.dom().fadeTo('fast',0.5); 
+    //});
 
     $.post("/cmds/apply_rule/", data, function (response) {
         if (!response) {
@@ -564,45 +536,53 @@ function apply_rule(rule, operands) {
         //elements in the domain. Elements mapped to 'null'
         //are deleted.
         for (var i = 0; i < response.new_html.length; i++) {
-            obj = operands[i];
-
-            //obj.queue(function() {
-            //   $(this).fadeTo('slow',1);
-            //   $(this).dequeue();
-            //});
+            var preimage = operands[i];
 
             if (response.new_html[i] == null) {
-                obj.remove();
+                //Desroy the preimage
+                preimage.remove();
             }
             else if (response.new_html[i] == 'pass') {
-                //console.log("Doing nothing");
+                //Do nothing, map the preimage to itself
             }
             else if (response.new_html[i] == 'delete') {
-                //console.log("Deleting - at some point in the future");
+                //Desroy the preimage
+                preimage.remove();
             }
             else {
-                toplevel = (response.new_json[i][0].toplevel)
+                // Is the image toplevel element (i.e. Equation ) 
+                var is_toplevel = (response.new_json[i][0].toplevel)
 
-                if (toplevel) {
+                if (is_toplevel) {
 
                     graft_tree_from_json(
-                        NODES.getByCid(obj.cid),
+                        // Graft on top of the old node
+                        NODES.getByCid(preimage.cid),
+                        // Build the new node from the response JSON
                         response.new_json[i],
+                        // Optionally tell the new node what is
+                        // was before and which transform created
+                        // it
                         data.rule
                     );
 
-                    nsym = obj.dom().replace(response.new_html[i]).hide();
+                    nsym = preimage.dom().replace(response.new_html[i]).hide();
                     nsym.fadeIn('slow');
                     $('.equation button','#workspace').parent().buttonset();
                 } else {
 
                     graft_tree_from_json(
-                        NODES.getByCid(obj.cid), 
+                        // Graft on top of the old node
+                        NODES.getByCid(preimage.cid), 
+                        // Build the new node from the response JSON
                         response.new_json[i],
+                        // Optionally tell the new node what is
+                        // was before and which transform created
+                        // it 
                         data.rule
                     );
 
-                    nsym = obj.dom().replace(response.new_html[i]).hide();
+                    nsym = preimage.dom().replace(response.new_html[i]).hide();
                     nsym.fadeIn('slow');
                 }
 
@@ -632,14 +612,6 @@ function apply_def(def, selections) {
         }
 
         data.selections = selection.list_attr('math');
-
-        if(data.selections.length == 1) {
-            window.log('fading');
-            selection.nth(0).queue(function() {
-               $(this).fadeTo('slow',0.1);
-               $(this).dequeue();
-            });
-        }
 
     }
     else {
@@ -716,9 +688,10 @@ function apply_def(def, selections) {
     }, "json");
 }
 
-
-
 function use_infix(code) {
+    // Sends raw Pure code to the server and attempts to create
+    // new nodes from the result, this function is *NOT* secure
+    // since Pure can execute arbitrary shell commands
 
     if(selection.isEmpty()) {
         error('No object selected');
@@ -1032,11 +1005,6 @@ function save_workspace() {
     }, 'json')
 }
 
-
-///////////////////////////////////////////////////////////
-// Tree Traversal
-///////////////////////////////////////////////////////////
-
 function traverse_lines() {
     // jQuery tooltip croaks if we apply $.tooltip multiple times
     // so we just ignore elements that we've already initiated
@@ -1081,11 +1049,6 @@ function make_sortable(object, connector, options) {
 
 function check_container(object) {
 
-    //TODO: The original algorithm I wrote many moons ago seems
-    //to break if we have strange <script> tags inside the
-    //container. So just remove them... until I fix it.
-  
-    $('[type=math/tex; mode=display]',object).remove();
     // This handles stupid expression checking that is too expensive 
     // to do via Ajax, ie removing infix sugar 
     _.each(object.children(':not(script)'), function () {
@@ -1145,51 +1108,10 @@ function check_container(object) {
     });
 }
 
-function check_combinations(object) {
-    //Check to see if two terms are explicitly dragged next to each other and 
-    //query the server to see if we can combine them into something
-    if ($(object).attr('locked') == 'true') {
-        return
-    }
-    //TODO: Remove $.each
-    $.each(object.children(), function () {
-        prev = $(this).prev();
-        cur = $(this);
-        next = $(this).next();
-        group = $(this).attr('group');
-        if (group != "") {
-            group_type = $('#' + group).attr('math-type');
-
-            // A + B C + D -> A + combine(B,C) + D
-            if (cur.attr('math-meta-class') == 'term' && next.attr('math-meta-class') == 'term') {
-                //The one exception (i.e. filthy hack) is that
-                //dragging a negated term next to any other
-                //doesn't induce the combine command since the
-                //negation sign on the negated term pretends
-                //it is sugar, long story short it looks
-                //prettier
-                if (next.attr('math-type') != 'Negate') {
-                    combine(cur, next, group_type);
-                    check_container(object)
-                }
-            }
-        }
-    });
-}
-
-function toggle_confluence(obj) {
-    if (obj.attr('data-confluent') == 0) {
-        obj.attr('data-confluent', 1)
-        obj.find('.confluence').addClass('ui-icon-bullet')
-        obj.find('.confluence').removeClass('ui-icon-radio-off')
-    } else {
-        obj.attr('data-confluent', 0)
-        obj.find('.confluence').addClass('ui-icon-radio-off')
-        obj.find('.confluence').removeClass('ui-icon-bullet')
-    }
-}
-
 function mathjax_typeset(element) {
+    //Typeset a DOM element when passed, if no element is passed
+    //then typeset the entire page
+    
     //if(DISABLE_TYPESETTING) {
     //    return;
     //}
@@ -1197,19 +1119,13 @@ function mathjax_typeset(element) {
     //Refresh math for a specific element
     if (element) {
         MathJax.Hub.Queue(["Typeset",MathJax.Hub,element[0]]);
-        MathJax.Hub.Queue(
-            function () {
- //               element.css('visibility', 'visible')
-            }
-        );
+        MathJax.Hub.Queue();
     }
     //Refresh math Globally, shouldn't be called too much because
     //it bogs down the browser
     else {
         console.log('Refreshing all math on the page');
         MathJax.Hub.Process();
-        //jsMath.ConvertTeX()
-        //jsMath.ProcessBeforeShowing()
     }
 }
 
@@ -1267,16 +1183,6 @@ function remove_element() {
         return;
     }
 
-    //$( "#dialog-ask" ).dialog({
-    //    closeOnEscape: true,
-    //    modal: true,
-    //    resizable: false,
-    //    buttons: {
-    //        Ok: function() {
-    //            $( this ).dialog( "close" );
-    //        }
-    //    }
-    //}); 
 
     selection.each(function(elem) {
 
@@ -1302,6 +1208,9 @@ $(window).keydown(function(evt) {
   }
 });
 
+// Ease the select of container tyep objects by expanding their
+// DOM elements and putting a visible border around it while
+// leaving the children in fixed
 $('.container','#workspace').live('mouseover mouseout', function(e) {
   ths = $(this);
   if (e.type == 'mouseover' && ctrlPressed) {
@@ -1324,17 +1233,17 @@ function load_rules_palette() {
     }
 
     $.ajax({
-            url: '/rule_request',
-            success: function(data) {
-                $("#rules_palette").replace(data);
-                $(".panel_category","#rules_palette").bind('click',function() {
-                        $(this).next().toggle();
-                        // Only typeset when needed
-                        MathJax.Hub.Typeset($(this).next()[0]);
-                        return false
-                }).next().hide();
+        url: '/rule_request',
+        success: function(data) {
+            $("#rules_palette").replace(data);
+            $(".panel_category","#rules_palette").bind('click',function() {
+                    $(this).next().toggle();
+                    // Only typeset when needed
+                    MathJax.Hub.Typeset($(this).next()[0]);
+                    return false
+            }).next().hide();
 
-            }
+        }
     });
 }
 
@@ -1350,9 +1259,8 @@ function load_math_palette() {
     
             //Make the palette sections collapsable
             $(".panel_category","#math_palette").bind('click',function() {
-                    $(this).next().toggle();
-                    _.map($(this).next(), make_buttons_uniform);
-                    return false;
+                $(this).next().toggle();
+                return false;
             }).next().hide();
 
             //Typeset the panel
@@ -1365,24 +1273,6 @@ function load_math_palette() {
         }
     });
 
-}
-
-//Stupid function to make buttons in each panel have the same height
-function make_buttons_uniform(obj) {
-    //var heights = [];
-    //buttons = $(obj).find('button');
-
-    //_.each(buttons, function(btn) {
-    //    heights.push($(btn).height()); 
-    //});
-
-    //var max = _.max(heights);
-    //if(max != 0) {
-    //    _.each(buttons, function(btn) {
-    //        $(btn).height(max + 5); 
-    //        $(btn).width($(btn).width() + 5); 
-    //    });
-    //}
 }
 
 function palette(num) {
@@ -1400,7 +1290,6 @@ function palette(num) {
     }
 }
 
-
 ///////////////////////////////////////////////////////////
 // Command Line
 ///////////////////////////////////////////////////////////
@@ -1411,30 +1300,3 @@ $('#cmdline').submit(function() {
     return false;
 });
 
-///////////////////////////////////////////////////////////
-// Initialize the Term DB
-///////////////////////////////////////////////////////////
-
-// Takes the inital JSON that Django injects into the page
-// and calls build_tree_from_json to initialize the term
-// database
-
-function init_nodes() {
-    NODES     = new Backbone.Collection();
-    WORKSHEET = new Worksheet();
-
-    _.each(JSON_TREE, function(cell_json) {
-        var new_cell = build_cell_from_json(cell_json);
-        WORKSHEET.add(new_cell);
-
-        var cs = new CellSelection({
-            model: new_cell,
-        });
-        cs.render();
-
-        $('#cell_selection').append(cs.el);
-    });
-
-    // Make the new elements selectable
-    traverse_lines();
-}

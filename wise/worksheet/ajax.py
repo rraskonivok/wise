@@ -61,7 +61,7 @@ def apply_rule(request):
 
     # The sexps of elements from worksheet, i.e. the
     # preimage/operands of the rule
-    code = tuple(request.POST.getlist('selections[]'))
+    code = tuple(request.POST.getlist('operands[]'))
 
     # The name of the rule to apply in form package/name
     rule = request.POST.get('rule')
