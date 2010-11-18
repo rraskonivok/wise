@@ -9,7 +9,19 @@ class CellHandeler(BaseHandler):
     fields = ()
     allowed_methods = ('GET', 'PUT', 'DELETE', 'POST')
     exclude = ('workspace')
+
     fields = ('index', 'id', ('workspace', ('id',)))
+
+    # Example output:
+    # {
+    #     "index": 0, 
+    #     "id": 1, 
+    #     "workspace": {
+    #         "id": 1, 
+    #         "resource_uri": "/api/ws/1"
+    #     }, 
+    #     "resource_uri": "/api/cell/1"
+    # }, 
 
     def read(self, request, id=None):
         cells = Cell.objects
@@ -23,21 +35,21 @@ class CellHandeler(BaseHandler):
         else:
             return cells.all()
 
-    def create(self, request):
+    def create(self, request, id=None):
         request_data = self.flatten_dict(request.data)
 
         ws_id = request_data['workspace']
         index = request_data['index']
 
         ws = Workspace.objects.get(id=ws_id)
-        em = self.model(workspace=ws,index=index)
+        em = Cell(workspace=ws,index=index)
         em.save()
 
         # Return the JSON of the new model for Backbone to inject
         # into the model
         return em
 
-    def update(self, request):
+    def update(self, request, id=None):
         request_data = self.flatten_dict(request.data)
 
         cell_id = request_data['id']
@@ -45,6 +57,13 @@ class CellHandeler(BaseHandler):
         em.save()
 
         return em
+
+    def delete(self, request, id=None):
+        print id
+        cell = Cell.objects.get(id=id)
+        cell.delete()
+
+        return rc.DELETED
 
     @classmethod
     def resource_uri(self):
@@ -60,7 +79,6 @@ class ExpressionHandeler(BaseHandler):
 
     def read(self, request, id=None):
         exprs = Expression.objects
-
 
         if id:
             try:
@@ -79,10 +97,34 @@ class ExpressionHandeler(BaseHandler):
         index = request_data['index']
 
         print cell_id, sexp, annotation, index
+        parent_cell = Cell.objects.get(id=cell_id)
+
+        expr = Expression(cell=parent_cell,
+                          code=sexp,
+                          annotation=annotation,
+                          index=index)
+        expr.save()
+
 
         # Return the JSON of the new model for Backbone to inject
         # into the model
-        return None
+        return expr
+
+    def update(self, request, id):
+        request_data = self.flatten_dict(request.data)
+
+        sexp = request_data['sexp']
+        annotation = request_data['annotation']
+        index = request_data['index']
+
+        expr = Expression.objects.get(id=id)
+        expr.code = sexp
+
+        expr.save()
+
+        # Return the JSON of the new model for Backbone to inject
+        # into the model
+        return expr
 
     @classmethod
     def resource_uri(self):

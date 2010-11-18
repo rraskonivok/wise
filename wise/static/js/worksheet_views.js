@@ -1,3 +1,10 @@
+_.templateSettings = {
+  interpolate : /\{\{(.+?)\}\}/g
+};
+
+var cell_menu = _.template('<div class="cellbuttons"><span class="add ui-icon ui-icon-circle-plus"></span><span class="del ui-icon ui-icon-circle-minus"></span><span class="save ui-icon ui-icon-disk"></span></div>')
+var cell_template = _.template('<div id="{{id}}" class="cell"></div>');
+
 // The view of the workspace Singleton
 var WorksheetView = Backbone.View.extend({
     id: 'workspace',
@@ -15,6 +22,19 @@ var CellView = Backbone.View.extend({
       //this.model.bind('change', this.render);
   },
 
+  events: {
+    "click .add":   "add",
+    "click .del":   "destroy",
+    "click .save":  "save",
+  },
+
+  menu: cell_menu,
+
+  render: function() {
+      $(this.el).html(this.menu());
+      return this;
+  },
+
   set_active: function(state) {
       // Toggle the css activity indicator on the cell
       $(this.el).toggleClass('active',state);
@@ -22,7 +42,26 @@ var CellView = Backbone.View.extend({
 
 
   addExpression: function(expr_view) {
-    $(this.el).append(expr_view);    
+      $(this.el).append(expr_view);    
+  },
+
+  add: function() {
+      new_line('eq', this.model.cid);
+  },
+  
+  save: function() {
+    this.model.saveExpressions();
+    //this.model.save({
+    //    success: Notifications.raise('COMMIT_SUCCESS'),
+    //});
+  },
+
+  destroy: function() {
+    // Prompt the user before they potentially destroy the cell
+    // and all its subexpressions
+    this.model.destroy({
+        success: Notifications.raise('COMMIT_SUCCESS'),
+    })
   },
 
 });

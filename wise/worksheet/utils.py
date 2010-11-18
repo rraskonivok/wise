@@ -49,8 +49,6 @@ def _memoize(func, *args, **kw):
         key = args
     cache = func.cache # attributed added by memoize
     if key in cache:
-        if settings.DEBUG:
-            print 'Using cached for key:', str(key)
         return cache[key]
     else:
         cache[key] = result = func(*args, **kw)

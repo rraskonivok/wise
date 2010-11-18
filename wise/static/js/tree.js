@@ -64,8 +64,14 @@ var Worksheet = Backbone.Collection.extend({
 });
 
 var Cell = Backbone.Model.extend({
-//    url: '/cell',
-    url: '/api/cell/',
+
+    url: function() {
+        if(this.id) {
+            return '/api/cell/' + this.id;
+        } else {
+            return '/api/cell/';
+        }
+    },
         
     initialize: function(exs) {
         this.set({
@@ -81,6 +87,15 @@ var Cell = Backbone.Model.extend({
         exs.set({index: this._expressions.length});
         this._expressions.push(exs);
         this.change();
+    },
+
+    saveExpressions: function() {
+        _.each(this._expressions, 
+            function(expr) {
+               expr.set({sexp: expr.sexp()});
+               expr.save();
+            }
+        );
     },
 
     sexps: function() {
@@ -145,11 +160,9 @@ function build_tree_from_json(json_input) {
         if (index == 0) {
             T = new ExpressionTree(prent);
             T.set({
-                sexp: 'testing',
-                annotation: 'was here',
+                annotation: ' ',
             })
         }
-
 
         for (var child in term.children) {
             child = term.children[child];
@@ -195,16 +208,22 @@ var RootedTree = Backbone.Model.extend({
 
 ExpressionTree = RootedTree.extend({
     
-    url: '/api/exp/',
+    url: function() {
+        if(this.id) {
+            return '/api/exp/' + this.id;
+        } else {
+            return '/api/exp/';
+        }
+    },
 
     sexp: function () {
+        this.root.msexp();
         return this.root.sexp();
     },
 
-
 });
 
-// This a generic Node ( of which ExpressionNode ) inherits.
+// This a generic Node in a tree structure ( of which ExpressionNode inherits)
 var Node = Backbone.Model.extend({
     url: '/eq',
     tree: null,
@@ -215,6 +234,7 @@ var Node = Backbone.Model.extend({
         this._parent = null;
     },
 
+    //TODO: remove this, its ugly and we should be using views
     dom: function() {
         return $('#'+this.cid);
     },
