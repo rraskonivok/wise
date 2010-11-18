@@ -190,6 +190,18 @@ function init_nodes() {
 // Selection Handling
 ///////////////////////////////////////////////////////////
 
+function selection_matches_pattern(pattern) {
+  // [Equation, Addition] , [Equation, Multiplication]
+  // _.isEqual(Equation, Equation) = true
+  // _.isEqual(Addition, Multiplication) = false
+  // _.all( [true, false] ) = false => does not match pattern
+  
+  //TODO add support for matching by toplevel or number of
+  //children
+  var zipped = _.zip(selection,pattern);   
+  return _.map(zipped,_.isEqual);
+}
+
 function add_shift() {
     var node = selection.at(0);
     var root = get_root(node);
