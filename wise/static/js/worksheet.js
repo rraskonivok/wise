@@ -936,18 +936,17 @@ function new_line(type, index) {
         }
 
         if (data.new_html) {
-
-            new_cell_html = $(data.new_html);
-            active_cell.dom().append(new_cell_html);
-            mathjax_typeset(new_cell_html);
-            traverse_lines();
-
+            // Initiale the new expression in the term db
             var eq = build_tree_from_json(data.new_json);
-
             eq.cell = active_cell;
             eq.set({cell: active_cell.id});
-
             active_cell.addExpression(eq);
+
+            // Render the html of the new expression
+            new_expr_html = $(data.new_html);
+            active_cell.view.addExpression(new_expr_html);
+            mathjax_typeset(new_expr_html);
+            traverse_lines();
 
         }
 
@@ -963,34 +962,42 @@ function new_cell() {
 
     $.post("/cmds/new_cell/", data, function (response) {
 
+        if(!response) {
+            error("Server did not respond."); 
+        }
+
         if (response.error) {
             error(response.error);
         }
 
         if (response.new_html) {
 
-            new_cell_html = $(response.new_html);
-            $("#workspace").append(new_cell_html);
-            mathjax_typeset(new_cell_html);
-            traverse_lines();
+            var cell = build_cell_from_json(response.new_json);
+            active_cell = cell;
 
-            var new_cell = build_cell_from_json(response.new_json);
-            new_cell_html.attr('id',new_cell.cid);
-
-            active_cell = new_cell;
-
-            WORKSHEET.add(new_cell);
+            WORKSHEET.add(cell);
             CELL_INDEX = response.cell_index;
             NAMESPACE_INDEX = response.namespace_index;
-            $('.equation button','#workspace').parent().buttonset();
 
+            // Make the cell workspace object
+            var view = new CellView({
+                model: cell,
+                id: cell.cid,
+            });
+            view.render();
+            cell.view = view;
+
+            // Make the cell selction object
             var cs = new CellSelection({
-                model: new_cell,
+                model: cell,
             });
             cs.render();
 
+            $("#workspace").append(view.el);
             $('#cell_selection').append(cs.el);
-            //new_cell.set({active: true});
+
+            // Make the new cell active
+            cell.set({active: true});
         }
     });
 }

@@ -87,8 +87,9 @@ var Cell = Backbone.Model.extend({
         return _.invoke(this._expressions, 'sexp');
     },
 
+    //TODO: remove this, its ugly
     dom: function() {
-        return $('#'+this.cid);
+        return this.view.el;
     },
 
 });
@@ -327,6 +328,10 @@ var Expression = Node.extend({
         return _.flatten(this._math).join(' ')
     },
 
+    getCell: function() {
+        return get_root(this).tree.cell;
+    },
+
 });
 
 // Utilities for JSON <-> Expression Trees
@@ -337,8 +342,17 @@ function build_cell_from_json(json_input) {
     var cell_spec = json_input[0];
     var eqs_json = json_input[1];
     var new_cell = new Cell();
+
     new_cell.cid = cell_spec.cid;
     new_cell.set({id: cell_spec.id})
+
+    new_view = new CellView({
+        el: $('#' + new_cell.cid),
+        active: false,
+        model: new_cell,
+    });
+
+    new_cell.view = new_view;
 
     _.each(eqs_json, function(eq_json) {
             var expr_tree = build_tree_from_json(eq_json);
@@ -353,7 +367,8 @@ function build_cell_from_json(json_input) {
     return new_cell;
 }
 
-//Graft a tree onto a node.
+//Build a tree from a json specifiction and then then graft (
+//by replacement) onto a existing expression tree.
 function graft_tree_from_json(old_node, json_input, transformation) {
     var newtree = build_tree_from_json(json_input);
 
@@ -361,6 +376,7 @@ function graft_tree_from_json(old_node, json_input, transformation) {
         //error('Could not attach branch');
         return;
     }
+
     old_node.msexp();
     newtree.root.transformed_by = transformation;
     newtree.root.prev_state = old_node.sexp();
@@ -377,7 +393,7 @@ function garbage_collect() {
     // This is sort of expensive since it involves #(NODES.length)
     // of jquery lookups, don't call it much.
     NODES.each( function(node) {
-        if(!node.dom()) {
+        if(!node.view) {
             window.log('Garbage collecting',node.cid);
             NODES.del(node);
         }

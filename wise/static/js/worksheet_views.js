@@ -1,3 +1,34 @@
+// The view of the workspace Singleton
+var WorksheetView = Backbone.View.extend({
+    id: 'workspace',
+});
+
+// Cell object as manifest in the Workspace, This can be 
+// referenced from the Cell object as Cell.view
+var CellView = Backbone.View.extend({
+
+  tagName: 'div',
+
+  className: 'cell',
+
+  initialize: function() {
+      //this.model.bind('change', this.render);
+  },
+
+  set_active: function(state) {
+      // Toggle the css activity indicator on the cell
+      $(this.el).toggleClass('active',state);
+  },
+
+
+  addExpression: function(expr_view) {
+    $(this.el).append(expr_view);    
+  },
+
+});
+
+// Cell selection buttons which appear in the top of the
+// workspace 
 var CellSelection = Backbone.View.extend({
 
   tagName: "a",
@@ -9,8 +40,7 @@ var CellSelection = Backbone.View.extend({
   },
 
   initialize: function() {
-      //this.model.bind('change', this.render);
-      _.bindAll(this,'render','make');
+      _.bindAll(this,'render','make','handle_active');
       this.model.bind('change:active',this.handle_active);
   },
 
@@ -39,9 +69,10 @@ var CellSelection = Backbone.View.extend({
   handle_active: function(cell,is_active) {
       active_cell = cell;
       if(is_active) {
-          cell.dom().addClass('active');
+          // Acts on the CellView object of the model
+          this.model.view.set_active(true);
       } else {
-          cell.dom().removeClass('active');
+          this.model.view.set_active(false);
       }
   }
 
@@ -74,8 +105,6 @@ var NodeSelectionView = Backbone.View.extend({
 
   unselect: function(e) {
       selection.remove(this.model);
-      //this.model.dom().removeClass('highlight');
-      //this.model.set({selected: false});
       $(this.el).remove();
   },
 

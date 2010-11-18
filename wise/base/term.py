@@ -89,8 +89,8 @@ class Term(object):
     def _pure_(self):
         # This is not defeind explicityly for the reason that inheriting
         # the method to generate a Pure object will often result in very
-        # unexpected consequences if you not well thought out. Just define
-        # one for every object
+        # unexpected consequences if not well thought out. Just define
+        # one for every object you create
         raise exception.PureError('No Pure representation of %s.' % self.classname)
 
     def _latex_(self):
@@ -109,7 +109,6 @@ class Term(object):
             'latex':self.latex,
             'math': self.get_math(),
             'type': self.classname,
-            'group': self.group
             })
 
         #if self.javascript:
