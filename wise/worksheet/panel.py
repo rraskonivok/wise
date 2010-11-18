@@ -59,7 +59,7 @@ array_template = haml('''
 button_template = haml('''
 {% for obj in objects %}
         button.button onclick="subs('{{ obj.math }}');"
-            <img src="/static/img/buttons/{{ obj.label }}"/>
+            <embed src="/static/img/buttons/{{ obj.label }}"/>
 {% endfor %}
 ''')
 

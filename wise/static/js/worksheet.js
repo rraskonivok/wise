@@ -929,6 +929,13 @@ function new_line(type, index) {
         return;
     }
 
+    // If the cell new then commit it to the database before we
+    // so that all foreign keys on expression objects will
+    // resolve properly
+    if(active_cell.isNew()) {
+        active_cell.save();
+    }
+
     $.post("/cmds/new_line/", data, function (data) {
 
         if (data.error) {
@@ -1281,6 +1288,14 @@ function remove_element() {
     selection.each(function(elem) {
 
         if(elem.get('toplevel')) {
+            root = get_root(elem).tree;
+
+            // If the root has a correspondance in the database
+            // then destroy it
+            if(root.isNew() == false) {
+                root.destroy();
+            }
+
             elem.dom().remove();
             elem.delNode();
         } else {

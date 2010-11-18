@@ -50,18 +50,24 @@ var CellView = Backbone.View.extend({
   },
   
   save: function() {
+    this.model.save({
+        success: Notifications.raise('COMMIT_SUCCESS'),
+    });
     this.model.saveExpressions();
-    //this.model.save({
-    //    success: Notifications.raise('COMMIT_SUCCESS'),
-    //});
   },
 
   destroy: function() {
     // Prompt the user before they potentially destroy the cell
     // and all its subexpressions
-    this.model.destroy({
-        success: Notifications.raise('COMMIT_SUCCESS'),
-    })
+ 
+    // If the cell has a correspondance in the database
+    // then destroy it
+    if(this.model.isNew() == false) {
+        this.model.destroy({
+            success: Notifications.raise('COMMIT_SUCCESS'),
+        });
+    }
+    $(this.el).remove();
   },
 
 });
