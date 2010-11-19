@@ -25,7 +25,7 @@ var CellView = Backbone.View.extend({
   events: {
     "click .add":   "add",
     "click .del":   "destroy",
-    "click .save":  "save",
+    "click .save":  "saveCell",
   },
 
   menu: cell_menu,
@@ -49,11 +49,8 @@ var CellView = Backbone.View.extend({
       new_line('eq', this.model.cid);
   },
   
-  save: function() {
-    this.model.save({
-        success: Notifications.raise('COMMIT_SUCCESS'),
-    });
-    this.model.saveExpressions();
+  saveCell: function() {
+      this.model.saveCell();
   },
 
   destroy: function() {

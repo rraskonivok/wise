@@ -87,6 +87,11 @@ DISABLE_SIDEBAR = false;
 //----------------------
 //Some JQuery Extensions
 //----------------------
+
+// Disable any animations on the worksheet
+jQuery.fx.off = false;
+//jQuery.fx.off = true;
+
 $.fn.exists = function () {
     return jQuery(this).length > 0;
 }
@@ -300,52 +305,51 @@ function activate_cell(cell) {
     active_cell = cell;
 }
 
-function select_term(object) {
+function select_term(node) {
 
-    hide_tooltips();
+//    hide_tooltips();
 
     $('#quasimode-indicator').fadeTo('fast',1);
     $('#basemode-indicator').fadeTo('fast',0.01);
 
-    var clickedon = object.dom();
+    var $node = node.dom();
+    var root = node.tree.root;
+    console.log(root);
 
-    var root = get_root(object);
-
-    cell = root.tree.cell;
-    activate_cell(cell);
+//    activate_cell(cell);
 
     // Shouldn't happen since select_term is induced by a jquery
     // binding on a DOM object, but we'll check anyways
-    if(clickedon.length == 0) {
+    if(!$node.exists()){
         window.log('DOM correspondance not found.');
         return;
     }
 
-    if(selection.getByCid(object.cid) != null) {
-        clickedon.removeClass('selected');
-        selection.remove(object)
-        object.set({selected: false});
+    if(selection.getByCid(node.cid) != null) {
+        $node.removeClass('selected');
+        selection.remove(node)
+        node.set({selected: false});
 
     } else {
-        object.set({selected: true});
-        clickedon.addClass('selected');
+        node.set({selected: true});
+        $node.addClass('selected');
 
-        selection.add(object);
+        selection.add(node);
 
         var bt = new NodeSelectionView({
-            model: object,
+            model: node,
         });
 
         bt.render();
 
         $("#selectionlist").append(bt.el);
 
-        active_cell = cell;
+        $node.effect("transfer", { to: $(bt.el) }, 150);
     }
     
     // If the object we just selected is not a placeholder then
     // go ahead and try chain substitution
-    if (object.get('type') != 'Placeholder') {
+    if (node.get('type') != 'Placeholder') {
         placeholder_substitute();
     }
 
@@ -473,6 +477,11 @@ function resize_parentheses() {
 // Server Queries
 ///////////////////////////////////////////////////////////
 
+function save_worksheet(e) {
+    WORKSHEET.saveAll();
+    e.preventDefault();
+}
+
 ajaxqueue = $.manageAjax.create('queue', {queue: false,
                                           preventDoubbleRequests: false,
                                           cacheResponse: true});
@@ -562,12 +571,18 @@ function apply_rule(rule, operands) {
                 preimage.remove();
             }
             else {
-                // Is the image toplevel element (i.e. Equation ) 
+                // Is the image a toplevel element (i.e. Equation ) 
                 var is_toplevel = (response.new_json[i][0].toplevel)
 
                 if (is_toplevel) {
 
-                    graft_tree_from_json(
+                    // !!!!!!!!!!!!!!!!
+                    // Swap the nodes reference in its Cell so
+                    // the cell isn't reference something that
+                    // doesn't exist anymore
+                    // !!!!!!!!!!!!!!!!
+                    
+                    graft_toplevel_from_json(
                         // Graft on top of the old node
                         NODES.getByCid(preimage.cid),
                         // Build the new node from the response JSON
@@ -866,11 +881,11 @@ function apply_transform(transform, operands) {
                     //console.log("Deleting - at some point in the future");
                 }
                 else {
-                    var toplevel = (response.new_json[i][0].toplevel);
-                    if (toplevel) {
+                    var is_toplevel = (response.new_json[i][0].toplevel);
+                    if (is_toplevel) {
                         build_tree_from_json(response.new_json[i]);
 
-                        graft_tree_from_json(
+                        graft_toplevel_from_json(
                             NODES.getByCid(obj.cid),
                             response.new_json[i],
                             postdata.transform
@@ -992,36 +1007,6 @@ function new_cell() {
             cell.set({active: true});
         }
     });
-}
-
-function save_workspace() {
-    data = {};
-    i = 0;
-
-    //TODO: Remove $.each
-    $.each($("tr[toplevel='true']", '#workspace'), function (obj) {
-        data[i] = [$(this).attr('math'), $(this).find('.annotation').text(), $(this).attr('data-confluent'), $(this).attr('data-public')];
-        i += 1;
-    });
-
-    //Flash the border to indicate we've saved.
-    $('#workspace').animate({
-        border: "5px solid red"
-    }, 300);
-    $('#workspace').animate({
-        border: "0px solid black"
-    }, 300);
-
-    console.log(data);
-
-    $.post("save/", data, function (data) {
-        if (data.error) {
-            error(data.error);
-        }
-        if (data.success) {
-            error('Save succesfull.')
-        }
-    }, 'json')
 }
 
 function traverse_lines() {
@@ -1201,7 +1186,6 @@ function remove_element() {
         error('Selection is empty.');
         return;
     }
-
 
     selection.each(function(elem) {
 

@@ -59,7 +59,6 @@ class CellHandeler(BaseHandler):
         return em
 
     def delete(self, request, id=None):
-        print id
         cell = Cell.objects.get(id=id)
         cell.delete()
 
@@ -72,7 +71,7 @@ class CellHandeler(BaseHandler):
 class ExpressionHandeler(BaseHandler):
     model = Expression
 
-    fields = ('index', 'code', 'annotation', ('cell', ('id',)))
+    fields = ('index', 'sexp', 'annotation', ('cell', ('id',)))
     exclude = ()
 
     allowed_methods = ('GET', 'PUT', 'DELETE', 'POST')
@@ -96,11 +95,10 @@ class ExpressionHandeler(BaseHandler):
         annotation = request_data['annotation']
         index = request_data['index']
 
-        print cell_id, sexp, annotation, index
         parent_cell = Cell.objects.get(id=cell_id)
 
         expr = Expression(cell=parent_cell,
-                          code=sexp,
+                          sexp=sexp,
                           annotation=annotation,
                           index=index)
         expr.save()
@@ -118,7 +116,7 @@ class ExpressionHandeler(BaseHandler):
         index = request_data['index']
 
         expr = Expression.objects.get(id=id)
-        expr.code = sexp
+        expr.sexp = sexp
 
         expr.save()
 

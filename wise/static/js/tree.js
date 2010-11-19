@@ -61,6 +61,10 @@ var Worksheet = Backbone.Collection.extend({
 //        this.bind('add',function() { alert('cow') });
     },
 
+    saveAll: function() {
+        this.invoke('saveCell');
+    },
+
 });
 
 var Cell = Backbone.Model.extend({
@@ -86,14 +90,34 @@ var Cell = Backbone.Model.extend({
     addExpression: function(exs) {
         exs.set({index: this._expressions.length});
         this._expressions.push(exs);
-        this.change();
     },
 
+    saveCell: function() {
+        if(this.hasChanged() || this.isNew()) {
+            this.save({
+                success: Notifications.raise('COMMIT_SUCCESS'),
+            });
+        }
+        this.saveExpressions();
+    },
+
+    // Iterate through each Expression associated 
+    // with this cell and commit if their sexp
+    // have changed since thel last commit
     saveExpressions: function() {
         _.each(this._expressions, 
             function(expr) {
-               expr.set({sexp: expr.sexp()});
-               expr.save();
+              if(expr.hasChanged()) { 
+                  // Highlight the expression to give the user
+                  // some visual feedback on what was just
+                  // committed
+                  expr.root.dom().effect("highlight", {}, 1500);
+
+                  expr.set({sexp: expr.sexp()});
+                  expr.save({
+                      success: Notifications.raise('COMMIT_SUCCESS'),
+                  });
+              }
             }
         );
     },
@@ -291,6 +315,9 @@ var Node = Backbone.Model.extend({
 
         //Destroy the node itself
         NODES.remove(this);
+
+        // Tell the tree that it has changed contents and needs
+        // to pushed to the server.
     },
 
     //         O          O   
@@ -313,6 +340,9 @@ var Node = Backbone.Model.extend({
         }
 
         this.delNode();
+
+        // Tell the tree that it has changed contents and needs
+        // to pushed to the server.
     }
 
 });
@@ -322,6 +352,9 @@ var Expression = Node.extend({
 
     childrenChanged: function() {
         this.msexp();
+        console.log(this.tree.cid);
+        this.tree.set({sexp: this.tree.sexp()});
+        this.tree._changed = true;
     },
 
     //Generates the array of strings which is compiled iff we
@@ -379,6 +412,7 @@ function build_cell_from_json(json_input) {
             expr_tree.cell = new_cell;
 
             expr_tree.set({cell: new_cell.id});
+            expr_tree.cell = new_cell;
             expr_tree.set({index: 3});
 
             new_cell.addExpression(expr_tree);
@@ -387,8 +421,41 @@ function build_cell_from_json(json_input) {
     return new_cell;
 }
 
+//       E  (Expression Tree)        F  ( Different Expression Tree)
+//       |                           |  
+//      <A>                     →    X     
+//      / \                         / \ 
+//     B   C                       Y   Z
+
+
 //Build a tree from a json specifiction and then then graft (
 //by replacement) onto a existing expression tree.
+function graft_toplevel_from_json(old_node, json_input, transformation) {
+    console.log('grafting_toplevel');
+    var newtree = build_tree_from_json(json_input);
+
+    if (!old_node) {
+        //error('Could not attach branch');
+        return;
+    }
+
+    old_node.msexp();
+    newtree.root.transformed_by = transformation;
+    newtree.root.prev_state = old_node.sexp();
+
+    old_node.swapNode(newtree.root);
+}
+
+//       E  (Expression Tree)        E  ( Same Expression Tree)
+//       |                           |  
+//      <A>                     →   <X>      
+//      / \                         / \ 
+//     B   C                       Y   Z
+
+//Build a Node from a json specifiction and then then 
+//graft ( by replacement ) onto a existing expression tree.
+
+// TODO: change this to graft_node_from_json to avoid amguity
 function graft_tree_from_json(old_node, json_input, transformation) {
     var newtree = build_tree_from_json(json_input);
 

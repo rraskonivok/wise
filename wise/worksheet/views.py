@@ -181,7 +181,7 @@ def ws(request, eq_id):
 
         for eq in eqs:
             # Build up the object from the sexp in the database
-            etree = parse_sexp(eq.code, uid)
+            etree = parse_sexp(eq.sexp, uid)
             etree.sid = eq.id
             etree.annotation = eq.annotation
 

@@ -21,7 +21,7 @@ class Cell(models.Model):
 class Expression(models.Model):
     cell = models.ForeignKey(Cell,blank=False,null=False)
     # TODO: code -> sexp
-    code = models.TextField(max_length=10000,blank=False, null=False)
+    sexp = models.TextField(max_length=10000,blank=False, null=False)
     annotation = models.TextField(max_length=100)
     index = models.IntegerField(blank=False,null=False)
 
