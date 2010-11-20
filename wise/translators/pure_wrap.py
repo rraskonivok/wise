@@ -29,6 +29,7 @@ env = pure.prelude.env
 
 p2i = pure.prelude.p2i
 i2p = pure.prelude.i2p
+nargs = pure.prelude.nargs
 
 # This is called freqently enough that we'll push it up.
 reduce_with_pure_rules = pure.prelude.reduce_with_pure_rules

@@ -14,3 +14,6 @@ i2p = PureSymbol('i2p')
 
 #Prefix to infix
 p2i = PureSymbol('p2i')
+
+# nargs
+nargs = PureSymbol('nargs')

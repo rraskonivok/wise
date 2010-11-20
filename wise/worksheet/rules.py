@@ -67,12 +67,16 @@ def ApplyExternalRule( ref, *expr ):
 class PublicRule:
     po = None
     ref = None
+    _arity = None
 
     def __init__(self, pure_symbol_name):
         self.ref = pure_symbol_name
         #self.po = pure_wrap.objects[pure_symbol_name]
         self.po = PureSymbol(pure_symbol_name)
         pure_wrap.objects[pure_symbol_name] = self.po
+
+        #self._arity = pure_wrap.nargs(self.po)
+        #print self._arity
 
     def get_html(self):
         interface_ui = self.template

@@ -400,7 +400,7 @@ algebra_normal X = (simplify_multiplication .
    ------------ 
 */
 
-simplify_multiplication X = reduce X
+simplify_multiplication = reduce
 with
     0*x = 0 ;
     1*x = x ;
@@ -471,7 +471,7 @@ end;
    ------------ 
 */
 
-simplify_power X = reduce X
+simplify_power = reduce
 with
     0^x = 0 if `(x ~= 0);
     1^x = 1 ;
@@ -493,9 +493,9 @@ end;
    ------------ 
 */
 
-rational_to_power X = reduce X
+rational_to_power = reduce
 with
-    rational x y = mul x (powr y (Neg 1)) ;
+    x/y = x*(y^(-1));
 end;
 
 /* :Name: ``simplify_rational`` x
@@ -510,7 +510,7 @@ end;
    ------------ 
 */
 
-simplify_rational X = reduce X
+simplify_rational = reduce
 with
     x/x = 1;
     0/x = 0;
@@ -524,8 +524,8 @@ end;
    ------------ 
 */
 
-poly x 1 a = (a $$ 1) * x;
-poly x n a = (a $$ n) * x^n + (poly x (n-1) a);
+poly x [] = 0;
+poly x (c:cs) = c * x^(#cs) + (poly x cs);
 
 /*
    Rationals
@@ -571,18 +571,75 @@ end;
 */
 
 split_rational X = reduce X
-    with
-            (-a)/b = -(a/b);
-            (a+b)/c = (a/c) + (b/c);
-            (a*b)/(c*d) = (a/c)*(b/d);
-    end;
+with
+        (-a)/b = -(a/b);
+        (a+b)/c = (a/c) + (b/c);
+        (a*b)/(c*d) = (a/c)*(b/d);
+end;
 
 seperate_denom X = reduce X 
 with 
     rational a (mul b c) = a * (rational 1 b) * (rational 1 c) if a ~= 1;
 end;
 
-tr = (a+b)/c;
+replace_heads f g X = replf X
+with
+    replf (func@_ a) = (replf func) (replf a);
+    replf x = if x === f then g else x;
+end;
+
+associate_add_left = reduce with
+    x+(y+z) = (x+y) + z;
+end;
+
+associate_mul_left = reduce with
+    x*(y*z) = (x*y) * z;
+end;
+
+associate_add_right = reduce with
+    (x+y)+z = x+(y+z);
+end;
+
+associate_mul_right = reduce with
+    (x*y)*z = x*(y*z);
+end;
+
+pull_left X a = reduce 
+    (associate_add_left . associate_mul_left $ X) 
+with
+    (y+x) = (x+y) if x === a && ~( x === y ); 
+    (y*x) = (x*y) if x === a && ~( x === y );
+    (x/y) = x*(1/y) if x === a;
+    //(y/x) = (1/x)*y if x === a;
+end if varp a;
+
+pull_right X a = reduce 
+    (associate_add_right . associate_mul_right $ X) 
+with
+    (y+x) = (x+y) if y === a && ~( x === y ); 
+    (y*x) = (x*y) if y === a && ~( x === y );
+    (x/y) = x*(1/y) if y === a;
+    //(y/x) = (1/x)*y if y === a;
+end if varp a;
+
+pull_left_prop X prop = reduce 
+    (associate_add_left . associate_mul_left $ X) 
+with
+    (y+x) = (x+y) if `(prop x) && ~( x === y ); 
+    (y*x) = (x*y) if `(prop x) && ~( x === y );
+//    (x/y) = x*(1/y) if `(prop x);
+end;
+
+pull_right_prop X prop = reduce 
+    (associate_add_right . associate_mul_right $ X) 
+with
+    (y+x) = (x+y) if `(prop y) && ~( x === y ); 
+    (y*x) = (x*y) if `(prop y) && ~( x === y );
+//    (x/y) = x*(1/y) if `(prop y);
+end;
+
+pull_numeric_left X = pull_left_prop X numberp;
+pull_numeric_right X = pull_right_prop X numberp;
 
 division_theorem a b = add (mul b (a div b)) (a mod b);
 
