@@ -1,3 +1,7 @@
+# General function to recursively consume the math hierarchy and
+# output some form of structured data (UML , dotviz, ...)
+
+# This generates data which can be consumed by http://www.yuml.me 
 def generate(icls):
 
     strs = []

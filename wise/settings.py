@@ -112,6 +112,8 @@ INSTALLED_APPS = (
     # ' import gunicorn ' form this directory then it will fail
     'reversion',
     'piston',
+    # Django extensions can be safely disabled if you do not want
+    # all its managmenet features
     'django_extensions',
     'mediagenerator',
 #    'debug_toolbar',

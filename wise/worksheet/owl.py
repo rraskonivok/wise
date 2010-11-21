@@ -2,9 +2,11 @@
 
 from xml.dom import minidom
 
+# This isn't used at the moment but it can be used to export the
+# math object hierarchy into a OWL ontology which can be viewed
+# in something like Jumbalaya
 
 def generate(icls):
-
 
     xml = minidom.Document()
 
