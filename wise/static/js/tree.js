@@ -457,6 +457,7 @@ function graft_toplevel_from_json(old_node, json_input, transformation) {
 
     cell._expressions[old_index] = newtree;
     newtree.set({index: old_index});
+    newtree.cell = old_node.cell;
 
     return newtree;
 }
