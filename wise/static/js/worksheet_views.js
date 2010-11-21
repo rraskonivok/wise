@@ -120,6 +120,25 @@ var CellSelection = Backbone.View.extend({
 
 });
 
+var NodeView = Backbone.View.extend({
+
+    events: {
+        "click":    "onClick",
+    },
+
+    initialize: function() {
+      _.bindAll(this,'render','make','onClick');
+    },
+
+    onClick: function(e) {
+        //console.log(this.model.cid);    
+        select_term(this.model);
+        console.log(e);
+        event.stopPropagation();
+    }
+
+});
+
 var NodeSelectionView = Backbone.View.extend({
 
   tagName: "button",
@@ -137,7 +156,7 @@ var NodeSelectionView = Backbone.View.extend({
   initialize: function() {
       _.bindAll(this,'render','make','unselect');
       this.model.bind('change:selected',this.unselect);
-      selection.getByCid(this.model.cid).view = this;
+      selection.getByCid(this.model.cid).selectionview = this;
   },
 
   render: function() {

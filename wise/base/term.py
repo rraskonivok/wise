@@ -44,10 +44,6 @@ class Term(object):
     latex = None # LaTeX code used in rendering object
     css_class = None # Extra styling in addition to .term class
 
-    javascript = SafeUnicode()
-    javascript_template = js.javascript_template
-    has_sort = False # Can be reordered with jQuery sortable
-
     side = None # 0 if on LHS, 1 if on RHS
 
     #############################################################
@@ -111,9 +107,6 @@ class Term(object):
             'type': self.classname,
             })
 
-        #if self.javascript:
-        #    return self.html.render(c) + self.get_javascript()
-        #else:
         return self.html.render(c)
 
     @property
@@ -187,10 +180,6 @@ class Term(object):
 
         return lst
 
-    def get_javascript(self):
-        c = template.Context({'javascript':self.javascript})
-        return self.javascript_template.render(c)
-
     def combine_fallback(self,other,context):
         '''Just slap an operator between two terms and leave it as is'''
 
@@ -226,11 +215,3 @@ class Term(object):
 
     def combine(self,other,context):
         return self.combine_fallback(other,context)
-
-    def ui_sortable(self,other=None):
-        self.ensure_id()
-        other.ensure_id()
-
-        self.has_sort = True
-        self.javascript = js.make_sortable(self,other).get_html()
-        return self.get_javascript()

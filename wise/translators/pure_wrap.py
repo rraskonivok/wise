@@ -24,6 +24,7 @@ PureSymbol = pure.prelude.PureSymbol
 PureLevel = pure.prelude.PureLevel
 PureExpr = pure.prelude.PureExpr
 PureDouble = pure.prelude.PureDouble
+PureClosure = pure.prelude.PureClosure
 
 env = pure.prelude.env
 

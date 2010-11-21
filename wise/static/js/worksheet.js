@@ -1010,41 +1010,6 @@ function new_cell() {
 }
 
 function traverse_lines() {
-    // jQuery tooltip croaks if we apply $.tooltip multiple times
-    // so we just ignore elements that we've already initiated
-//    untooltiped = _.reject($('[math-type]','#workspace'), function(obj){ return obj.tooltipText });
-
-    unselectable = _.reject($('[math-meta-class=term]','#workspace'), function(obj){ return obj.selectable });
-    
-    function make_selectable(obj) {
-        $(obj).click(function(event) {
-            // Take the id of the DOM object clicked on and match it to a expression Node
-            var node = NODES.getByCid($(this).id());
-            select_term(node);
-            // stopPropogation prevents stacked elements from being selected at the same time
-            event.stopPropagation();
-        });
-        // Pass this object in subsequent interations
-        obj.selectable = true;
-    };
-
-    _.each(unselectable, make_selectable);
-
-    //unselectable = _.reject($('[math-meta-class=term]:not(.placeholder)','#math_palette'), function(obj){ return obj.selectable });
-    //_.each(unselectable, make_selectable);
-
-    resize_parentheses();
-
-    //_.map($('span[title]'),make_tooltips);
-}
-
-///////////////////////////////////////////////////////////
-// Drag & Drop
-///////////////////////////////////////////////////////////
-
-function make_sortable(object, connector, options) {
-    var group_id = $(object).attr('id');
-    $(object).sortable(options);
 }
 
 ///////////////////////////////////////////////////////////
@@ -1308,6 +1273,7 @@ function palette(num) {
 $('#cmdline').submit(function() {
     use_infix($("#cmdinput").val());
     $("#cmdinput").blur();
+    // Inject into scratchpad
     return false;
 });
 

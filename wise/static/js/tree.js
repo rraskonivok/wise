@@ -164,6 +164,13 @@ function build_tree_from_json(json_input) {
         });
 
         node.cid = term.id;
+
+        var nodeview = new NodeView({
+            model:     node,
+            el:       $('#'+node.cid),
+        })
+
+        node.view = nodeview;
         
         if(term.toplevel) {
             node.index = 0;
@@ -172,6 +179,8 @@ function build_tree_from_json(json_input) {
         if(!NODES.getByCid(node.cid)){
             NODES.add(node);
         }
+
+
     }
 
     //Iterate through the children and lookup their corresponding

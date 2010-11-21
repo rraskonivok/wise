@@ -1,6 +1,6 @@
 import wise.translators.pytopure as translate
 import wise.translators.pure_wrap as pure_wrap
-from wise.translators.pure_wrap import PureLevel, PureSymbol, reduce_with_pure_rules
+from wise.translators.pure_wrap import PureLevel, PureSymbol, reduce_with_pure_rules, PureClosure
 
 from worksheet.utils import hasharray
 import wise.worksheet.exceptions as exception
@@ -52,13 +52,16 @@ def ApplyExternalRule( ref, *expr ):
     # end;
 
     pexpr = map(translate.python_to_pure,expr)
-    pure_expr = ref(*pexpr)
-    pyexpr = translate.pure_to_python(pure_expr,expr[0].idgen)
 
     if settings.DEBUG:
         print 'Applying Rule:', ref, '\n--'
         print 'Input Sexp:', expr
         print 'Input Pure:', pexpr
+
+    pure_expr = ref(*pexpr)
+    pyexpr = translate.pure_to_python(pure_expr,expr[0].idgen)
+
+    if settings.DEBUG:
         print 'Reduced Sexp:', pyexpr
         print 'Reduced Pure:', pure_expr
 
@@ -67,16 +70,14 @@ def ApplyExternalRule( ref, *expr ):
 class PublicRule:
     po = None
     ref = None
-    _arity = None
 
     def __init__(self, pure_symbol_name):
         self.ref = pure_symbol_name
         #self.po = pure_wrap.objects[pure_symbol_name]
-        self.po = PureSymbol(pure_symbol_name)
+        self.po = PureClosure(pure_symbol_name)
         pure_wrap.objects[pure_symbol_name] = self.po
 
-        #self._arity = pure_wrap.nargs(self.po)
-        #print self._arity
+        self.po.arity = pure_wrap.nargs(self.po)
 
     def get_html(self):
         interface_ui = self.template

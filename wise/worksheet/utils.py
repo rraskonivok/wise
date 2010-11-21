@@ -27,7 +27,7 @@ from django.views.decorators.cache import cache_page
 from wise.utils import shpaml
 
 def errors(f):
-    '''Wraps errors out to server log and javascript popup'''
+    '''Decorator to wrap errors out to server log and javascript popup'''
     def wrapper(*args,**kwargs):
         try:
             return f(*args,**kwargs)

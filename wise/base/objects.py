@@ -382,7 +382,6 @@ class Equation(object):
 
     symbol = "="
 
-    sortable = False
     parent = None
 
     side = None
@@ -457,20 +456,11 @@ class Equation(object):
         self.rhs.id = self.idgen.next()
         self.lhs.id = self.idgen.next()
 
-        self.lhs.javascript = None
-        self.rhs.javascript = None
-
         self.rhs.rhs.id = self.idgen.next()
         self.lhs.lhs.id = self.idgen.next()
 
         self.rhs.rhs.associate_terms()
         self.lhs.lhs.associate_terms()
-
-        if self.sortable:
-            s1 = self.lhs.lhs.ui_sortable(self.rhs.rhs)
-            s2 = self.rhs.rhs.ui_sortable(self.lhs.lhs)
-
-            javascript = s1 + s2
 
         c = template.Context({
             'id': self.id,
@@ -492,11 +482,6 @@ class Equation(object):
 
         if not self.id:
             self.id = self.idgen.next()
-        #self.lhs.idgen = self.idgen
-        #self.rhs.idgen = self.idgen
-
-        #self.lhs.ensure_id()
-        #self.rhs.ensure_id()
 
 class RHS(Term):
     html = load_haml_template('rhs.tpl')
@@ -558,7 +543,6 @@ class LHS(Term):
 
 class Definition(Equation):
     symbol = ":="
-    sortable = False
     html = load_haml_template('def.tpl')
     confluent = True
     public = True
@@ -577,9 +561,6 @@ class Definition(Equation):
 
         self.rhs.group = self.id
         self.lhs.group = self.id
-
-        self.lhs.javascript = None
-        self.rhs.javascript = None
 
         self.rhs.rhs.id = self.idgen.next()
         self.lhs.lhs.id = self.idgen.next()
@@ -602,7 +583,6 @@ class Definition(Equation):
 
 class Function(Equation):
     symbol = "\\rightarrow"
-    sortable = False
     html = load_haml_template('function.tpl')
     confluent = True
     public = True
@@ -669,7 +649,6 @@ class Operation(Term):
 
     symbol = None
     show_parenthesis = False
-    sortable = False
 
     #Arity of the operator
     arity = None
@@ -700,12 +679,6 @@ class Operation(Term):
     def get_html(self):
         self.associate_terms()
 
-        # If a parent element has already initiated a sort (i.e
-        # like Equation does) then don't overwrite that
-        # javascript.
-        if self.sortable and not self.has_sort:
-            self.ui_sortable()
-
         #Infix Formatting
         if self.ui_style == 'infix':
             self.html = load_haml_template('infix.tpl')
@@ -719,7 +692,6 @@ class Operation(Term):
                 'operand': objects,
                 'symbol': self.symbol,
                 'parenthesis': self.show_parenthesis,
-                'jscript': self.get_javascript(),
                 'class': self.css_class,
                 })
 
@@ -885,7 +857,6 @@ class Addition(InfixOperation):
                 self.terms = terms[0].terms
 
         self.operand = self.terms
-        #js.make_sortable(self)
 
     def _pure_(self):
         # There is some ambiguity here since we often use an
@@ -933,8 +904,6 @@ class Product(InfixOperation):
             if type(term) is Addition:
                 term.show_parenthesis = True
         self.operand = self.terms
-        #make_sortable(self)
-        #self.ui_sortable()
 
     def remove(self,obj,remove_context):
         if type(self.terms[0]) is Empty:
@@ -958,7 +927,6 @@ class Root(Operation):
         basetype = type(self.base)
         if basetype is Rational or isinstance(self.base, Rational):
             self.base.show_parenthesis = True
-        #make_sortable(self)
 
     def _pure_(self):
         return self.po(self.base._pure_() , self.exponent._pure_())
@@ -990,7 +958,6 @@ class Power(Operation):
         basetype = type(self.base)
         if basetype is Rational or isinstance(self.base, Rational):
             self.base.show_parenthesis = True
-        #make_sortable(self)
 
     def _pure_(self):
         return self.po(self.base._pure_() , self.exponent._pure_())

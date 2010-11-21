@@ -126,6 +126,7 @@ constant x = 1 ;
 */
 
 add_to_both_sides (eq lhs rhs) x = eq (lhs+x) (rhs+x);
+add_to_both_sides x y = x y;
 
 /* :Name: ``sub_from_both_sides`` x y
    :Arguments:
@@ -604,6 +605,10 @@ associate_mul_right = reduce with
     (x*y)*z = x*(y*z);
 end;
 
+increment_left X a = incl X with
+	incl (x+y+a) = (x+a+y);
+end;
+
 pull_left X a = reduce 
     (associate_add_left . associate_mul_left $ X) 
 with
@@ -613,6 +618,13 @@ with
     //(y/x) = (1/x)*y if x === a;
 end if varp a;
 
+pull_left X a = reduce X a with
+    (y+x) = (x+y) if x === a && ~( x === y ); 
+    (y*x) = (x*y) if x === a && ~( x === y );
+    (x/y) = x*(1/y) if x === a;
+    //(y/x) = (1/x)*y if x === a;
+end;
+
 pull_right X a = reduce 
     (associate_add_right . associate_mul_right $ X) 
 with
@@ -620,7 +632,7 @@ with
     (y*x) = (x*y) if y === a && ~( x === y );
     (x/y) = x*(1/y) if y === a;
     //(y/x) = (1/x)*y if y === a;
-end if varp a;
+end;
 
 pull_left_prop X prop = reduce 
     (associate_add_left . associate_mul_left $ X) 

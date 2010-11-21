@@ -174,6 +174,9 @@ cdef class PureQuotedSymbol(PureExpr):
        self._expr = pure.pure_quoted_symbol(pure.pure_sym(sym))
        self._tag = self._expr.tag
 
+cdef class PureClosure(PureSymbol):
+    cdef public arity
+
 cdef class PureRule(PureExpr):
     cdef char* _stmt
     cdef public _pstmt
