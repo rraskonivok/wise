@@ -116,7 +116,7 @@ html {
 
 .selected {
     border: 5px solid #d4a5a5;
-    margin: -5px !important;
+    margin: -5px;
 }
 
 #cell_selection {
