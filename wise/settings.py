@@ -49,10 +49,17 @@ SITE_ID = 1
 
 USE_I18N = False
 
+# A great amount of pain went into finding out that this needs to
+# be set to true in order for django-mediagenerator to cache all
+# its resources
+USE_ETAGS = True
+
 SITE_ROOT = os.path.realpath(os.path.dirname(__file__))
 MEDIA_ROOT = os.path.join(SITE_ROOT, 'static')
 
-MEDIA_URL = '/static'
+DEV_MEDIA_URL = '/static'
+
+MEDIA_DEV_MODE = True
 
 # In order to use admin with gunicorn you'll need to grab the
 # admin resources from your local install. Use the script
@@ -77,7 +84,13 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 #    'debug_toolbar.middleware.DebugToolbarMiddleware',
-    'middleware.SpacelessMiddleware',
+#    'middleware.SpacelessMiddleware',
+)
+
+MEDIA_GENERATORS = (
+    'mediagenerator.generators.copyfiles.CopyFiles',
+    'mediagenerator.generators.bundles.Bundles',
+    'mediagenerator.generators.manifest.Manifest',
 )
 
 ROOT_URLCONF = 'wise.urls'
@@ -95,8 +108,6 @@ TEMPLATE_DIRS = tuple(
 )
 
 GLOBAL_MEDIA_DIRS = (os.path.join(os.path.dirname(__file__), 'static'),)
-
-MEDIA_DEV_MODE = True
 
 MEDIA_BUNDLES = (
     # Default web-app-theme stylesheets and jQuery UI stylesheets

@@ -340,7 +340,7 @@ function select_term(node) {
 
         $("#selectionlist").append(bt.el);
 
-        $node.effect("transfer", { to: $(bt.el) }, 150);
+//        $node.effect("transfer", { to: $(bt.el) }, 150);
     }
     
     // If the object we just selected is not a placeholder then
