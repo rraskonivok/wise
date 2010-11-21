@@ -363,7 +363,6 @@ var Expression = Node.extend({
 
     childrenChanged: function() {
         this.msexp();
-        console.log(this.tree.cid);
         this.tree.set({sexp: this.tree.sexp()});
         this.tree._changed = true;
     },

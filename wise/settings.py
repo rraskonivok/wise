@@ -58,7 +58,7 @@ MEDIA_URL = '/static'
 # admin resources from your local install. Use the script
 # static/copy_admin_resources.sh to do this. This script will
 # build /static/admin
-ADMIN_MEDIA_PREFIX = '/static/admin/'
+#ADMIN_MEDIA_PREFIX = '/static/admin/'
 
 # Change this to something special, Django uses this to salt
 # password hashes
@@ -72,11 +72,12 @@ TEMPLATE_LOADERS = (
 )
 
 MIDDLEWARE_CLASSES = (
+    'mediagenerator.middleware.MediaMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 #    'debug_toolbar.middleware.DebugToolbarMiddleware',
-    'middleware.SpacelessMiddleware'
+    'middleware.SpacelessMiddleware',
 )
 
 ROOT_URLCONF = 'wise.urls'
@@ -91,6 +92,51 @@ ROOTDIR = os.path.abspath(os.path.dirname(__file__))
 TEMPLATE_DIRS = tuple(
         [ROOTDIR +'/templates'] +
         [ROOTDIR + ('/%s/templates' % pack) for pack in INSTALLED_MATH_PACKAGES]
+)
+
+GLOBAL_MEDIA_DIRS = (os.path.join(os.path.dirname(__file__), 'static'),)
+
+MEDIA_DEV_MODE = True
+
+MEDIA_BUNDLES = (
+    # Default web-app-theme stylesheets and jQuery UI stylesheets
+    # used on every page
+    ('jqueryui_stylesheets.css',
+        'css/base.css',
+        'css/themes/default/style.css',
+        'ui/ui.css',
+    ),
+    # Worksheet Stylesheets
+    ('worksheet.css',
+        'css/math.css',
+        'css/worksheet.css',
+    ),
+    ('base.js',
+        'js/jquery.js',
+        'js/jquery-ui.js',
+        'js/dimensions.js',
+        'js/underscore.js',
+        'js/json2.js',
+        'js/backbone.js',
+    ),
+    # Worksheet Javascript files
+    ('worksheet.js',
+         'js/jquery.ajaxmanager.js',
+         'js/worksheet.js',
+         'js/worksheet_ui.js',
+         'js/editable.js',
+         'js/worksheet_managers.js',
+         'js/worksheet_views.js',
+         'js/tree.js',
+         'js/notifications.js',
+         'js/globals.js',
+         'js/keyshortcuts.js',
+         'js/qtip.js',
+         'js/pnotify.js',
+         'js/keys.js',
+        #'js/tooltip.js',
+    ),
+
 )
 
 INSTALLED_APPS = (

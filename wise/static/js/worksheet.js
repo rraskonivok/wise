@@ -311,7 +311,6 @@ function select_term(node) {
 
     var $node = node.dom();
     var root = node.tree.root;
-    console.log(root);
 
 //    activate_cell(cell);
 

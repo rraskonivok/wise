@@ -51,7 +51,9 @@ urlpatterns = patterns('',
      # TODO: Firefox 4 has some issue with OpenType fonts being loaded 
      # from /static when the current page is /ws since it is one level 
      # up... still looking into how to fix this.
-     (r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
      (r'^ws/mathjax/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT + '/mathjax'}),
+
+     (r'^img/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT + '/img'}),
+     (r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT + '/admin'}),
 )
 
