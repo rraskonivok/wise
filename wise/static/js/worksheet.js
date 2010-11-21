@@ -186,9 +186,6 @@ function init_nodes() {
 
         $('#cell_selection').append(cs.el);
     });
-
-    // Make the new elements selectable
-    traverse_lines();
 }
 
 ///////////////////////////////////////////////////////////
@@ -576,6 +573,9 @@ function apply_rule(rule, operands) {
 
                 if (is_toplevel) {
 
+                    nsym = preimage.dom().replace(response.new_html[i]).hide();
+                    $('.equation button','#workspace').parent().buttonset();
+
                     // !!!!!!!!!!!!!!!!
                     // Swap the nodes reference in its Cell so
                     // the cell isn't reference something that
@@ -593,10 +593,10 @@ function apply_rule(rule, operands) {
                         data.rule
                     );
 
+                } else {
+
                     nsym = preimage.dom().replace(response.new_html[i]).hide();
                     nsym.fadeIn('slow');
-                    $('.equation button','#workspace').parent().buttonset();
-                } else {
 
                     graft_tree_from_json(
                         // Graft on top of the old node
@@ -609,8 +609,6 @@ function apply_rule(rule, operands) {
                         data.rule
                     );
 
-                    nsym = preimage.dom().replace(response.new_html[i]).hide();
-                    nsym.fadeIn('slow');
                 }
 
                 //Typeset any latex in the html the server just spit out
@@ -619,7 +617,6 @@ function apply_rule(rule, operands) {
         }
 
         base_mode();
-        traverse_lines();
         resize_parentheses();
     }, "json");
 }
@@ -710,7 +707,6 @@ function apply_def(def, selections) {
         NAMESPACE_INDEX = data.namespace_index;
 
         base_mode();
-        traverse_lines();
         resize_parentheses();
     }, "json");
 }
@@ -770,29 +766,27 @@ function use_infix(code) {
                     //console.log("Deleting - at some point in the future");
                 }
                 else {
-                    toplevel = (data.new_json[i][0].toplevel)
+                    var is_toplevel = (data.new_json[i][0].toplevel);
 
-                    if (toplevel) {
+                    if (is_toplevel) {
                         if(!obj.toplevel) {
                             error('Cannot replace toplevel node with non-toplevel node');
                         }
-
-                        build_tree_from_json(data.new_json[i])
+                        nsym = obj.dom().replace(data.new_html[i]);
 
                         graft_tree_from_json(
                             NODES.getByCid(obj.cid),
                             data.new_json[i]
                         );
 
-                        nsym = obj.dom().replace(data.new_html[i]);
                     } else {
+                        nsym = obj.dom().replace(data.new_html[i]);
 
                         graft_tree_from_json(
                             NODES.getByCid(obj.cid), 
                             data.new_json[i]
                         );
 
-                        nsym = obj.dom().replace(data.new_html[i]);
                     }
                     //Typeset any latex in the html the server just spit out
                     mathjax_typeset($(nsym));
@@ -802,7 +796,6 @@ function use_infix(code) {
             NAMESPACE_INDEX = data.namespace_index;
 
             base_mode();
-            traverse_lines();
             resize_parentheses();
         }});
 }
@@ -883,7 +876,7 @@ function apply_transform(transform, operands) {
                 else {
                     var is_toplevel = (response.new_json[i][0].toplevel);
                     if (is_toplevel) {
-                        build_tree_from_json(response.new_json[i]);
+                        nsym = obj.dom().replace(response.new_html[i]);
 
                         graft_toplevel_from_json(
                             NODES.getByCid(obj.cid),
@@ -891,15 +884,14 @@ function apply_transform(transform, operands) {
                             postdata.transform
                         );
 
-                        nsym = obj.dom().replace(response.new_html[i]);
                     } else {
+                        nsym = obj.dom().replace(response.new_html[i]);
 
                         graft_tree_from_json(
                             NODES.getByCid(obj.cid), 
                             response.new_json[i],
                             postdata.transform
                         );
-                        nsym = obj.dom().replace(response.new_html[i]);
                     }
 
                     mathjax_typeset($(nsym));
@@ -909,7 +901,6 @@ function apply_transform(transform, operands) {
             NAMESPACE_INDEX = response.namespace_index;
 
             base_mode();
-            traverse_lines();
             resize_parentheses();
         }});
 }
@@ -943,17 +934,18 @@ function new_line(type, index) {
         }
 
         if (data.new_html) {
+            new_expr_html = $(data.new_html);
+            active_cell.view.addExpression(new_expr_html);
+
             // Initiale the new expression in the term db
             var eq = build_tree_from_json(data.new_json);
+
             eq.cell = active_cell;
             eq.set({cell: active_cell.id});
             active_cell.addExpression(eq);
 
             // Render the html of the new expression
-            new_expr_html = $(data.new_html);
-            active_cell.view.addExpression(new_expr_html);
             mathjax_typeset(new_expr_html);
-            traverse_lines();
 
         }
 
@@ -1007,9 +999,6 @@ function new_cell() {
             cell.set({active: true});
         }
     });
-}
-
-function traverse_lines() {
 }
 
 ///////////////////////////////////////////////////////////
@@ -1243,7 +1232,6 @@ function load_math_palette() {
             MathJax.Hub.Typeset($(this).next()[0]);
     
             //Make the math terms interactive
-            traverse_lines();
             resize_parentheses()
             $("#math_palette").resizable({ handles: 's' });
         }

@@ -165,9 +165,11 @@ function build_tree_from_json(json_input) {
 
         node.cid = term.id;
 
+        var nel = $('#' + node.cid);
+
         var nodeview = new NodeView({
             model:     node,
-            el:       $('#'+node.cid),
+            el:        nel,
         })
 
         node.view = nodeview;
@@ -408,8 +410,11 @@ function build_cell_from_json(json_input) {
     new_cell.cid = cell_spec.cid;
     new_cell.set({id: cell_spec.id})
 
+    // The new HTML element, must exist in the DOM
+    var nel = $('#' + new_cell.cid);
+
     new_view = new CellView({
-        el: $('#' + new_cell.cid),
+        el: nel,
         active: false,
         model: new_cell,
     });
@@ -440,19 +445,20 @@ function build_cell_from_json(json_input) {
 //Build a tree from a json specifiction and then then graft (
 //by replacement) onto a existing expression tree.
 function graft_toplevel_from_json(old_node, json_input, transformation) {
-    console.log('grafting_toplevel');
+    var cell = old_node.tree.cell;
+    var old_index = old_node.tree.get('index');
     var newtree = build_tree_from_json(json_input);
 
-    if (!old_node) {
-        //error('Could not attach branch');
-        return;
-    }
-
-    old_node.msexp();
     newtree.root.transformed_by = transformation;
     newtree.root.prev_state = old_node.sexp();
 
     old_node.swapNode(newtree.root);
+    newtree.set(old_node.attributes);
+
+    cell._expressions[old_index] = newtree;
+    newtree.set({index: old_index});
+
+    return newtree;
 }
 
 //       E  (Expression Tree)        E  ( Same Expression Tree)

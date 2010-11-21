@@ -93,8 +93,6 @@ TEMPLATE_DIRS = tuple(
         [ROOTDIR + ('/%s/templates' % pack) for pack in INSTALLED_MATH_PACKAGES]
 )
 
-print TEMPLATE_DIRS
-
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -114,6 +112,8 @@ INSTALLED_APPS = (
     # ' import gunicorn ' form this directory then it will fail
     'reversion',
     'piston',
+    'django_extensions',
+    'mediagenerator',
 #    'debug_toolbar',
 )
 
