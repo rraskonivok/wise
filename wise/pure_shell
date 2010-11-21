@@ -1,0 +1,3 @@
+#!/bin/bash
+
+pure -q -i base/base.pure
