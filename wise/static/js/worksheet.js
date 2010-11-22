@@ -273,6 +273,21 @@ function select_root(clear) {
     select_term(get_root(start));
 }
 
+// Get the largest addition container
+function additionContainer(node) {
+    parents_until_not_type(node,'Addition').select();     
+}
+
+function iter_left() {
+    // Get the largest addition container
+    if(selection.at(0)) {
+        parents_until_not_type(selection.at(0),'Addition').select();
+    }
+    if(selection.at(1)) {
+        return apply_rule('iter_left',[selection.at(1),selection.at(0)]);
+    }
+}
+
 function select_left_root(clear) {
     var start = selection.last();
 
@@ -303,58 +318,8 @@ function activate_cell(cell) {
 }
 
 function select_term(node) {
-
-//    hide_tooltips();
-
-    $('#quasimode-indicator').fadeTo('fast',1);
-    $('#basemode-indicator').fadeTo('fast',0.01);
-
-    var $node = node.dom();
-    var root = node.tree.root;
-
-//    activate_cell(cell);
-
-    // Shouldn't happen since select_term is induced by a jquery
-    // binding on a DOM object, but we'll check anyways
-    if(!$node.exists()){
-        window.log('DOM correspondance not found.');
-        return;
-    }
-
-    if(selection.getByCid(node.cid) != null) {
-        $node.removeClass('selected');
-        selection.remove(node)
-        node.set({selected: false});
-
-    } else {
-        node.set({selected: true});
-        $node.addClass('selected');
-
-        selection.add(node);
-
-        var bt = new NodeSelectionView({
-            model: node,
-        });
-
-        bt.render();
-
-        $("#selectionlist").append(bt.el);
-
-//        $node.effect("transfer", { to: $(bt.el) }, 150);
-    }
-    
-    // If the object we just selected is not a placeholder then
-    // go ahead and try chain substitution
-    if (node.get('type') != 'Placeholder') {
-        placeholder_substitute();
-    }
-
-    //if (selection.first().get('type') == 'Definition') {
-    //    definition_apply();
-    //}
+    node.select();
 }
-
-substitute_stoplist = ['Placeholder'];
 
 // ( Placeholder, Placeholder , ... , Expression )
 function placeholder_substitute() {
@@ -533,6 +498,8 @@ function apply_rule(rule, operands) {
     //_.each(operands, function(elem) {
     //    elem.dom().fadeTo('fast',0.5); 
     //});
+    
+    var image = [];
 
     $.post("/cmds/apply_rule/", data, function (response) {
         if (!response) {
@@ -547,6 +514,7 @@ function apply_rule(rule, operands) {
         }
 
         NAMESPACE_INDEX = response.namespace_index;
+
 
         //Iterate over the elements in the image of the
         //transformation, attempt to map them 1:1 with the
@@ -581,7 +549,7 @@ function apply_rule(rule, operands) {
                     // doesn't exist anymore
                     // !!!!!!!!!!!!!!!!
                     
-                    graft_toplevel_from_json(
+                    newnode = graft_toplevel_from_json(
                         // Graft on top of the old node
                         NODES.getByCid(preimage.cid),
                         // Build the new node from the response JSON
@@ -592,12 +560,14 @@ function apply_rule(rule, operands) {
                         data.rule
                     );
 
+                    image.push(newnode);
+
                 } else {
 
                     nsym = preimage.dom().replace(response.new_html[i]).hide();
                     nsym.fadeIn('slow');
 
-                    graft_tree_from_json(
+                    newnode = graft_tree_from_json(
                         // Graft on top of the old node
                         NODES.getByCid(preimage.cid), 
                         // Build the new node from the response JSON
@@ -608,6 +578,9 @@ function apply_rule(rule, operands) {
                         data.rule
                     );
 
+                    image.push(newnode);
+                    console.log(image);
+
                 }
 
                 //Typeset any latex in the html the server just spit out
@@ -615,9 +588,10 @@ function apply_rule(rule, operands) {
             }
         }
 
-        base_mode();
         resize_parentheses();
     }, "json");
+
+    return image;
 }
 
 function apply_def(def, selections) {

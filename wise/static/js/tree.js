@@ -354,7 +354,8 @@ var Node = Backbone.Model.extend({
 
         // Tell the tree that it has changed contents and needs
         // to pushed to the server.
-    }
+    },
+
 
 });
 
@@ -394,6 +395,36 @@ var Expression = Node.extend({
     getCell: function() {
         return get_root(this).tree.cell;
     },
+
+    select: function() {
+       if(this.get('selected') != true) {
+           this.set({selected: true});
+           this.view.el.addClass('selected');
+
+           // Move this to the selection view handler
+           selection.add(this);
+
+           var bt = new NodeSelectionView({
+               model: this,
+           });
+
+           bt.render();
+
+           $("#selectionlist").append(bt.el);
+
+           substitute_stoplist = ['Placeholder'];
+
+           console.log(this.get('type'));
+           if(this.get('type') != 'Placeholder') {
+               placeholder_substitute();
+           }
+       } else {
+           this.set({selected: false});
+           this.view.el.removeClass('selected');
+           selection.remove(this)
+       }
+
+    }
 
 });
 
@@ -484,6 +515,7 @@ function graft_tree_from_json(old_node, json_input, transformation) {
     newtree.root.prev_state = old_node.sexp();
 
     old_node.swapNode(newtree.root);
+    return newtree;
 }
 
 function sexp(head, args) {
@@ -526,4 +558,43 @@ function get_lhs(node) {
 
 function get_rhs(node) {
     return get_root(node).children[1].children[0];
+}
+
+// Traverse the tree upwards until it find a node matching
+// [filter], behaves like jQuery's parents
+function parents(node, filter) {
+    if(node._parent) {
+        var prent = node._parent;
+        if(filter(prent)) {
+            return node
+        }
+        return parents(prent, filter);
+    }
+}
+
+// Traverse the tree upwards until it find a node matching
+// [filter] inclusive on the matched nodee, behaves like 
+// jQuery's parents
+function parentsUntil(node, filter) {
+    if(node._parent) {
+        var prent = node._parent;
+        if(filter(prent)) {
+            return prent
+        }
+        return parents(prent, filter);
+    }
+}
+
+// Traverse the tree upwards until it find a node who's 'type'
+// attribute matches [type].
+function parents_until_type(node, type) {
+   return parentsUntil(node, function(n) {
+        return n.get('type') == type;
+   });
+}
+
+function parents_until_not_type(node, type) {
+   return parents(node, function(n) {
+        return n.get('type') != type;
+   });
 }

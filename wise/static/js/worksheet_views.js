@@ -131,7 +131,8 @@ var NodeView = Backbone.View.extend({
     },
 
     onClick: function(e) {
-        select_term(this.model);
+        this.model.select();
+
         if(this.model.tree.cell) {
             activate_cell(this.model.tree.cell);
         }

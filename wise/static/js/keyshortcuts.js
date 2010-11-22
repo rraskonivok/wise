@@ -19,6 +19,7 @@ function init_keyboard_shortcuts() {
         .bind('keydown', 'alt+d', function() {div_shift()})
         .bind('keydown', 'alt+s', function() {sub_shift()})
         .bind('keydown', 'ctrl+s', save_worksheet)
+        .bind('keydown', 'shift+left', iter_left)
         // Variable substitutions 
         .bind('keydown', 'x', function() {use_infix('x')})
         .bind('keydown', 'y', function() {use_infix('y')})

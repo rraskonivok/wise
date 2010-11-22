@@ -19,7 +19,7 @@ using ask;
    --------------
 */
 
-/* :Name: ``cmp`` x y - Lexicographical ordering on algebraic terms
+/* :Name: ``cmp`` x y - Lexicographic ordering on algebraic terms
    :Arguments:
    :x: Arbitrary expression
    :y: Arbitrary expression
@@ -550,12 +550,10 @@ poly x (c:cs) = c * x^(#cs) + (poly x cs);
 
 combine_rational X = reduce X
 with
-//    Neg (rational a b) = rational (Neg a) b;
+    // Pull the negation outside of the fraction
+    -(a/b) = (-a)/b;
     (a/c) + (b/c) = (a+b)/c;
     (a/b) + (c/d) = (a*d+b*c)/(b*d);
-//    add k (rational a b) = rational (k*b+a) b;
-//    mul (rational a b) (rational c d) = rational (a*c) (b*d);
-//    mul k (rational a b) = rational (k*a) b;
     (a/b) / (c/d) = (a*c)/(b*d);
 end;
 
@@ -573,6 +571,7 @@ end;
 
 split_rational X = reduce X
 with
+        // Push the negation inside the fraction
         (-a)/b = -(a/b);
         (a+b)/c = (a/c) + (b/c);
         (a*b)/(c*d) = (a/c)*(b/d);
@@ -605,9 +604,13 @@ associate_mul_right = reduce with
     (x*y)*z = x*(y*z);
 end;
 
-increment_left X a = incl X with
-	incl (x+y+a) = (x+a+y);
-end;
+// a+(b+(c+d))
+ileft X x = iter_left (associate_add_right X) x;
+
+iter_left (a + b) x = b + a if b === x;
+iter_left (a+(b+c)) x = b + (a+c) if b === x;
+iter_left (a + b) x = a + (iter_left b x);
+iter_left b x = b;
 
 pull_left X a = reduce 
     (associate_add_left . associate_mul_left $ X) 
