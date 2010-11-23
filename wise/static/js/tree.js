@@ -411,6 +411,7 @@ var Expression = Node.extend({
            this.view.el.removeClass('selected');
     },
 
+
     select: function() {
            this.set({selected: true});
            selection.add(this);
