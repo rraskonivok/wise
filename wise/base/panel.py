@@ -2,7 +2,7 @@ import string
 import objects
 
 from objects import Placeholder
-from wise.worksheet.panel import TabularPanel, ArrayPanel, ButtonPanel
+from wise.worksheet.panel import TabularPanel, ArrayPanel, ButtonPanel, TexButton
 #TODO: @extends decorator to append to existing panel
 
 ##--------------------
@@ -20,37 +20,38 @@ from wise.worksheet.panel import TabularPanel, ArrayPanel, ButtonPanel
 ## Greek Variables
 ##--------------------
 #
-## The greek alphabet... LaTeX style
-#greek_alphabet = ['alpha', 'beta', 'gamma', 'delta', 'epsilon',
-#'varepsilon', 'zeta', 'eta', 'theta', 'vartheta', 'gamma',
-#'kappa', 'lambda', 'mu', 'nu', 'xi', 'pi', 'varpi', 'rho',
-#'varrho', 'sigma', 'varsigma', 'tau', 'upsilon', 'phi', 'varphi',
-#'chi', 'psi', 'omega', 'Gamma', 'Delta', 'Theta', 'Lambda', 'Xi',
-#'Pi', 'Sigma', 'Upsilon', 'Phi', 'Psi', 'Omega']
-#
-#greek_symbols = map(objects.Greek, greek_alphabet)
-#greek_latex = ['\\' + s for s in greek_alphabet]
-#greek_buttons = zip(greek_latex, greek_symbols)
-#
-#Greeks = ButtonPanel(name='Greek',
-#                    objects=greek_buttons)
-#
-##--------------------
-## Elementary Operations
-##--------------------
-#
-elem_operations = [('add.svg',objects.Addition),
-              ('mul.svg',objects.Product),
-              ('pow.svg',objects.Power),
-              ('neg.svg',objects.Negate),
-              ('div.svg',objects.Rational),
-              ('complex.svg',objects.ComplexNumeric),
+# The greek alphabet... LaTeX style
+greek_alphabet = ['alpha', 'beta', 'gamma', 'delta', 'epsilon',
+'varepsilon', 'zeta', 'eta', 'theta', 'vartheta', 'gamma',
+'kappa', 'lambda', 'mu', 'nu', 'xi', 'pi', 'varpi', 'rho',
+'varrho', 'sigma', 'varsigma', 'tau', 'upsilon', 'phi', 'varphi',
+'chi', 'psi', 'omega', 'Gamma', 'Delta', 'Theta', 'Lambda', 'Xi',
+'Pi', 'Sigma', 'Upsilon', 'Phi', 'Psi', 'Omega']
+
+greek_symbols = map(objects.Greek, greek_alphabet)
+greek_latex = ['\\' + s for s in greek_alphabet]
+greek_buttons = zip(greek_latex, greek_symbols)
+
+Greeks = TexButton(name='Greek',
+                    objects=greek_buttons)
+
+#--------------------
+# Elementary Operations
+#--------------------
+
+elem_operations = [
+              ('add.png',       objects.Addition),
+              ('mul.png',       objects.Product),
+              ('pow.png',       objects.Power),
+              ('neg.png',       objects.Negate),
+              ('div.png',       objects.Rational),
+              ('complex.png',   objects.ComplexNumeric),
+              ('sqrt.png',      objects.Sqrt),
+              ('exp.png',       objects.Exp),
+              ('log.png',  objects.Ln),
 #              ('\\text{sgn}',objects.Sgn),
 #              ('\\delta',objects.DiracDelta),
 #              ('Abs',objects.Abs),
-              ('sqrt.svg',objects.Sqrt),
-              ('exp.svg',objects.Exp),
-              ('integral.svg',objects.Ln),
              ]
 
 Operations = ButtonPanel(name='Algebraic Operations',

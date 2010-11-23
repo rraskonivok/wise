@@ -69,4 +69,3 @@ function base_mode() {
     ctrlPressed = false;
 }
 
-active_cells = {};

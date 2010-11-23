@@ -38,6 +38,20 @@ $(document).ajaxStop(function () {
     $('#ajax_loading').hide();
 });
 
+// Hook for ctrl key
+var ctrlPressed = false;
+
+$(window).keydown(function(evt) {
+  if (evt.which == 17) { // ctrl
+    ctrlPressed = true;
+  }
+}).keyup(function(evt) {
+  if (evt.which == 17) { // ctrl
+    ctrlPressed = false;
+  }
+});
+
+
 ///////////////////////////////////////////////////////////
 // Utilities
 ///////////////////////////////////////////////////////////
@@ -245,7 +259,7 @@ function select_parent(clear) {
         base_mode();
     }
 
-    select_term(get_parent(start));
+    get_parent(start).select();
 }
 
 function select_root(clear) {
@@ -255,7 +269,7 @@ function select_root(clear) {
         base_mode();
     }
 
-    select_term(get_root(start));
+    get_root(start).select();
 }
 
 function iter_left() {
@@ -671,6 +685,11 @@ function use_infix(code) {
 
     if(selection.isEmpty()) {
         error('No object selected');
+        return;
+    }
+
+    if(selection.at(0).get('toplevel')) {
+        error('Cannot rewrite toplevel element');
         return;
     }
 
@@ -1114,18 +1133,6 @@ function remove_element() {
     });
 }
 
-var ctrlPressed = false;
-
-$(window).keydown(function(evt) {
-  if (evt.which == 17) { // ctrl
-    ctrlPressed = true;
-  }
-}).keyup(function(evt) {
-  if (evt.which == 17) { // ctrl
-    ctrlPressed = false;
-  }
-});
-
 // Ease the select of container tyep objects by expanding their
 // DOM elements and putting a visible border around it while
 // leaving the children in fixed
@@ -1187,6 +1194,7 @@ function load_math_palette() {
             //Make the math terms interactive
             resize_parentheses()
             $("#math_palette").resizable({ handles: 's' });
+            $('.uniform_button','#math_palette').button();
         }
     });
 

@@ -58,8 +58,17 @@ array_template = haml('''
 
 button_template = haml('''
 {% for obj in objects %}
-        button.button onclick="subs('{{ obj.math }}');"
+    span.uniform_button
+        span onclick="subs('{{ obj.math }}');"
             <img src="/img/buttons/{{ obj.label }}"/>
+{% endfor %}
+''')
+
+tex_template = haml('''
+{% for obj in objects %}
+    span.uniform_button
+        span onclick="subs('{{ obj.math }}');"
+            $${{ obj.label }}$$
 {% endfor %}
 ''')
 
@@ -86,6 +95,23 @@ class ArrayPanel(Panel):
 
 class ButtonPanel(Panel):
     template = Template(button_template)
+
+    def __init__(self, name, objects):
+        self.name = name
+        self.objects = [(label, _map_panel_types(obj)) for label,obj in objects]
+
+    def get_html(self):
+        interface_ui = self.template
+        objects = []
+        for label, obj in self.objects:
+            obj.label = label
+            objects.append(obj)
+
+        c = Context({'name':self.name, 'objects': objects})
+        return interface_ui.render(c)
+
+class TexButton(Panel):
+    template = Template(tex_template)
 
     def __init__(self, name, objects):
         self.name = name

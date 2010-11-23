@@ -2,6 +2,13 @@ html {
     overflow-y: scroll;
 }
 
+.uniform_button {
+    min-height: 25px;
+    min-width: 25px;
+    float: left;
+    vertical-align: middle;
+}
+
 .term_hover {
     border-bottom: 5px solid #9CBD86;
     margin-bottom: xpir-5px;
@@ -33,14 +40,12 @@ html {
   border-bottom: 1px solid #ccc;
   border-right: 1px solid #ccc;
   background: #fff;
+  min-height: 600px;
+  overflow: auto;
 }
 
 .palette button {
     margin: 0px !important;
-}
-
-#math_palette { 
-    overflow: auto;
 }
 
 .panel_category { 

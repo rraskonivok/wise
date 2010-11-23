@@ -9,12 +9,12 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="64"
-   height="32"
+   width="32"
+   height="16"
    id="svg2"
    version="1.1"
    inkscape:version="0.47 r22583"
-   sodipodi:docname="exp.svg">
+   sodipodi:docname="log.svg">
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff"
@@ -22,16 +22,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="4"
-     inkscape:cx="31.036859"
-     inkscape:cy="11.505468"
+     inkscape:zoom="1"
+     inkscape:cx="3.3169538"
+     inkscape:cy="10.304503"
      inkscape:document-units="px"
      inkscape:current-layer="svg2"
      showgrid="false"
-     inkscape:window-width="934"
-     inkscape:window-height="898"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
+     inkscape:window-width="1248"
+     inkscape:window-height="684"
+     inkscape:window-x="70"
+     inkscape:window-y="80"
      inkscape:window-maximized="0" />
   <defs
      id="defs4">
@@ -51,7 +51,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -59,7 +59,7 @@
      id="layer1"
      inkscape:groupmode="layer"
      inkscape:label="Layer 1"
-     transform="translate(0,-1020.3622)">
+     transform="translate(0,-1036.3622)">
     <g
        id="g2822"
        transform="translate(-191.42857,-148.57143)">
@@ -78,11 +78,11 @@
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;letter-spacing:normal;word-spacing:normal;text-anchor:start;fill:none;stroke:#000000;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10.43299961;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0" />    </g>
   </g>
   <g
-     transform="matrix(8.7455118,0,0,8.7455118,-207.16296,-505.1336)"
+     transform="matrix(8.7455118,0,0,8.7455118,-207.16296,-521.1336)"
      id="g2951" />
   <g
      id="g2935"
-     transform="matrix(11.900128,0,0,11.900128,-142.08713,-324.92383)">
+     transform="matrix(7.8515094,0,0,7.8515094,-98.276193,-216.88071)">
     <g
        word-spacing="normal"
        letter-spacing="normal"
@@ -95,7 +95,7 @@
        xml:space="preserve"
        transform="matrix(0.04571429,0,0,-0.04571429,-8,48)"
        id="g2937"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;letter-spacing:normal;word-spacing:normal;text-anchor:start;fill:none;stroke:#000000;stroke-width:0.08403271;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10.43299961;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"><path
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;letter-spacing:normal;word-spacing:normal;text-anchor:start;fill:none;stroke:#000000;stroke-width:0.12736404;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10.43299961;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"><path
          id="path2939"
          d="m 464.82,440.57 -7.18,-0.55 v -1.54 c 3.49,0 3.89,-0.35 3.89,-2.79 v -25.9 c 0,-2.25 -0.55,-2.25 -3.89,-2.25 V 406 h 11.06 v 1.54 c -3.34,0 -3.88,0 -3.88,2.25 z"
          style="fill:#000000;stroke-width:0" /><path

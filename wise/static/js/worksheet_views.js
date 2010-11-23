@@ -120,11 +120,16 @@ var CellSelection = Backbone.View.extend({
 
 });
 
+// Node Views as manifest as manipulative LaTeX in the worksheet
 var NodeView = Backbone.View.extend({
 
     events: {
         "click":    "onClick",
+        "mouseover": "onHoverIn",
+        "mouseout":  "onHoverOut",
     },
+
+    highlightEverything: false,
 
     initialize: function() {
       _.bindAll(this,'render','make','onClick');
@@ -133,16 +138,31 @@ var NodeView = Backbone.View.extend({
     onClick: function(e) {
         this.model.toggleSelect();
         e.stopPropagation();
-    }
+    },
+
+    onHoverIn: function(e) {
+        if(ctrlPressed) {
+            if(this.model.hasChildren() || this.highlightEverything) {
+                $(this.el).addClass('preselect');
+            }
+        }
+        e.stopPropagation();
+    },
+
+    onHoverOut: function(e) {
+        $(this.el).removeClass('preselect');
+        e.stopPropagation();
+    },
 
 });
 
+// Selection Bar buttons for selection of Nodes
 var NodeSelectionView = Backbone.View.extend({
 
   tagName: "button",
 
   events: {
-     "click": "unselect",
+     "click": "unselectNode",
      "mouseover": "highlight",
      "mouseout": "unhighlight",
   },
@@ -164,6 +184,10 @@ var NodeSelectionView = Backbone.View.extend({
           label: this.model.get('type'),
       });
       return this;
+  },
+
+  unselectNode: function() {
+    this.model.unselect();
   },
 
   // If 'selected' is changed on the model then destory self

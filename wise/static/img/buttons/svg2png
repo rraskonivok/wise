@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# Requires imagemagic
+convert -background none $1.svg $1.png
