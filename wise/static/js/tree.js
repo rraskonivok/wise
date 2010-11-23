@@ -317,6 +317,7 @@ var Node = Backbone.Model.extend({
         // The node is about to be destroyed so fire any ui events
         // that occur when a node is unselected
         this.set({selected: false});
+        this.unselect();
 
         // Destroy all callbacks
         this.unbind();
@@ -363,7 +364,7 @@ var Expression = Node.extend({
     _math: [],
 
     childrenChanged: function() {
-        this.msexp();
+//        this.msexp();
         this.tree.set({sexp: this.tree.sexp()});
         this.tree._changed = true;
     },
@@ -396,13 +397,26 @@ var Expression = Node.extend({
         return get_root(this).tree.cell;
     },
 
+    toggleSelect: function() {
+       if(this.get('selected') == true) {
+           this.unselect(); 
+       } else {
+           this.select();
+       }
+    },
+
+    unselect: function() {
+           this.set({selected: false});
+           selection.remove(this);
+           this.view.el.removeClass('selected');
+    },
+
     select: function() {
-       if(this.get('selected') != true) {
            this.set({selected: true});
+           selection.add(this);
            this.view.el.addClass('selected');
 
            // Move this to the selection view handler
-           selection.add(this);
 
            var bt = new NodeSelectionView({
                model: this,
@@ -414,15 +428,9 @@ var Expression = Node.extend({
 
            substitute_stoplist = ['Placeholder'];
 
-           console.log(this.get('type'));
            if(this.get('type') != 'Placeholder') {
                placeholder_substitute();
            }
-       } else {
-           this.set({selected: false});
-           this.view.el.removeClass('selected');
-           selection.remove(this)
-       }
 
     }
 

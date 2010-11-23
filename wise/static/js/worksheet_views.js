@@ -131,11 +131,7 @@ var NodeView = Backbone.View.extend({
     },
 
     onClick: function(e) {
-        this.model.select();
-
-        if(this.model.tree.cell) {
-            activate_cell(this.model.tree.cell);
-        }
+        this.model.toggleSelect();
         e.stopPropagation();
     }
 
@@ -145,8 +141,6 @@ var NodeSelectionView = Backbone.View.extend({
 
   tagName: "button",
 
-  className: 'button',
-
   events: {
      "click": "unselect",
      "mouseover": "highlight",
@@ -154,6 +148,7 @@ var NodeSelectionView = Backbone.View.extend({
   },
 
   css3effect: false,
+  highlighteffect: false,
 
   initialize: function() {
       _.bindAll(this,'render','make','unselect');
@@ -162,13 +157,20 @@ var NodeSelectionView = Backbone.View.extend({
   },
 
   render: function() {
-      $(this.el).html(this.model.get('type'));
+      $(this.el).button({
+          icons: {
+              primary: "ui-icon-circle-close"
+          }, 
+          label: this.model.get('type'),
+      });
       return this;
   },
 
-  unselect: function(e) {
-      selection.remove(this.model);
-      $(this.el).remove();
+  // If 'selected' is changed on the model then destory self
+  unselect: function(e, val) {
+    if(val == false) {
+        this.remove();
+    }
   },
 
   highlight: function(e) {
@@ -178,19 +180,19 @@ var NodeSelectionView = Backbone.View.extend({
           _.each(typsets,function(t) {
             $(t).removeClass('modal'); 
           });
-          this.model.dom().addClass('shadow');
-          this.model.dom().removeClass('selected');
-      } else {
-          this.model.dom().addClass('highlight');
+          this.model.view.el.addClass('shadow');
+          this.model.view.el.removeClass('selected');
+      } else if(this.highlighteffect) {
+          this.model.view.el.addClass('highlight');
       }
   },
 
   unhighlight: function(e) {
       if(this.css3effect) {
           $('.MathJax_Display').removeClass('modal');
-          this.model.dom().removeClass('shadow');
-      } else {
-          this.model.dom().removeClass('highlight');
+          this.model.view.el.removeClass('shadow');
+      } else if(this.highlighteffect) {
+          this.model.view.el.removeClass('highlight');
       }
   },
 

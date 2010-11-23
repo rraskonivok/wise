@@ -47,7 +47,7 @@ $(document).ajaxStop(function () {
 
 // Source: http://paulirish.com/2009/log-a-lightweight-wrapper-for-consolelog/
 window.log = function(){
-  log.history = log.history || [];   // store logs to an array for reference
+  log.history = log.history || [];
   log.history.push(arguments);
   if(this.console){
     console.log( Array.prototype.slice.call(arguments) );
@@ -102,18 +102,6 @@ $.fn.replace = function (htmls) {
     return replacer;
 };
 
-$.fn.swap = function (b) {
-    b = jQuery(b)[0];
-    var a = this[0];
-
-    var t = a.parentNode.insertBefore(document.createTextNode(''), a);
-    b.parentNode.insertBefore(a, b);
-    t.parentNode.insertBefore(b, t);
-    t.parentNode.removeChild(t);
-
-    return this;
-};
-
 //TODO: This is here for compatability reasons, move to fn.cid
 $.fn.id = function () {
     return $(this).attr('id')
@@ -122,10 +110,6 @@ $.fn.id = function () {
 $.fn.cid = function () {
     return $(this).attr('id')
 };
-
-$.fn.is_toplevel = function() {
-    return $(this).attr('toplevel') == 'true';
-}
 
 // Extract the id of an object and lookup its node
 $.fn.node = function () {
@@ -138,6 +122,7 @@ $.fn.node = function () {
     return node;
 };
 
+// Prevent selections from being dragged on the specifed elements
 $.fn.disableTextSelect = function () {
     return this.each(function () {
         if ($.browser.mozilla) { //Firefox
@@ -273,11 +258,6 @@ function select_root(clear) {
     select_term(get_root(start));
 }
 
-// Get the largest addition container
-function additionContainer(node) {
-    parents_until_not_type(node,'Addition').select();     
-}
-
 function iter_left() {
     // Get the largest addition container
     if(selection.at(0)) {
@@ -317,9 +297,10 @@ function activate_cell(cell) {
     active_cell = cell;
 }
 
-function select_term(node) {
-    node.select();
-}
+//Prefix convenience wrapper for node.select()
+//function select_term(node) {
+//    node.select();
+//}
 
 // ( Placeholder, Placeholder , ... , Expression )
 function placeholder_substitute() {
@@ -579,7 +560,6 @@ function apply_rule(rule, operands) {
                     );
 
                     image.push(newnode);
-                    console.log(image);
 
                 }
 

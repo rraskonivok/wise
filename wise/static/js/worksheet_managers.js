@@ -10,8 +10,7 @@ var NodeSelectionManager = Backbone.Collection.extend({
         // themselves
         _.each(this.models, 
             function(model) {
-               model.dom().removeClass('selected');
-               model.set({selected: false}); 
+               model.unselect();
             }
         );
 //        this.remove(this.models);
