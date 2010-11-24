@@ -21,19 +21,19 @@ from wise.worksheet.panel import TabularPanel, ArrayPanel, ButtonPanel, TexButto
 ##--------------------
 #
 # The greek alphabet... LaTeX style
-greek_alphabet = ['alpha', 'beta', 'gamma', 'delta', 'epsilon',
-'varepsilon', 'zeta', 'eta', 'theta', 'vartheta', 'gamma',
-'kappa', 'lambda', 'mu', 'nu', 'xi', 'pi', 'varpi', 'rho',
-'varrho', 'sigma', 'varsigma', 'tau', 'upsilon', 'phi', 'varphi',
-'chi', 'psi', 'omega', 'Gamma', 'Delta', 'Theta', 'Lambda', 'Xi',
-'Pi', 'Sigma', 'Upsilon', 'Phi', 'Psi', 'Omega']
-
-greek_symbols = map(objects.Greek, greek_alphabet)
-greek_latex = ['\\' + s for s in greek_alphabet]
-greek_buttons = zip(greek_latex, greek_symbols)
-
-Greeks = TexButton(name='Greek',
-                    objects=greek_buttons)
+#greek_alphabet = ['alpha', 'beta', 'gamma', 'delta', 'epsilon',
+#'varepsilon', 'zeta', 'eta', 'theta', 'vartheta', 'gamma',
+#'kappa', 'lambda', 'mu', 'nu', 'xi', 'pi', 'varpi', 'rho',
+#'varrho', 'sigma', 'varsigma', 'tau', 'upsilon', 'phi', 'varphi',
+#'chi', 'psi', 'omega', 'Gamma', 'Delta', 'Theta', 'Lambda', 'Xi',
+#'Pi', 'Sigma', 'Upsilon', 'Phi', 'Psi', 'Omega']
+#
+#greek_symbols = map(objects.Greek, greek_alphabet)
+#greek_latex = ['\\' + s for s in greek_alphabet]
+#greek_buttons = zip(greek_latex, greek_symbols)
+#
+#Greeks = TexButton(name='Greek',
+#                    objects=greek_buttons)
 
 #--------------------
 # Elementary Operations

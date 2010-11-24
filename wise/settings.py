@@ -5,13 +5,17 @@
 
 import os
 
-#Eagerly load the pure module to avoid an initial hiccup when a worker starts
-import pure.prelude
 
 APPEND_SLASH = True
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 LOG_FILE = 'session.log'
+
+DISABLE_PURE = False
+
+#Eagerly load the pure module to avoid an initial hiccup when a worker starts
+if not DISABLE_PURE:
+    import pure.prelude
 
 # A quick note about security. *WISE IS ALPHA SOFTWARE AND NOT SECURE* (yet)
 ADMINS = (
@@ -49,17 +53,11 @@ SITE_ID = 1
 
 USE_I18N = False
 
-# A great amount of pain went into finding out that this needs to
-# be set to true in order for django-mediagenerator to cache all
-# its resources
 USE_ETAGS = True
 
 SITE_ROOT = os.path.realpath(os.path.dirname(__file__))
 MEDIA_ROOT = os.path.join(SITE_ROOT, 'static')
-
-DEV_MEDIA_URL = '/static'
-
-MEDIA_DEV_MODE = True
+MEDIA_URL = '/static/'
 
 # In order to use admin with gunicorn you'll need to grab the
 # admin resources from your local install. Use the script
@@ -79,12 +77,11 @@ TEMPLATE_LOADERS = (
 )
 
 MIDDLEWARE_CLASSES = (
-    'mediagenerator.middleware.MediaMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 #    'debug_toolbar.middleware.DebugToolbarMiddleware',
-#    'middleware.SpacelessMiddleware',
+    'middleware.SpacelessMiddleware',
 )
 
 MEDIA_GENERATORS = (
@@ -107,47 +104,62 @@ TEMPLATE_DIRS = tuple(
         [ROOTDIR + ('/%s/templates' % pack) for pack in INSTALLED_MATH_PACKAGES]
 )
 
-GLOBAL_MEDIA_DIRS = (os.path.join(os.path.dirname(__file__), 'static'),)
+USE_BUNDLES = False
+DEFER_JAVASCRIPT = False
 
 MEDIA_BUNDLES = (
-    # Default web-app-theme stylesheets and jQuery UI stylesheets
-    # used on every page
-    ('jqueryui_stylesheets.css',
+    {"type": "css",
+     "name": "base_css",
+     "path": MEDIA_ROOT,
+     "url": MEDIA_URL,
+     "minify": False,
+     "files": (
         'css/base.css',
         'css/themes/default/style.css',
         'ui/ui.css',
-    ),
-    # Worksheet Stylesheets
-    ('worksheet.css',
-        'css/math.css',
-        'css/worksheet.css',
-    ),
-    ('base.js',
-        'js/jquery.js',
-        'js/jquery-ui.js',
-        'js/dimensions.js',
-        'js/underscore.js',
-        'js/json2.js',
-        'js/backbone.js',
-        'js/qtip.js',
-        'js/pnotify.js',
-        'js/keys.js',
-        'js/jquery.ajaxmanager.js',
-    ),
-    # Worksheet Javascript files
-    ('worksheet.js',
-         'js/worksheet.js',
-         'js/worksheet_ui.js',
-         'js/editable.js',
-         'js/worksheet_managers.js',
-         'js/worksheet_views.js',
-         'js/tree.js',
-         'js/notifications.js',
-         'js/globals.js',
-         'js/keyshortcuts.js',
-        #'js/tooltip.js',
-    ),
-
+     )},
+    {"type": "css",
+     "name": "worksheet_css",
+     "path": MEDIA_ROOT + "css/",
+     "url": MEDIA_URL + "css/",
+     "minify": False,
+     "files": (
+        'math.css',
+        'worksheet.css',
+     )},
+    {"type": "javascript",
+     "name": "base_js",
+     "path": MEDIA_ROOT + "js/",
+     "url": MEDIA_URL + "js/",
+     "minify": False,
+     "files": (
+        'jquery.js',
+        'jquery-ui.js',
+        'dimensions.js',
+        'underscore.js',
+        'json2.js',
+        'backbone.js',
+        'qtip.js',
+        'pnotify.js',
+        'keys.js',
+        'jquery.ajaxmanager.js',
+     )},
+    {"type": "javascript",
+     "name": "worksheet_js",
+     "path": MEDIA_ROOT + "js/",
+     "url": MEDIA_URL + "js/",
+     "minify": False,
+     "files": (
+        'worksheet.js',
+        'worksheet_ui.js',
+        'editable.js',
+        'worksheet_managers.js',
+        'worksheet_views.js',
+        'tree.js',
+        'notifications.js',
+        'globals.js',
+        'keyshortcuts.js',
+     )},
 )
 
 INSTALLED_APPS = (
@@ -172,7 +184,7 @@ INSTALLED_APPS = (
     # Django extensions can be safely disabled if you do not want
     # all its managmenet features
     'django_extensions',
-    'mediagenerator',
+    'media_bundler',
 #    'debug_toolbar',
 )
 

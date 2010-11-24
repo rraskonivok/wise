@@ -1,5 +1,5 @@
 {% extends "base.tpl" %}
-{% load media %}
+{% load bundler_tags %}
 
 {# --------------------------
 Worksheet specific javascript 
@@ -10,8 +10,10 @@ Worksheet specific javascript
  policy for otf web fonts -->
  <script type="text/javascript" src="/ws/mathjax/MathJax.js"></script>
 
- {% include_media 'worksheet.js' %}
- {% include_media 'worksheet.css' %}
+{% load_bundle "base_js" %}
+{% load_bundle "worksheet_js" %}
+{% load_bundle "base_css" %}
+{% load_bundle "worksheet_css" %}
 
 {% endblock %}
 
@@ -76,7 +78,7 @@ Init Function + Global Vars
 
     //Only show the workspace after all math is rendered
     MathJax.Hub.Register.MessageHook("End Process", function (message) {
-        $(".lines").fadeIn('slow');
+        $(".lines").show();
     })
 
     var cmd_visible = 0;
