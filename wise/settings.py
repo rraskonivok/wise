@@ -43,7 +43,7 @@ INSTALLED_MATH_PACKAGES = ('base',)
 #    python manage.py createcachetable
 # 
 # if you want to use a database cache
-CACHE_BACKEND = 'db://cache'
+#CACHE_BACKEND = 'db://cache'
 
 TIME_ZONE = 'America/Chicago'
 
@@ -107,6 +107,47 @@ TEMPLATE_DIRS = tuple(
 USE_BUNDLES = False
 DEFER_JAVASCRIPT = False
 
+INSTALLED_APPS = (
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.sites',
+    'django.contrib.humanize',
+    'gunicorn',
+
+    # In order to use admin with gunicorn you'll need to grab the
+    # admin resources from your local install. Use the script
+    # static/copy_admin_resources.sh to do this
+    'django.contrib.admin',
+
+    'wise.worksheet',
+    # Gunicorn needs to be installed in site-packages or dropped
+    # into the same directory as this file, if you can't run
+    # ' import gunicorn ' form this directory then it will fail
+    'reversion',
+    'piston',
+    # Django extensions can be safely disabled if you do not want
+    # all its managmenet features
+    'django_extensions',
+    'media_bundler',
+#    'debug_toolbar',
+)
+
+# Sphinx sometimes complains about paths if it is run from a
+# different directory so this flag disables all the template
+# precaching / path loading so that Sphinx can complete. If this
+# is enabled then the worksheet will *NOT* work.
+IGNORE_PATHS = False
+
+# JIT compile *all* Pure libraries on boot. This ensures there
+# aren't any hiccups when executing Pure functions initially.
+# This is experimental and is also quite slow and breaks
+# more often then not.
+PRECOMPILE  = False
+
+from worksheet.media import MEDIA_BUNDLES
+
+# TODO: move this to worksheet/ so it isn't unsightly
 MEDIA_BUNDLES = (
     {"type": "css",
      "name": "base_css",
@@ -151,6 +192,7 @@ MEDIA_BUNDLES = (
      "minify": False,
      "files": (
         'worksheet.js',
+        'interactions.js',
         'worksheet_ui.js',
         'editable.js',
         'worksheet_managers.js',
@@ -161,41 +203,3 @@ MEDIA_BUNDLES = (
         'keyshortcuts.js',
      )},
 )
-
-INSTALLED_APPS = (
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.sites',
-    'django.contrib.humanize',
-    'gunicorn',
-
-    # In order to use admin with gunicorn you'll need to grab the
-    # admin resources from your local install. Use the script
-    # static/copy_admin_resources.sh to do this
-    'django.contrib.admin',
-
-    'wise.worksheet',
-    # Gunicorn needs to be installed in site-packages or dropped
-    # into the same directory as this file, if you can't run
-    # ' import gunicorn ' form this directory then it will fail
-    'reversion',
-    'piston',
-    # Django extensions can be safely disabled if you do not want
-    # all its managmenet features
-    'django_extensions',
-    'media_bundler',
-#    'debug_toolbar',
-)
-
-# Sphinx sometimes complains about paths if it is run from a
-# different directory so this flag disables all the template
-# precaching / path loading so that Sphinx can complete. If this
-# is enabled then the worksheet will *NOT* work.
-IGNORE_PATHS = False
-
-# JIT compile *all* Pure libraries on boot. This ensures there
-# aren't any hiccups when executing Pure functions initially.
-# This is experimental and is also quite slow and breaks
-# more often then not.
-PRECOMPILE  = False

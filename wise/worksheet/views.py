@@ -261,3 +261,5 @@ def generate_palette():
         render_panels.append(pnl)
 
     return render_haml_to_response('palette_template.tpl',{'panels': render_panels})
+
+#vim: ai ts=4 sts=4 et sw=4

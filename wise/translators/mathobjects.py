@@ -52,7 +52,6 @@ for pack in settings.INSTALLED_MATH_PACKAGES:
 
     for cls in mod_top:
         generate_translation(root=cls)
-        generate_translation(root=cls)
 
 # Specific keywords strategically inserted by the parser to to
 # map atomic objects into their appropriate types even though

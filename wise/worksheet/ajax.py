@@ -13,7 +13,6 @@ import wise.translators.mathobjects
 import wise.translators.pure_wrap as pure_wrap
 
 from django import template
-from django.conf import settings
 from django.shortcuts import render_to_response
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseRedirect, Http404
