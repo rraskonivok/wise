@@ -1,7 +1,4 @@
-from django.conf import settings
-
-MEDIA_ROOT = settings.MEDIA_ROOT
-MEDIA_URL = settings.MEDIA_URL
+from settings import MEDIA_ROOT, MEDIA_URL
 
 MEDIA_BUNDLES = (
     # Base stylesheet (web-app-theme) and jQuery ui stylesheets

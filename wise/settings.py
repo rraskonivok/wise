@@ -59,11 +59,11 @@ SITE_ROOT = os.path.realpath(os.path.dirname(__file__))
 MEDIA_ROOT = os.path.join(SITE_ROOT, 'static')
 MEDIA_URL = '/static/'
 
-# In order to use admin with gunicorn you'll need to grab the
-# admin resources from your local install. Use the script
-# static/copy_admin_resources.sh to do this. This script will
-# build /static/admin
-#ADMIN_MEDIA_PREFIX = '/static/admin/'
+# In order to use the Django admin interface with gunicorn you'll 
+# need to grab the admin resources from your local install. Use
+# the script static/copy_admin_resources.sh to do this. This
+# script will build /static/admin 
+ADMIN_MEDIA_PREFIX = '/static/admin/'
 
 # Change this to something special, Django uses this to salt
 # password hashes
@@ -148,58 +148,3 @@ PRECOMPILE  = False
 from worksheet.media import MEDIA_BUNDLES
 
 # TODO: move this to worksheet/ so it isn't unsightly
-MEDIA_BUNDLES = (
-    {"type": "css",
-     "name": "base_css",
-     "path": MEDIA_ROOT,
-     "url": MEDIA_URL,
-     "minify": False,
-     "files": (
-        'css/base.css',
-        'css/themes/default/style.css',
-        'ui/ui.css',
-     )},
-    {"type": "css",
-     "name": "worksheet_css",
-     "path": MEDIA_ROOT + "css/",
-     "url": MEDIA_URL + "css/",
-     "minify": False,
-     "files": (
-        'math.css',
-        'worksheet.css',
-     )},
-    {"type": "javascript",
-     "name": "base_js",
-     "path": MEDIA_ROOT + "js/",
-     "url": MEDIA_URL + "js/",
-     "minify": False,
-     "files": (
-        'jquery.js',
-        'jquery-ui.js',
-        'dimensions.js',
-        'underscore.js',
-        'json2.js',
-        'backbone.js',
-        'qtip.js',
-        'pnotify.js',
-        'keys.js',
-        'jquery.ajaxmanager.js',
-     )},
-    {"type": "javascript",
-     "name": "worksheet_js",
-     "path": MEDIA_ROOT + "js/",
-     "url": MEDIA_URL + "js/",
-     "minify": False,
-     "files": (
-        'worksheet.js',
-        'interactions.js',
-        'worksheet_ui.js',
-        'editable.js',
-        'worksheet_managers.js',
-        'worksheet_views.js',
-        'tree.js',
-        'notifications.js',
-        'globals.js',
-        'keyshortcuts.js',
-     )},
-)

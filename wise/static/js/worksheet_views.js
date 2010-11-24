@@ -144,14 +144,14 @@ var NodeView = Backbone.View.extend({
         if(ctrlPressed) {
             if(this.model.hasChildren() || this.highlightEverything) {
                 $(this.el).addClass('preselect');
+                e.stopPropagation();
             }
         }
-        e.stopPropagation();
     },
 
     onHoverOut: function(e) {
         $(this.el).removeClass('preselect');
-        e.stopPropagation();
+//        e.stopPropagation();
     },
 
 });

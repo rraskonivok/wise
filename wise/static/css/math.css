@@ -174,13 +174,13 @@
 .cell:hover {
 }
 
-.cell .lines {
+.lines {
     margin-top: 3px;
     margin-bottom: 3px;
     border-left: 5px solid #07B;
 }
 
-.cell .lines.selected {
+.lines.selected {
     margin-top: 3px;
     margin-bottom: 3px;
     border: none;

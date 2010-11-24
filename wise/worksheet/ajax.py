@@ -90,14 +90,14 @@ def apply_rule(request):
     ref = pure_wrap.objects[rule]
 
     # God this casting is ugly
-    try:
-        arity = int(str(ref.arity))
+    #try:
+    #    arity = int(str(ref.arity))
 
-        if (arity != len(args)) and (arity != -1):
-            raise Exception('Wrong number of arguments given')
-            print arity, len(args)
-    except ValueError:
-        pass
+    #    if (arity != len(args)) and (arity != -1):
+    #        raise Exception('Wrong number of arguments given')
+    #        print arity, len(args)
+    #except ValueError:
+    #    pass
 
     new = rules.ApplyExternalRule(ref,*args)
 

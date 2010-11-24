@@ -135,9 +135,15 @@ html {
 }
 
 /* Applied to containers when we expand them */
-.preselect {
+.container.preselect {
     border: 5px solid #d4a5a5;
     margin: -5px !important;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.lines.preselect {
+    border-left: 5px solid #f00;
 }
 
 /* Override the default sidebar stylesheet to remove ugly */
