@@ -22,6 +22,15 @@ from worksheet.utils import *
 
 from django import template
 
+def initialize():
+    TOP_CLASSES = [Term, Equation]
+
+    translation_table = {'num' : Numeric,
+                         'var' : Variable,
+                         '-'   : Negate}
+
+    return TOP_CLASSES, translation_table
+
 class Placeholder(Term):
     '''A placeholder for substitution'''
 

@@ -6,13 +6,12 @@ Worksheet specific javascript
 -------------------------- #}
 {% block includes %}
 
- <!-- Using /ws/mathjax/ avoids Firefox strange same-origin
+ <!-- Using /ws/mathjax/ ( which is just a url rewrite to
+ /static/js/mathjax ) avoids Firefox strange same-origin
  policy for otf web fonts -->
  <script type="text/javascript" src="/ws/mathjax/MathJax.js"></script>
 
-{% load_bundle "base_js" %}
 {% load_bundle "worksheet_js" %}
-{% load_bundle "base_css" %}
 {% load_bundle "worksheet_css" %}
 
 {% endblock %}

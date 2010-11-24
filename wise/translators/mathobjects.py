@@ -19,6 +19,25 @@ from wise.translators.pure_wrap import generate_pure_objects
 
 ROOT_MODULE = 'wise'
 
+translation_table = {}
+
+def generate_translation(root):
+    generate_pure_objects(root=root)
+    if root.pure:
+        translation_table[root.pure] = root
+
+    for cls in root.__subclasses__():
+        if cls.pure:
+            if not cls.pure in translation_table:
+                translation_table[cls.pure] = cls
+        generate_translation(cls)
+
+def translate_pure(key):
+    try:
+        return translation_table[key]
+    except KeyError:
+        raise exception.NoWrapper(key)
+
 for pack in settings.INSTALLED_MATH_PACKAGES:
     #path = '.'.join([ROOT_MODULE,pack,'objects'])
     #mod = __import__(str(path),globals(),locals())
@@ -28,6 +47,12 @@ for pack in settings.INSTALLED_MATH_PACKAGES:
 
     # I give up
     exec('from %s.%s.objects import *' % (ROOT_MODULE,pack))
+    mod_top, mod_table = initialize()
+    translation_table.update(mod_table)
+
+    for cls in mod_top:
+        generate_translation(root=cls)
+        generate_translation(root=cls)
 
 # Specific keywords strategically inserted by the parser to to
 # map atomic objects into their appropriate types even though
@@ -35,33 +60,7 @@ for pack in settings.INSTALLED_MATH_PACKAGES:
 # when doing infix translation to just leave -2 in place instead
 # of having (Neg x) or (Numeric 3.14) so instead we just leave it
 # as 3.14 and -x and have Python does some quick type checking
-translation_table = {'num' : Numeric,
-                     'var' : Variable,
-                     '-'   : Negate}
 
-def generate_translation(root):
-    if root.pure:
-        #print 'Building Python translation pair: ( %s , %s )' % (root.pure, root)
-        translation_table[root.pure] = root
 
-    for cls in root.__subclasses__():
-        if cls.pure:
-            if not cls.pure in translation_table:
-                translation_table[cls.pure] = cls
-        generate_translation(cls)
-
-active_objects = {}
-
-def translate_pure(key):
-    try:
-        return translation_table[key]
-    except KeyError:
-        raise exception.NoWrapper(key)
-
-generate_translation(root=Term)
-generate_translation(root=Equation)
-generate_pure_objects(root=Term)
-generate_pure_objects(root=Equation)
-
-#import uml
+#import worksheet.uml as uml
 #uml.generate(Term)

@@ -410,3 +410,5 @@ def new_cell(request):
                          'new_json': json_flat(new_cell),
                          'namespace_index': uid.next()[3:],
                          'cell_index': cell_index + 1})
+
+#vim: ai ts=4 sts=4 et sw=4
