@@ -34,5 +34,6 @@ panel['Rational'] = [
 
         ('Split Rational'            , PublicRule('split_rational')),
         ('Combine Ratiional'         , PublicRule('combine_rational')),
+        ('Seperate Ratiional'        , PublicRule('seperate_rational')),
 
     ]

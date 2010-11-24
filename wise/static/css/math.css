@@ -178,13 +178,13 @@
     margin-top: 3px;
     margin-bottom: 3px;
     border-left: 5px solid #07B;
-    margin 0px;
 }
 
 .cell .lines.selected {
+    margin-top: 3px;
+    margin-bottom: 3px;
     border: none;
     border-left: 5px solid #f00;
-    margin: 0px !important;
 }
 
 .cell.active {

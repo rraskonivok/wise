@@ -1194,7 +1194,7 @@ function load_math_palette() {
             //Make the math terms interactive
             resize_parentheses()
             $("#math_palette").resizable({ handles: 's' });
-            $('.uniform_button','#math_palette').button();
+//            $('.uniform_button','#math_palette').button();
         }
     });
 

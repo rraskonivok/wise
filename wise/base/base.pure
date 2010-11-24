@@ -440,6 +440,7 @@ end;
 
 simplify_addition X = reduce X
 with
+    -(a*x) = (-a) * x if numberp a;
     0+x = x ;
     x+0 = x ;
     a+b = ( (constant a) + (constant b) ) * (term a) if ((term a) === (term b)) and (~numberp a && ~numberp b) ;
@@ -569,6 +570,8 @@ end;
    ------------ 
 */
 
+def a::int/b::int = '(a/b);
+
 split_rational X = reduce X
 with
         // Push the negation inside the fraction
@@ -577,9 +580,9 @@ with
         (a*b)/(c*d) = (a/c)*(b/d);
 end;
 
-seperate_denom X = reduce X 
-with 
-    rational a (mul b c) = a * (rational 1 b) * (rational 1 c) if a ~= 1;
+seperate_rational X = reduce X
+with
+    a/b = a*(1/b) if ~(a === 1);
 end;
 
 replace_heads f g X = replf X

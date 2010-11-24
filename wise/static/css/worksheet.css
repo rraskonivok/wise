@@ -115,7 +115,12 @@ html {
     margin: 0px !important;
 }
 
-.selected {
+.term.selected {
+    border: 5px solid #d4a5a5;
+    margin: -5px;
+}
+
+.container.selected {
     border: 5px solid #d4a5a5;
     margin: -5px;
 }
