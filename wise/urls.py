@@ -15,6 +15,9 @@ urlpatterns = patterns('',
      # Heartbeat
      (r'^hb$', 'wise.worksheet.ajax.heartbeat'),
 
+     # REST API  uses django-piston
+     (r'^api/', include('wise.api.urls')),
+
      # Authentication
      (r'^accounts/login/$', 'wise.worksheet.views.account_login'),
      (r'^accounts/logout/$', 'wise.worksheet.views.account_logout'),
@@ -37,7 +40,6 @@ urlpatterns = patterns('',
      (r'^cmds/apply_transform/$', 'wise.worksheet.ajax.apply_transform'),
 
      # Worksheet Command Line
-     (r'^cmds/pure_parse/$', 'wise.worksheet.ajax.pure_parse'),
      (r'^cmds/use_infix/$', 'wise.worksheet.ajax.use_infix'),
 
      # Uncomment the next line to enable the admin:
@@ -46,7 +48,6 @@ urlpatterns = patterns('',
      # Sphinx documentation
      (r'^docs/(?P<path>.*)$', 'django.views.static.serve', {'document_root': 'docs/_build/html','show_indexes': True}),
 
-     (r'^api/', include('wise.api.urls')),
 
      # TODO: Firefox 4 has some issue with OpenType fonts being loaded 
      # from /static when the current page is /ws since it is one level 

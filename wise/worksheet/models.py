@@ -23,7 +23,7 @@ class Expression(models.Model):
     #cell = models.ManyToManyField(Cell)
 
     sexp = models.TextField(max_length=10000,blank=False, null=False)
-    annotation = models.TextField(max_length=100)
+    annotation = models.TextField(max_length=100, blank=True)
     index = models.IntegerField(blank=False,null=False)
 
     def __unicode__(self):

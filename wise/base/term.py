@@ -27,9 +27,8 @@ from django.utils.safestring import SafeUnicode
 class Term(object):
     '''The base class for all other math objects.'''
 
-    args = None # Static arguments used to initialze object
+    args = [] # Static arguments used to initialze object
     terms = []  # Term objects as arguments to
-    group = None # Expressions that object is embeeded in
     parent = None
 
     # TODO: change id -> cid
@@ -83,6 +82,10 @@ class Term(object):
     def __init__(self,*args,**kwargs):
         raise Exception('Anonymous Term was caught with arguments ' + (args,kwargs))
 
+    @property
+    def classname(self):
+        return self.__class__.__name__
+
     def _pure_(self):
         # This is not defeind explicityly for the reason that inheriting
         # the method to generate a Pure object will often result in very
@@ -114,56 +117,31 @@ class Term(object):
         return self.get_math()
 
     def get_math(self):
-        '''Generates the sexp that is parsable on the Javascript side'''
+        '''Generates the sexp representation of the object
 
-        #Container-type Objects, Example: (Addition 1 2 3)
+        The sexp is the universal storage format from which Wise can
+        build any object up from scratch.
+        '''
+
+        # Container-type Objects: 
+        # Examples: 
+        #       (Addition 1 2 )
+        #       (Addition (Addition x y) 2)
         if len(self.terms) > 1:
-            return '(' + self.classname + ' ' + spaceiter(map(lambda o: o.get_math(), self.terms)) + ')'
-        #Term-type Objects Example: (Numeric 3)
+            return msexp(self, self.terms)
+
+        # Term-type Objects 
+        # Example: 
+        #       (Numeric 3)
+
         elif len(self.terms) == 1:
-            return '(' + self.classname + ' ' + self.terms[0].get_math() + ')'
-        #Terms with primitve arguments (no nested sexp)
+            return msexp(self, self.terms)
+
+        # Terms with primitve arguments 
+        # Example: 
+        #       (Variable 'zeta')
         else:
-            return '(' + self.classname + ' ' + str(self.args) + ')'
-
-    def __repr__(self):
-         return self.get_math()
-
-    def set_side(self, side):
-        for term in self.terms:
-            term.side = side
-            term.set_side(side)
-
-    #############################################################
-
-    def wrap(self,other):
-        '''Take one object and wrap it in container object, return
-        the resulting container'''
-        return other(self)
-
-    def ensure_id(self):
-        '''Make sure there is a unique id set, if there isn't
-        make one, but never overwrite preexisting one'''
-
-        if not self.id:
-            self.id = self.idgen.next()
-        self.associate_terms()
-
-    def associate_terms(self):
-        '''Iterate through any child terms and associate their
-        group property with the id of thet parent'''
-        for term in self.terms:
-            term.group = self.id
-
-    @property
-    def classname(self):
-        return self.__class__.__name__
-
-    def map_recursive(self,function):
-        '''Apply a function to self and all descendants'''
-        function(self)
-        for term in self.terms:
-            term.map_recursive(function)
+            return sexp(self.classname, *self.args)
 
     def json_flat(self,lst=None):
         if not lst:
@@ -180,38 +158,32 @@ class Term(object):
 
         return lst
 
-    def combine_fallback(self,other,context):
-        '''Just slap an operator between two terms and leave it as is'''
+    def __repr__(self):
+         return self.get_math()
 
-        # This differs slightly from the the transformations called on
-        # expressions in that we return both the json and the
-        # html for the new object, the reason being that often
-        # include syntatic sugar in the response sent to the
-        # client 
+    #############################################################
 
-        if context == 'Addition':
-            if isinstance(other,Term):
-                if type(other) is Negate:
-                    # Don't add a plus sign if we have a negation
-                    # to avoid verbose expressions like 3 + -4
-                    result = self.get_html() + other.get_html()
+    def set_side(self, side):
+        for term in self.terms:
+            term.side = side
+            term.set_side(side)
 
-                elif type(other) is Numeric:
-                    if other.is_zero():
-                        result = self.get_html()
-                        other = None;
-                    else:
-                        result = self.get_html() + infix_symbol_html(Addition.symbol) + other.get_html()
+    def wrap(self,other):
+        '''Take one object and wrap it in container object, return
+        the resulting container'''
+        return other(self)
 
-                else:
-                    result = self.get_html() + infix_symbol_html(Addition.symbol) +  other.get_html()
+    def ensure_id(self):
+        '''Make sure there is a unique id set, if there isn't
+        make one, but never overwrite preexisting one'''
 
-                return result,[self,other]
+        if not self.id:
+            self.id = self.idgen.next()
 
-        elif context == 'Product':
-            if isinstance(other,Term):
-                result = self.get_html() + infix_symbol_html(Product.symbol) +  other.get_html()
-                return result,[self,other]
+    def map_recursive(self,f):
+        '''Apply a function to self and all subterms'''
+        for term in self.terms:
+            term.map_recursive(f)
+        f(self)
+        return self
 
-    def combine(self,other,context):
-        return self.combine_fallback(other,context)

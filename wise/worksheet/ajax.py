@@ -178,31 +178,6 @@ def rules_request(request):
     return render_haml_to_response('ruleslist.tpl',
             {'rulesets':rules.rulesets})
 
-@login_required
-@errors
-@ajax_request
-@cache_page(CACHE_INTERVAL)
-def pure_parse(request):
-    namespace_index = request.POST.get('namespace_index')
-    code = request.POST.get('code')
-
-    if not namespace_index:
-        namespace_index = 0
-    else:
-        namespace_index = int(namespace_index)
-
-    cell_index = int( request.POST.get('cell_index') )
-
-    uid = uidgen(namespace_index)
-    new = translate.pure_to_python(code,uid)
-
-    newline_html = cellify(html(new),cell_index+1)
-
-    return JsonResponse({'new_html': newline_html,
-                         'new_json': json_flat(new),
-                         'namespace_index': uid.next()[3:],
-                         'cell_index': cell_index + 1})
-
 #@login_required
 #@errors
 #@ajax_request
@@ -366,11 +341,11 @@ def new_line(request):
     # TODO we should do this without parsing, this is really slow
     # and inefficent
     if newtype == u'def':
-        new = translate.parse_sexp('(Definition (Placeholder ) (Placeholder ))',uid)
+        new = translate.parse_sexp('(Definition (Placeholder) (Placeholder))',uid)
     elif newtype == u'func':
-        new = translate.parse_sexp('(Function (Placeholder ) (LHS (Placeholder )) (RHS (Placeholder )))',uid)
+        new = translate.parse_sexp('(Function (Placeholder) (Placeholder) (Placeholder))',uid)
     elif newtype == u'eq':
-        new = translate.parse_sexp('(Equation (Placeholder ) (Placeholder ))',uid)
+        new = translate.parse_sexp('(Equation (Placeholder) (Placeholder))',uid)
     else:
         error('invalid type of inline')
     newline_html = html(new)
@@ -399,7 +374,7 @@ def new_cell(request):
     # Create a new uid generator
     uid = uidgen(namespace_index)
 
-    new_eq = translate.parse_sexp('(Equation (LHS (Placeholder )) (RHS (Placeholder )))',uid)
+    new_eq = translate.parse_sexp('(Equation (Placeholder) (Placeholder))',uid)
 
     new_cell = PyCell([new_eq])
     new_cell.index = cell_index + 1;

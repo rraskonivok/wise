@@ -26,6 +26,10 @@ from django.views.decorators.cache import cache_page
 
 from wise.utils import shpaml
 
+#-------------------------------------------------------------
+# Decorators
+#-------------------------------------------------------------
+
 def errors(f):
     '''Decorator to wrap errors out to server log and javascript popup'''
     def wrapper(*args,**kwargs):
@@ -89,17 +93,26 @@ def ajax_request(func):
     wrapper.__doc__ = func.__doc__
     return wrapper
 
+#-------------------------------------------------------------
+# HTTP/JSON Responses
+#-------------------------------------------------------------
+
 class JsonResponse(HttpResponse):
     ''' HttpResponse descendant, which return response with ``application/json`` mimetype.  '''
     def __init__(self, data):
         super(JsonResponse, self).__init__(content=json.dumps(data), mimetype='application/json')
-
 
 @errors
 def render_haml_to_response(tname, context):
     tps, tpo = loader.find_template_source(tname)
     tpl = template.Template(haml(tps))
     return HttpResponse(tpl.render(template.Context(context)))
+
+def json_flat(obj):
+    '''Prefix convenience wrapper for arg.json_flat()'''
+    if not obj:
+        return None
+    return obj.json_flat()
 
 def unencode(s):
     '''Convert unicode to iso-8859-1'''
@@ -112,18 +125,26 @@ def unencode(s):
     return str(txt)
 
 
-def json_flat(obj):
-    if not obj:
-        return None
-    return obj.json_flat()
-
 def maps(func, obj):
-    '''It's like map() but awesomer, namely in that you can pass
-    a single argument to it and it doesn't crash and burn'''
+    ''' Idempotent form of map, which behaves like you would
+    expect in most functional languages:
 
-    if hasattr(obj,'__iter__'):
+    maps f nil = nil
+    maps f x = [f x]
+    maps f [x,y,...] = [f x, f y, ...]
+
+    maps(f,None) = None
+    maps(f,x) = [f(x)]
+    maps(f,[x,y,z]) = [f(x),f(y),f(z)]
+
+    '''
+
+    if obj is None:
+        return None
+    elif hasattr(obj,'__iter__'):
         return map(func, obj)
-    return [func(obj)]
+    else:
+        return [func(obj)]
 
 def parse(code, uid):
     parsed = mathobjects.ParseTree(code)
@@ -131,12 +152,6 @@ def parse(code, uid):
     evaled = parsed.eval_args()
     return evaled
 
-def is_number(s):
-    try:
-        float(s)
-    except ValueError:
-        return False
-    return True
 
 #-------------------------------------------------------------
 # Client ID Generator
@@ -152,12 +167,32 @@ def uidgen(i=0):
         i += 1
 
 #-------------------------------------------------------------
+# Sexp Generation
+#-------------------------------------------------------------
+
+def sexp(*strs):
+    '''Build a sexp string from string aruments ( str1 str2 str2 ... ) '''
+    return cats(*(['(']+list(strs)+[')']))
+
+def msexp(head,args):
+    '''Build a sexp from Python objects'''
+    return sexp(head.classname, *map(math,args))
+
+#-------------------------------------------------------------
 # HTML Generation
 #-------------------------------------------------------------
 
+def math(obj):
+    '''Prefix convenience wrapper for arg.get_math()'''
+    return obj.get_math()
+
 def cat(*strs):
-    '''Quick string concatentation'''
+    '''Fast string concatentation'''
     return ''.join(strs)
+
+def cats(*strs):
+    '''Fast string concatentation with space as delimeter'''
+    return ' '.join(strs)
 
 def haml(code):
     '''Render Haml to an HTML string'''
@@ -176,21 +211,12 @@ def html(obj):
         return None
     return minimize_html(obj.get_html())
 
-
-def cellify(s,index):
-    return '<div class="cell" data-index="%s"><table class="lines" style="display: none">%s</table></div>' % (index, s)
-
-def spaceiter(list):
-    '''iterate over a list returning a space separated string'''
-    return ' '.join(list)
-
 def purify(obj):
     '''Prefix form of obj.get_html(), returns a Pure object.'''
     if hasattr(obj,'__iter__'):
         return map(purify,obj)
     else:
         return obj._pure_()
-
 
 @memoize
 def load_haml_template(fname):
@@ -201,8 +227,6 @@ def load_haml_template(fname):
     else:
         tps, tpo = loader.find_template_source(fname)
         return template.Template(haml(tps))
-
-
 
 #-------------------------------------------------------------
 # Hashing
@@ -229,6 +253,10 @@ class crcdigest(object):
 
     def hexdigest(self):
         return hex(self.hash)
+
+#-------------------------------------------------------------
+# Type Checking
+#-------------------------------------------------------------
 
 def is_number(s):
     ''' Return true if the given string argument can be cast into

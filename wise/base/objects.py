@@ -19,9 +19,9 @@ from wise.worksheet.utils import render_haml_to_response
 from wise.translators.pure_wrap import PureSymbol, PureInt, PureDouble, ProtoRule, p2i, i2p
 
 import worksheet.exceptions as exception
-from worksheet.utils import *
 
 from utils.latex import greek_lookup
+from worksheet.utils import *
 
 from django import template
 
@@ -40,28 +40,18 @@ class Placeholder(Term):
     css_class = 'placeholder'
     html = load_haml_template('placeholder.tpl')
     pure = 'ph'
+    latex = '$\\text{Placeholder}$'
 
     def __init__(self):
-        self.latex = '$\\text{Placeholder}$'
+        pass
 
     def _pure_(self):
-
         # If there is a placeholder left in an expression throw
         # an error and abort the pure translation.
         raise exception.PlaceholderInExpression()
 
     def get_math(self):
         return '(Placeholder )'
-
-class Empty(Term):
-    def __init__(self):
-        self.latex = '$\\text{Empty}$'
-
-    def get_math(self):
-        return 'Empty'
-
-    def combine(self,other,context):
-        return other.get_html()
 
 #-------------------------------------------------------------
 # Lower Level Elements 
@@ -109,7 +99,6 @@ class Tuple(Term):
 #
 #    def get_html(self):
 #        c = template.Context({
-#            'group': self.group,
 #            'type': 'Tex',
 #            'tex': self.tex})
 #
@@ -174,8 +163,6 @@ class Rational(Term):
        return self.po(self.num._pure_(), self.den._pure_())
 
     def get_html(self):
-        self.num.group = self.id
-        self.den.group = self.id
 
         c = template.Context({
             'id': self.id,
@@ -228,7 +215,7 @@ class Numeric(Term):
             'latex':self.latex,
             'math': self.get_math(),
             'type': self.classname,
-            'group': self.group})
+        })
 
         return self.html.render(c)
 
@@ -245,30 +232,6 @@ class Numeric(Term):
         else:
             return Negate(self)
 
-    @fallback(Term.combine_fallback)
-    def combine(self,other,context):
-        if context == 'Addition':
-            if self.is_zero():
-                result = other.get_html()
-                return result,[self,other]
-            elif isinstance(other,Numeric):
-                result = Numeric(self.number + other.number).get_html()
-                return result,[self,other]
-
-        elif context == 'Product':
-            if isinstance(other,Numeric):
-                if self.is_zero():
-                    return self.get_html()
-                if self.is_one():
-                    return other.get_html()
-                else:
-                    return Numeric(self.number * other.number).get_html()
-
-            elif isinstance(other,Base_Symbol):
-                #Multiplication by zero clears symbols
-                if self.is_zero():
-                    return self.get_html()
-
 class ComplexNumeric(Term):
     html = load_haml_template('complex.tpl')
     pure = 'complex'
@@ -279,7 +242,6 @@ class ComplexNumeric(Term):
         self.terms = [self.re, self.im]
 
     def get_html(self):
-        self.associate_terms()
 
         c = template.Context({
             'id': self.id,
@@ -332,20 +294,23 @@ def infix_symbol_html(symbol):
     return infix_symbol_template % symbol
 
 class Operation(Term):
-    '''An operator acting a term'''
+    '''An generic operator acting on an arbitrary number of terms'''
+
+    pure = None
+
+    # Templates are assigned from 'ui_style'
+    #
+    # prefix  ~  base/templates/prefix.tpl
+    # postfix ~  base/templates/postfix.tpl
+    # infix   ~  base/templates/infix.tpl
 
     ui_style = 'prefix'
 
     symbol = None
     show_parenthesis = False
 
-    #Arity of the operator
+    #Arity of the operation
     arity = None
-
-    is_linear = False
-    is_associative = False
-
-    pure = None
 
     def __init__(self,op,*ops):
         operands = list(ops) + [op]
@@ -353,8 +318,11 @@ class Operation(Term):
             self.terms = list(operands)
             self.operand = self.terms
         else:
+            # TODO: wtf is this shit?
             self.operand = operands[0]
             self.terms = [operands[0]]
+
+        self.arity = len(self.terms)
 
     def _pure_(self):
         if self.po:
@@ -362,11 +330,7 @@ class Operation(Term):
         else:
             raise exception.PureError('No pure representation of %s.' % self.classname)
 
-    def action(self,operand):
-        return self.get_html()
-
     def get_html(self):
-        self.associate_terms()
 
         #Infix Formatting
         if self.ui_style == 'infix':
@@ -375,9 +339,7 @@ class Operation(Term):
 
             c = template.Context({
                 'id': self.id,
-                'math': self.get_math(),
                 'type': self.classname,
-                'group': self.group,
                 'operand': objects,
                 'symbol': self.symbol,
                 'parenthesis': self.show_parenthesis,
@@ -392,9 +354,7 @@ class Operation(Term):
 
             c = template.Context({
                 'id': self.id,
-                'math': self.get_math(),
                 'type': self.classname,
-                'group': self.group,
                 'operand': self.operand.get_html(),
                 'symbol1': self.symbol1.get_html(),
                 'symbol2': self.symbol2.get_html(),
@@ -413,9 +373,7 @@ class Operation(Term):
 
             c = template.Context({
                 'id': self.id,
-                'math': self.get_math(),
                 'type': self.classname,
-                'group': self.group,
                 'operand': self.operand.get_html(),
                 'symbol': self.symbol,
                 'parenthesis': self.show_parenthesis,
@@ -428,9 +386,7 @@ class Operation(Term):
 
             c = template.Context({
                 'id': self.id,
-                'math': self.get_math(),
                 'type': self.classname,
-                'group': self.group,
                 'operand': self.operand.get_html(),
                 'symbol': self.symbol,
                 'parenthesis': self.show_parenthesis,
@@ -448,7 +404,6 @@ class Operation(Term):
                 'id': self.id,
                 'math': self.get_math(),
                 'type': self.classname,
-                'group': self.group,
                 'operand': self.operand.get_html(),
                 'symbol1': self.symbol1.get_html(),
                 'parenthesis': self.show_parenthesis,
@@ -466,7 +421,6 @@ class Operation(Term):
                 'id': self.id,
                 'math': self.get_math(),
                 'type': self.classname,
-                'group': self.group,
                 'operand': self.operand.get_html(),
                 'symbol1': self.symbol1,
                 'parenthesis': self.show_parenthesis,
@@ -484,7 +438,6 @@ class Operation(Term):
                 'id': self.id,
                 'math': self.get_math(),
                 'type': self.classname,
-                'group': self.group,
                 'operand': self.operand.get_html(),
                 'parenthesis': self.show_parenthesis,
                 'class': self.css_class or '',
@@ -588,7 +541,6 @@ class Product(InfixOperation):
         self.terms = list(terms)
 
         for term in self.terms:
-            term.group = self.id
             if type(term) is Addition:
                 term.show_parenthesis = True
         self.operand = self.terms
@@ -621,14 +573,11 @@ class Root(Operation):
 
     def get_html(self):
         self.exponent.css_class = 'exponent'
-        self.exponent.group = self.id
         self.base.css_class = 'exponent'
-        self.base.group = self.id
 
         c = template.Context({
             'id': self.id,
             'math': self.get_math(),
-            'group': self.group,
             'base': self.base.get_html(),
             'type': self.classname,
             'exponent': self.exponent.get_html() })
@@ -652,14 +601,11 @@ class Power(Operation):
 
     def get_html(self):
         self.exponent.css_class = 'exponent'
-        self.exponent.group = self.id
         self.base.css_class = 'exponent'
-        self.base.group = self.id
 
         c = template.Context({
             'id': self.id,
             'math': self.get_math(),
-            'group': self.group,
             'base': self.base.get_html(),
             'type': self.classname,
             'exponent': self.exponent.get_html()
@@ -779,7 +725,6 @@ class Negate(PrefixOperation):
 
     def __init__(self,operand):
         self.operand = operand
-        self.operand.group = self.id
         self.terms = [self.operand]
 
         if type(self.operand) is Addition:
@@ -787,14 +732,6 @@ class Negate(PrefixOperation):
 
     def _pure_(self):
        return self.po(self.operand._pure_())
-
-    @fallback(Term.combine_fallback)
-    def combine(self,other,context):
-        ''' -A+-B = -(A+B)'''
-
-        if context == 'Addition':
-            if isinstance(other,Negate):
-                return Negate(Addition(self.operand, other.operand))
 
     def negate(self):
         return self.operand
