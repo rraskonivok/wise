@@ -101,9 +101,8 @@ class Term(object):
     def get_html(self):
         c = template.Context({
             'id': self.id,
-            'class': self.css_class,
+            'class': self.css_class or '',
             'latex':self.latex,
-            'math': self.get_math(),
             'type': self.classname,
             })
 

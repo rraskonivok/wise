@@ -1,10 +1,5 @@
-<span id="{{id}}" math-meta-class="term" class="container {{class}}{{sensitive}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
-    <span class="operator {{class}} sqrt-prefix" math-type="operator"
-        math-meta-class="operator" group="{{id}}" title="{{type}}" >√
-    </span>
+#{{id}}.container.{{class}} title="{{type}}"
+    .operator.sqrt-prefix 
+        √
 
-    <span>
     {{operand}}
-    </span>
-
-</span>

@@ -1,21 +1,21 @@
-#{{id}}.{{class}}.container title="{{type}}" math-meta-class="term"
+#{{id}}.container.{{class}} title="{{type}}"
+
     {% if parenthesis %}
-    .ui-state-disabled.pnths.left
-       &Ograve;
+    .pnths.left
+        (
     {% endif %}
 
     {{ re }}
 
-    .ui-state-disabled.infix math-type="plus" math-meta-class="sugar"
+    .infix.sugar
         $$+$$
 
     {{ im }}
 
-    .ui-state-disabled.texdecoration math-type="complex" math-meta-class="sugar"
+    .texdecoration.sugar
         $$i$$
 
     {% if parenthesis %}
-    .ui-state-disabled.pnths.right
-       &Oacute;
-
+    .pnths.right
+        )
     {% endif %}

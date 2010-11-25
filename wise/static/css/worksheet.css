@@ -1,37 +1,25 @@
+/* Always show the scrollbar */
 html {
     overflow-y: scroll;
 }
 
+.modal {
+    opacity: 0.2;
+}
+
+
+/* -------------------- 
+    Sidebar Palettes
+ -------------------- */
+
 .uniform_button {
-    min-height: 25px;
-    min-width: 25px;
+    min-height: 32px;
+    min-width: 32px;
     float: left;
     vertical-align: middle;
 }
 
-.term_hover {
-    border-bottom: 5px solid #9CBD86;
-    margin-bottom: xpir-5px;
-}
-
-.container_hover {
-    border: 1px solid #ccc;
-    padding-bottom: 4px;
-    padding-top: 4px;
-    box-shadow: 10px 10px 5px #888; 
-    padding: 5px 5px 5px 15px;
-}
-
-/* Math Palette */
-
-#math_palette .term:not(.placeholder):hover {
-    border-left: 5px solid #9CBD86;
-    margin-left: -5px;
-}
-
-#math_palette .container:not(.placeholder):hover {
-    border-left: 5px solid #989CD7;
-    margin-left: -5px;
+.uniform_button:hover {
 }
 
 .palette {
@@ -40,18 +28,14 @@ html {
   border-bottom: 1px solid #ccc;
   border-right: 1px solid #ccc;
   background: #fff;
-  min-height: 600px;
-  overflow: auto;
-}
-
-.palette button {
-    margin: 0px !important;
+  min-height: 300px;
+  overflow-y: scroll;
 }
 
 .panel_category { 
     clear: both;
     display: block;
-    padding: 5px 15px;
+    padding: 0px 15px;
     margin: 0;
     font-size: 13px;
 }
@@ -60,40 +44,9 @@ html {
     padding: 10px;
 }
 
-.panel_frame button {
-    float: left;
-}
-
-.navigation hr {
-    clear: both;
-    margin-top: 10px;
-}
-
-/* Drag Helpers */
-
-.ui-sortable-helper {
-    border: 1px solid #9CBD86;
-}
-
-.ui-sortable-placeholder {
-    width: 50px;
-    height: 50px;
-    border: 1px solid #9CBD86;
-}
-
-.helper {
-    padding-left: 10px;
-    padding-right: 10px;
-    background-color: #9CBD86;
-    display: inline-block;
-    vertical-align: middle;
-}
-
-/* Selection highlighting */
-
-.modal {
-    opacity: 0.2;
-}
+/* -------------------- 
+   Selection Styles
+ -------------------- */
 
 .highlight {
     border: 1px solid #ccc;
@@ -131,26 +84,14 @@ html {
     float: right;
 }
 
-.pagination .active {
-}
-
 /* Applied to containers when we expand them */
 .container.preselect {
     border: 5px solid #d4a5a5;
     margin: -5px !important;
-    padding-left: 10px;
-    padding-right: 10px;
 }
 
 .lines.preselect {
     border-left: 5px solid #f00;
-}
-
-/* Override the default sidebar stylesheet to remove ugly */
-
-#sidebar ul li a:link, #sidebar ul li a:visited {
-    background: none !important;
-    border-bottom: none !important;
 }
 
 .placeholder {
@@ -200,6 +141,11 @@ html {
     min-height: 20px;
 }
 
+.nodeselectbutton {
+    padding: 5px;
+    margin-right: 3px;
+}
+
 #tooltip {
 	position: absolute;
 	z-index: 3000;
@@ -210,6 +156,13 @@ html {
 }
 
 #tooltip h3, #tooltip div { margin: 0; }
+
+/* IE Sucks */
+button span.ui-icon {
+    display: inline;
+    float: left;
+    margin-right: 2px;
+}
 
 /* Notices from pnotify.js
 ----------------------------------*/

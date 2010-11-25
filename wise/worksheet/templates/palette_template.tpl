@@ -5,7 +5,6 @@
         <li class="panel_frame" style="display:none">
             {{ panel.html }}
         </li>
-        <hr/>
     {% endfor %}
     </ul>
 </div>

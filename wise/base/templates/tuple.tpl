@@ -1,21 +1,21 @@
-#{{id}}.{{class}}.container math-meta-class="term" math-type="{{type}}" math-meta-class="term"
+#{{id}}.container.{{class}} title="{{type}}"
 
     {% if parenthesis %}
-    <span class="ui-state-disabled pnths left">
+    .pnths.left
         (
-    </span>
     {% endif %}
 
     {% for o in operand %}
     {{ o }}
-    {% if not forloop.last %}
-    .ui-state-disabled.infix math-type="times" math-meta-class="sugar"
-        $${{symbol}}$$
-    {% endif %}
+
+        {% if not forloop.last %}
+        .infix.sugar
+            $${{symbol}}$$
+        {% endif %}
+
     {% endfor %}
 
     {% if parenthesis %}
-    <span class="ui-state-disabled pnths right">
+    .pnths.right
         )
-    </span>
     {% endif %}

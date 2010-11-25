@@ -1,5 +1,5 @@
 table#{{id}}.lines style="display: none"
-    tr.equation math-type="{{classname}}" toplevel="true"
+    tr.equation
         td
             button.ui-icon.ui-icon-triangle-1-w onclick="select_lhs('{{id}}')"
                 {{lhs_id}}

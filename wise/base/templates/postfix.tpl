@@ -1,9 +1,16 @@
-<span id="{{id}}" math-meta-class="term" class="term {{class}}{{sensitive}}" math-type="{{type}}" math-meta-class="term" group="{{group}}">
-    <span class="parenthesis">
-    {{operand}}
-    </span>
+#{{id}}.term.{{class}} title="{{type}}"
 
-    <span class="operator" math-type="operator" math-meta-class="operator" group="{{id}}">
-    $${{symbol}}$$
-    </span>
-</span>
+    {% if parenthesis %}
+    .pnths.left
+        (
+    {% endif %}
+
+    {{operand}}
+
+    {% if parenthesis %}
+    .pnths.right
+        )
+    {% endif %}
+
+    .operator
+        $${{symbol}}$$
