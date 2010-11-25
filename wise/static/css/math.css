@@ -141,10 +141,8 @@
 }
 
 .pnths {
-    vertical-align: baseline;
-    position: relative;
-    font-family: MathJax_Main;
-    word-spacing: 0px;
+    display: inline-block;
+    vertical-align: middle;
 }
 
 .sqrt-prefix {

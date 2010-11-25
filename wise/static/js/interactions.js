@@ -1,3 +1,9 @@
+function show_pnths() {
+   var node = selection.at(0);
+   node.view.el.children('.pnths').toggle(); 
+   resize_parentheses(node);
+}
+
 function add_shift() {
     var node = selection.at(0);
     var root = get_root(node);
@@ -131,6 +137,52 @@ function definition_apply() {
         if(fst.is_definition() && !snd.is_definition()) {
             apply_def(fst,[snd]);
         }
+    }
+}
+
+function select_equation(id) {
+    select_term(NODES.getByCid(id));  
+}
+
+function select_lhs(id) {
+    select_term(NODES.getByCid(id).children[0].children[0]);
+}
+
+function select_rhs(id) {
+    select_term(NODES.getByCid(id).children[1].children[0]);  
+}
+
+function remove_element() {
+    if(selection.isEmpty()) {
+        error('Selection is empty.');
+        return;
+    }
+
+    selection.each(function(elem) {
+
+        if(elem.get('toplevel')) {
+            root = get_root(elem).tree;
+
+            // If the root has a correspondance in the database
+            // then destroy it
+            if(root.isNew() == false) {
+                root.destroy();
+            }
+
+            elem.dom().remove();
+            elem.delNode();
+        } else {
+            apply_transform('base/Delete', [elem]);
+        }
+
+    });
+}
+
+function subs(obj) {
+    if(selection.length > 0) {
+        apply_transform('base/PlaceholderSubstitute',[selection.at(0), obj]);
+    } else {
+        error('Select an object to substitute into.');
     }
 }
 

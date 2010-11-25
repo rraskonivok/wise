@@ -330,6 +330,8 @@ var Node = Backbone.Model.extend({
 
         // Tell the tree that it has changed contents and needs
         // to pushed to the server.
+
+        delete this;
     },
 
     //         O          O   

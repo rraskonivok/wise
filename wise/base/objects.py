@@ -85,7 +85,7 @@ class Tuple(Term):
             'operand': objects,
             'symbol': self.symbol,
             'parenthesis': self.show_parenthesis,
-            'class': self.css_class,
+            'class': self.css_class or '',
             })
 
         return self.html.render(c)
@@ -96,30 +96,21 @@ class Text(Term):
     def __init__(self,text):
         self.latex = '\\text{' + text + '}'
 
-class PureBlob(Term):
-    html = load_haml_template('pureblob.tpl')
-    def __init__(self):
-        pass
-
-    def get_html(self):
-        c = template.Context({'annotation': self.annotation})
-        return self.html.render(c)
-
-class Tex(object):
-    '''LaTeX sugar for operators'''
-    tex = None
-    html = load_haml_template('tex.tpl')
-
-    def __init__(self,tex):
-        self.tex = tex
-
-    def get_html(self):
-        c = template.Context({
-            'group': self.group,
-            'type': 'Tex',
-            'tex': self.tex})
-
-        return self.html.render(c)
+#class Tex(object):
+#    '''LaTeX sugar for operators'''
+#    tex = None
+#    html = load_haml_template('tex.tpl')
+#
+#    def __init__(self,tex):
+#        self.tex = tex
+#
+#    def get_html(self):
+#        c = template.Context({
+#            'group': self.group,
+#            'type': 'Tex',
+#            'tex': self.tex})
+#
+#        return self.html.render(c)
 
 greek_alphabet = {
         'alpha'  :  '\\alpha',
@@ -239,7 +230,7 @@ class Rational(Term):
             'den': self.den.get_html(),
             'group': self.group,
             'type': self.classname,
-            'class': self.css_class
+            'class': self.css_class or '',
             })
 
         return self.html.render(c)
@@ -279,7 +270,7 @@ class Numeric(Term):
     def get_html(self):
         c = template.Context({
             'id': self.id,
-            'class': self.css_class,
+            'class': self.css_class or '',
             'latex':self.latex,
             'math': self.get_math(),
             'type': self.classname,
@@ -338,7 +329,7 @@ class ComplexNumeric(Term):
 
         c = template.Context({
             'id': self.id,
-            'class': self.css_class,
+            'class': self.css_class or '',
             're': self.re.get_html(),
             'im': self.im.get_html(),
         })
@@ -701,7 +692,7 @@ class Operation(Term):
                 'operand': objects,
                 'symbol': self.symbol,
                 'parenthesis': self.show_parenthesis,
-                'class': self.css_class,
+                'class': self.css_class or '',
                 })
 
             return self.html.render(c)
@@ -718,7 +709,8 @@ class Operation(Term):
                 'operand': self.operand.get_html(),
                 'symbol1': self.symbol1.get_html(),
                 'symbol2': self.symbol2.get_html(),
-                'parenthesis': self.show_parenthesis
+                'parenthesis': self.show_parenthesis,
+                'class': self.css_class or '',
                 })
 
             return self.html.render(c)
@@ -738,7 +730,7 @@ class Operation(Term):
                 'operand': self.operand.get_html(),
                 'symbol': self.symbol,
                 'parenthesis': self.show_parenthesis,
-                'class': self.css_class,
+                'class': self.css_class or '',
                 })
 
         #Postfix Formatting
@@ -753,7 +745,7 @@ class Operation(Term):
                 'operand': self.operand.get_html(),
                 'symbol': self.symbol,
                 'parenthesis': self.show_parenthesis,
-                'class': self.css_class
+                'class': self.css_class or '',
                 })
 
         #Superscript Formatting
@@ -771,7 +763,7 @@ class Operation(Term):
                 'operand': self.operand.get_html(),
                 'symbol1': self.symbol1.get_html(),
                 'parenthesis': self.show_parenthesis,
-                'class': self.css_class
+                'class': self.css_class or '',
                 })
 
         #Subscript Formatting
@@ -789,7 +781,7 @@ class Operation(Term):
                 'operand': self.operand.get_html(),
                 'symbol1': self.symbol1,
                 'parenthesis': self.show_parenthesis,
-                'class': self.css_class
+                'class': self.css_class or '',
                 })
 
         #Latex Styled Formatting
@@ -806,10 +798,8 @@ class Operation(Term):
                 'group': self.group,
                 'operand': self.operand.get_html(),
                 'parenthesis': self.show_parenthesis,
-                'class': self.css_class
+                'class': self.css_class or '',
                 })
-        else:
-            print('Unknown operator class, should be (infix,postfix,prefix,outfix,sup,sub,latex)')
 
         return self.html.render(c)
 
@@ -1131,3 +1121,5 @@ class FunctionAppl(PrefixOperation):
 class Quote(PrefixOperation):
     symbol = '!'
     pure = 'quote'
+
+#vim: ai ts=4 sts=4 et sw=4

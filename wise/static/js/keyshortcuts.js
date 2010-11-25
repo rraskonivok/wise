@@ -33,6 +33,7 @@ function init_keyboard_shortcuts() {
         //.bind('keydown', '^', function() {use_infix('ph^ph')})
         .bind('keydown', 'shift+I', function() {use_infix('integral ph')})
         .bind('keydown', 'shift+D', function() {use_infix('diff ph')})
+        .bind('keydown', 'shift+p', show_pnths)
         // Number substitutions
         .bind('keydown', '2', function() {use_infix('2')})
         .bind('keydown', '1', function() {use_infix('1')})

@@ -251,33 +251,54 @@ function dialog(text) {
     });
 }
 
-function resize_parentheses() {
+ap = [];
 
-    var scaling_factor = 0.7;
-    //Scale parentheses
+function resize_all() {
+    _.each(ap, resize_parentheses);
+}
 
-    $('.pnths','#workspace').css({'fontSize':0});
-    $('.pnths','#workspace').css({'height':0});
+function resize_parentheses(node) {
 
-    //Pairs of parentheses
-    ppairs = _.zip($('.left','#workspace'),$('.right','#workspace'));
+    if(!(node.view)) {
+        return;
+    }
 
-    _.each(ppairs, function (obj) {
-        parent_height = $(obj[0]).parent().height() * scaling_factor;
-        //window.log(parent_height);
-        if(parent_height > 50) {
-            parent_height = 50;
-        }
-        $(obj[0]).css({'fontSize':String(parent_height) + 'px'});
-        $(obj[1]).css({'fontSize':String(parent_height) + 'px'});
-    });
+    if(!_.include(ap,node)) {
+        ap.push(node);
+    }
 
-    //TODO: replace $.each -> _.each
-    $.each($('.sqrt-prefix','#workspace'), function (obj) {
-        $(this).css({'height':0});
-        parent_height = $(this).parent().height();
-        $(this).css({'fontSize':String(parent_height) + 'px'});
-    });
+    // This value is determined empirically, I really should write
+    // something prettier but I have better things to do
+    // with my time, MathJax does this much better, maybe imitate
+    // their 'fenced' style
+    var scaling_factor = 0.3;
+    var min_scale = 7;
+
+    var fontfamily = null;
+
+    var scale = node.view.el.height() * scaling_factor;
+
+    if(scale < min_scale) { scale = min_scale };
+    fontfamily = 'MathJax_Size4';
+
+    //if(scale < 10) {
+    //    fontfamily = 'MathJax_Size1';
+    //}
+    //if(scale > 20) {
+    //    fontfamily = 'MathJax_Size2';
+    //}
+    //if(scale > 30) {
+    //    fontfamily = 'MathJax_Size3';
+    //}
+    //if(scale > 40) {
+    //    fontfamily = 'MathJax_Size4';
+    //}
+
+    console.log(scale);
+    
+    var ps = node.view.el.children('.pnths').
+        css('font-size', scale).
+        css('font-family',fontfamily);
 }
 
 ///////////////////////////////////////////////////////////
@@ -430,11 +451,13 @@ function apply_rule(rule, operands) {
 
                 //Typeset any latex in the html the server just spit out
                 mathjax_typeset($(nsym));
+                resize_parentheses(newnode);
             }
         }
 
-        resize_parentheses();
     }, "json");
+
+    resize_all();
 
     return image;
 }
@@ -525,7 +548,7 @@ function apply_def(def, selections) {
         NAMESPACE_INDEX = data.namespace_index;
 
         base_mode();
-        resize_parentheses();
+        resize_all();
     }, "json");
 }
 
@@ -619,16 +642,8 @@ function use_infix(code) {
             NAMESPACE_INDEX = data.namespace_index;
 
             base_mode();
-            resize_parentheses();
+            resize_all();
         }});
-}
-
-function subs(obj) {
-    if(selection.length > 0) {
-        apply_transform('base/PlaceholderSubstitute',[selection.at(0), obj]);
-    } else {
-        error('Select an object to substitute into.');
-    }
 }
 
 function apply_transform(transform, operands) {
@@ -724,7 +739,7 @@ function apply_transform(transform, operands) {
             NAMESPACE_INDEX = response.namespace_index;
 
             base_mode();
-            resize_parentheses();
+            resize_all();
         }});
 }
 
@@ -910,95 +925,6 @@ function mathjax_typeset(element) {
     }
 }
 
-function select_equation(id) {
-    select_term(NODES.getByCid(id));  
-}
-
-function select_lhs(id) {
-    select_term(NODES.getByCid(id).children[0].children[0]);
-}
-
-function select_rhs(id) {
-    select_term(NODES.getByCid(id).children[1].children[0]);  
-}
-
-function next_placeholder(start) {
-    last = $('.lines .placeholder:last')
-    first = $('.lines .placeholder:first')
-
-    if (!start) {
-        if (selection.nth(0).exists()) {
-            start = selection.nth(0)
-        }
-        else {
-            start = first
-        }
-    }
-
-
-    if ($(last).attr('id') == $(start).attr('id')) {
-        base_mode();
-        select_term(first)
-        return
-    }
-
-    placeholders = $('.lines .placeholder')
-
-    var i = 0;
-    for (i = 0; i <= placeholders.length; i++) {
-        if ($(placeholders[i]).attr('id') == $(start).attr('id')) {
-            if (i === placeholders.length) {
-                select_term($(placeholders[1]))
-            }
-            else {
-                select_term($(placeholders[i + 1]))
-            }
-        }
-    }
-    base_mode();
-}
-
-function remove_element() {
-    if(selection.isEmpty()) {
-        error('Selection is empty.');
-        return;
-    }
-
-    selection.each(function(elem) {
-
-        if(elem.get('toplevel')) {
-            root = get_root(elem).tree;
-
-            // If the root has a correspondance in the database
-            // then destroy it
-            if(root.isNew() == false) {
-                root.destroy();
-            }
-
-            elem.dom().remove();
-            elem.delNode();
-        } else {
-            apply_transform('base/Delete', [elem]);
-        }
-
-    });
-}
-
-// Ease the select of container tyep objects by expanding their
-// DOM elements and putting a visible border around it while
-// leaving the children in fixed
-$('.container','#workspace').live('mouseover mouseout', function(e) {
-  ths = $(this);
-  if (e.type == 'mouseover' && ctrlPressed) {
-            ths.css('padding-left','10px');
-            ths.css('padding-right','10px');
-            ths.addClass('preselect');
-  } else {
-            ths.css('padding','inherit');
-            ths.removeClass('preselect');
-  }
-});
-
 ///////////////////////////////////////////////////////////
 // Palette Loading / Handeling
 ///////////////////////////////////////////////////////////
@@ -1042,28 +968,11 @@ function load_math_palette() {
             //Typeset the panel
             MathJax.Hub.Typeset($(this).next()[0]);
     
-            //Make the math terms interactive
-            resize_parentheses()
             $("#math_palette").resizable({ handles: 's' });
 //            $('.uniform_button','#math_palette').button();
         }
     });
 
-}
-
-function palette(num) {
-    if(num == 1) {
-        $('#math_palette').show();
-        $('#rules_palette').hide();
-        $('#tab_math_palette').addClass('active');
-        $('#tab_rules_palette').removeClass('active');
-    }
-    else {
-        $('#math_palette').hide();
-        $('#rules_palette').show();
-        $('#tab_rules_palette').addClass('active');
-        $('#tab_math_palette').removeClass('active');
-    }
 }
 
 ///////////////////////////////////////////////////////////
