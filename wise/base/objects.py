@@ -8,9 +8,10 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
-# Import the base term class, that all non-relational terms inherit from
 from wise.base.cell import Cell
 from wise.base.term import Term
+
+from wise.base.toplevel import Equation, Definition, Function
 
 from math import modf
 
@@ -19,6 +20,8 @@ from wise.translators.pure_wrap import PureSymbol, PureInt, PureDouble, ProtoRul
 
 import worksheet.exceptions as exception
 from worksheet.utils import *
+
+from utils.latex import greek_lookup
 
 from django import template
 
@@ -90,11 +93,11 @@ class Tuple(Term):
 
         return self.html.render(c)
 
-class Text(Term):
-    type = 'text'
-
-    def __init__(self,text):
-        self.latex = '\\text{' + text + '}'
+#class Text(Term):
+#    type = 'text'
+#
+#    def __init__(self,text):
+#        self.latex = '\\text{' + text + '}'
 
 #class Tex(object):
 #    '''LaTeX sugar for operators'''
@@ -111,55 +114,6 @@ class Text(Term):
 #            'tex': self.tex})
 #
 #        return self.html.render(c)
-
-greek_alphabet = {
-        'alpha'  :  '\\alpha',
-        'beta'   :  '\\beta',
-        'gamma'  :  '\\gamma',
-        'delta'  :  '\\delta',
-        'epsilon' :  '\\epsilon',
-        'varepsilon' :  '\\varepsilon',
-        'zeta'   :  '\\zeta',
-        'eta'    :  '\\eta',
-        'theta'  :  '\\theta',
-        'vartheta' :'\\vartheta',
-        'gamma'  :  '\\gamma',
-        'kappa'  :  '\\kappa',
-        'lambda' :  '\\lambda',
-        'mu'     :  '\\mu',
-        'nu'     :  '\\nu',
-        'xi'     :  '\\xi',
-        'pi'     :  '\\pi',
-        'varpi'  :  '\\varpi',
-        'rho'    :  '\\rho',
-        'varrho' :  '\\varrho',
-        'sigma'  :  '\\sigma',
-        'varsigma' :'\\varsigma',
-        'tau'    :  '\\tau',
-        'upsilon':  '\\upsilon',
-        'phi'    :  '\\phi',
-        'varphi' :  '\\varphi',
-        'chi'    :  '\\chi',
-        'psi'    :  '\\psi',
-        'omega'  :  '\\omega',
-        'Gamma'  :  '\\Gamma' ,
-        'Delta'  :  '\\Delta' ,
-        'Theta'  :  '\\Theta' ,
-        'Lambda' :  '\\Lambda',
-        'Xi'     :  '\\Xi'    ,
-        'Pi'     :  '\\Pi'    ,
-        'Sigma'  :  '\\Sigma' ,
-        'Upsilon':  '\\Upsilon',
-        'Phi'    :  '\\Phi'   ,
-        'Psi'    :  '\\Psi'   ,
-        'Omega'  :  '\\Omega' ,
-        }
-
-def greek_lookup(s):
-    try:
-        return greek_alphabet[s]
-    except KeyError:
-        return s
 
 class Base_Symbol(Term):
 
@@ -228,7 +182,7 @@ class Rational(Term):
             'math': self.get_math(),
             'num': self.num.get_html(),
             'den': self.den.get_html(),
-            'group': self.group,
+            'parenthesis': self.show_parenthesis,
             'type': self.classname,
             'class': self.css_class or '',
             })
@@ -364,271 +318,6 @@ class Pi(Base_Symbol):
     symbol = '\pi'
     pure = 'Pi'
     args = '\pi'
-
-#-------------------------------------------------------------
-# Top Level Elements
-#-------------------------------------------------------------
-
-class Relational(object):
-    '''A statement relating some LHS to RHS'''
-    pass
-
-class Equation(object):
-    html = load_haml_template('equation.tpl')
-
-    lhs = None
-    rhs = None
-    id = None
-
-    symbol = "="
-
-    parent = None
-
-    side = None
-    annotation = ''
-
-    pure = 'eq'
-
-    po = None
-
-    # Database index
-    sid = None
-
-    def __init__(self,lhs=None,rhs=None):
-
-        # Conviencence definition so that we can call Equation()
-        # to spit out an empty equation
-        if not lhs:
-            lhs = LHS(Placeholder())
-        if not rhs:
-            rhs = RHS(Placeholder())
-
-        if not isinstance(lhs,LHS):
-            lhs = LHS(lhs)
-
-        if not isinstance(rhs,RHS):
-            rhs = RHS(rhs)
-
-        self.rhs = rhs
-        self.lhs = lhs
-
-        self.terms = [self.lhs, self.rhs]
-
-    def get_math(self):
-        return '(' + self.classname + ' ' + spaceiter(map(lambda o: o.get_math(), self.terms)) + ')'
-
-    @property
-    def math(self):
-        l1 =' '.join([self.classname, self.lhs.get_math(), self.rhs.get_math()])
-        return ''.join(['(',l1,')'])
-
-    def __repr__(self):
-         return self.math
-
-    def _pure_(self):
-        return self.po(self.lhs._pure_(),self.rhs._pure_())
-
-    @property
-    def classname(self):
-        return self.__class__.__name__
-
-    def set_side(self, side):
-        for term in self.terms:
-            term.side = side
-            term.set_side(side)
-
-    def json_flat(self,lst=None):
-        if not lst:
-            lst = []
-
-        lst.append({'id': self.id,
-                    'type': self.classname,
-                    'toplevel': True,
-                    'sid': self.sid,
-                    'children': [term.id for term in self.terms]})
-
-        for term in self.terms:
-            term.json_flat(lst)
-
-        return lst
-
-    def get_html(self):
-        self.rhs.id = self.idgen.next()
-        self.lhs.id = self.idgen.next()
-
-        self.rhs.rhs.id = self.idgen.next()
-        self.lhs.lhs.id = self.idgen.next()
-
-        self.rhs.rhs.associate_terms()
-        self.lhs.lhs.associate_terms()
-
-        c = template.Context({
-            'id': self.id,
-            'rhs_id': self.rhs.id,
-            'lhs_id': self.lhs.id,
-            'math': self.math,
-            'lhs': self.lhs.get_html(),
-            'rhs': self.rhs.get_html(),
-            'annotation': self.annotation,
-            'symbol': self.symbol,
-            'classname': self.classname
-            })
-
-        return self.html.render(c)
-
-    def ensure_id(self):
-        '''Make sure there is a unique id set, if there isn't
-        make one, but never overwrite preexisting one'''
-
-        if not self.id:
-            self.id = self.idgen.next()
-
-class RHS(Term):
-    html = load_haml_template('rhs.tpl')
-
-    def __init__(self,*terms):
-        self.rhs = Addition(*terms)
-        self.terms = [self.rhs]
-#        self.args = [self.rhs]
-        self.side = 1
-        self.rhs.side = 1
-        self.rhs.parent = self
-
-    def _pure_(self):
-        return self.rhs._pure_()
-
-    def get_html(self):
-        self.rhs.group = self.id
-        self.rhs.associate_terms()
-
-        c = template.Context({
-            'id': self.id,
-            'latex':self.latex,
-            'math': self.get_math(),
-            'type': self.classname,
-            'group': self.group,
-            'rhs': self.rhs.get_html()
-            })
-
-        return self.html.render(c)
-
-class LHS(Term):
-    html = load_haml_template('lhs.tpl')
-
-    def __init__(self,*terms):
-        self.lhs = Addition(*terms)
-        self.terms = [self.lhs]
-#        self.args = [self.lhs]
-        self.side = 0
-        self.lhs.side = 0
-        self.lhs.parent = self
-
-    def _pure_(self):
-        return self.lhs._pure_()
-
-    def get_html(self):
-        self.lhs.group = self.id
-        self.lhs.associate_terms()
-
-        c = template.Context({
-            'id': self.id,
-            'latex':self.latex,
-            'math': self.get_math(),
-            'type': self.classname,
-            'group': self.group,
-            'lhs': self.lhs.get_html()
-            })
-
-        return self.html.render(c)
-
-class Definition(Equation):
-    symbol = ":="
-    html = load_haml_template('def.tpl')
-    confluent = True
-    public = True
-    pure = None
-
-    def _pure_(self):
-        lhs = self.lhs._pure_()
-        rhs = self.rhs._pure_()
-
-        return ProtoRule(lhs , rhs)
-
-    def get_html(self):
-
-        self.rhs.id = self.idgen.next()
-        self.lhs.id = self.idgen.next()
-
-        self.rhs.group = self.id
-        self.lhs.group = self.id
-
-        self.rhs.rhs.id = self.idgen.next()
-        self.lhs.lhs.id = self.idgen.next()
-
-        self.rhs.rhs.associate_terms()
-        self.lhs.lhs.associate_terms()
-
-        c = template.Context({
-            'id': self.id,
-            'lhs': self.lhs.get_html(),
-            'rhs': self.rhs.get_html(),
-            'annotation': self.annotation,
-            'symbol': self.symbol,
-            'confluent': int(self.confluent),
-            'public': self.public,
-            'classname': self.classname
-            })
-
-        return self.html.render(c)
-
-class Function(Equation):
-    symbol = "\\rightarrow"
-    html = load_haml_template('function.tpl')
-    confluent = True
-    public = True
-    pure = None
-
-    def __init__(self,head=None,lhs=None,rhs=None):
-
-        # Conviencence definition so that we can call Equation()
-        # to spit out an empty equation
-        if not lhs:
-            lhs = LHS(Placeholder())
-        if not rhs:
-            rhs = RHS(Placeholder())
-
-        if not isinstance(lhs,LHS):
-            lhs = LHS(lhs)
-
-        if not isinstance(rhs,RHS):
-            rhs = RHS(rhs)
-
-        self.head = head
-        self.lhs = lhs
-        self.rhs = rhs
-
-        self.terms = [self.head, self.lhs, self.rhs]
-
-    def _pure_(self):
-        lhs = self.lhs._pure_()
-        rhs = self.rhs._pure_()
-
-        return ProtoRule(lhs , rhs)
-
-    def get_html(self):
-
-        c = template.Context({
-            'id': self.id,
-            'math': self.math,
-            'head': self.head.get_html(),
-            'lhs': self.lhs.get_html(),
-            'rhs': self.rhs.get_html(),
-            'annotation': self.annotation,
-            'symbol': self.symbol,
-            'classname': self.classname
-            })
-
-        return self.html.render(c)
 
 #-------------------------------------------------------------
 # Operations

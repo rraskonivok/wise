@@ -28,4 +28,4 @@ class Expression(models.Model):
 
     def __unicode__(self):
         return self.cell.workspace.name + ('[%s] -- %s' %
-                (self.cell.index, self.code[0:25]))
+                (self.cell.index, self.sexp[0:25]))

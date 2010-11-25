@@ -366,7 +366,7 @@ def new_line(request):
     # TODO we should do this without parsing, this is really slow
     # and inefficent
     if newtype == u'def':
-        new = translate.parse_sexp('(Definition (LHS (Placeholder )) (RHS (Placeholder )))',uid)
+        new = translate.parse_sexp('(Definition (Placeholder ) (Placeholder ))',uid)
     elif newtype == u'func':
         new = translate.parse_sexp('(Function (Placeholder ) (LHS (Placeholder )) (RHS (Placeholder )))',uid)
     elif newtype == u'eq':

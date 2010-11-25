@@ -258,6 +258,9 @@ function resize_all() {
 }
 
 function resize_parentheses(node) {
+    // TODO: Eventually change this to use a 'stretchy' class so
+    // that we can scale other outfix operators besides
+    // parentheses
 
     if(!(node.view)) {
         return;
@@ -294,8 +297,6 @@ function resize_parentheses(node) {
     //    fontfamily = 'MathJax_Size4';
     //}
 
-    console.log(scale);
-    
     var ps = node.view.el.children('.pnths').
         css('font-size', scale).
         css('font-family',fontfamily);

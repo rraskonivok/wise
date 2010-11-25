@@ -137,6 +137,10 @@ var NodeView = Backbone.View.extend({
   onClick: function (e) {
     // If the ctrl key is down the container selection mode
     // is enabled an 'leaf' nodes are ignored
+    
+    //if(serverisfucked) {
+    //    warnuser;
+    //}
     if (e.ctrlKey) {
       if (this.model.hasChildren()) {
         this.model.toggleSelect();

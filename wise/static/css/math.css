@@ -97,7 +97,6 @@
 }
 
 .fraction {
-    height: inherit;
     vertical-align: middle;
 }
 
@@ -162,14 +161,22 @@
 }
 
 .cell {
+    margin-bottom: 20px;
+    margin-top: 5px;
     margin-bottom: 3px; 
+
     border-right: 5px solid #ccc;
     border-top: 5px solid #ccc;  
+
     min-height: 50px;
-    margin-bottom: 20px;
 }
 
 .cell:hover {
+}
+
+.cell .assumptions {
+    min-height: 50px;
+    border-bottom: 1px dashed black;
 }
 
 .lines {

@@ -11,7 +11,6 @@ class WorkspaceAdmin(admin.ModelAdmin):
     fieldsets = [
         (None,               {'fields': ['name']}),
     ]
-    #inlines = [EquationInline]
 
 class CellAdmin(admin.ModelAdmin):
     inlines = [ExpressionsInline]

@@ -43,6 +43,7 @@ class Term(object):
     html = load_haml_template('term.tpl')
     latex = None # LaTeX code used in rendering object
     css_class = None # Extra styling in addition to .term class
+    show_parenthesis = False
 
     side = None # 0 if on LHS, 1 if on RHS
 
