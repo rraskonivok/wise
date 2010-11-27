@@ -79,6 +79,10 @@ class PublicRule:
 
         self.po.arity = pure_wrap.nargs(self.po)
 
+    @proeprty
+    def description(self):
+        return self.__doc__
+
     def get_html(self):
         interface_ui = self.template
         objects = [obj.get_html() for obj in self.objects]

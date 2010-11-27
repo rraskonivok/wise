@@ -86,6 +86,10 @@ class Term(object):
     def classname(self):
         return self.__class__.__name__
 
+    @property
+    def descriptio(self):
+        return self.__doc__
+
     def _pure_(self):
         # This is not defeind explicityly for the reason that inheriting
         # the method to generate a Pure object will often result in very
