@@ -45,7 +45,7 @@ elem_operations = [
               ('pow.png',       objects.Power),
               ('neg.png',       objects.Negate),
               ('div.png',       objects.Rational),
-              ('complex.png',   objects.ComplexNumeric),
+              ('complex.png',   objects.ComplexCartesian),
               ('sqrt.png',      objects.Sqrt),
               ('exp.png',       objects.Exp),
               ('log.png',  objects.Ln),

@@ -8,11 +8,18 @@
   License, or (at your option) any later version.
 */
 
-// Order of operations is defined by the fixity of the operaters
+// Order of operations is defined by the fixity of the operators
 // defined in prelude.pure
 
 //using math;
 using ask;
+
+/* Evaluation */
+
+prefix evalb; // Evaluation to boolean
+prefix evali; // Evaluation to integer
+prefix evalf; // Evaluation to float
+prefix evals; // Evaluation to symbolic value
 
 /* ..
    Algebraic Ordering

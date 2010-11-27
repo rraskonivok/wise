@@ -102,6 +102,9 @@ class Term(object):
     def _isabelle_(self):
         raise exception.PureError('No Isabelle representation of %s.' % self.classname)
 
+    def _openmath_(self):
+        raise exception.PureError('No OpenMath representation of %s.' % self.classname)
+
     def get_html(self):
         c = template.Context({
             'id': self.id,

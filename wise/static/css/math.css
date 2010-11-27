@@ -179,6 +179,10 @@
     border-bottom: 1px dashed black;
 }
 
+.cell .equations {
+    min-height: 50px;
+}
+
 .lines {
     margin-top: 3px;
     margin-bottom: 3px;

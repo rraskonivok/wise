@@ -12,6 +12,9 @@ from wise.base.cell import Cell
 from wise.base.term import Term
 
 from wise.base.toplevel import Equation, Definition, Function
+from wise.base.operations import PrefixOperation, InfixOperation, \
+PostfixOperation, SupOperation, SubOperation, OutfixOperation, \
+Operation
 
 from math import modf
 
@@ -52,10 +55,6 @@ class Placeholder(Term):
 
     def get_math(self):
         return '(Placeholder )'
-
-#-------------------------------------------------------------
-# Lower Level Elements 
-#-------------------------------------------------------------
 
 class Tuple(Term):
     show_parenthesis = True
@@ -104,6 +103,10 @@ class Tuple(Term):
 #
 #        return self.html.render(c)
 
+#-------------------------------------------------------------
+# Nullary / Symbol Type Objects
+#-------------------------------------------------------------
+
 class Base_Symbol(Term):
 
     def __init__(self,*args):
@@ -131,56 +134,9 @@ class Variable(Base_Symbol):
     def _pure_(self):
         return PureSymbol(self.symbol)
 
-#Free abstract function (of a single variable at this time)
-class FreeFunction(Base_Symbol):
-    assumptions = None
-    bounds = None
+    def _openmath_(self):
+        return self.symbol
 
-    def __init__(self,symbol):
-        self.symbol = symbol
-        self.latex = '$%s(u)$' % symbol
-        self.args = str(symbol)
-
-    def _pure_(self):
-        #LHS
-        if self.side is 0:
-            return PureSymbol(self.symbol + '@_')(PureSymbol('u'))
-        #RHS
-        else:
-            return PureSymbol(self.symbol)(PureSymbol('u'))
-
-class Rational(Term):
-    html = load_haml_template('rational.tpl')
-    pure = 'rational'
-
-    def __init__(self,num,den):
-        self.num = num
-        self.den = den
-        self.den.css_class = 'middle'
-        self.terms = [num,den]
-
-    def _pure_(self):
-       return self.po(self.num._pure_(), self.den._pure_())
-
-    def get_html(self):
-
-        c = template.Context({
-            'id': self.id,
-            'math': self.get_math(),
-            'num': self.num.get_html(),
-            'den': self.den.get_html(),
-            'parenthesis': self.show_parenthesis,
-            'type': self.classname,
-            'class': self.css_class or '',
-            })
-
-        return self.html.render(c)
-
-class Infinity(Base_Symbol):
-    latex = '\\infty'
-    symbol = 'inf'
-    pure = 'inf'
-    args = "'inf'"
 
 class Numeric(Term):
     numeric_type = 'float'
@@ -232,9 +188,26 @@ class Numeric(Term):
         else:
             return Negate(self)
 
-class ComplexNumeric(Term):
+#-------------------------------------------------------------
+# Complex Operations
+#-------------------------------------------------------------
+
+class Complex(Term):
+    pass
+
+class ComplexCartesian(Complex):
+    '''
+    This symbol represents a constructor function for complex numbers
+    specified as the Cartesian coordinates of the relevant point on the
+    complex plane. It takes two arguments, the first is a number x to
+    denote the real part and the second a number y to denote the imaginary
+    part of the complex number x + i y. (Where i is the square root of -1.)
+    '''
     html = load_haml_template('complex.tpl')
     pure = 'complex'
+
+    cd = 'complex1'
+    cd_name = 'complex_cartesian'
 
     def __init__(self, re, im):
         self.re = re
@@ -255,21 +228,80 @@ class ComplexNumeric(Term):
     def _pure_(self):
         return self.po(*purify(self.terms))
 
-#Constants should be able to be represented by multiple symbols
+class ComplexPolar(Complex):
+    '''
+    This symbol represents a constructor function for complex numbers
+    specified as the polar coordinates of the relevant point on the complex
+    plane. It takes two arguments, the first is a nonnegative number r to
+    denote the magnitude and the second a number theta (given in radians)
+    to denote the argument of the complex number r e^(i
+    theta).
+    '''
+
+    html = load_haml_template('complex.tpl')
+    pure = 'complex'
+
+    cd = 'complex1'
+    cd_name = 'complex_cartesian'
+
+    def __init__(self, re, im):
+        self.re = re
+        self.im = im
+        self.terms = [self.re, self.im]
+
+    def get_html(self):
+
+        c = template.Context({
+            'id': self.id,
+            'class': self.css_class or '',
+            're': self.re.get_html(),
+            'im': self.im.get_html(),
+        })
+
+        return self.html.render(c)
+
+    def _pure_(self):
+        return self.po(*purify(self.terms))
+
+class Real(PrefixOperation):
+    pure = 'real'
+
+    cd = 'complex1'
+    cd_name = 'real'
+
+class Imaginary(PrefixOperation):
+    pure = 'imag'
+
+    cd = 'complex1'
+    cd_name = 'imaginary'
+
+class Argument(PrefixOperation):
+    pure = 'argm'
+
+    cd = 'complex1'
+    cd_name = 'argument'
+
+class Conjugate(PrefixOperation):
+    pure = 'conj'
+
+    cd = 'complex1'
+    cd_name = 'conjugate'
+
+#-------------------------------------------------------------
+# Numerical Constants
+#-------------------------------------------------------------
+
 class Constant(Term):
+    #Constants should be able to be represented by multiple symbols
     representation = None
 
     def __init__(self,*symbol):
         self.args = self.representation.args
         self.latex = self.representation.latex
 
-def Zero():
-    return Numeric(0)
-
-def One():
-    return Numeric(1)
-
 class ImaginaryUnit(Base_Symbol):
+    '''This symbol represents the square root of -1.'''
+
     latex = 'i'
     symbol = 'i'
     pure = 'I'
@@ -279,209 +311,94 @@ class Pi(Base_Symbol):
     latex = '\pi'
     symbol = '\pi'
     pure = 'Pi'
-    args = '\pi'
+    args = "'\pi'"
+
+class Infinity(Base_Symbol):
+    latex = '\\infty'
+    symbol = 'inf'
+    pure = 'inf'
+    args = "'inf'"
 
 #-------------------------------------------------------------
-# Operations
+# Algebraic Operators
 #-------------------------------------------------------------
 
-infix_symbol_template = haml('''
-.ui-state-disabled.infix.term math-type="infix" math-meta-class="sugar"
-    $${{%s}}$$
-''')
+def Zero(BaseSymbol):
+    '''This symbol represents the additive identity element.'''
+    cd = 'alg1'
+    cd_name = 'zero'
 
-def infix_symbol_html(symbol):
-    return infix_symbol_template % symbol
+    latex = '0'
+    symbol = '0'
+    pure = 'zero'
 
-class Operation(Term):
-    '''An generic operator acting on an arbitrary number of terms'''
 
-    pure = None
+def One(BaseSymbol):
+    '''This symbol represents the multiplicative identity element.'''
 
-    # Templates are assigned from 'ui_style'
-    #
-    # prefix  ~  base/templates/prefix.tpl
-    # postfix ~  base/templates/postfix.tpl
-    # infix   ~  base/templates/infix.tpl
+    cd = 'alg1'
+    cd_name = 'one'
 
-    ui_style = 'prefix'
+    latex = '1'
+    symbol = '1'
+    pure = 'one'
 
-    symbol = None
-    show_parenthesis = False
+#-------------------------------------------------------------
+# Integer Functions
+#-------------------------------------------------------------
 
-    #Arity of the operation
-    arity = None
+class Quotient(PrefixOperation):
+    symbol = 'quotient'
+    pure = 'quo'
 
-    def __init__(self,op,*ops):
-        operands = list(ops) + [op]
-        if len(operands) > 1:
-            self.terms = list(operands)
-            self.operand = self.terms
-        else:
-            # TODO: wtf is this shit?
-            self.operand = operands[0]
-            self.terms = [operands[0]]
+    cd = 'integer1'
+    cd_name = 'quotient'
 
-        self.arity = len(self.terms)
+class Remainder(PrefixOperation):
+    symbol = 'remainder'
+    pure = 'rem'
 
-    def _pure_(self):
-        if self.po:
-            return self.po(*purify(self.terms))
-        else:
-            raise exception.PureError('No pure representation of %s.' % self.classname)
+    cd = 'integer1'
+    cd_name = 'remainder'
 
-    def get_html(self):
+class Factorial(PostfixOperation):
+    symbol = '!'
+    pure = 'fact'
 
-        #Infix Formatting
-        if self.ui_style == 'infix':
-            self.html = load_haml_template('infix.tpl')
-            objects = [o.get_html() for o in self.terms]
+    cd = 'integer1'
+    cd_name = 'factorial'
 
-            c = template.Context({
-                'id': self.id,
-                'type': self.classname,
-                'operand': objects,
-                'symbol': self.symbol,
-                'parenthesis': self.show_parenthesis,
-                'class': self.css_class or '',
-                })
+class Catalan(SubOperation):
+    latex = 'C'
+    symbol1 = 'C'
+    pure = 'catalan'
+    args = "'n'"
 
-            return self.html.render(c)
+#-------------------------------------------------------------
+# Arithmetic Functions
+#-------------------------------------------------------------
 
-        #Outfix Formatting
-        elif self.ui_style == 'outfix':
-            self.html = load_haml_template('outfix.tpl')
+class LCM(PrefixOperation):
+    symbol = '\\lcm'
+    pure = 'lcm'
 
-            c = template.Context({
-                'id': self.id,
-                'type': self.classname,
-                'operand': self.operand.get_html(),
-                'symbol1': self.symbol1.get_html(),
-                'symbol2': self.symbol2.get_html(),
-                'parenthesis': self.show_parenthesis,
-                'class': self.css_class or '',
-                })
+    cd = 'arith1'
+    cd_name = 'lcm'
 
-            return self.html.render(c)
+class GCD(PrefixOperation):
+    symbol = '\\gcd'
+    pure = 'gcd'
 
-        #Prefix Formatting
-        elif self.ui_style == 'prefix':
-            #self.html = load_haml_template('prefix.tpl')
-
-            #if not self.css_class:
-            #    self.css_class = 'baseline'
-
-            c = template.Context({
-                'id': self.id,
-                'type': self.classname,
-                'operand': self.operand.get_html(),
-                'symbol': self.symbol,
-                'parenthesis': self.show_parenthesis,
-                'class': self.css_class or '',
-                })
-
-        #Postfix Formatting
-        elif self.ui_style == 'postfix':
-            self.html = load_haml_template('postfix.tpl')
-
-            c = template.Context({
-                'id': self.id,
-                'type': self.classname,
-                'operand': self.operand.get_html(),
-                'symbol': self.symbol,
-                'parenthesis': self.show_parenthesis,
-                'class': self.css_class or '',
-                })
-
-        #Superscript Formatting
-        elif self.ui_style == 'sup':
-            self.html = load_haml_template('sup.tpl')
-
-            if not self.css_class:
-                self.css_class = 'middle'
-
-            c = template.Context({
-                'id': self.id,
-                'math': self.get_math(),
-                'type': self.classname,
-                'operand': self.operand.get_html(),
-                'symbol1': self.symbol1.get_html(),
-                'parenthesis': self.show_parenthesis,
-                'class': self.css_class or '',
-                })
-
-        #Subscript Formatting
-        elif self.ui_style == 'sub':
-            self.html = load_haml_template('sub.tpl')
-
-            if not self.css_class:
-                self.css_class = 'middle'
-
-            c = template.Context({
-                'id': self.id,
-                'math': self.get_math(),
-                'type': self.classname,
-                'operand': self.operand.get_html(),
-                'symbol1': self.symbol1,
-                'parenthesis': self.show_parenthesis,
-                'class': self.css_class or '',
-                })
-
-        #Latex Styled Formatting
-        elif self.ui_style == 'latex':
-            self.html = load_haml_template('latex.tpl')
-
-            if hasattr(self.operand,'symbol'):
-                self.operand.latex = "%s{%s}" % (self.symbol1, self.operand.symbol)
-
-            c = template.Context({
-                'id': self.id,
-                'math': self.get_math(),
-                'type': self.classname,
-                'operand': self.operand.get_html(),
-                'parenthesis': self.show_parenthesis,
-                'class': self.css_class or '',
-                })
-
-        return self.html.render(c)
-
-    def get_symbol(self):
-        return self.symbol
-
-    def receive(self,obj,receiver_context,sender_type,sender_context,new_position):
-        return obj
-
-    def has_single_term(self):
-        if len(self.terms) == 1:
-            return True
-
-class PrefixOperation(Operation):
-    html = load_haml_template('prefix.tpl')
-    ui_style = 'prefix'
-    show_parenthesis = True
-
-class InfixOperation(Operation):
-    ui_style = 'infix'
-
-class PostfixOperation(Operation):
-    ui_style = 'postfix'
-
-class PostfixOperation(Operation):
-    ui_style = 'postfix'
-
-class SupOperation(Operation):
-    ui_style = 'sup'
-
-class SubOperation(Operation):
-    ui_style = 'sub'
-
-class OutfixOperation(Operation):
-    ui_style = 'outfix'
+    cd = 'arith1'
+    cd_name = 'gcd'
 
 class Addition(InfixOperation):
     symbol = '+'
     show_parenthesis = False
     pure = 'add'
+
+    cd = 'arith1'
+    cd_name = 'plus'
 
     def __init__(self,fst,snd=None):
         if snd:
@@ -527,10 +444,12 @@ class Addition(InfixOperation):
             return Numeric(0)
 
 class Product(InfixOperation):
-    ui_style = 'infix'
     symbol = '\\cdot'
     show_parenthesis = False
     pure = 'mul'
+
+    cd = 'arith1'
+    cd_name = 'times'
 
     def __init__(self,fst,snd=None):
         if snd:
@@ -560,6 +479,9 @@ class Root(Operation):
     html = load_haml_template('power.tpl')
     pure = 'root'
 
+    cd = 'arith1'
+    cd_name = 'root'
+
     def __init__(self,base,exponent):
         self.base = base
         self.exponent = exponent
@@ -588,6 +510,9 @@ class Power(Operation):
     html = load_haml_template('power.tpl')
     pure = 'powr'
 
+    cd = 'arith1'
+    cd_name = 'power'
+
     def __init__(self,base,exponent):
         self.base = base
         self.exponent = exponent
@@ -613,14 +538,43 @@ class Power(Operation):
 
         return self.html.render(c)
 
+class Rational(Term):
+    html = load_haml_template('rational.tpl')
+    pure = 'rational'
+
+    def __init__(self,num,den):
+        self.num = num
+        self.den = den
+        self.den.css_class = 'middle'
+        self.terms = [num,den]
+
+    def _pure_(self):
+       return self.po(self.num._pure_(), self.den._pure_())
+
+    def get_html(self):
+
+        c = template.Context({
+            'id': self.id,
+            'math': self.get_math(),
+            'num': self.num.get_html(),
+            'den': self.den.get_html(),
+            'parenthesis': self.show_parenthesis,
+            'type': self.classname,
+            'class': self.css_class or '',
+            })
+
+        return self.html.render(c)
+
+
 class Interval(InfixOperation):
     html = load_haml_template('power.tpl')
 
-
-class Sqrt(PrefixOperation):
+class Root(PrefixOperation):
     html = load_haml_template('root.tpl')
+    cd = 'arith1'
+    cd_name = 'root'
 
-    pure = 'Sqrt'
+    pure = 'nroot'
 
     def __init__(self,op,*ops):
         operands = list(ops) + [op]
@@ -633,15 +587,128 @@ class Sqrt(PrefixOperation):
 
         op.css_class = 'sqrt-stem'
 
-#class Abs(OutfixOperation):
-#    symbol1 = '|'
-#    symbol2 = '|'
+class Minus(InfixOperation):
+    symbol = '\\cdot'
+    show_parenthesis = False
+    pure = 'sub'
+
+    cd = 'arith1'
+    cd_name = 'minus'
+
+class Negate(PrefixOperation):
+    ''' Unary negation'''
+    symbol = '-'
+    show_parenthesis = False
+    css_class = 'negate'
+
+    cd = 'arith1'
+    cd_name = 'unary_minus'
+
+    # Capitalize since "neg" already exists in the default Pure
+    # predule.
+    pure = 'Neg'
+
+    def __init__(self,operand):
+        self.operand = operand
+        self.terms = [self.operand]
+
+        if type(self.operand) is Addition:
+            self.show_parenthesis = True
+
+    def _pure_(self):
+       return self.po(self.operand._pure_())
+
+    def negate(self):
+        return self.operand
+
+class Sqrt(Root):
+    cd = 'arith1'
+    cd_name = 'root'
+
+    pure = 'Sqrt'
+
+class Abs(OutfixOperation):
+    symbol1 = '|'
+    symbol2 = '|'
+
+    cd = 'arith1'
+    cd_name = 'abs'
+
+class Inverse(SupOperation):
+    cd = 'arith2'
+    cd_name = 'inverse'
 
 class Sgn(PrefixOperation):
     symbol = '\\text{sgn}'
 
 class DiracDelta(PrefixOperation):
     symbol = '\\delta'
+
+#-------------------------------------------------------------
+# Set Theory Functions
+#-------------------------------------------------------------
+
+class Set(Term):
+    show_parenthesis = True
+    html = load_haml_template('tuple.tpl')
+    #html = load_haml_template('set.tpl')
+    symbol = ','
+    pure = 'Tuple'
+
+    def __init__(self, x, *xs):
+        self.terms = [x] + list(xs)
+
+    def _pure_(self):
+        return self.po(*purify(self.terms))
+
+    def get_html(self):
+        objects = [o.get_html() for o in self.terms]
+
+        c = template.Context({
+            'id': self.id,
+            'operand': objects,
+            'symbol': self.symbol,
+            'parenthesis': self.show_parenthesis,
+            'class': self.css_class or '',
+            })
+
+        return self.html.render(c)
+
+class CartesianProduct(InfixOperation):
+    symbol = '\\times'
+    pure = 'carts'
+
+    cd = 'set1'
+    cd_name = 'cartesian_product'
+
+class EmptySet(Term):
+    symbol = '\\emptyset'
+
+class Intersect(InfixOperation):
+    symbol = '\\cup'
+    pure = 'intersect'
+
+    cd = 'set1'
+    cd_name = 'intersect'
+
+class Union(InfixOperation):
+    symbol = '\\cap'
+    pure = 'union'
+
+    cd = 'set1'
+    cd_name = 'union'
+
+
+#-------------------------------------------------------------
+# Transcendental Functions
+#-------------------------------------------------------------
+
+class Exp(PrefixOperation):
+    symbol = '\\exp'
+
+class Ln(PrefixOperation):
+    symbol = '\\ln'
+    pure = 'ln'
 
 class Sin(PrefixOperation):
     symbol = '\\sin'
@@ -654,13 +721,6 @@ class Cos(PrefixOperation):
 class Tan(PrefixOperation):
     symbol = '\\tan'
     pure = 'Tan'
-
-class Exp(PrefixOperation):
-    symbol = '\\exp'
-
-class Ln(PrefixOperation):
-    symbol = '\\ln'
-    pure = 'ln'
 
 class Asin(PrefixOperation):
     symbol = '\\sin^{-1}'
@@ -704,37 +764,14 @@ class Zeta(PrefixOperation):
     symbol = '\\zeta'
     pure = 'RiemannZeta'
 
-class Factorial(PostfixOperation):
+
+class Quote(PrefixOperation):
     symbol = '!'
-    pure = 'Factorial'
+    pure = 'quote'
 
-class Catalan(SubOperation):
-    latex = 'C'
-    symbol1 = 'C'
-    pure = 'catalan'
-    args = "'n'"
-
-class Negate(PrefixOperation):
-    symbol = '-'
-    show_parenthesis = False
-    css_class = 'negate'
-
-    # Capitalize since "neg" already exists in the default Pure
-    # predule.
-    pure = 'Neg'
-
-    def __init__(self,operand):
-        self.operand = operand
-        self.terms = [self.operand]
-
-        if type(self.operand) is Addition:
-            self.show_parenthesis = True
-
-    def _pure_(self):
-       return self.po(self.operand._pure_())
-
-    def negate(self):
-        return self.operand
+#-------------------------------------------------------------
+# Generalized Functions
+#-------------------------------------------------------------
 
 class FunctionAppl(PrefixOperation):
 
@@ -744,8 +781,20 @@ class FunctionAppl(PrefixOperation):
         self.symbol = func.head.symbol
         self.operand = args
 
-class Quote(PrefixOperation):
-    symbol = '!'
-    pure = 'quote'
+#Free abstract function (of a single variable at this time)
+class FreeFunction(Base_Symbol):
+
+    def __init__(self,symbol):
+        self.symbol = symbol
+        self.latex = '$%s(u)$' % symbol
+        self.args = str(symbol)
+
+    def _pure_(self):
+        #LHS
+        if self.side is 0:
+            return PureSymbol(self.symbol + '@_')(PureSymbol('u'))
+        #RHS
+        else:
+            return PureSymbol(self.symbol)(PureSymbol('u'))
 
 #vim: ai ts=4 sts=4 et sw=4
