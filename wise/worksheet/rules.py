@@ -8,6 +8,8 @@ import wise.worksheet.exceptions as exception
 from django.utils import importlib
 from django.conf import settings
 
+from wise.base.rules import PublicRule
+
 # A lookup table mapping previously run rules to their
 # Cython equivelents to avoid the cost of translation
 # in subsequent calls
@@ -66,28 +68,6 @@ def ApplyExternalRule( ref, *expr ):
         print 'Reduced Pure:', pure_expr
 
     return pyexpr
-
-class PublicRule:
-    po = None
-    ref = None
-
-    def __init__(self, pure_symbol_name):
-        self.ref = pure_symbol_name
-        #self.po = pure_wrap.objects[pure_symbol_name]
-        self.po = PureClosure(pure_symbol_name)
-        pure_wrap.objects[pure_symbol_name] = self.po
-
-        self.po.arity = pure_wrap.nargs(self.po)
-
-    @proeprty
-    def description(self):
-        return self.__doc__
-
-    def get_html(self):
-        interface_ui = self.template
-        objects = [obj.get_html() for obj in self.objects]
-        c = Context({'name':self.name, 'objects': objects})
-        return interface_ui.render(c)
 
 def is_rule(obj):
     return isinstance(obj,PublicRule)
