@@ -9,7 +9,6 @@ class PublicRule:
     ref = None
     arity = -1
     pure = None
-    desc = ''
 
     def __init__(self, pure_symbol_name):
         self.pure = pure_symbol_name
@@ -27,7 +26,7 @@ class PublicRule:
     def register(self):
         if self.pure:
 
-            if hasattr(self,'__doc__'):
+            if hasattr(self,'__doc__') and self.__doc__:
                 self.desc = trim_docstring(self.__doc__)
             else:
                 self.desc = 'No description available'
@@ -44,19 +43,28 @@ panel = {}
 # -------------------
 
 class eq_add(PublicRule):
-    """Add first argument to the equation given in the second
+    """Add second argument to the equation given in the first
     argument.
     """
 
     pure = 'eq_add'
 
 class eq_mul(PublicRule):
+    """Multiply second argument to the equation given in the first
+    argument.
+    """
     pure = 'eq_mul'
 
 class eq_div(PublicRule):
+    """Divide second argument to the equation given in the first
+    argument.
+    """
     pure = 'eq_div'
 
 class eq_sub(PublicRule):
+    """Subtract second argument to the equation given in the first
+    argument.
+    """
     pure = 'eq_sub'
 
 
@@ -74,6 +82,9 @@ panel['Relational'] = [
 # -------------------
 
 class algebra_normal(PublicRule):
+    """Subtract second argument to the equation given in the first
+    argument.
+    """
     pure = 'algebra_normal'
 
 class commute_elementary(PublicRule):
@@ -108,10 +119,24 @@ panel['Commutative Algebra'] = [
 # Rational 
 # -------------------
 
+class split_rational(PublicRule):
+    """
+   Seperates rational expressions according to the rules:
+   $$\\frac{a+b}{c} = \\frac{a}{c} + \\frac{b}{c}$$
+   """
+
+    pure = 'split_rational'
+
+class combine_rational(PublicRule):
+    pure = 'combine_rational'
+
+class seperate_rational(PublicRule):
+    pure = 'seperate_rational'
+
 panel['Rational'] = [
 
-        ('Split Rational'            , PublicRule('split_rational')),
-        ('Combine Ratiional'         , PublicRule('combine_rational')),
-        ('Seperate Ratiional'        , PublicRule('seperate_rational')),
+        ('Split Rational'            , split_rational),
+        ('Combine Ratiional'         , combine_rational),
+        ('Seperate Ratiional'        , seperate_rational),
 
     ]

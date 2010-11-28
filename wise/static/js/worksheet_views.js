@@ -23,6 +23,7 @@ var CellView = Backbone.View.extend({
   },
 
   events: {
+    "click .hide": "toggleAssums",
     "click .add": "add",
     "click .del": "destroy",
     "click .save": "saveCell",
@@ -42,11 +43,15 @@ var CellView = Backbone.View.extend({
 
 
   addExpression: function (expr_view) {
-    $(this.el).append(expr_view);
+    $('.equations',this.el).append(expr_view);
   },
 
   add: function () {
     new_line('eq', this.model.cid);
+  },
+
+  toggleAssums: function() {
+    $('.assumptions',this.el).toggle();
   },
 
   saveCell: function () {
@@ -154,11 +159,15 @@ var NodeView = Backbone.View.extend({
   },
 
   onHoverIn: function (e) {
+    // If the ctrl key is down the container selection mode
+    // is enabled an 'leaf' nodes are ignored
     if (e.ctrlKey && this.model.hasChildren()) {
         $(this.el).addClass('preselect');
         e.stopPropagation();
     }
 
+    // If the alt key is down the term selection mode
+    // is enabled an 'branch' nodes are ignored
     if(e.altKey && !this.model.hasChildren()) {
         $(this.el).addClass('preselect');
         e.stopPropagation();

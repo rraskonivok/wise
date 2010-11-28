@@ -37,6 +37,10 @@ def initialize():
 
     return TOP_CLASSES, translation_table
 
+#-------------------------------------------------------------
+# Non-mathematical Symbols
+#-------------------------------------------------------------
+
 class Placeholder(Term):
     '''A placeholder for substitution'''
 
@@ -56,31 +60,9 @@ class Placeholder(Term):
     def get_math(self):
         return '(Placeholder )'
 
-class Tuple(Term):
-    show_parenthesis = True
-    html = load_haml_template('tuple.tpl')
-    symbol = ','
-    pure = 'Tuple'
-
-    def __init__(self, x, *xs):
-        self.terms = [x] + list(xs)
-
-    def _pure_(self):
-        return self.po(*purify(self.terms))
-
-    def get_html(self):
-        objects = [o.get_html() for o in self.terms]
-
-        c = template.Context({
-            'id': self.id,
-            'math': self.get_math(),
-            'operand': objects,
-            'symbol': self.symbol,
-            'parenthesis': self.show_parenthesis,
-            'class': self.css_class or '',
-            })
-
-        return self.html.render(c)
+class Quote(PrefixOperation):
+    symbol = '!'
+    pure = 'quote'
 
 #class Text(Term):
 #    type = 'text'
@@ -111,9 +93,6 @@ class BaseSymbol(Term):
 
     def __init__(self,*args):
         pass
-
-    def _pure_(self):
-        return self.po()
 
 # Conviencence wrapper
 def Greek(symbol):
@@ -497,7 +476,6 @@ class Root(Operation):
 
         c = template.Context({
             'id': self.id,
-            'math': self.get_math(),
             'base': self.base.get_html(),
             'type': self.classname,
             'exponent': self.exponent.get_html() })
@@ -528,7 +506,6 @@ class Power(Operation):
 
         c = template.Context({
             'id': self.id,
-            'math': self.get_math(),
             'base': self.base.get_html(),
             'type': self.classname,
             'exponent': self.exponent.get_html()
@@ -553,7 +530,6 @@ class Rational(Term):
 
         c = template.Context({
             'id': self.id,
-            'math': self.get_math(),
             'num': self.num.get_html(),
             'den': self.den.get_html(),
             'parenthesis': self.show_parenthesis,
@@ -645,6 +621,31 @@ class DiracDelta(PrefixOperation):
 #-------------------------------------------------------------
 # Set Theory Functions
 #-------------------------------------------------------------
+
+class Tuple(Term):
+    show_parenthesis = True
+    html = load_haml_template('tuple.tpl')
+    symbol = ','
+    pure = 'Tuple'
+
+    def __init__(self, x, *xs):
+        self.terms = [x] + list(xs)
+
+    def _pure_(self):
+        return self.po(*purify(self.terms))
+
+    def get_html(self):
+        objects = [o.get_html() for o in self.terms]
+
+        c = template.Context({
+            'id': self.id,
+            'operand': objects,
+            'symbol': self.symbol,
+            'parenthesis': self.show_parenthesis,
+            'class': self.css_class or '',
+            })
+
+        return self.html.render(c)
 
 class Set(Term):
     show_parenthesis = True
@@ -761,11 +762,6 @@ class Gamma(PrefixOperation):
 class Zeta(PrefixOperation):
     symbol = '\\zeta'
     pure = 'RiemannZeta'
-
-
-class Quote(PrefixOperation):
-    symbol = '!'
-    pure = 'quote'
 
 #-------------------------------------------------------------
 # Generalized Functions

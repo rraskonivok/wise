@@ -150,16 +150,12 @@ html {
     margin-right: 3px;
 }
 
-#tooltip {
-	position: absolute;
-	z-index: 3000;
-	border: 1px solid #111;
-	background-color: #eee;
-	padding: 5px;
-	opacity: 0.85;
+body div.qtip div.content{
+   padding: 0;
+   margin: 0;
+   height: auto; min-height: auto;
+   width: auto; min-width: auto;
 }
-
-#tooltip h3, #tooltip div { margin: 0; }
 
 /* IE Sucks */
 button span.ui-icon {

@@ -928,11 +928,27 @@ function load_rules_palette() {
             $("#rules_palette").replace(data);
             $(".panel_category","#rules_palette").bind('click',function() {
                     $(this).next().toggle();
-                    // Only typeset when needed
-                    MathJax.Hub.Typeset($(this).next()[0]);
                     return false
             }).next().hide();
 
+            // Ugliness to make Tooltips appear properly
+            $('a[title]').qtip({ 
+                style: { 
+                    name: 'cream', 
+                    tip: true 
+                } ,
+                container: $('#rules_palette'),
+                position: {
+                  corner: {
+                    target: 'topRight',
+                    tooltip: 'bottomLeft', },
+                  adjust: {
+                    x: 0,
+                    y: 0,
+                    screen: true, },
+                },
+            });
+            // End Ugliness
         }
     });
 }

@@ -16,10 +16,12 @@ using ask;
 
 /* Evaluation */
 
-prefix evalb; // Evaluation to boolean
-prefix evali; // Evaluation to integer
-prefix evalf; // Evaluation to float
-prefix evals; // Evaluation to symbolic value
+prefix 1000 evalb; // Evaluation to boolean
+prefix 1000 evali; // Evaluation to integer
+prefix 1000 evalf; // Evaluation to float
+prefix 1000 evals; // Evaluation to symbolic value
+
+//def a::int/b::int = (rational a b);
 
 /* ..
    Algebraic Ordering
@@ -63,7 +65,6 @@ cmp x y = ~(cmp y x) otherwise ;
 
 //sump x+y = 1 ; 
 sump x = 0 ;
-
 
 /* :Name: ``base`` x
    :Arguments:
@@ -145,7 +146,7 @@ eq_add x y = x y;
    ------------ 
 */
 
-eq_sub (eq lhs rhs) x = eq (lhs+(Neg x)) (rhs+(Neg x));
+eq_sub (eq lhs rhs) x = eq (lhs+(-x)) (rhs+(-x));
 
 /* :Name: ``eq_mul`` x y
    :Arguments:
@@ -170,6 +171,7 @@ eq_mul (eq lhs rhs) x = eq (lhs*x) (rhs*x);
 */
 
 eq_div (eq lhs rhs) x = eq (lhs/x) (rhs/x);
+
 
 /*  ..
     Trigonometric Manipulation
@@ -206,7 +208,9 @@ atan2 y x = atan (rational y x) if numberp x && x > 0;
     ------------ 
 */
 
-//abs (mul x y) = mul (abs x) (abs y);
+expand_abs = reduce with
+    abs (mul x*y) = abs(x) * abs(y);
+end;
 
 /*  ..
     Complex Manipulation
@@ -225,7 +229,8 @@ atan2 y x = atan (rational y x) if numberp x && x > 0;
    ------------ 
 */
 
-Re (complex x y) = x;
+evals (real (complex x y)) = x; 
+evals (real x) = (Re x);
 
 /* :Name: ``Im`` x
    :Arguments:
@@ -239,10 +244,11 @@ Re (complex x y) = x;
    ------------ 
 */
 
-Im (complex x y) = y;
+evals (imag (complex x y)) = x; 
+evals (imag x) = (Re x);
 
 // Modulus 
-abs (complex x y) = Sqrt (x*x+y*y);
+abs (complex x y) = Sqrt (x^2+y^2);
 
 /* :Name: ``conj`` x
    :Arguments:
@@ -257,7 +263,7 @@ abs (complex x y) = Sqrt (x*x+y*y);
 */
 
 conj (complex x y) = complex x (-y);
-conj _ = _;
+conj x = conj x;
 
 /* :Name: ``simplify_complex`` x
    :Arguments:
@@ -369,20 +375,6 @@ algebra_normal X = (simplify_multiplication .
                     simplify_addition .
                     simplify_power .
                     simplify_rational) X;
-
-//algebra_normal X = reduce X
-//with
-//    X = simplify_multiplication X;
-//    X = simplify_addition X;
-//    X = simplify_power X;
-//    X = simplify_rational X;
-//
-//    mul x y = x * y if numberp x && numberp y;
-//    add x y = x + y if numberp x && numberp y;
-//    add x (Neg y) = x - y if numberp x && numberp y;
-//    add (Neg x) (Neg y) = Neg (x + y) if numberp x && numberp y;
-//    powr x y = x^y if numberp x && numberp y;
-//end;
 
 /* :Name: ``simplify_multiplication`` x
    :Arguments:
@@ -502,10 +494,14 @@ end;
    ------------ 
 */
 
-rational_to_power = reduce
-with
+rational_to_power = reduce with
     x/y = x*(y^(-1));
 end;
+
+/*
+   Rationals
+   ------------ 
+*/
 
 /* :Name: ``simplify_rational`` x
    :Arguments:
@@ -519,27 +515,12 @@ end;
    ------------ 
 */
 
-simplify_rational = reduce
-with
+simplify_rational = reduce with
     x/x = 1;
     0/x = 0;
     x/1 = x;
     (-x)/y = -(x/y);
 end;
-
-
-/*
-   Polynomials
-   ------------ 
-*/
-
-poly x [] = 0;
-poly x (c:cs) = c * x^(#cs) + (poly x cs);
-
-/*
-   Rationals
-   ------------ 
-*/
 
 /* :Name: ``combine_rational`` x
    :Arguments:
@@ -576,8 +557,6 @@ end;
    :See Also:
    ------------ 
 */
-
-def a::int/b::int = '(a/b);
 
 split_rational X = reduce X
 with
