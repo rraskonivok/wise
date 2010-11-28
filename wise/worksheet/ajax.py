@@ -87,7 +87,11 @@ def apply_rule(request):
         arg.idgen = uid
 
     # Change this to rules[rule]
-    ref = pure_wrap.objects[rule]
+    try:
+        ref = pure_wrap.objects[rule]
+    except KeyError:
+        raise Exception('Have reference to object %s, but no executable \
+                form.' % rule)
 
     # God this casting is ugly
     #try:

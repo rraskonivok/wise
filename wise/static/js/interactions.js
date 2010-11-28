@@ -9,7 +9,7 @@ function add_shift() {
     var root = get_root(node);
 
     if(node && root) {
-        apply_rule('add_to_both_sides', [root, node]);
+        apply_rule('eq_add', [root, node]);
     } else {
         error('Could not find toplevel expression');
     }
@@ -20,7 +20,7 @@ function sub_shift() {
     var root = get_root(node);
 
     if(node && root) {
-        apply_rule('sub_from_both_sides', [root, node]);
+        apply_rule('eq_sub', [root, node]);
     } else {
         error('Could not find toplevel expression');
     }
@@ -31,7 +31,7 @@ function mul_shift() {
     var root = get_root(node);
 
     if(node && root) {
-        apply_rule('mul_both_sides', [root, node]);
+        apply_rule('eq_mul', [root, node]);
     } else {
         error('Could not find toplevel expression');
     }
@@ -42,7 +42,7 @@ function div_shift() {
     var root = get_root(node);
 
     if(node && root) {
-        apply_rule('div_both_sides', [root, node]);
+        apply_rule('eq_div', [root, node]);
     } else {
         error('Could not find toplevel expression');
     }
@@ -90,7 +90,7 @@ function select_left_root(clear) {
         base_mode();
     }
 
-    select_term(get_lhs(start)); 
+    get_lhs(start).select();
 }
 
 function select_right_root(clear) {
@@ -100,7 +100,7 @@ function select_right_root(clear) {
         base_mode();
     }
 
-    select_term(get_rhs(start)); 
+    get_rhs(start).select(); 
 }
 
 // ( Placeholder, Placeholder , ... , Expression )
@@ -110,7 +110,8 @@ function placeholder_substitute() {
         var last = selection.last();
 
         if(last.get('toplevel')) {
-            error('Cannot substitute toplevel element into expression');
+            //error('Cannot substitute toplevel element into expression');
+            last.errorFlash();
             return;
         }
 

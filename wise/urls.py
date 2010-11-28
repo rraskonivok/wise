@@ -10,6 +10,7 @@ urlpatterns = patterns('',
      (r'^users$', 'wise.worksheet.views.users'),
 #     (r'^test$', 'wise.worksheet.views.test'),
      (r'^log$', 'wise.worksheet.views.log'),
+     (r'^dict$', 'wise.worksheet.views.dict'),
      (r'^translate$', 'wise.worksheet.views.translate'),
 
      # Heartbeat

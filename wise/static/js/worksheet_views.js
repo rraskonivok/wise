@@ -134,6 +134,7 @@ var NodeView = Backbone.View.extend({
     _.bindAll(this, 'render', 'make', 'onClick');
   },
 
+
   onClick: function (e) {
     // If the ctrl key is down the container selection mode
     // is enabled an 'leaf' nodes are ignored
@@ -153,11 +154,14 @@ var NodeView = Backbone.View.extend({
   },
 
   onHoverIn: function (e) {
-    if (e.ctrlKey) {
-      if (this.model.hasChildren() || this.highlightEverything) {
+    if (e.ctrlKey && this.model.hasChildren()) {
         $(this.el).addClass('preselect');
         e.stopPropagation();
-      }
+    }
+
+    if(e.altKey && !this.model.hasChildren()) {
+        $(this.el).addClass('preselect');
+        e.stopPropagation();
     }
   },
 

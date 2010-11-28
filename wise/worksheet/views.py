@@ -79,6 +79,8 @@ def home(request):
 def users(request):
     return render_to_response('users.html',{'users':User.objects.all()})
 
+# Debugging Stuff
+
 @login_required
 def log(request):
     log = open('session.log').read()
@@ -87,66 +89,18 @@ def log(request):
     return render_to_response('log.html', {'log': log_html})
 
 @login_required
+@errors
+def dict(request):
+    ''' Dump the translation dictionary to a JSON object, for
+    debugging purposes '''
+    return HttpResponse(str(pure_wrap.objects))
+    #return JsonResponse(pure_wrap.objects)
+
+# End Debugging Stuff
+
+@login_required
 def translate(request):
     return render_to_response('translate.html')
-
-#---------------------------
-# Rules --------------------
-#---------------------------
-
-@login_required
-@errors
-def rules_list(request):
-    try:
-        rulesets = RuleSet.objects.filter(owner=request.user)
-    except ObjectDoesNotExist:
-        pass
-
-    return render_to_response('rules.html', {'rulesets': rulesets})
-
-@login_required
-@errors
-def rule(request, rule_id):
-    ruleset = RuleSet.objects.get(id=rule_id)
-
-    if ( ruleset.owner.id != request.user.id ):
-        return HttpResponse('You do not have permission to access this worksheet.')
-
-    try:
-        rules = Rule.objects.filter(set=rule_id).order_by('index')
-    except ObjectDoesNotExist:
-        return HttpResponse('No rules found in ruleset.')
-
-    uid = uidgen()
-
-    json_cells = []
-    html_cells = []
-
-    json_cell = []
-    html_eq = []
-
-    for rule in rules:
-        etree = parse_sexp(rule.sexp,uid)
-
-        #Copy rule attributes from database
-        etree.annotation = rule.annotation
-        etree.public = rule.public
-        etree.confluent = rule.confluent
-
-        html_eq.append(html(etree))
-        json_cell.append(etree.json_flat())
-
-    html_cells.append(cellify(''.join(html_eq),0))
-    json_cells.append(json_cell)
-
-    return render_to_response('worksheet.html', {
-        'title': ruleset.name,
-        'equations': html_cells,
-        'username': request.user.username,
-        'namespace_index': uid.next()[3:],
-        'cell_index': 1,
-        'json_cells': json.dumps(json_cells),
-        })
 
 @login_required
 @errors

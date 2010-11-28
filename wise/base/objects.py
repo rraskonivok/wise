@@ -107,7 +107,7 @@ class Tuple(Term):
 # Nullary / Symbol Type Objects
 #-------------------------------------------------------------
 
-class Base_Symbol(Term):
+class BaseSymbol(Term):
 
     def __init__(self,*args):
         pass
@@ -119,7 +119,7 @@ class Base_Symbol(Term):
 def Greek(symbol):
     return Variable(symbol)
 
-class Variable(Base_Symbol):
+class Variable(BaseSymbol):
     '''A free variable'''
 
     assumptions = None
@@ -128,15 +128,14 @@ class Variable(Base_Symbol):
 
     def __init__(self,symbol):
         self.symbol = symbol
-        self.latex = '%s' % greek_lookup(symbol)
-        self.args = str(symbol)
+        self.latex = greek_lookup(symbol)
+        self.args = [str(symbol)]
 
     def _pure_(self):
         return PureSymbol(self.symbol)
 
     def _openmath_(self):
         return self.symbol
-
 
 class Numeric(Term):
     numeric_type = 'float'
@@ -169,7 +168,6 @@ class Numeric(Term):
             'id': self.id,
             'class': self.css_class or '',
             'latex':self.latex,
-            'math': self.get_math(),
             'type': self.classname,
         })
 
@@ -299,7 +297,7 @@ class Constant(Term):
         self.args = self.representation.args
         self.latex = self.representation.latex
 
-class ImaginaryUnit(Base_Symbol):
+class ImaginaryUnit(BaseSymbol):
     '''This symbol represents the square root of -1.'''
 
     latex = 'i'
@@ -307,13 +305,13 @@ class ImaginaryUnit(Base_Symbol):
     pure = 'I'
     args = "'i'"
 
-class Pi(Base_Symbol):
+class Pi(BaseSymbol):
     latex = '\pi'
     symbol = '\pi'
     pure = 'Pi'
     args = "'\pi'"
 
-class Infinity(Base_Symbol):
+class Infinity(BaseSymbol):
     latex = '\\infty'
     symbol = 'inf'
     pure = 'inf'
@@ -782,7 +780,7 @@ class FunctionAppl(PrefixOperation):
         self.operand = args
 
 #Free abstract function (of a single variable at this time)
-class FreeFunction(Base_Symbol):
+class FreeFunction(BaseSymbol):
 
     def __init__(self,symbol):
         self.symbol = symbol

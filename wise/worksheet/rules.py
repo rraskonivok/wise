@@ -10,11 +10,6 @@ from django.conf import settings
 
 from wise.base.rules import PublicRule
 
-# A lookup table mapping previously run rules to their
-# Cython equivelents to avoid the cost of translation
-# in subsequent calls
-rulecache = {}
-
 packages = {}
 rulesets = {}
 ROOT_MODULE = 'wise'
@@ -53,7 +48,7 @@ def ApplyExternalRule( ref, *expr ):
     #     rewrite rules
     # end;
 
-    pexpr = map(translate.python_to_pure,expr)
+    pexpr = map(translate.python_to_pure, expr)
 
     if settings.DEBUG:
         print 'Applying Rule:', ref, '\n--'
@@ -72,6 +67,7 @@ def ApplyExternalRule( ref, *expr ):
 def is_rule(obj):
     return isinstance(obj,PublicRule)
 
+# And so begin 4 nested for-loops, yah....
 for pack in settings.INSTALLED_MATH_PACKAGES:
     try:
         path = '.'.join([ROOT_MODULE,pack,'rules'])
@@ -81,6 +77,10 @@ for pack in settings.INSTALLED_MATH_PACKAGES:
             # Merge dictionary into main
             if name == 'panel':
                 rulesets.update(symbol)
+
+            # Register the rule in the translation dictionary
+            if hasattr(symbol,'register'):
+                symbol.register()
 
     except ImportError:
         raise exception.IncompletePackage(pack,'rules.py')

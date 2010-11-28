@@ -38,20 +38,6 @@ $(document).ajaxStop(function () {
     $('#ajax_loading').hide();
 });
 
-// Hook for ctrl key
-var ctrlPressed = false;
-
-$(window).keydown(function(evt) {
-  if (evt.which == 17) { // ctrl
-    ctrlPressed = true;
-  }
-}).keyup(function(evt) {
-  if (evt.which == 17) { // ctrl
-    ctrlPressed = false;
-  }
-});
-
-
 ///////////////////////////////////////////////////////////
 // Utilities
 ///////////////////////////////////////////////////////////
@@ -564,7 +550,8 @@ function use_infix(code) {
     }
 
     if(selection.at(0).get('toplevel')) {
-        error('Cannot rewrite toplevel element');
+//        error('Cannot rewrite toplevel element');
+        selection.at(0).errorFlash();
         return;
     }
 

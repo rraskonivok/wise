@@ -7,7 +7,7 @@ div#rules_palette.palette style="display:none"
 
             li.panel_frame
                 {% for rule in rules %}
-                    a.ruletoplevel href="javascript:apply_rule('{{rule.1.ref}}',null);"
+                    a.ruletoplevel href="javascript:apply_rule('{{rule.1.pure}}',null);" title="{{rule.1.desc}}"
                         {{rule.0}}
                 {% endfor %}
         {% endfor %}

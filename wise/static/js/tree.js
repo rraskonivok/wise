@@ -359,6 +359,10 @@ var Node = Backbone.Model.extend({
         // to pushed to the server.
     },
 
+    errorFlash: function() {
+      $(this.view.el).effect("highlight",{color: '#E6867A'},1000);
+    },
+
 
 });
 
