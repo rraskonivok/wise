@@ -8,15 +8,24 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
-from wise.base.cell import Cell
-from wise.base.term import Term
+from math import modf
 
-from wise.base.toplevel import Equation, Definition, Function
+# Subpackages
+# -----------
+# * cell.py
+# * term.py
+# * toplevel.py
+# * operations.py
+
+from wise.base.cell import Cell
+from wise.base.term import Term, Placeholder, ph
+
+from wise.base.toplevel import Relation, Equation, Definition, \
+Function
+
 from wise.base.operations import PrefixOperation, InfixOperation, \
 PostfixOperation, SupOperation, SubOperation, OutfixOperation, \
 Operation
-
-from math import modf
 
 from wise.worksheet.utils import render_haml_to_response
 from wise.translators.pure_wrap import PureSymbol, PureInt, PureDouble, ProtoRule, p2i, i2p
@@ -29,7 +38,7 @@ from worksheet.utils import *
 from django import template
 
 def initialize():
-    TOP_CLASSES = [Term, Equation]
+    TOP_CLASSES = [Term, Relation]
 
     translation_table = {'num' : Numeric,
                          'var' : Variable,
@@ -40,25 +49,6 @@ def initialize():
 #-------------------------------------------------------------
 # Non-mathematical Symbols
 #-------------------------------------------------------------
-
-class Placeholder(Term):
-    '''A placeholder for substitution'''
-
-    css_class = 'placeholder'
-    html = load_haml_template('placeholder.tpl')
-    pure = 'ph'
-    latex = '$\\text{Placeholder}$'
-
-    def __init__(self):
-        pass
-
-    def _pure_(self):
-        # If there is a placeholder left in an expression throw
-        # an error and abort the pure translation.
-        raise exception.PlaceholderInExpression()
-
-    def get_math(self):
-        return '(Placeholder )'
 
 class Quote(PrefixOperation):
     symbol = '!'
@@ -790,5 +780,24 @@ class FreeFunction(BaseSymbol):
         #RHS
         else:
             return PureSymbol(self.symbol)(PureSymbol('u'))
+
+#-------------------------------------------------------------
+# Assumptions
+#-------------------------------------------------------------
+
+class Assumption(PrefixOperation):
+    html = load_haml_template('assumption.tpl')
+    symbol = '?'
+    pure = 'assum'
+
+class AssumptionPrototype(Assumption):
+    pure = None
+
+    def __init__(self):
+        Assumption.__init__(self, ph())
+
+    @property
+    def classname(self):
+        return 'Assumption'
 
 #vim: ai ts=4 sts=4 et sw=4

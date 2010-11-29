@@ -83,10 +83,6 @@ class Term(object):
         raise Exception('Anonymous Term was caught with arguments ' + (args,kwargs))
 
     @property
-    def classname(self):
-        return self.__class__.__name__
-
-    @property
     def descriptio(self):
         return self.__doc__
 
@@ -119,6 +115,13 @@ class Term(object):
 
         return self.html.render(c)
 
+    # The classname is used (by default) as the head of the sexp,
+    # you can change this to any arbitrary value if you want the
+    # object to mimic another type for example
+    @property
+    def classname(self):
+        return self.__class__.__name__
+
     @property
     def math(self):
         return self.get_math()
@@ -144,7 +147,7 @@ class Term(object):
         elif len(self.terms) == 1:
             return msexp(self, self.terms)
 
-        # Terms with primitve arguments 
+        # Terms with primitve/atomic arguments 
         # Example: 
         #       (Variable 'zeta')
         else:
@@ -152,8 +155,7 @@ class Term(object):
 
     def json_flat(self,lst=None):
         if not lst:
-            lst = []
-
+            lst = [] 
         lst.append({"id": self.id,
                     "type": self.classname,
                     "toplevel": False,
@@ -193,4 +195,43 @@ class Term(object):
             term.map_recursive(f)
         f(self)
         return self
+
+    def uid_walk(self, uid):
+        """Walk the expression tree handing out uids to anyone
+        who needs one
+        """
+        if not self.id:
+            self.id = uid.next()
+
+        for term in self.terms:
+            term.uid_walk(uid)
+        return self
+
+class Placeholder(Term):
+    '''A placeholder for substitution'''
+
+    css_class = 'placeholder'
+    html = load_haml_template('placeholder.tpl')
+    pure = 'ph'
+    latex = '$\\text{Placeholder}$'
+
+    def __init__(self):
+        pass
+
+    def _pure_(self):
+        # If there is a placeholder left in an expression throw
+        # an error and abort the pure translation.
+        raise exception.PlaceholderInExpression()
+
+    def get_math(self):
+        return '(Placeholder )'
+
+class ph(Placeholder):
+    """Placeholder prototype"""
+    def __init__(self):
+        Placeholder.__init__(self)
+
+    @property
+    def classname(self):
+        return 'Placeholder'
 

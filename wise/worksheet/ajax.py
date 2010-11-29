@@ -15,7 +15,8 @@ import wise.translators.pure_wrap as pure_wrap
 from django import template
 from django.shortcuts import render_to_response
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponse, HttpResponseRedirect, Http404
+from django.http import HttpResponse, HttpResponseRedirect, \
+Http404
 
 # uidgen is imported from utils
 from wise.worksheet.utils import *
@@ -24,11 +25,13 @@ from wise.worksheet import transforms, rules
 import wise.worksheet.exceptions as exception
 
 from wise.base.cell import Cell as PyCell
+from wise.base.objects import AssumptionPrototype
 
 CACHE_INTERVAL = 30*60 # 5 Minutes
 
 def heartbeat(request):
-    response = HttpResponse('1')
+    # Server is up and life is good
+    response = HttpResponse(status=200)
     response['Cache-Control'] = 'no-cache'
     return response
 
@@ -297,38 +300,6 @@ def apply_transform(request):
 @errors
 @ajax_request
 @cache_page(CACHE_INTERVAL)
-def save_workspace(request,eq_id):
-    try:
-        workspace = Workspace.objects.get(id=eq_id)
-    except ObjectDoesNotExist:
-        return JsonResponse({'error':'Workspace is missing'})
-
-    cells = Cell.objects.filter(workspace=eq_id)
-
-    for cell in cells:
-        cell.delete()
-
-    #TODO this is crazy dangerous
-    indexes = len(request.POST)
-
-    for i in xrange(indexes):
-        newcell = Cell(workspace=workspace,index=0)
-        newcell.save()
-        #Querydicts are not standard dicts... keep repeating this
-        math, annotation = request.POST.getlist(''.join([str(i),'[]']))
-
-        #TODO: Do some fancy string parsing to transform [[ x^2 ]] -> $$ x^2 $$
-        Expression(code=math,
-                annotation=annotation,
-                cell=newcell,
-                index=i).save()
-
-    return JsonResponse({'success': True})
-
-@login_required
-@errors
-@ajax_request
-@cache_page(CACHE_INTERVAL)
 def new_line(request):
     namespace_index = request.POST.get('namespace_index')
 
@@ -349,7 +320,11 @@ def new_line(request):
     elif newtype == u'func':
         new = translate.parse_sexp('(Function (Placeholder) (Placeholder) (Placeholder))',uid)
     elif newtype == u'eq':
-        new = translate.parse_sexp('(Equation (Placeholder) (Placeholder))',uid)
+        new = EquationPrototype()
+        new.uid_walk(uid)
+    elif newtype == u'assum':
+        new = AssumptionPrototype()
+        new.uid_walk(uid)
     else:
         error('invalid type of inline')
     newline_html = html(new)

@@ -46,6 +46,10 @@ var CellView = Backbone.View.extend({
     $('.equations',this.el).append(expr_view);
   },
 
+  addAssumption: function (expr_view) {
+    $('.assumptions',this.el).append(expr_view);
+  },
+
   add: function () {
     new_line('eq', this.model.cid);
   },

@@ -85,11 +85,16 @@ var Cell = Backbone.Model.extend({
         });
 
         this._expressions = [];
+        this._assumptions = [];
     },
 
     addExpression: function(exs) {
         exs.set({index: this._expressions.length});
         this._expressions.push(exs);
+    },
+
+    addAssumption: function(exs) {
+        this._assumptions.push(exs);
     },
 
     saveCell: function() {
@@ -568,11 +573,11 @@ function get_root(node) {
 
 // Equation Traversal
 function get_lhs(node) {
-    return get_root(node).children[0].children[0];
+    return get_root(node).children[0];
 }
 
 function get_rhs(node) {
-    return get_root(node).children[1].children[0];
+    return get_root(node).children[1];
 }
 
 // Traverse the tree upwards until it find a node matching

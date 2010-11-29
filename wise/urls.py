@@ -13,11 +13,11 @@ urlpatterns = patterns('',
      (r'^dict$', 'wise.worksheet.views.dict'),
      (r'^translate$', 'wise.worksheet.views.translate'),
 
-     # Heartbeat
-     (r'^hb$', 'wise.worksheet.ajax.heartbeat'),
-
      # REST API  uses django-piston
      (r'^api/', include('wise.api.urls')),
+
+     # Heartbeat
+     (r'^hb$', 'wise.worksheet.ajax.heartbeat'),
 
      # Authentication
      (r'^accounts/login/$', 'wise.worksheet.views.account_login'),
@@ -25,7 +25,6 @@ urlpatterns = patterns('',
 
      # Worksheet
      (r'^ws/(?P<eq_id>\d+)/$', 'wise.worksheet.views.ws'),
-     (r'^ws/(?P<eq_id>\d+)/save/$', 'wise.worksheet.ajax.save_workspace'),
      (r'^palette/$', 'wise.worksheet.views.palette'),
      (r'^rule_request/$', 'wise.worksheet.ajax.rules_request'),
      (r'^new_workspace/$', 'wise.worksheet.views.new_workspace'),
@@ -52,7 +51,7 @@ urlpatterns = patterns('',
 
      # TODO: Firefox 4 has some issue with OpenType fonts being loaded 
      # from /static when the current page is /ws since it is one level 
-     # up... still looking into how to fix this.
+     # up which violates it's same origin policy
      (r'^ws/mathjax/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT + '/mathjax'}),
 
      (r'^img/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT + '/img'}),

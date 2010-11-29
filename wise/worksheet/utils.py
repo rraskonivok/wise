@@ -152,7 +152,7 @@ def unencode(s):
 
 def maps(func, obj):
     ''' Idempotent form of map, which behaves like you would
-    expect in most functional languages:
+    expect in Python 3 or any sane functional language:
 
     maps f nil = nil
     maps f x = [f x]

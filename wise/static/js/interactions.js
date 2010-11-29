@@ -6,12 +6,13 @@ function show_pnths() {
 
 function add_shift() {
     var node = selection.at(0);
+    node.errorFlash();
     var root = get_root(node);
 
     if(node && root) {
         apply_rule('eq_add', [root, node]);
     } else {
-        error('Could not find toplevel expression');
+        node.errorFlash();
     }
 }
 
@@ -139,18 +140,6 @@ function definition_apply() {
             apply_def(fst,[snd]);
         }
     }
-}
-
-function select_equation(id) {
-    select_term(NODES.getByCid(id));  
-}
-
-function select_lhs(id) {
-    select_term(NODES.getByCid(id).children[0].children[0]);
-}
-
-function select_rhs(id) {
-    select_term(NODES.getByCid(id).children[1].children[0]);  
 }
 
 function remove_element() {

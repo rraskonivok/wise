@@ -20,8 +20,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Initalization
 ///////////////////////////////////////////////////////////
 
-var a = $.manageAjax.create('queue', {queue: true});
-
 $(document).ajaxError(function() {
     error("Error connecting to server");
 });
@@ -237,6 +235,10 @@ function dialog(text) {
     });
 }
 
+///////////////////////////////////////////////////////////
+// Stretchy Operators
+///////////////////////////////////////////////////////////
+
 ap = [];
 
 function resize_all() {
@@ -307,10 +309,13 @@ function heartbeat() {
       url: '/hb',
       dataType: 'html',
       type: 'GET',
-      success: function(data) {
-        if(!data) {
-            error('Server is not responding.');
-        }
+      success: function(response) {
+      },
+      timeout: function() {
+        error("Not responding");
+      },
+      error: function() {
+        error("Not responding");
       },
     }); 
 }
@@ -325,7 +330,9 @@ function apply_rule(rule, operands) {
     if (!operands) {
 
         if(selection.isEmpty()) {
-            error("Selection is empty.");
+            //error("Selection is empty.");
+            $('#selectionlist').effect("highlight",{color: '#E6867A'},500);
+
             return;
         }
         //Fetch the sexps for each of the selections and pass it
@@ -395,7 +402,6 @@ function apply_rule(rule, operands) {
                 if (is_toplevel) {
 
                     nsym = preimage.dom().replace(response.new_html[i]).hide();
-                    $('.equation button','#workspace').parent().buttonset();
 
                     // !!!!!!!!!!!!!!!!
                     // Swap the nodes reference in its Cell so
@@ -459,7 +465,8 @@ function apply_def(def, selections) {
 
         //Fetch the math for each of the selections
         if(selection.count == 0) {
-            error("Selection is empty.");
+//            error("Selection is empty.");
+            $('#selectionlist').effect("highlight",{color: '#E6867A'},500);
             return;
         }
 
@@ -515,7 +522,6 @@ function apply_def(def, selections) {
                         'apply_def'
                     );
 
-                    $('.equation button','#workspace').parent().buttonset();
                 } else {
 
                     graft_tree_from_json(
@@ -545,7 +551,7 @@ function use_infix(code) {
     // since Pure can execute arbitrary shell commands
 
     if(selection.isEmpty()) {
-        error('No object selected');
+        $('#selectionlist').effect("highlight",{color: '#E6867A'},500);
         return;
     }
 
@@ -604,7 +610,9 @@ function use_infix(code) {
 
                     if (is_toplevel) {
                         if(!obj.toplevel) {
-                            error('Cannot replace toplevel node with non-toplevel node');
+                            //error('Cannot replace toplevel node with non-toplevel node');
+                            obj.errorFlash();
+                            //return;
                         }
                         nsym = obj.dom().replace(data.new_html[i]);
 
@@ -776,7 +784,54 @@ function new_line(type, index) {
         }
 
         NAMESPACE_INDEX = data.namespace_index;
-        $('.equation button','#workspace').parent().buttonset();
+    }, 'json')
+}
+
+function new_assum(type, index) {
+    var data = {};
+    data.namespace_index = NAMESPACE_INDEX;
+    data.cell_index = CELL_INDEX;
+    data.type = type;
+
+    if(index != undefined) {
+        active_cell = WORKSHEET.getByCid(index);
+    }
+
+    if(!active_cell) {
+        error("Select a cell to insert into");
+        return;
+    }
+
+    // If the cell new then commit it to the database before we
+    // so that all foreign keys on expression objects will
+    // resolve properly
+    if(active_cell.isNew()) {
+        active_cell.save();
+    }
+
+    $.post("/cmds/new_line/", data, function (data) {
+
+        if (data.error) {
+            error(data.error);
+        }
+
+        if (data.new_html) {
+            new_expr_html = $(data.new_html);
+            active_cell.view.addAssumption(new_expr_html);
+
+            // Initiale the new expression in the term db
+            var eq = build_tree_from_json(data.new_json);
+
+            eq.cell = active_cell;
+            eq.set({cell: active_cell.id});
+            active_cell.addExpression(eq);
+
+            // Render the html of the new expression
+            mathjax_typeset(new_expr_html);
+
+        }
+
+        NAMESPACE_INDEX = data.namespace_index;
     }, 'json')
 }
 

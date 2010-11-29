@@ -44,6 +44,8 @@ ROOT_MODULE = 'wise'
 packages = {}
 objects = {}
 
+OBJECTS = objects
+
 def use(package, library):
     print 'using ' + '::'.join([package, library])
     env.eval('using ' + '::'.join([package, library]))
@@ -79,7 +81,10 @@ if settings.PRECOMPILE:
 def generate_pure_objects(root):
     if root.pure:
         #print 'Building Cython symbol for ... ', root.pure
-        root.po = PureSymbol(root.pure)
+        if root.pure not in OBJECTS:
+            root.po = PureSymbol(root.pure)
+        else:
+            print 'Namespace collision'
 
     for cls in root.__subclasses__():
         generate_pure_objects(cls)
