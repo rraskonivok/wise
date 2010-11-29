@@ -168,41 +168,12 @@ def ws(request, eq_id):
     return render_to_response('worksheet.html', {
         'title': ws.name,
         'ws_id': ws.id,
-        'equations': [html(cell) for cell in py_cells],
+        'cells': [html(cell) for cell in py_cells],
         'username': request.user.username,
         'namespace_index': uid.next()[3:],
         'cell_index': len(cells),
         'json_cells': json.dumps([json_flat(cell) for cell in py_cells]),
         })
-
-@login_required
-@errors
-def del_workspace(request):
-    #TODO this is crazy dangerous
-    for id,s in request.POST.iteritems():
-        Expression.objects.filter(workspace=id).delete()
-        Workspace.objects.get(id=id).delete()
-    return HttpResponseRedirect('/home')
-
-@login_required
-@errors
-def new_workspace(request):
-    name = request.POST.get('name')
-    init = request.POST.get('init')
-
-    new_workspace = Workspace(name=name,owner=request.user,public=False)
-    new_workspace.save()
-    new_id = new_workspace.id
-
-    if init == 'Equation':
-        RHS = mathobjects.RHS(mathobjects.Placeholder())
-        LHS = mathobjects.LHS(mathobjects.Placeholder())
-        equation = mathobjects.Equation(LHS,RHS).get_math()
-    else:
-        equation = mathobjects.Placeholder().get_math()
-
-    init_eq = Expression(code=equation, workspace=new_workspace).save()
-    return HttpResponseRedirect('/home')
 
 #---------------------------
 # Palette ------------------

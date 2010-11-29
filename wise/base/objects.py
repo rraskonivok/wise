@@ -112,6 +112,7 @@ class Numeric(Term):
 
         self.number = float(number)
 
+        #TODO: wtf?
         if self.number == 1.0:
             self.number = 1
 
@@ -789,6 +790,21 @@ class Assumption(PrefixOperation):
     symbol = '?'
     pure = 'assum'
     toplevel = True
+
+    def json_flat(self,lst=None):
+        if not lst:
+            lst = []
+
+        lst.append({'id': self.id,
+                    'type': self.classname,
+                    'toplevel': self.toplevel,
+                    'sid': self.sid,
+                    'children': [term.id for term in self.terms]})
+
+        for term in self.terms:
+            term.json_flat(lst)
+
+        return lst
 
 class AssumptionPrototype(Assumption):
     pure = None

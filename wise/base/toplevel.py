@@ -83,7 +83,7 @@ class Relation(object):
             'symbol': self.symbol,
             'classname': self.classname,
             'css_class': self.css_class,
-            })
+        })
 
         return self.html.render(c)
 

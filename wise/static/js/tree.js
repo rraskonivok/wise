@@ -57,7 +57,6 @@ var Worksheet = Backbone.Collection.extend({
     this.id = WORKSHEET_ID;
     this.children = [];
     this._parent = null;
-    //        this.bind('add',function() { alert('cow') });
   },
 
   saveAll: function () {
@@ -164,7 +163,7 @@ var Cell = Backbone.Model.extend({
 
 function build_tree_from_json(json_input, top_class) {
 
-  //TODO: removet this ugly hack
+  //TODO: remove this ugly hack
   if (!top_class) {
     top_class = ExpressionTree;
   }
@@ -578,10 +577,13 @@ function graft_toplevel_from_json(old_node, json_input, transformation) {
   old_node.swapNode(newtree.root);
   newtree.set(old_node.attributes);
 
+  //TODO: this is causing assumption grafted at the toplevel to
+  //break
   cell._expressions[old_index] = newtree;
   newtree.set({
     index: old_index
   });
+
   newtree.cell = old_node.cell;
 
   return newtree;
