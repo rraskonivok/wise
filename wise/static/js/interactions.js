@@ -155,7 +155,7 @@ function remove_element() {
 
             // If the root has a correspondance in the database
             // then destroy it
-            if(root.isNew() == false) {
+            if(!root.isNew()) {
                 root.destroy();
             }
 
@@ -176,3 +176,7 @@ function subs(obj) {
     }
 }
 
+function save_worksheet(e) {
+    WORKSHEET.saveAll();
+    e.preventDefault();
+}

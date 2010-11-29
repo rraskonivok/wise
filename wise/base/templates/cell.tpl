@@ -1,7 +1,7 @@
 div#cell{{index}}.cell
     div.assumptions
-        {% for as in assms %}
-            {{ as }}
+        {% for asm in assumptions %}
+            {{ asm }}
         {% endfor %}
         
     div.equations
@@ -15,6 +15,6 @@ div#cell{{index}}.cell
             .save.ui-icon.ui-icon-disk
                 PASS
 
-        {% for eq in eqs %}
-            {{ eq }}
+        {% for ex in expressions %}
+            {{ ex }}
         {% endfor %}

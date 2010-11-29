@@ -5,6 +5,8 @@ from worksheet.utils import load_haml_template
 from django import template
 from django.utils.safestring import SafeUnicode
 
+from worksheet.utils import *
+
 class Cell(object):
     html = load_haml_template('cell.tpl')
 
@@ -13,8 +15,9 @@ class Cell(object):
     cid = None
     css_class = None
 
-    def __init__(self, eqs):
-        self.eqs = eqs
+    def __init__(self, eqs, asms):
+        self.expressions = eqs
+        self.assumptions = asms
 
     def _pure_(self):
         # This is not defeind explicityly for the reason that inheriting
@@ -34,7 +37,8 @@ class Cell(object):
             'id': self.id,
             'index': self.index,
             'cid': self.cid,
-            'eqs': [eq.get_html() for eq in self.eqs],
+            'expressions': [eq.get_html() for eq in self.expressions],
+            'assumptions': [asm.get_html() for asm in self.assumptions],
             'class': self.css_class,
             })
 
@@ -45,13 +49,12 @@ class Cell(object):
             lst = []
 
         lst.append({'index': self.index,
-                    #'assumptions': None,
+                    'assumptions': [asm.id for asm in self.assumptions],
                     'id' : self.id,
                     'cid': 'cell'+str(self.index),
-                    'eqs': [eq.id for eq in self.eqs]})
+                    'eqs': [eq.id for eq in self.expressions]})
 
-        #for term in self.eqs:
-        #    term.json_flat(lst)
-        lst.append([eq.json_flat() for eq in self.eqs])
+        lst.append([eq.json_flat() for eq in self.expressions])
+        lst.append([asm.json_flat() for asm in self.assumptions])
 
         return lst

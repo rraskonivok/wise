@@ -8,14 +8,15 @@
     margin-bottom: 0px !important;
 }
 
+
+/* ------------------- 
+   Toplevel Elements 
+   ----------------- */
+
 /* Spacing between lines */
 .equation td {
     padding-top: 0.5em;
     padding-bottom: 0.5em;
-}
-
-.equation > .ui-buttonset {
-    padding-right: 1em;
 }
 
 .equation > .equalsign {
@@ -23,12 +24,13 @@
     padding-left: 1em;
 }
 
-.equation button {
-    float: left;
-}
-
 .equation {
     width: 100%;
+}
+
+.assumption {
+    clear: right;
+    padding-right: 25px;
 }
 
 .num {

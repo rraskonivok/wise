@@ -35,7 +35,8 @@ from django.contrib.auth.models import User
 
 from wise.worksheet.utils import *
 from wise.worksheet.forms import LoginForm
-from wise.worksheet.models import Workspace, Expression, Cell
+from wise.worksheet.models import Workspace, Expression, Cell, \
+Assumption
 from wise.base.cell import Cell as PyCell
 
 CACHE_INTERVAL = 30*60 # 5 Minutes
@@ -123,39 +124,44 @@ def ws(request, eq_id):
 
     py_cells = []
 
+    # Process Cells
+    # -------------
     for index,cell in enumerate(cells):
         html_eq = []
 
-        try:
-            eqs = Expression.objects.filter(cell=cell).order_by('index')
-        except ObjectDoesNotExist:
-            return HttpResponse('Cell is empty.')
+        # Process Cell Contents
+        # ---------------------
+        eqs = Expression.objects.filter(cell=cell).order_by('index')
+        asms = Assumption.objects.filter(cell=cell).order_by('index')
 
         top_nodes = []
+        top_asms = []
 
         for eq in eqs:
             # Build up the object from the sexp in the database
             etree = parse_sexp(eq.sexp, uid)
             etree.sid = eq.id
             etree.annotation = eq.annotation
-
             top_nodes.append(etree)
 
-            #html_eq.append(html(etree))
-            #json_cell.append(etree.json_flat())
+        for asm in asms:
+            # Build up the object from the sexp in the database
+            etree = parse_sexp(asm.sexp, uid)
+            etree.sid = asm.id
+            etree.annotation = asm.annotation
+            top_asms.append(etree)
 
         # Build the cell and link it to the top nodes of the
         # expressions inside it.
         db_id = cell.id
 
         #TODO: overloads cell from in loop ^^^
-        cell = PyCell(top_nodes);
+        cell = PyCell(top_nodes, top_asms)
         cell.index = index;
-        cell.cid = 'cell' + str(index);
+        cell.cid = 'cell' + str(index)
 
-        # The database id of the cell
+        # Initialize the Cell
         cell.id = db_id
-
         py_cells.append(cell)
         json_cells.append(cell)
 

@@ -2,7 +2,8 @@ from piston.handler import BaseHandler, AnonymousBaseHandler
 from piston.utils import rc, require_mime, require_extended
 
 from django.core.exceptions import ObjectDoesNotExist
-from wise.worksheet.models import Cell, Workspace, Expression
+from wise.worksheet.models import Cell, Workspace, Expression, \
+Assumption
 
 class CellHandeler(BaseHandler):
     model = Cell
@@ -127,6 +128,65 @@ class ExpressionHandeler(BaseHandler):
     @classmethod
     def resource_uri(self):
         return ('exps', [ 'id', ])
+
+class AssumptionHandeler(BaseHandler):
+    model = Assumption
+
+    fields = ('index', 'sexp', 'annotation', ('cell', ('id',)))
+    exclude = ()
+
+    allowed_methods = ('GET', 'PUT', 'DELETE', 'POST')
+
+    def read(self, request, id=None):
+        exprs = Assumption.objects
+
+        if id:
+            try:
+                return exprs.get(id=id)
+            except ObjectDoesNotExist:
+                return rc.NOT_FOUND
+        else:
+            return exprs.all()
+
+    def create(self, request):
+        request_data = self.flatten_dict(request.data)
+
+        cell_id = request_data['cell']
+        sexp = request_data['sexp']
+        annotation = request_data['annotation']
+        index = request_data['index']
+
+        parent_cell = Cell.objects.get(id=cell_id)
+
+        expr = Assumption(cell=parent_cell,
+                          sexp=sexp,
+                          annotation=annotation,
+                          index=index)
+        expr.save()
+
+        # Return the JSON of the new model for Backbone to inject
+        # into the model
+        return expr
+
+    def update(self, request, id):
+        request_data = self.flatten_dict(request.data)
+
+        sexp = request_data['sexp']
+        annotation = request_data['annotation']
+        index = request_data['index']
+
+        expr = Assumption.objects.get(id=id)
+        expr.sexp = sexp
+
+        expr.save()
+
+        # Return the JSON of the new model for Backbone to inject
+        # into the model
+        return expr
+
+    @classmethod
+    def resource_uri(self):
+        return ('asms', [ 'id', ])
 
 class WorkspaceHandeler(BaseHandler):
     model = Workspace

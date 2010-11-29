@@ -294,11 +294,6 @@ function resize_parentheses(node) {
 // Server Queries
 ///////////////////////////////////////////////////////////
 
-function save_worksheet(e) {
-    WORKSHEET.saveAll();
-    e.preventDefault();
-}
-
 ajaxqueue = $.manageAjax.create('queue', {queue: false,
                                           preventDoubbleRequests: false,
                                           cacheResponse: true});
@@ -750,8 +745,12 @@ function new_line(type, index) {
     }
 
     if(!active_cell) {
-        error("Select a cell to insert into");
-        return;
+        if(WORKSHEET.length == 1){
+            active_cell = WORKSHEET.at(0);
+        } else  {
+            error("Select a cell to insert into");
+            return;
+        }
     }
 
     // If the cell new then commit it to the database before we
@@ -798,8 +797,12 @@ function new_assum(type, index) {
     }
 
     if(!active_cell) {
-        error("Select a cell to insert into");
-        return;
+        if(WORKSHEET.length == 1){
+            active_cell = WORKSHEET.at(0);
+        } else  {
+            error("Select a cell to insert into");
+            return;
+        }
     }
 
     // If the cell new then commit it to the database before we
@@ -820,11 +823,11 @@ function new_assum(type, index) {
             active_cell.view.addAssumption(new_expr_html);
 
             // Initiale the new expression in the term db
-            var eq = build_tree_from_json(data.new_json);
+            var expr = build_tree_from_json(data.new_json, AssumptionTree);
 
-            eq.cell = active_cell;
-            eq.set({cell: active_cell.id});
-            active_cell.addExpression(eq);
+            expr.cell = active_cell;
+            expr.set({cell: active_cell.id});
+            active_cell.addAssumption(expr);
 
             // Render the html of the new expression
             mathjax_typeset(new_expr_html);

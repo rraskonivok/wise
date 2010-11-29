@@ -25,7 +25,7 @@ from wise.worksheet import transforms, rules
 import wise.worksheet.exceptions as exception
 
 from wise.base.cell import Cell as PyCell
-from wise.base.objects import AssumptionPrototype
+from wise.base.objects import EquationPrototype, AssumptionPrototype
 
 CACHE_INTERVAL = 30*60 # 5 Minutes
 

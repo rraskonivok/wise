@@ -30,7 +30,8 @@ class Relation(object):
     lhs = None
     rhs = None
 
-    annotation = None
+    annotation = ''
+    toplevel = False
 
     # Database index
     sid = None
@@ -47,13 +48,16 @@ class Relation(object):
     # entirely internal and cannot be used except in Python
 
     pure = None # A string containing the name symbol in Pure
-    po = None   # Reference to the type of object
+    po = None # Reference to the type of object
 
     def __init__(self, lhs, rhs):
-        self.rhs = lhs
-        self.lhs = rhs
+        self.lhs = lhs
+        self.rhs = rhs
 
         self.terms = [self.lhs, self.rhs]
+
+    def _pure_(self):
+        return self.po(self.lhs._pure_(),self.rhs._pure_())
 
     def get_math(self):
         return msexp(self, self.terms)
@@ -94,7 +98,7 @@ class Relation(object):
 
         lst.append({'id': self.id,
                     'type': self.classname,
-                    'toplevel': True,
+                    'toplevel': self.toplevel,
                     'sid': self.sid,
                     'children': [term.id for term in self.terms]})
 
@@ -121,21 +125,21 @@ class Relation(object):
             term.uid_walk(uid)
         return self
 
+
 class Equation(Relation):
     """This symbol represents the binary equality function.
     Equality is associative and commutative in both arguments.
     """
     symbol = '='
-
-    annotation = ''
     pure = 'eq'
+    toplevel = True
 
     def _pure_(self):
         return self.po(self.lhs._pure_(),self.rhs._pure_())
 
-
 class EquationPrototype(Equation):
     pure = None
+    po = None
 
     def __init__(self):
         Equation.__init__(self, ph(), ph())
@@ -144,27 +148,38 @@ class EquationPrototype(Equation):
     def classname(self):
         return 'Equation'
 
+class Lt(Relation):
+    symbol = '<'
+    pure = 'lt'
+
+class Gt(Relation):
+    symbol = '<'
+    pure = 'gt'
+
+class Gte(Relation):
+    symbol = '\\ge'
+    pure = 'gte'
+
+class Lte(Relation):
+    symbol = '\\le'
+    pure = 'lte'
+
+class Neq(Relation):
+    symbol = '\\neq'
+    pure = 'neq'
+
+class Approx(Relation):
+    symbol = '\\approx'
+    pure = 'approx'
+
 class Definition(Relation):
-    symbol = ":="
+    symbol = 'Def'
 
     def _pure_(self):
         lhs = self.lhs._pure_()
         rhs = self.rhs._pure_()
 
         return ProtoRule(lhs, rhs)
-
-    def get_html(self):
-
-        c = template.Context({
-            'id': self.id,
-            'lhs': self.lhs.get_html(),
-            'rhs': self.rhs.get_html(),
-            'annotation': self.annotation,
-            'symbol': self.symbol,
-            'classname': self.classname
-        })
-
-        return self.html.render(c)
 
 class Function(Equation):
     symbol = "\\rightarrow"

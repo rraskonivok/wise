@@ -45,6 +45,7 @@ class Term(object):
     show_parenthesis = False
 
     side = None # 0 if on LHS, 1 if on RHS
+    toplevel = False
 
     #############################################################
     ######### Pure Translation ##################################
@@ -158,7 +159,7 @@ class Term(object):
             lst = [] 
         lst.append({"id": self.id,
                     "type": self.classname,
-                    "toplevel": False,
+                    "toplevel": self.toplevel,
                     "args": self.args,
                     "children": [term.id for term in self.terms]})
 

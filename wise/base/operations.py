@@ -224,4 +224,3 @@ class SubOperation(Operation):
 
 class OutfixOperation(Operation):
     ui_style = 'outfix'
-

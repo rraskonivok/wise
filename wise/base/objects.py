@@ -20,8 +20,7 @@ from math import modf
 from wise.base.cell import Cell
 from wise.base.term import Term, Placeholder, ph
 
-from wise.base.toplevel import Relation, Equation, Definition, \
-Function
+from wise.base.toplevel import *
 
 from wise.base.operations import PrefixOperation, InfixOperation, \
 PostfixOperation, SupOperation, SubOperation, OutfixOperation, \
@@ -789,6 +788,7 @@ class Assumption(PrefixOperation):
     html = load_haml_template('assumption.tpl')
     symbol = '?'
     pure = 'assum'
+    toplevel = True
 
 class AssumptionPrototype(Assumption):
     pure = None
