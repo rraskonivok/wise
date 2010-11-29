@@ -9,7 +9,7 @@ PYTHONPATH = /usr/include/python2.7
 CCFLAGS = -O3 -Wall -fPIC -I$(PYTHONPATH)
 LDFLAGS = -shared
 LIBS    = -lpure
-#CC		= clang
+CC		= clang
 
 .PHONY: all clean distclean 
 all:: ${TARGET} 

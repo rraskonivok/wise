@@ -3,6 +3,7 @@ from libcpp cimport bool
 cdef extern from "stdint.h":
     ctypedef int int32_t
     ctypedef int uint32_t
+    void* malloc (size_t size)
 
 cdef extern from "stdarg.h":
     ctypedef struct va_list:

@@ -1,8 +1,11 @@
 cimport pure
 cimport cpython
 
+# This module only works with Python 2.7
+
+# TODO: move this external
 current_interp = None
-env = PureEnv()
+env = PureEnv('--noprelude')
 
 import pure_operators as operator
 
@@ -10,14 +13,23 @@ cdef class PureEnv:
     cdef pure_interp *_interp
     cpdef list locals
 
-    def __cinit__(self,*args):
+    def __cinit__(self, *args):
         print "Creating interpreter instance."
-        cdef char **cargs
-        for i in enumerate(args):
-            cargs[i] = args[i]
-        self._interp = pure.pure_create_interp(1,cargs)
+        cdef char **cargs = <char **>malloc( len(args)+2 * sizeof( char* ) )
+
+        cargs[0] = ''
+        #cargs[1] = '--noprelude'
+        for i, arg in enumerate(args):
+            cargs[i+1] = arg
+
+        self._interp = pure.pure_create_interp(len(args)+2,cargs)
+        #free(cargs)
+
+        print 'Created succesfully!'
+
         if self._interp is NULL:
             cpython.PyErr_NoMemory()
+
         global current_interp
         current_interp = self
         self.locals = []
@@ -29,9 +41,9 @@ cdef class PureEnv:
         cdef pure_expr *y
         y = pure.pure_eval(s)
         if y == NULL:
-            print "Could not parse"
+            print "Could not evaluate:", s
         else:
-            return (PureExpr().se(y))
+            return PureExpr().se(y)
 
     cpdef cmd(self, s):
         print pure.pure_evalcmd(s)
@@ -89,6 +101,7 @@ cdef class PureExpr:
 
     def __call__(self,*args):
         cdef pure_expr *xp
+        #TODO, why did I set this to 10?
         cdef pure_expr *xps[10]
 
         for i in range(0,len(args)):
@@ -235,11 +248,11 @@ cdef class PureList(PureExpr):
             xps[i] = xp
         self._expr = pure.pure_listv(len(args),xps)
 
-    def __getitem__(a,b):
-        return operator.__getitem__(a,PureInt(b))
-
-    def __getslice__(a,b,c):
-        return operator.__getslice__(a,PureInt(b),PureInt(c))
+#    def __getitem__(a,b):
+#        return operator.__getitem__(a,PureInt(b))
+#
+#    def __getslice__(a,b,c):
+#        return operator.__getslice__(a,PureInt(b),PureInt(c))
 
 cdef class PureTuple(PureExpr):
     _type = 'tuple'

@@ -5,7 +5,6 @@
 
 import os
 
-
 APPEND_SLASH = True
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG

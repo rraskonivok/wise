@@ -35,6 +35,7 @@ def heartbeat(request):
     response['Cache-Control'] = 'no-cache'
     return response
 
+
 @login_required
 @errors
 @ajax_request
@@ -63,7 +64,10 @@ def apply_rule(request):
 
     # The sexps of elements from worksheet, i.e. the
     # preimage/operands of the rule
-    code = tuple(request.POST.getlist('operands[]'))
+    sexps = tuple(request.POST.getlist('operands[]'))
+
+    if '' in sexps:
+        raise Exception('Empty sexp was passed.')
 
     # The name of the rule to apply in form package/name
     rule = request.POST.get('rule')
@@ -75,21 +79,12 @@ def apply_rule(request):
     if not namespace_index:
         raise Exception('No namespace index given in request')
 
-    # Spawn a new generator to give out new cids to newly created
+    # Spawn a new generator to give out new uids to newly created
     # objects
     uid = uidgen(namespace_index)
 
+    args = [translate.parse_sexp(sexp, uid) for sexp in sexps]
 
-    args = [translate.parse_sexp(cde, uid) for cde in code]
-
-    #Ugly hack to allow us to pass the uid generator and use it
-    # in the middle of a transformation in case we need to
-    # generate a whole new batch of uids (like when converting
-    # pure <-> python ).
-    for arg in args:
-        arg.idgen = uid
-
-    # Change this to rules[rule]
     try:
         ref = pure_wrap.objects[rule]
     except KeyError:
@@ -108,9 +103,6 @@ def apply_rule(request):
 
     new = rules.ApplyExternalRule(ref,*args)
 
-    new.idgen = uid
-    new.ensure_id()
-
     new_html = [html(new)]
     new_json = [json_flat(new)]
 
@@ -123,7 +115,7 @@ def apply_rule(request):
 @ajax_request
 #@cache_page(CACHE_INTERVAL)
 def apply_def(request):
-    code = tuple(request.POST.getlist('selections[]'))
+    sexps = tuple(request.POST.getlist('selections[]'))
 
     # Handle client-side ID
     namespace_index = int( request.POST.get('namespace_index') )
@@ -146,7 +138,7 @@ def apply_def(request):
 
     # ---
 
-    args = [translate.parse_sexp(cde, uid) for cde in code]
+    args = [translate.parse_sexp(sexp, uid) for sexp in sexps]
 
     for arg in args:
         arg.idgen = uid
@@ -178,12 +170,14 @@ def apply_def(request):
                          'new_json': new_json,
                          'namespace_index': uid.next()[3:]})
 
+
 @login_required
 @errors
 #@cache_page(CACHE_INTERVAL)
 def rules_request(request):
     return render_haml_to_response('ruleslist.tpl',
             {'rulesets':rules.rulesets})
+
 
 #@login_required
 #@errors
@@ -237,6 +231,7 @@ def use_infix(request):
     return JsonResponse({'new_html': [html(new)],
                          'new_json': [json_flat(new)],
                          'namespace_index': uid.next()[3:]})
+
 
 @login_required
 @errors
@@ -296,6 +291,7 @@ def apply_transform(request):
                          'new_json': new_json,
                          'namespace_index': uid.next()[3:]})
 
+
 @login_required
 @errors
 @ajax_request
@@ -333,6 +329,7 @@ def new_line(request):
                          'new_json': json_flat(new),
                          'namespace_index': uid.next()[3:],
                          'cell_index': cell_index + 1})
+
 
 @errors
 def new_cell(request):
