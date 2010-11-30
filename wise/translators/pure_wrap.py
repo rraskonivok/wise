@@ -9,17 +9,16 @@ from django.template import Template, Context
 
 import sys
 
-from wise.pure.pure import PureEnv
-
+from pure.pure import PureEnv
 env = PureEnv()
+
+env.eval('using pure::prelude')
 
 from wise.pure.pure import PureInt, PureSymbol, PureLevel, \
 PureExpr, PureDouble, PureClosure, reduce_with_pure_rules, \
 new_level, restore_level, IManager, PureEnv
 
 from wise.pure.prelude import p2i, i2p, nargs
-
-env.eval('using pure::prelude')
 
 ROOT_MODULE = 'wise'
 packages = {}

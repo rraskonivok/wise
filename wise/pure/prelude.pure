@@ -1,0 +1,34 @@
+export PURE_STACK=1024;
+
+//neg x = Neg x;
+
+// Convert Infix to Prefix
+i2p X = reduce X with
+    x + (- y) = add x (Neg y);
+    -x + y = add (Neg x) y;
+    x + y = add x y;
+    x * y = mul x y;
+    x / y = rational x y;
+    x ^ y = powr x y;
+    - x   = Neg x;
+end;
+
+// Convert Prefix to Infix
+p2i X = reduce X with
+    Neg x         =  - x;
+    add x y       =  x + y; 
+    mul x y       =  x * y;
+    rational x y  =  x / y;
+    powr x y      =  x ^ y;
+end;
+
+// The prototype operator is used to initialize rules dynamially
+infixl 1001 -->;
+prototype x y = x --> y;
+
+// Extract the lhs/rhs of a prototype
+lhs (l --> r) = str l;
+rhs (l --> r) = str r;
+
+// Create an instance of our prototype rule
+instance proto = eval $ (lhs proto) + " = " + (rhs proto);

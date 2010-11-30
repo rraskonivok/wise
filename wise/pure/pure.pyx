@@ -26,10 +26,7 @@ class IManager:
 
     @classmethod
     def active(self):
-        if self.current_interp:
-            return self
-        else:
-            return IManager()
+        return self()
 
 cdef class PureEnv:
     cdef pure_interp *_interp
@@ -56,7 +53,8 @@ cdef class PureEnv:
             cpython.PyErr_NoMemory()
 
         self.locals = []
-        IManager.active().add(self)
+        im = IManager.active()
+        im.add(self)
 
     def __dealloc__(self):
         pass
