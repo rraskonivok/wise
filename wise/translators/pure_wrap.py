@@ -9,36 +9,17 @@ from django.template import Template, Context
 
 import sys
 
-# Import the Cython interface
-try:
-    import wise.pure as pure
-# Gotta catch em' all, this is justified since if Pure fails to
-# load then nothing will work.
-except:
-    raise Exception('Could not load Pure prelude, all other Pure dependencies will fail.')
-    sys.exit(0)
+from wise.pure.pure import PureEnv
 
-# Pull the atomic Pure objects up into this namespace.
-PureInt = pure.prelude.PureInt
-PureSymbol = pure.prelude.PureSymbol
-PureLevel = pure.prelude.PureLevel
-PureExpr = pure.prelude.PureExpr
-PureDouble = pure.prelude.PureDouble
-PureClosure = pure.prelude.PureClosure
+env = PureEnv()
 
-env = pure.prelude.env
+from wise.pure.pure import PureInt, PureSymbol, PureLevel, \
+PureExpr, PureDouble, PureClosure, reduce_with_pure_rules, \
+new_level, restore_level, IManager, PureEnv
 
-p2i = pure.prelude.p2i
-i2p = pure.prelude.i2p
-nargs = pure.prelude.nargs
+from wise.pure.prelude import p2i, i2p, nargs
 
-# This is called freqently enough that we'll push it up.
-reduce_with_pure_rules = pure.prelude.reduce_with_pure_rules
-
-proto_op = pure.prelude.proto_op
-instance = pure.prelude.instance
-new_level = pure.prelude.new_level
-restore_level = pure.prelude.restore_level
+env.eval('using pure::prelude')
 
 ROOT_MODULE = 'wise'
 packages = {}
@@ -47,7 +28,8 @@ objects = {}
 OBJECTS = objects
 
 def use(package, library):
-    print 'using ' + '::'.join([package, library])
+    # Paths are relative to the /wise/ directory
+    print 'Importing library ' + '/'.join([package, library])
     env.eval('using ' + '::'.join([package, library]))
 
 def jit_compile_interp():

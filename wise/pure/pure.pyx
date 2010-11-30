@@ -2,37 +2,61 @@ cimport pure
 cimport cpython
 
 # This module only works with Python 2.7
+# I designed this after working with rpy2's Cython wrapper.
 
-# TODO: move this external
-current_interp = None
-env = PureEnv('--noprelude')
+class IManager:
+    # Interpreter manager - a singleton / borg
+    current_interp = None
 
-import pure_operators as operator
+    def __cinit__(self):
+        self.__dict__ = self.__shared_state
+
+    def add(self, interp):
+        self.current_interp = interp
+
+    def get(self):
+        if self.current_interp:
+            return self.current_interp
+        else:
+            raise Exception('No active interpreter')
+
+    @classmethod
+    def exists(self):
+        return not self.current_interp
+
+    @classmethod
+    def active(self):
+        if self.current_interp:
+            return self
+        else:
+            return IManager()
 
 cdef class PureEnv:
     cdef pure_interp *_interp
     cpdef list locals
 
     def __cinit__(self, *args):
+        # This is called whenever a worker is spawned, it must be
+        # light and fast.
         print "Creating interpreter instance."
         cdef char **cargs = <char **>malloc( len(args)+2 * sizeof( char* ) )
 
         cargs[0] = ''
-        #cargs[1] = '--noprelude'
-        for i, arg in enumerate(args):
-            cargs[i+1] = arg
+        cargs[1] = '--noprelude'
 
-        self._interp = pure.pure_create_interp(len(args)+2,cargs)
-        #free(cargs)
+        #for i, arg in enumerate(args):
+        #    cargs[i+1] = arg
+
+        self._interp = pure.pure_create_interp(2,NULL)
+        free(cargs)
 
         print 'Created succesfully!'
 
         if self._interp is NULL:
             cpython.PyErr_NoMemory()
 
-        global current_interp
-        current_interp = self
         self.locals = []
+        IManager.active().add(self)
 
     def __dealloc__(self):
         pass
@@ -125,20 +149,20 @@ cdef class PureExpr:
     #cpdef __richcmp__(self, PureExpr other):
     #    return pure.same(self._expr, other._expr)
 
-    def __add__(self,other):
-        return operator.add(self,other)
+    #def __add__(self,other):
+    #    return operator.add(self,other)
 
-    def __neg__(self):
-        return operator.neg(self)
+    #def __neg__(self):
+    #    return operator.neg(self)
 
-    def __sub__(self,other):
-        return operator.sub(self,other)
+    #def __sub__(self,other):
+    #    return operator.sub(self,other)
 
-    def __mul__(self,other):
-        return operator.mul(self,other)
+    #def __mul__(self,other):
+    #    return operator.mul(self,other)
 
-    def __div__(self,other):
-        return operator.div(self,other)
+    #def __div__(self,other):
+    #    return operator.div(self,other)
 
 cdef class PureApp(PureExpr):
     _type = 'app'
@@ -164,12 +188,15 @@ cdef class PureSymbol(PureExpr):
     cdef public _psym
 
     def __cinit__(self,sym):
-       self._sym = sym
-       self._psym = sym
-       self._expr = pure.pure_symbol(pure.pure_sym(sym))
-       self._tag = self._expr.tag
-       self._interp = current_interp
-       self._interp.locals.append(self)
+       if not IManager.exists():
+           print 'No active interpreter'
+       else:
+           self._sym = sym
+           self._psym = sym
+           self._expr = pure.pure_symbol(pure.pure_sym(sym))
+           self._tag = self._expr.tag
+           #self._interp = IManager.active().current_interp
+           #self._interp.locals.append(self)
 
     def update(self):
        '''Called if the we need to change what the symbol refers to'''

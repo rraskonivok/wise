@@ -1,6 +1,6 @@
 # Import the Cython interface
 try:
-    from pure import *
+    from pure import PureSymbol
 except ImportError:
     raise Exception('Could not load Cython Pure module, perhaps it needs to be built?')
 

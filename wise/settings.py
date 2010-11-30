@@ -13,8 +13,8 @@ LOG_FILE = 'session.log'
 DISABLE_PURE = False
 
 #Eagerly load the pure module to avoid an initial hiccup when a worker starts
-if not DISABLE_PURE:
-    import pure.prelude
+#from pure.pure import PureEnv
+#PureEnv()
 
 # A quick note about security. *WISE IS ALPHA SOFTWARE AND NOT SECURE* (yet)
 ADMINS = (
