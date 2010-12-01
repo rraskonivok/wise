@@ -2,8 +2,14 @@ from libcpp cimport bool
 
 cdef extern from "stdlib.h":
     ctypedef unsigned long size_t
-    void *malloc (size_t size)
-    void free(void *pointer)
+    void free(void *ptr)
+    void *malloc(size_t size)
+    void *realloc(void *ptr, size_t size)
+    size_t strlen(char *s)
+    void *calloc(long nmemb, long size)
+
+cdef extern from "string.h":
+    char *strcpy(char *dest, char *src)
 
 cdef extern from "stdint.h":
     ctypedef int int32_t

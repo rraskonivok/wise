@@ -1,5 +1,6 @@
 cimport pure
 cimport cpython
+from libc.stdlib cimport *
 
 # This module only works with Python 2.7
 # I designed this after working with rpy2's Cython wrapper.
@@ -31,30 +32,41 @@ class IManager:
 cdef class PureEnv:
     cdef pure_interp *_interp
     cpdef list locals
+    cdef char **argv
 
-    def __cinit__(self, *args):
+    def __cinit__(self):
         # This is called whenever a worker is spawned, it must be
         # light and fast.
         print "Creating interpreter instance."
-        cdef char **cargs = <char **>malloc( len(args)+2 * sizeof( char* ) )
 
-        cargs[0] = ''
-        cargs[1] = '--noprelude'
+        args = ['--noprelude']
 
-        #for i, arg in enumerate(args):
-        #    cargs[i+1] = arg
+        cdef char *xp
+        cdef char *xps[5]
+        for i in range(0,len(args)):
+            #xp = <char *>malloc(len(args[i]) * sizeof(char))
+            #xps[i] = <char *>malloc( (len(args[i])+2) * sizeof( char* ) )
+            #xp = '--noprelude'
+            xp = 'h'
+            strcpy(xps[i],xp)
 
-        self._interp = pure.pure_create_interp(2,NULL)
-        free(cargs)
-
+        self._interp = pure.pure_create_interp(len(args),xps)
         print 'Created succesfully!'
+        #try:
+        #    print 'Created succesfully!'
+        #finally:
+        #    pass
+        #    free(self.argv)
 
         if self._interp is NULL:
             cpython.PyErr_NoMemory()
 
+        # PureSymbol fails if this not here
         self.locals = []
         im = IManager.active()
         im.add(self)
+
+        print 'Exited'
 
     def __dealloc__(self):
         pass
