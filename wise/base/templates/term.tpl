@@ -1,2 +1,1 @@
-#{{id}}.term.{{class}} title="{{type}}"
-    $${{latex}}$$
+<mi id="{{id}}">{{latex}}</mi>

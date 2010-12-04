@@ -411,7 +411,7 @@ class Addition(InfixOperation):
             return Numeric(0)
 
 class Product(InfixOperation):
-    symbol = '\\cdot'
+    symbol = '&InvisibleTimes;'
     show_parenthesis = False
     pure = 'mul'
 
@@ -443,7 +443,7 @@ class Product(InfixOperation):
            return self.po(*pterms)
 
 class Root(Operation):
-    html = load_haml_template('power.tpl')
+    html = load_haml_template('sqrt.tpl')
     pure = 'root'
 
     cd = 'arith1'
@@ -461,8 +461,6 @@ class Root(Operation):
         return self.po(self.base._pure_() , self.exponent._pure_())
 
     def get_html(self):
-        self.exponent.css_class = 'exponent'
-        self.base.css_class = 'exponent'
 
         c = template.Context({
             'id': self.id,
@@ -533,24 +531,6 @@ class Rational(Term):
 class Interval(InfixOperation):
     html = load_haml_template('power.tpl')
 
-class Root(PrefixOperation):
-    html = load_haml_template('root.tpl')
-    cd = 'arith1'
-    cd_name = 'root'
-
-    pure = 'nroot'
-
-    def __init__(self,op,*ops):
-        operands = list(ops) + [op]
-        if len(operands) > 1:
-            self.terms = list(operands)
-            self.operand = self.terms
-        else:
-            self.operand = operands[0]
-            self.terms = [operands[0]]
-
-        op.css_class = 'sqrt-stem'
-
 class Minus(InfixOperation):
     symbol = '\\cdot'
     show_parenthesis = False
@@ -586,10 +566,28 @@ class Negate(PrefixOperation):
         return self.operand
 
 class Sqrt(Root):
+    html = load_haml_template('sqrt.tpl')
     cd = 'arith1'
     cd_name = 'root'
 
     pure = 'Sqrt'
+
+    def __init__(self,base):
+        self.base = base
+        self.exponent = Numeric(2)
+        self.terms = [self.base]
+
+    def _pure_(self):
+        return self.po(self.base._pure_())
+
+    def get_html(self):
+        c = template.Context({
+            'id': self.id,
+            'base': self.base.get_html(),
+            'type': self.classname,
+            'exponent': self.exponent.get_html() })
+
+        return self.html.render(c)
 
 class Abs(OutfixOperation):
     symbol1 = '|'

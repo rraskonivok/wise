@@ -79,21 +79,22 @@ function stress_test() {
 }
 
 DISABLE_SIDEBAR = false;
+
 // End Debuggin' Stuff
 //----------------------
+
 //Some JQuery Extensions
 //----------------------
 // Disable any animations on the worksheet
-jQuery.fx.off = false;
+jQuery.fx.off = true;
+
 //jQuery.fx.off = true;
 $.fn.exists = function () {
-  return jQuery(this).length > 0;
+  return $(this).length > 0;
 }
 
-$.fn.replace = function (htmls) {
-  var replacer = $(htmls);
-  $(this).replaceWith(replacer);
-  return replacer;
+$.fn.replace = function (htmlstr) {
+  return $(this).replaceWith(htmlstr);
 };
 
 //TODO: This is here for compatability reasons, move to fn.cid
@@ -393,7 +394,7 @@ function apply_rule(rule, operands) {
 
         if (is_toplevel) {
 
-          nsym = preimage.dom().replace(response.new_html[i]).hide();
+          nsym = preimage.dom().replace(response.new_html[i]);
 
           // !!!!!!!!!!!!!!!!
           // Swap the nodes reference in its Cell so
@@ -414,8 +415,7 @@ function apply_rule(rule, operands) {
 
         } else {
 
-          nsym = preimage.dom().replace(response.new_html[i]).hide();
-          nsym.fadeIn('slow');
+          nsym = preimage.dom().replace(response.new_html[i]);
 
           newnode = graft_tree_from_json(
           // Graft on top of the old node
@@ -432,14 +432,12 @@ function apply_rule(rule, operands) {
         }
 
         //Typeset any latex in the html the server just spit out
-        mathjax_typeset($(nsym));
+//        mathjax_typeset($(nsym));
         resize_parentheses(newnode);
       }
     }
 
   }, "json");
-
-  resize_all();
 
   return image;
 }
@@ -517,9 +515,9 @@ function apply_def(def, selections) {
 
         }
 
-        var nsym = obj.replace(data.new_html[i]).hide();
-        nsym.fadeIn('slow');
-        mathjax_typeset($(nsym));
+        var nsym = obj.replace(data.new_html[i]);
+ //       nsym.fadeIn('slow');
+//        mathjax_typeset($(nsym));
       }
     }
 
@@ -943,16 +941,16 @@ function mathjax_typeset(element) {
   //    return;
   //}
   //Refresh math for a specific element
-  if (element) {
-    MathJax.Hub.Queue(["Typeset", MathJax.Hub, element[0]]);
-    MathJax.Hub.Queue();
-  }
-  //Refresh math Globally, shouldn't be called too much because
-  //it bogs down the browser
-  else {
-    console.log('Refreshing all math on the page');
-    MathJax.Hub.Process();
-  }
+  //if (element) {
+  //  MathJax.Hub.Queue(["Typeset", MathJax.Hub, element[0]]);
+  //  MathJax.Hub.Queue();
+  //}
+  ////Refresh math Globally, shouldn't be called too much because
+  ////it bogs down the browser
+  //else {
+  //  console.log('Refreshing all math on the page');
+  //  MathJax.Hub.Process();
+  //}
 }
 
 ///////////////////////////////////////////////////////////
@@ -1014,7 +1012,7 @@ function load_math_palette() {
       }).next().hide();
 
       //Typeset the panel
-      MathJax.Hub.Typeset($(this).next()[0]);
+      //MathJax.Hub.Typeset($(this).next()[0]);
 
       $("#math_palette").resizable({
         handles: 's'

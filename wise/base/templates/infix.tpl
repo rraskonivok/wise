@@ -1,19 +1,12 @@
 {% load custom_tags %}
 
-#{{id}}.container.{{class}} title="{{type}}"
-
-    .pnths.left {% conditional_display parenthesis %} 
-        (
-
+<mrow id="{{id}}">
     {% for o in operand %}
     {{ o }}
 
         {% if not forloop.last %}
-        .infix.sugar
-            $${{symbol}}$$
+        <mo>{{symbol|safe}}</mo>
         {% endif %}
 
     {% endfor %}
-
-    .pnths.right {% conditional_display parenthesis %} 
-        )
+</mrow>

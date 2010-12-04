@@ -1,15 +1,7 @@
 {% load custom_tags %}
 
-#{{id}}.fraction.container.{{class}} title="{{type}}"
-
-    .pnths.left {% conditional_display parenthesis %} 
-        (
-
-    .num
+mfrac#{{id}} title="{{type}}"
+    mrow
         {{num}}
-
-    .den
+    mrow
         {{den}}
-
-    .pnths.right {% conditional_display parenthesis %} 
-        )

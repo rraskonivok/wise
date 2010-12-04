@@ -68,7 +68,7 @@ html {
     margin: 0px !important;
 }
 
-.term.selected {
+.selected {
     border: 5px solid #d4a5a5;
     margin: -5px;
 }

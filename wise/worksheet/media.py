@@ -33,6 +33,7 @@ MEDIA_BUNDLES = (
      "minify": False,
      "files": (
         'jquery.js',
+        'xml.js',
         'jquery-ui.js',
         'dimensions.js',
         'json2.js',
