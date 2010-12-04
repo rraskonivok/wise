@@ -565,13 +565,13 @@ function use_infix(code) {
         return;
       }
 
-      if (!data.new_html) {
-        error("Statement is not well-formed");
-        $("#cmdinput").css('background-color', '#D4A5A5');
-        return;
-      } else {
-        hide_cmdline();
-      }
+      //if (!data.new_html) {
+      //  error("Statement is not well-formed");
+      //  $("#cmdinput").css('background-color', '#D4A5A5');
+      //  return;
+      //} else {
+      //  hide_cmdline();
+      //}
 
       //Iterate over the elements in the image of the
       //transformation, attempt to map them 1:1 with the

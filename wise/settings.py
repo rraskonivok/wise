@@ -80,7 +80,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 #    'debug_toolbar.middleware.DebugToolbarMiddleware',
-    'middleware.SpacelessMiddleware',
+    'middleware.XHTMLMiddleware',
 )
 
 MEDIA_GENERATORS = (

@@ -269,8 +269,8 @@ class Constant(Term):
 class ImaginaryUnit(BaseSymbol):
     '''This symbol represents the square root of -1.'''
 
-    latex = 'i'
-    symbol = 'i'
+    latex = 'ⅈ'
+    symbol = 'ⅈ'
     pure = 'I'
     args = "'i'"
 
@@ -411,7 +411,7 @@ class Addition(InfixOperation):
             return Numeric(0)
 
 class Product(InfixOperation):
-    symbol = '&InvisibleTimes;'
+    symbol = ''
     show_parenthesis = False
     pure = 'mul'
 
