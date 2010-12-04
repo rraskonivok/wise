@@ -96,7 +96,10 @@ var jQuery = function( selector, context ) {
 	// [[Class]] -> type pairs
 	class2type = {};
 
-
+// Adapted from the MathJax source code, a quick fix to alter the
+// namespaceURI of MathML and change nodeName to lowercase, since
+// jQuery likes to treat everything as straight HTML where the
+// canonical nodeName is upper case.
 convertMath = function (node) {
    try {
      if (node.nodeType == 1) {
@@ -4959,15 +4962,12 @@ jQuery.fn.extend({
 
                 if ( this.namespaceURI.indexOf("MathML") > -1 ) {
 
-                    console.log(value);
                     var htmlDocument = parent.ownerDocument;
                     var mathMLNamespace = "http://www.w3.org/1998/Math/MathML";
                     var mnElement = document.createElementNS(mathMLNamespace, 'math');
 
                     mathmlfrag = (new DOMParser()).parseFromString(value, 'text/xml');
-
                     newml = convertMath(mathmlfrag.childNodes[0]);
-                    console.log(newml);
 
                     parent.replaceChild(newml,this);
                     return newml;

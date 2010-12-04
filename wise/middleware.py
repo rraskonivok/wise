@@ -4,5 +4,7 @@ class XHTMLMiddleware(object):
     def process_response(self, request, response):
         if 'text/html' in response['Content-Type']:
             response.content = short(response.content)
+            # Mixed MathML + HTML contents needs this content
+            # type otherwise Firefox won't render the MathML
             response["Content-Type"] = "application/xhtml+xml; charset=utf-8"
         return response
