@@ -4959,6 +4959,7 @@ jQuery.fn.extend({
 
                 if ( this.namespaceURI.indexOf("MathML") > -1 ) {
 
+                    console.log(value);
                     var htmlDocument = parent.ownerDocument;
                     var mathMLNamespace = "http://www.w3.org/1998/Math/MathML";
                     var mnElement = document.createElementNS(mathMLNamespace, 'math');
@@ -4966,27 +4967,10 @@ jQuery.fn.extend({
                     mathmlfrag = (new DOMParser()).parseFromString(value, 'text/xml');
 
                     newml = convertMath(mathmlfrag.childNodes[0]);
+                    console.log(newml);
+
                     parent.replaceChild(newml,this);
-
                     return newml;
-
-//                    document.adoptNode(mathmlfrag.documentElement);
-//                    var pristineNode = document.importNode(mathmlfrag.documentElement, true);
-//                    console.log(pristineNode);
-
-//                    parent.replaceChild(pristineNode, this);
-
-//                    console.log(mathmlfrag);
-//                    console.log(pristineNode);
-
-                    //value.childNodes.namespaceURI = 'cat';
-                    //parent.ownerDocument.createElement(value[0]);
-                    
-                    //mnElement.appendChild(value);
-                    //console.log(mnElement);
-
-                    //parent.replaceChild(mnElement,this);
-                    //return mnElement;
                 }
 
 				jQuery( this ).remove();
