@@ -1,16 +1,13 @@
-#{{id}}.term.{{class}} title="{{type}}"
+mrow#{{id}} title="{{type}}"
 
     {% if parenthesis %}
-    .pnths.left
-        (
+    <mo stretchy="true">(</mo>
     {% endif %}
 
     {{operand}}
 
     {% if parenthesis %}
-    .pnths.right
-        )
+    <mo stretchy="true">)</mo>
     {% endif %}
 
-    .operator
-        $${{symbol}}$$
+    <mi>{{symbol}}</mi>

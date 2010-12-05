@@ -429,8 +429,9 @@ class Product(InfixOperation):
         self.terms = list(terms)
 
         for term in self.terms:
-            if type(term) is Addition:
+            if term.terms and len(term.terms) > 1:
                 term.show_parenthesis = True
+
         self.operand = self.terms
 
     def remove(self,obj,remove_context):
@@ -455,9 +456,6 @@ class Root(Operation):
         self.base = base
         self.exponent = exponent
         self.terms = [self.base, self.exponent]
-        basetype = type(self.base)
-        if basetype is Rational or isinstance(self.base, Rational):
-            self.base.show_parenthesis = True
 
     def _pure_(self):
         return self.po(self.base._pure_() , self.exponent._pure_())
@@ -484,8 +482,10 @@ class Power(Operation):
         self.exponent = exponent
         self.terms = [self.base, self.exponent]
         basetype = type(self.base)
-        if basetype is Rational or isinstance(self.base, Rational):
-            self.base.show_parenthesis = True
+
+        for term in self.terms:
+            if term.terms and len(term.terms) > 1:
+                term.show_parenthesis = True
 
     def _pure_(self):
         return self.po(self.base._pure_() , self.exponent._pure_())
