@@ -1,3 +1,35 @@
+# -*- coding: utf-8 -*-
+
+greek_unicode = {
+         'alpha'  :          'α',
+         'beta'   :          'β',
+         'gamma'  :          'γ',
+         'delta'  :          'δ',
+         'epsilon' :         'ε',
+         'varepsilon':       'ζ',
+         'zeta'   :          'η',
+         'eta'    :          'ϑ',
+         'theta'  :          'θ',
+         'vartheta':         'ι',
+         'gamma'  :          'κ',
+         'kappa'  :          'λ',
+         'lambda' :          'μ',
+         'mu'     :          'ν',
+         'nu'     :          'ξ',
+         'xi'     :          'ο',
+         'pi'     :          'π',
+         'varpi'  :          'ρ',
+         'rho'    :          'σ',
+         'varrho' :          'ς',
+         'sigma'  :          'τ',
+         'varsigma':          'υ',
+         'tau'    :          'ϕ',
+         'upsilon':          'φ',
+         'phi'    :          'χ',
+         'varphi' :          'ψ',
+         'chi'    :          'ω',
+         }
+
 greek_alphabet = {
         'alpha'  :  '\\alpha',
         'beta'   :  '\\beta',
@@ -43,6 +75,6 @@ greek_alphabet = {
 
 def greek_lookup(s):
     try:
-        return greek_alphabet[s]
+        return greek_unicode[s]
     except KeyError:
         return s

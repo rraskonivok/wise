@@ -160,6 +160,7 @@ class Numeric(Term):
 #-------------------------------------------------------------
 
 class Complex(Term):
+    '''General complex quantity.'''
     pass
 
 class ComplexCartesian(Complex):
@@ -261,36 +262,37 @@ class Conjugate(PrefixOperation):
 class Constant(Term):
     #Constants should be able to be represented by multiple symbols
     representation = None
+    html = load_haml_template('constant.tpl')
 
-    def __init__(self,*symbol):
-        self.args = self.representation.args
-        self.latex = self.representation.latex
+#    def __init__(self,*symbol):
+#        self.args = self.representation.args
+#        self.latex = self.representation.latex
 
-class ImaginaryUnit(BaseSymbol):
+class ImaginaryUnit(Constant):
     '''This symbol represents the square root of -1.'''
 
-    latex = 'ⅈ'
+    latex = 'i'
     symbol = 'ⅈ'
     pure = 'I'
     args = "'i'"
 
-class Pi(BaseSymbol):
-    latex = '\pi'
-    symbol = '\pi'
+class Pi(Constant):
+    latex = 'π'
+    symbol = 'π'
     pure = 'Pi'
-    args = "'\pi'"
+    args = "'pi'"
 
-class Infinity(BaseSymbol):
+class Infinity(Constant):
     latex = '\\infty'
     symbol = 'inf'
     pure = 'inf'
     args = "'inf'"
 
 #-------------------------------------------------------------
-# Algebraic Operators
+# Algebraic Quantities
 #-------------------------------------------------------------
 
-def Zero(BaseSymbol):
+def Zero(Constant):
     '''This symbol represents the additive identity element.'''
     cd = 'alg1'
     cd_name = 'zero'
@@ -300,7 +302,7 @@ def Zero(BaseSymbol):
     pure = 'zero'
 
 
-def One(BaseSymbol):
+def One(Constant):
     '''This symbol represents the multiplicative identity element.'''
 
     cd = 'alg1'
@@ -635,31 +637,31 @@ class Tuple(Term):
 
         return self.html.render(c)
 
-class Set(Term):
-    show_parenthesis = True
-    html = load_haml_template('tuple.tpl')
-    #html = load_haml_template('set.tpl')
-    symbol = ','
-    pure = 'Tuple'
-
-    def __init__(self, x, *xs):
-        self.terms = [x] + list(xs)
-
-    def _pure_(self):
-        return self.po(*purify(self.terms))
-
-    def get_html(self):
-        objects = [o.get_html() for o in self.terms]
-
-        c = template.Context({
-            'id': self.id,
-            'operand': objects,
-            'symbol': self.symbol,
-            'parenthesis': self.show_parenthesis,
-            'class': self.css_class or '',
-            })
-
-        return self.html.render(c)
+#class Set(Term):
+#    show_parenthesis = True
+#    html = load_haml_template('tuple.tpl')
+#    #html = load_haml_template('set.tpl')
+#    symbol = ','
+#    pure = 'Tuple'
+#
+#    def __init__(self, x, *xs):
+#        self.terms = [x] + list(xs)
+#
+#    def _pure_(self):
+#        return self.po(*purify(self.terms))
+#
+#    def get_html(self):
+#        objects = [o.get_html() for o in self.terms]
+#
+#        c = template.Context({
+#            'id': self.id,
+#            'operand': objects,
+#            'symbol': self.symbol,
+#            'parenthesis': self.show_parenthesis,
+#            'class': self.css_class or '',
+#            })
+#
+#        return self.html.render(c)
 
 class CartesianProduct(InfixOperation):
     symbol = '\\times'
@@ -691,22 +693,22 @@ class Union(InfixOperation):
 #-------------------------------------------------------------
 
 class Exp(PrefixOperation):
-    symbol = '\\exp'
+    symbol = 'exp'
 
 class Ln(PrefixOperation):
-    symbol = '\\ln'
+    symbol = 'ln'
     pure = 'ln'
 
 class Sin(PrefixOperation):
-    symbol = '\\sin'
+    symbol = 'sin'
     pure = 'Sin'
 
 class Cos(PrefixOperation):
-    symbol = '\\cos'
+    symbol = 'cos'
     pure = 'Cos'
 
 class Tan(PrefixOperation):
-    symbol = '\\tan'
+    symbol = 'tan'
     pure = 'Tan'
 
 class Asin(PrefixOperation):
@@ -720,27 +722,27 @@ class Atan(PrefixOperation):
     symbol = '\\tan^{-1}'
 
 class Sinh(PrefixOperation):
-    symbol = '\\sinh'
+    symbol = 'sinh'
     pure = 'Sinh'
 
 class Cosh(PrefixOperation):
-    symbol = '\\cosh'
+    symbol = 'cosh'
     pure = 'Cosh'
 
 class Tanh(PrefixOperation):
-    symbol = '\\tanh'
+    symbol = 'tanh'
     pure = 'Tanh'
 
 class Asinh(PrefixOperation):
-    symbol = '\\sinh^{-1}'
+    symbol = 'sinh^{-1}'
     pure = 'Asinh'
 
 class Acosh(PrefixOperation):
-    symbol = '\\cosh^{-1}'
+    symbol = 'cosh^{-1}'
     pure = 'Acosh'
 
 class Atanh(PrefixOperation):
-    symbol = '\\tanh^{-1}'
+    symbol = 'tanh^{-1}'
     pure = 'Atanh'
 
 class Gamma(PrefixOperation):

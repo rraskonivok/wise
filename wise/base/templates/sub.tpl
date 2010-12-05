@@ -1,2 +1,3 @@
-msqrt#{{id}} title="{{type}}"
+msub#{{id}} title="{{type}}"
     {{base}}
+    {{symbol}}

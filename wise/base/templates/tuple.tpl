@@ -1,21 +1,13 @@
-#{{id}}.container.{{class}} title="{{type}}"
-
-    {% if parenthesis %}
-    .pnths.left
-        (
-    {% endif %}
+mrow#{{id}} title="{{type}}"
+    <mo>(</mo>
 
     {% for o in operand %}
     {{ o }}
 
-        {% if not forloop.last %}
-        .infix.sugar
-            $${{symbol}}$$
-        {% endif %}
+    {% if not forloop.last %}
+    <mo>,</mo>
+    {% endif %}
 
     {% endfor %}
 
-    {% if parenthesis %}
-    .pnths.right
-        )
-    {% endif %}
+    <mo>)</mo>

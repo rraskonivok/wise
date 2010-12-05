@@ -7,7 +7,6 @@ html {
     opacity: 0.2;
 }
 
-
 /* -------------------- 
     Sidebar Palettes
  -------------------- */
@@ -63,19 +62,13 @@ html {
     margin: 5px;
 }
 
-.placeholder.selected {
-    background-color: #d4a5a5;
-    margin: 0px !important;
-}
-
 .selected {
     border: 5px solid #d4a5a5;
     margin: -5px;
 }
 
-.container.selected {
-    border: 5px solid #d4a5a5;
-    margin: -5px;
+.selected .placeholder {
+    background-color: #d4a5a5;
 }
 
 #cell_selection {
@@ -85,13 +78,9 @@ html {
 }
 
 /* Applied to containers when we expand them */
-.container.preselect {
+.preselect {
     border: 5px solid #d4a5a5;
     margin: -5px !important;
-}
-
-.term.preselect {
-    background-color: #d4a5a5;
 }
 
 .lines.preselect {
@@ -101,11 +90,6 @@ html {
 .placeholder {
     border: 1px dashed #d4a5a5 !important;
     min-height: 20px;
-    padding-left: 10px;
-    padding-right: 10px;
-    display: inline-block;
-    vertical-align: middle;
-    opacity: 1.0 !important;
 }
 
 .cmd {

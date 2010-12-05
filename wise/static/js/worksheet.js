@@ -873,67 +873,6 @@ function new_cell() {
 // Math Parsing & Generating
 ///////////////////////////////////////////////////////////
 
-function check_container(object) {
-
-  // This handles stupid expression checking that is too expensive 
-  // to do via Ajax, ie removing infix sugar 
-  _.each(object.children(':not(script)'), function () {
-    var prev = $(this).prev();
-    var cur = $(this);
-    var next = $(this).next();
-    var last = $(object).children(':last-child');
-    var first = $(object).children(':first-child');
-    var group = $(this).attr('group');
-    if (group != "") {
-
-      // -- Rules for handling parenthesis --
-      //This forces left parenthesis over to the left
-      if (cur.hasClass('term') && next.hasClass('pnths') && next.hasClass('left')) {
-        cur.swap(next);
-      }
-
-      //This forces left parenthesis over to the left
-      if (cur.hasClass('pnths') && next.hasClass('term') && cur.hasClass('right')) {
-        cur.swap(next);
-      }
-
-      // -- Rules for cleaning up infix sugar --
-      group_type = $('#' + group).attr('math-type');
-
-      //  A + + B  --> A  + B
-      if (cur.hasClass('infix') && next.hasClass('infix')) {
-        cur.remove();
-      }
-
-      // A + - B  --> A - B
-      if (cur.hasClass('infix') && next.attr('math-type') == 'Negate') {
-        cur.remove();
-      }
-
-      //  ( + A  --> ( A
-      if (cur.hasClass('pnths') && next.hasClass('infix')) {
-        next.remove();
-      }
-
-      //  + ) --> )
-      if (cur.hasClass('infix') && next.hasClass('pnths')) {
-        cur.remove();
-      }
-
-      // + A + B --> A + B
-      if (first.hasClass('infix')) {
-        first.remove();
-      }
-
-      // A + B + --> A + B
-      if (last.hasClass('infix')) {
-        last.remove();
-      }
-
-    }
-  });
-}
-
 function mathjax_typeset(element) {
   //Typeset a DOM element when passed, if no element is passed
   //then typeset the entire page
@@ -963,9 +902,11 @@ function load_rules_palette() {
   }
 
   $.ajax({
-    url: '/rule_request',
+    url: '/rule_request/',
+    dataType: "html", 
     success: function (data) {
-      $("#rules_palette").replace(data);
+      $("#rules_palette").replaceWith($(data));
+
       $(".panel_category", "#rules_palette").bind('click', function () {
         $(this).next().toggle();
         return false
@@ -1002,8 +943,9 @@ function load_math_palette() {
 
   $.ajax({
     url: '/palette/',
+    dataType: "html", 
     success: function (data) {
-      $("#math_palette").replace(data)
+      $("#math_palette").replaceWith($(data))
 
       //Make the palette sections collapsable
       $(".panel_category", "#math_palette").bind('click', function () {

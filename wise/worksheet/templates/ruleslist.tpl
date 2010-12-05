@@ -1,5 +1,5 @@
 {% load custom_tags %}
-div#rules_palette.palette style="display:none"
+div#rules_palette.palette
     ul.navigation
         {% for title, rules in rulesets.items %}
             a.panel_category href="#"
@@ -7,7 +7,7 @@ div#rules_palette.palette style="display:none"
 
             li.panel_frame
                 {% for rule in rules %}
-                    a.ruletoplevel href="javascript:apply_rule('{{rule.1.pure}}',null);" title="{{rule.1.desc}}"
+                    a.ruletoplevel href="#" onclick="javascript:apply_rule('{{rule.1.pure}}',null);" title="{{rule.1.desc}}"
                         {{rule.0}}
                 {% endfor %}
         {% endfor %}

@@ -1,21 +1,9 @@
-#{{id}}.container.{{class}} title="{{type}}"
-
-    {% if parenthesis %}
-    .pnths.left
-        (
-    {% endif %}
+mrow#{{id}} title="{{type}}"
 
     {{ re }}
 
-    .infix.sugar
-        $$+$$
+    <mo>+</mo>
 
     {{ im }}
 
-    .texdecoration.sugar
-        $$i$$
-
-    {% if parenthesis %}
-    .pnths.right
-        )
-    {% endif %}
+    <mi>i</mi>

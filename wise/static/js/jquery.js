@@ -4952,14 +4952,17 @@ jQuery.fn.extend({
 				});
 			}
 
-			if ( (typeof value !== "string") && (!this.isMath()) ) {
-				value = jQuery( value ).detach();
+			if ( (typeof value !== "string") ) {
+                if(!this.isMath()) {
+                    value = jQuery( value ).detach();
+                }
 			}
 
 			return this.each(function() {
 				var next = this.nextSibling,
 					parent = this.parentNode;
 
+                // Graft MathML XML
                 if ( this.namespaceURI.indexOf("MathML") > -1 ) {
 
                     var htmlDocument = parent.ownerDocument;

@@ -1,2 +1,1 @@
-#{{id}}.term.placeholder.{{class}} title="{{type}}"
-    PASS
+<mi id="{{id}}"><span class="placeholder" title="{{type}}"></span></mi>

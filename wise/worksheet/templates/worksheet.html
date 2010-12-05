@@ -30,9 +30,9 @@ Worksheet Palettes
     </ul>
   </div>
 
-  <div id="math_palette" style="display:none" class="palette"> </div>
+  <div id="math_palette" class="palette"> </div>
 
-  <div id="rules_palette" style="display:none" class="palette"> </div>
+  <div id="rules_palette" class="palette"> </div>
 
 </div>
 {% endblock %}
@@ -154,23 +154,6 @@ Equations
     <h2 class="title">{{title|title}}</h2>
     <div class="inner">
       <hr />
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML">
-  <mrow>
-    <mo>(</mo>
-    <mfrac linethickness="0">
-      <mi>n</mi>
-      <mrow>
-        <mi>k</mi>
-        <mo>/</mo>
-
-        <mn>2</mn>
-
-      </mrow>
-    </mfrac>
-    <mo>)</mo>
-  </mrow>
-</math>
-
         <div id="workspace">
             {% for cell in cells %}
                 {{cell|safe}} 

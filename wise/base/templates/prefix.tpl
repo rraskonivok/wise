@@ -1,16 +1,9 @@
-#{{id}}.container.{{class}} title="{{type}}"
+mrow#{{id}} title="{{type}}"
 
-    .operator
-        $${{symbol}}$$
+    <mi>{{symbol}}</mi>
 
-    {% if parenthesis %}
-    .pnths.left
-        (
-    {% endif %}
+    <mo stretchy="true">(</mo>
 
     {{operand}}
 
-    {% if parenthesis %}
-    .pnths.right
-        )
-    {% endif %}
+    <mo stretchy="true">)</mo>
