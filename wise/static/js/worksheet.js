@@ -906,6 +906,7 @@ function load_rules_palette() {
     dataType: "html", 
     success: function (data) {
       $("#rules_palette").replaceWith($(data));
+      $("#rules_palette").hide();
 
       $(".panel_category", "#rules_palette").bind('click', function () {
         $(this).next().toggle();
@@ -961,7 +962,6 @@ function load_math_palette() {
       });
 
       $('#math_palette td').button();
-      //            $('.uniform_button','#math_palette').button();
     }
   });
 
