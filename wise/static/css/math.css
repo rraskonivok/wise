@@ -39,12 +39,10 @@
 
 .placeholder {
     border: 1px dashed #d4a5a5 !important;
-    min-height: 20px;
     padding-left: 10px;
     padding-right: 10px;
-    display: inline;
     vertical-align: middle;
-    opacity: 1.0 !important;
+    height: 25px;
 }
 
 .cell {

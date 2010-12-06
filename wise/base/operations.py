@@ -101,10 +101,9 @@ class Operation(Term):
                 'id': self.id,
                 'type': self.classname,
                 'operand': self.operand.get_html(),
-                'symbol1': self.symbol1.get_html(),
-                'symbol2': self.symbol2.get_html(),
+                'symbol1': self.symbol1,
+                'symbol2': self.symbol2,
                 'parenthesis': self.show_parenthesis,
-                'class': self.css_class or '',
                 })
 
             return self.html.render(c)

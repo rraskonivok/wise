@@ -1,5 +1,4 @@
-#{{id}}.container.{{class}} title="{{type}}"
-    .operator.sqrt-prefix 
-        √
-
-    {{operand}}
+<mroot id="{{id}}">
+    {{base}}
+    {{exponent}}
+</mroot>

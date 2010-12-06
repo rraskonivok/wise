@@ -59,21 +59,6 @@ class Quote(PrefixOperation):
 #    def __init__(self,text):
 #        self.latex = '\\text{' + text + '}'
 
-#class Tex(object):
-#    '''LaTeX sugar for operators'''
-#    tex = None
-#    html = load_haml_template('tex.tpl')
-#
-#    def __init__(self,tex):
-#        self.tex = tex
-#
-#    def get_html(self):
-#        c = template.Context({
-#            'type': 'Tex',
-#            'tex': self.tex})
-#
-#        return self.html.render(c)
-
 #-------------------------------------------------------------
 # Nullary / Symbol Type Objects
 #-------------------------------------------------------------
@@ -135,7 +120,6 @@ class Numeric(Term):
     def get_html(self):
         c = template.Context({
             'id': self.id,
-            'class': self.css_class or '',
             'latex':self.latex,
             'type': self.classname,
         })
@@ -186,7 +170,6 @@ class ComplexCartesian(Complex):
 
         c = template.Context({
             'id': self.id,
-            'class': self.css_class or '',
             're': self.re.get_html(),
             'im': self.im.get_html(),
         })
@@ -221,7 +204,6 @@ class ComplexPolar(Complex):
 
         c = template.Context({
             'id': self.id,
-            'class': self.css_class or '',
             're': self.re.get_html(),
             'im': self.im.get_html(),
         })
@@ -445,14 +427,14 @@ class Product(InfixOperation):
            pterms = map(lambda o: o._pure_() , self.terms)
            return self.po(*pterms)
 
-class Root(Operation):
-    html = load_haml_template('sqrt.tpl')
-    pure = 'root'
-
+class NRoot(Operation):
+    html = load_haml_template('root.tpl')
     cd = 'arith1'
-    cd_name = 'root'
+    cd_name = 'nroot'
 
-    def __init__(self,base,exponent):
+    pure = 'NRoot'
+
+    def __init__(self, base, exponent):
         self.base = base
         self.exponent = exponent
         self.terms = [self.base, self.exponent]
@@ -461,7 +443,6 @@ class Root(Operation):
         return self.po(self.base._pure_() , self.exponent._pure_())
 
     def get_html(self):
-
         c = template.Context({
             'id': self.id,
             'base': self.base.get_html(),
@@ -491,8 +472,6 @@ class Power(Operation):
         return self.po(self.base._pure_() , self.exponent._pure_())
 
     def get_html(self):
-        self.exponent.css_class = 'exponent'
-        self.base.css_class = 'exponent'
 
         c = template.Context({
             'id': self.id,
@@ -510,7 +489,6 @@ class Rational(Term):
     def __init__(self,num,den):
         self.num = num
         self.den = den
-        self.den.css_class = 'middle'
         self.terms = [num,den]
 
     def _pure_(self):
@@ -524,7 +502,6 @@ class Rational(Term):
             'den': self.den.get_html(),
             'parenthesis': self.show_parenthesis,
             'type': self.classname,
-            'class': self.css_class or '',
             })
 
         return self.html.render(c)
@@ -567,7 +544,7 @@ class Negate(PrefixOperation):
     def negate(self):
         return self.operand
 
-class Sqrt(Root):
+class Sqrt(NRoot):
     html = load_haml_template('sqrt.tpl')
     cd = 'arith1'
     cd_name = 'root'
@@ -597,6 +574,8 @@ class Abs(OutfixOperation):
 
     cd = 'arith1'
     cd_name = 'abs'
+
+    pure = 'abs'
 
 class Inverse(SupOperation):
     cd = 'arith2'
@@ -632,46 +611,44 @@ class Tuple(Term):
             'operand': objects,
             'symbol': self.symbol,
             'parenthesis': self.show_parenthesis,
-            'class': self.css_class or '',
             })
 
         return self.html.render(c)
 
-#class Set(Term):
-#    show_parenthesis = True
-#    html = load_haml_template('tuple.tpl')
-#    #html = load_haml_template('set.tpl')
-#    symbol = ','
-#    pure = 'Tuple'
-#
-#    def __init__(self, x, *xs):
-#        self.terms = [x] + list(xs)
-#
-#    def _pure_(self):
-#        return self.po(*purify(self.terms))
-#
-#    def get_html(self):
-#        objects = [o.get_html() for o in self.terms]
-#
-#        c = template.Context({
-#            'id': self.id,
-#            'operand': objects,
-#            'symbol': self.symbol,
-#            'parenthesis': self.show_parenthesis,
-#            'class': self.css_class or '',
-#            })
-#
-#        return self.html.render(c)
+class Set(Term):
+    show_parenthesis = True
+    html = load_haml_template('set.tpl')
+    symbol = ','
+    pure = 'Set'
+
+    def __init__(self, x, *xs):
+        self.terms = [x] + list(xs)
+
+    def _pure_(self):
+        return self.po(*purify(self.terms))
+
+    def get_html(self):
+        objects = [o.get_html() for o in self.terms]
+
+        c = template.Context({
+            'id': self.id,
+            'operand': objects,
+            'symbol': self.symbol,
+            'parenthesis': self.show_parenthesis,
+            })
+
+        return self.html.render(c)
 
 class CartesianProduct(InfixOperation):
-    symbol = '\\times'
+    symbol = '×'
     pure = 'carts'
 
     cd = 'set1'
     cd_name = 'cartesian_product'
 
 class EmptySet(Term):
-    symbol = '\\emptyset'
+    symbol = '∅'
+    latex = '\\emptyset'
 
 class Intersect(InfixOperation):
     symbol = '\\cup'
@@ -712,14 +689,14 @@ class Tan(PrefixOperation):
     pure = 'Tan'
 
 class Asin(PrefixOperation):
-    symbol = '\\sin^{-1}'
+    symbol = 'asin'
     pure = 'asin'
 
 class Acos(PrefixOperation):
-    symbol = '\\cos^{-1}'
+    symbol = 'acos'
 
 class Atan(PrefixOperation):
-    symbol = '\\tan^{-1}'
+    symbol = 'atan'
 
 class Sinh(PrefixOperation):
     symbol = 'sinh'
@@ -734,23 +711,23 @@ class Tanh(PrefixOperation):
     pure = 'Tanh'
 
 class Asinh(PrefixOperation):
-    symbol = 'sinh^{-1}'
+    symbol = 'asinh'
     pure = 'Asinh'
 
 class Acosh(PrefixOperation):
-    symbol = 'cosh^{-1}'
+    symbol = 'cosh'
     pure = 'Acosh'
 
 class Atanh(PrefixOperation):
-    symbol = 'tanh^{-1}'
+    symbol = 'tanh'
     pure = 'Atanh'
 
 class Gamma(PrefixOperation):
-    symbol = '\\Gamma'
+    symbol = 'Γ'
     pure = 'GammaF'
 
 class Zeta(PrefixOperation):
-    symbol = '\\zeta'
+    symbol = 'ζ'
     pure = 'RiemannZeta'
 
 #-------------------------------------------------------------

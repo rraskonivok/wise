@@ -93,11 +93,6 @@ html {
     border-left: 5px solid #f00;
 }
 
-.placeholder {
-    border: 1px dashed #d4a5a5 !important;
-    min-height: 20px;
-}
-
 .cmd {
     position: fixed;
     bottom: 50px;

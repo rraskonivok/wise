@@ -1,6 +1,6 @@
 mrow#{{id}} title="{{type}}"
 
-    <mi>{{symbol}}</mi>
+    <mo>{{symbol}}</mo>
 
     {% if parenthesis %}
     <mo stretchy="true">(</mo>

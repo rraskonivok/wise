@@ -40,27 +40,9 @@ ButtonPanel, MathMLPanel
 # Elementary Operations
 #--------------------
 
-#elem_operations = [
-#              ('add.png',       objects.Addition),
-#              ('mul.png',       objects.Product),
-#              ('pow.png',       objects.Power),
-#              ('neg.png',       objects.Negate),
-#              ('div.png',       objects.Rational),
-#              ('complex.png',   objects.ComplexCartesian),
-#              ('sqrt.png',      objects.Sqrt),
-#              ('exp.png',       objects.Exp),
-#              ('log.png',       objects.Ln),
-#              ('\\text{sgn}',objects.Sgn),
-#              ('\\delta',objects.DiracDelta),
-#              ('Abs',objects.Abs),
-#             ]
-#
-#Operations = ButtonPanel(name='Algebraic Operations',
-#                         objects=elem_operations)
-
 ops = [
-          ('buttons/add.xml', objects.Addition),
-          ('buttons/mul.xml', objects.Product),
+          ('buttons/add.xml',       objects.Addition),
+          ('buttons/mul.xml',       objects.Product),
           ('buttons/pow.xml',       objects.Power),
           ('buttons/neg.xml',       objects.Negate),
           ('buttons/div.xml',       objects.Rational),
@@ -68,55 +50,40 @@ ops = [
           ('buttons/sqrt.xml',      objects.Sqrt),
           ('buttons/exp.xml',       objects.Exp),
           ('buttons/log.xml',       objects.Ln),
+          ('buttons/nroot.xml',     objects.NRoot),
+          ('buttons/abs.xml',       objects.Abs),
       ]
 
-Algebraic = MathMLPanel(name="Algebraic",
-                        objects=ops)
+Algebraic = MathMLPanel(name="Algebraic", objects=ops)
 
-##-------------------------
-## Trigonometric Operations
-##-------------------------
-#
-#trig_operations = [('\\sin',objects.Sin),
-#                   ('\\cos',objects.Cos),
-#                   ('\\tan',objects.Tan),
-#                   ('\\text{asin}',objects.Asin),
-#                   ('\\text{acos}',objects.Acos),
-#                   ('\\text{atan}',objects.Atan),
-#                   ('\\text{sinh}',objects.Sinh),
-#                   ('\\text{cosh}',objects.Cosh),
-#                   ('\\text{tanh}',objects.Tanh),
-#                   ('\\text{asinh}',objects.Asinh),
-#                   ('\\text{acosh}',objects.Acosh),
-#                   ('\\text{atanh}',objects.Atanh),
-#                  ]
-#
-#TrigOperations = ButtonPanel(name='Trigonometric Functions',
-#                              objects=trig_operations)
-#
-##-------------------------
-## Number Theory Operations
-##-------------------------
-#
-#numtheory_operations = [('\\Gamma',objects.Gamma),
-#                        ('x!',objects.Factorial),
-#                        ('\\zeta',objects.Zeta),
-#                       ]
-#
-#NumTheoryOperations = ButtonPanel(name='Number Theory Functions',
-#                                   objects=numtheory_operations)
-#
-##-------------------------
-## Constants
-##-------------------------
-#
-#constants = [('i',objects.ImaginaryUnit),
-#             ('\\pi',objects.Pi),
-#             ('(a,b)',objects.Tuple(Placeholder(),Placeholder())),
-##             ('f(x)',objects.FunctionAppl(objects.Variable('f'),Placeholder())),
-#             ('Quote',objects.Quote),
-#             ('C_n',objects.Catalan),
-#            ]
-#
-#Constants = ButtonPanel(name='Constants',
-#                         objects=constants)
+#-------------------------
+# Trigonometric Operations
+#-------------------------
+
+trig_operations = [('buttons/sin.xml',objects.Sin),
+                   ('buttons/cos.xml',objects.Cos),
+                   ('buttons/tan.xml',objects.Tan),
+                   ('buttons/sinh.xml',objects.Sinh),
+                   ('buttons/cosh.xml',objects.Cosh),
+                   ('buttons/tanh.xml',objects.Tanh),
+                   ('buttons/asin.xml',objects.Asin),
+                   ('buttons/acos.xml',objects.Acos),
+                   ('buttons/atan.xml',objects.Atan),
+                   ('buttons/asinh.xml',objects.Asinh),
+                   ('buttons/acosh.xml',objects.Acosh),
+                   ('buttons/atanh.xml',objects.Atanh),
+                  ]
+
+Trig = MathMLPanel(name="Trigonometric", objects=trig_operations)
+
+#-------------------------
+# Number Theory Operations
+#-------------------------
+
+numtheory = [('buttons/gamma.xml',objects.Gamma),
+             ('buttons/zeta.xml',objects.Zeta),
+             ('buttons/factorial.xml',objects.Factorial),
+            ]
+
+NumTheoryOperations = MathMLPanel(name='Number Theory',
+                                  objects=numtheory)
