@@ -14,7 +14,6 @@ html {
 .uniform_button {
     vertical-align: middle;
     text-align: center;
-    padding: 0.5em;
 }
 
 .uniform_button:hover {

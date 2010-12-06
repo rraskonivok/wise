@@ -132,6 +132,11 @@ INSTALLED_APPS = (
 #    'debug_toolbar',
 )
 
+# Some browsers require the Content-Type to be
+# 'application/xhtml+xml' in order to render mixed doctype HTML +
+# MathML
+FORCE_XHTML = True
+
 # Sphinx sometimes complains about paths if it is run from a
 # different directory so this flag disables all the template
 # precaching / path loading so that Sphinx can complete. If this

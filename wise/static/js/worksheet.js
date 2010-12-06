@@ -959,11 +959,12 @@ function load_math_palette() {
       $("#math_palette").resizable({
         handles: 's'
       });
+
+      $('#math_palette td').button();
       //            $('.uniform_button','#math_palette').button();
     }
   });
 
-  $('.uniform_button','#math_palette').button();
 
 }
 

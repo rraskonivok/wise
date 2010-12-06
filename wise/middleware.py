@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.utils.html import strip_spaces_between_tags as short
  
 class XHTMLMiddleware(object):
@@ -6,5 +7,6 @@ class XHTMLMiddleware(object):
             response.content = short(response.content)
             # Mixed MathML + HTML contents needs this content
             # type otherwise Firefox won't render the MathML
-#            response["Content-Type"] = "application/xhtml+xml; charset=utf-8"
+            if settings.FORCE_XHTML:
+                response["Content-Type"] = "application/xhtml+xml; charset=utf-8"
         return response
