@@ -4,6 +4,7 @@ import objects
 from objects import Placeholder
 from wise.worksheet.panel import TabularPanel, ArrayPanel, \
 ButtonPanel, MathMLPanel
+
 #TODO: @extends decorator to append to existing panel
 
 ##--------------------

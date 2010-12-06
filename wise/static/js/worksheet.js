@@ -86,7 +86,8 @@ DISABLE_SIDEBAR = false;
 //Some JQuery Extensions
 //----------------------
 // Disable any animations on the worksheet
-jQuery.fx.off = true;
+
+jQuery.fx.off = false;
 
 //jQuery.fx.off = true;
 $.fn.exists = function () {

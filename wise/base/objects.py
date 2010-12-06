@@ -664,7 +664,6 @@ class Union(InfixOperation):
     cd = 'set1'
     cd_name = 'union'
 
-
 #-------------------------------------------------------------
 # Transcendental Functions
 #-------------------------------------------------------------
@@ -690,13 +689,15 @@ class Tan(PrefixOperation):
 
 class Asin(PrefixOperation):
     symbol = 'asin'
-    pure = 'asin'
+    pure = 'Asin'
 
 class Acos(PrefixOperation):
     symbol = 'acos'
+    pure = 'Acos'
 
 class Atan(PrefixOperation):
     symbol = 'atan'
+    pure = 'Atan'
 
 class Sinh(PrefixOperation):
     symbol = 'sinh'

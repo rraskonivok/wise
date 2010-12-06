@@ -11,6 +11,20 @@ html {
     Sidebar Palettes
  -------------------- */
 
+#sidebar {
+    position: fixed;
+    height: 100%;
+    left: 73%;
+}
+
+#sidebar .block {
+    height: 100%;
+}
+
+#sidebar #math_palette {
+    height: 85%;
+}
+
 .uniform_button {
     vertical-align: middle;
     text-align: center;

@@ -443,7 +443,8 @@ var Expression = Node.extend({
   },
 
   sexp: function () {
-    //        if(this._math.length == 0) { this.msexp(); }
+    // If for some reason we don't have a sexp, then build it
+    if(this._math.length == 0) { this.msexp(); }
     //TODO: REMOVE THIS!!!!!
     //this.msexp();
     return _.flatten(this._math).join(' ')

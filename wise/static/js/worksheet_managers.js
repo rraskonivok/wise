@@ -26,5 +26,3 @@ var NodeSelectionManager = Backbone.Collection.extend({
         return this.pluck('type');
     },
 });
-
-var selection = new NodeSelectionManager();
