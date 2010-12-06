@@ -413,7 +413,7 @@ class Addition(InfixOperation):
             return Numeric(0)
 
 class Product(InfixOperation):
-    symbol = ''
+    symbol = '·'
     show_parenthesis = False
     pure = 'mul'
 

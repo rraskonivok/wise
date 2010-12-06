@@ -12,10 +12,9 @@ html {
  -------------------- */
 
 .uniform_button {
-    min-height: 32px;
-    min-width: 32px;
-    float: left;
     vertical-align: middle;
+    text-align: center;
+    padding: 0.5em;
 }
 
 .uniform_button:hover {
@@ -41,6 +40,14 @@ html {
 
 .panel_frame {
     padding: 10px;
+}
+
+.panel_frame table {
+    width: 100%;
+}
+
+.panel_frame table td {
+    text-align: center;
 }
 
 /* -------------------- 

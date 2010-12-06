@@ -963,6 +963,8 @@ function load_math_palette() {
     }
   });
 
+  $('.uniform_button','#math_palette').button();
+
 }
 
 ///////////////////////////////////////////////////////////

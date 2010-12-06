@@ -22,7 +22,6 @@ def _map_panel_types(obj):
         try:
             # decrement the len(args) since we ignore the self
             ph = Placeholder
-            ph.sensitive = False
             placeholder_tuple = (ph(),)*(len(args) - 1)
             return obj(*placeholder_tuple)
         except TypeError:
@@ -33,6 +32,8 @@ def _map_panel_types(obj):
         print 'Invalid object in panel', isinstance(obj, ClassType), isinstance(obj,InstanceType), isinstance(obj, TypeType) ,type(obj)
 
 class Panel:
+    package = None
+
     def get_html(self):
         interface_ui = self.template
         objects = [obj.get_html() for obj in self.objects]
@@ -64,13 +65,39 @@ button_template = haml('''
 {% endfor %}
 ''')
 
-tex_template = haml('''
-{% for obj in objects %}
+mathml_template = haml('''
+{% for obj in buttons %}
     span.uniform_button
         span onclick="subs('{{ obj.math }}');"
-            $${{ obj.label }}$$
+            {{ obj.mathml|safe }}
 {% endfor %}
 ''')
+
+mathml_template = '''
+<table>
+<tr>
+{% for button in buttons %}
+  <td>
+  <span class="uniform_button" onclick="subs('{{ button.math }}');">
+  {{ button.mathml|safe }}
+  </span>
+  </td>
+  {% if forloop.counter|divisibleby:"5" %}
+    </tr><tr>
+  {% endif %}
+{% endfor %}
+</tr>
+</table>
+'''
+
+
+#tex_template = haml('''
+#{% for obj in objects %}
+#    span.uniform_button
+#        span onclick="subs('{{ obj.math }}');"
+#            $${{ obj.label }}$$
+#{% endfor %}
+#''')
 
 class TabularPanel(Panel):
     template = Template(tablular_template)
@@ -110,22 +137,44 @@ class ButtonPanel(Panel):
         c = Context({'name':self.name, 'objects': objects})
         return interface_ui.render(c)
 
-class TexButton(Panel):
-    template = Template(tex_template)
+class MathMLPanel(Panel):
+    template = Template(mathml_template)
 
     def __init__(self, name, objects):
         self.name = name
-        self.objects = [(label, _map_panel_types(obj)) for label,obj in objects]
+        self.objects = objects
+
 
     def get_html(self):
-        interface_ui = self.template
-        objects = []
-        for label, obj in self.objects:
-            obj.label = label
-            objects.append(obj)
+        buttons = []
 
-        c = Context({'name':self.name, 'objects': objects})
+        for xml, obj in self.objects:
+            button = {}
+            button['mathml'] = open(self.package + '/' + xml).read()
+            button['math'] = _map_panel_types(obj)
+            buttons.append( button )
+
+        interface_ui = self.template
+
+        c = Context({'name':self.name, 'buttons': buttons})
         return interface_ui.render(c)
+
+#class TexButton(Panel):
+#    template = Template(tex_template)
+#
+#    def __init__(self, name, objects):
+#        self.name = name
+#        self.objects = [(label, _map_panel_types(obj)) for label,obj in objects]
+#
+#    def get_html(self):
+#        interface_ui = self.template
+#        objects = []
+#        for label, obj in self.objects:
+#            obj.label = label
+#            objects.append(obj)
+#
+#        c = Context({'name':self.name, 'objects': objects})
+#        return interface_ui.render(c)
 
 
 def is_panel(obj):
@@ -137,6 +186,7 @@ for pack in settings.INSTALLED_MATH_PACKAGES:
         packages[pack] = importlib.import_module(path)
         for name, symbol in packages[pack].__dict__.iteritems():
             if is_panel(symbol):
+                symbol.package = pack
                 if settings.DEBUG:
                     pass
                     #print "Importing panel ... %s/%s" % (pack, name)

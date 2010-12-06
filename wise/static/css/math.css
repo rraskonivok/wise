@@ -8,16 +8,10 @@
     margin-bottom: 0px !important;
 }
 
-math {
+#workspace math {
     font-size: 200%;
     font-family: STIXGeneral,DejaVu Serif,DejaVu Sans,Cambria,Cambria Math,Times,Lucida Sans Unicode,OpenSymbol,Standard Symbols L,serif;
 }
-
-/*
-mi {
-    font-style: italic;
-}
-*/
 
 /* ------------------- 
    Toplevel Elements 
@@ -43,104 +37,6 @@ mi {
     padding-right: 25px;
 }
 
-.num {
-    display: block;
-    text-align: center;
-    border-bottom: 1px solid black;
-}
-
-.den {
-    display: block;
-    text-align: center;
-}
-
-.den * {
-    text-align: center;
-}
-
-.rhs {
-    display: table-cell;
-    vertical-align: middle;
-    height: inherit;
-}
-
-.lhs {
-    display: table-cell;
-    vertical-align: middle;
-    height: inherit;
-}
-
-.term {
-    display: inline-block;
-    vertical-align: baseline;
-    cursor: move;
-}
-
-.infix {
-    display: inline-block;
-}
-
-.texdecoration {
-    display: inline-block;
-}
-
-.overline {
-    text-decoration:overline;
-}
-
-.operator {
-    display: inline-block;
-    /* Some operators look better with this */
-    /*vertical-align: middle;*/
-}
-
-.exponent {
-    display: inline-block;
-    /*vertical-align: super;*/
-}
-
-.base {
-    display: inline-block;
-}
-
-.baseline {
-    vertical-align: baseline;
-    display: inline;
-}
-
-.fraction {
-    vertical-align: middle;
-}
-
-.negate {
-    /* Override the default container behavior */
-    vertical-align: baseline !important;
-}
-
-.container {
-    /* This is the one element that is raising some issues */
-    display: inline-block;
-    height: inherit;
-}
-
-.baseline {
-    display: inline-block;
-    vertical-align: baseline;
-}
-
-.middle {
-    display: inline-block;
-    vertical-align: middle;
-}
-
-.fractionbar {
-   border-bottom: 1px solid black; 
-}
-
-.unit {
-    display: inline-block;
-}
-
 .placeholder {
     border: 1px dashed #d4a5a5 !important;
     min-height: 20px;
@@ -149,27 +45,6 @@ mi {
     display: inline-block;
     vertical-align: middle;
     opacity: 1.0 !important;
-}
-
-.pnths {
-    display: inline-block;
-    vertical-align: middle;
-}
-
-.sqrt-prefix {
-    vertical-align: top;
-    position: relative;
-    left: 1px;
-    top: 2px;
-    font-family:'Computer Modern', 'Times New Roman', serif;
-}
-
-.sqrt-stem {
-    border-top: 1px solid black;
-    margin-top: 1px;
-    padding-left: 2px;
-    padding-right: .1em;
-    margin-right: .1em;
 }
 
 .cell {
