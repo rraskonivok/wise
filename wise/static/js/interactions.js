@@ -6,7 +6,6 @@ function show_pnths() {
 
 function add_shift() {
     var node = selection.at(0);
-    node.errorFlash();
     var root = get_root(node);
 
     if(node && root) {
@@ -23,7 +22,7 @@ function sub_shift() {
     if(node && root) {
         apply_rule('eq_sub', [root, node]);
     } else {
-        error('Could not find toplevel expression');
+        node.errorFlash();
     }
 }
 
@@ -34,7 +33,7 @@ function mul_shift() {
     if(node && root) {
         apply_rule('eq_mul', [root, node]);
     } else {
-        error('Could not find toplevel expression');
+        node.errorFlash();
     }
 }
 
@@ -45,7 +44,7 @@ function div_shift() {
     if(node && root) {
         apply_rule('eq_div', [root, node]);
     } else {
-        error('Could not find toplevel expression');
+        node.errorFlash();
     }
 }
 

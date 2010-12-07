@@ -63,9 +63,9 @@ function hide_tooltips() {
 function base_mode() {
     $('#quasimode-indicator').fadeTo('fast',0.1);
     $('#basemode-indicator').fadeTo('fast',1);
+    $("#selectionlist").empty();
     hide_tooltips();
     selection.clear();
     hide_cmdline();
     ctrlPressed = false;
 }
-

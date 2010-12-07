@@ -35,7 +35,6 @@ def heartbeat(request):
     response['Cache-Control'] = 'no-cache'
     return response
 
-
 @login_required
 @errors
 @ajax_request
@@ -177,7 +176,6 @@ def apply_def(request):
 def rules_request(request):
     return render_haml_to_response('ruleslist.tpl',
             {'rulesets':rules.rulesets})
-
 
 #@login_required
 #@errors
@@ -356,9 +354,8 @@ def new_cell(request):
 
     new_cell = PyCell([new_eq],[])
     new_cell.index = cell_index + 1;
-    cell_html = html(new_cell)
 
-    return JsonResponse({'new_html': cell_html,
+    return JsonResponse({'new_html': html(new_cell),
                          'new_json': json_flat(new_cell),
                          'namespace_index': uid.next()[3:],
                          'cell_index': cell_index + 1})

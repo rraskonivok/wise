@@ -20,7 +20,7 @@
 // Initalization
 ///////////////////////////////////////////////////////////
 $(document).ajaxError(function () {
-  error("Error connecting to server");
+    Notifications.raise('AJAX_FAIL');
 });
 
 $(document).ready(function () {
@@ -41,6 +41,10 @@ $(document).ajaxStop(function () {
 // Nerf the console.log function so that it doesn't accidently
 // break if Firebug / JS Consle is turned off.
 // Source: http://paulirish.com/2009/log-a-lightweight-wrapper-for-consolelog/
+
+// Disable any animations on the worksheet
+jQuery.fx.off = false;
+
 window.log = function () {
   log.history = log.history || [];
   log.history.push(arguments);
@@ -50,7 +54,7 @@ window.log = function () {
 };
 
 // Begin Debuggin' Stuff
-
+// ---------------------
 function showmath() {
   return selection.at(0).sexp();
 }
@@ -69,7 +73,6 @@ function rebuild_node() {
 }
 
 // Beat on the server
-
 function stress_test() {
   while (true) {
     apply_rule('algebra_normal', ['( Addition (Variable x) (Addition (Variable x) (Variable x)))']);
@@ -85,11 +88,7 @@ DISABLE_SIDEBAR = false;
 
 //Some JQuery Extensions
 //----------------------
-// Disable any animations on the worksheet
 
-jQuery.fx.off = false;
-
-//jQuery.fx.off = true;
 $.fn.exists = function () {
   return $(this).length > 0;
 }
@@ -784,6 +783,7 @@ function new_cell() {
         model: cell,
         id: cell.cid,
       });
+
       view.render();
       cell.view = view;
 
@@ -791,7 +791,11 @@ function new_cell() {
       var cs = new CellSelection({
         model: cell,
       });
+
       cs.render();
+
+      // TODO: Wtf?
+      $(view.el).addClass('cell');
 
       $("#workspace").append(view.el);
       $('#cell_selection').append(cs.el);
@@ -800,6 +804,8 @@ function new_cell() {
       cell.set({
         active: true
       });
+
+      activate_cell(cell);
     }
   });
 }

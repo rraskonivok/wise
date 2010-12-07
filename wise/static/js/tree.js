@@ -446,7 +446,7 @@ var Expression = Node.extend({
     // If for some reason we don't have a sexp, then build it
     if(this._math.length == 0) { this.msexp(); }
     //TODO: REMOVE THIS!!!!!
-    //this.msexp();
+    this.msexp();
     return _.flatten(this._math).join(' ')
   },
 
@@ -640,11 +640,11 @@ function get_parent(node) {
 }
 
 function get_root(node) {
-  if (!node.tree) {
+  if (node && !node.tree) {
     window.log('Node is unattached', node);
     return;
   }
-  if (node.get('toplevel') != true) {
+  if (node && node.get('toplevel') != true) {
     return get_root(node.tree.root);
   } else {
     return node;

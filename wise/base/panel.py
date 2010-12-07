@@ -9,51 +9,6 @@ from django.template import Template, Context
 
 #TODO: @extends decorator to append to existing panel
 
-##--------------------
-## Letter Variables
-##--------------------
-
-#letters = [letter for letter in string.lowercase]
-#lettervariables = map(objects.Variable, letters)
-#letter_buttons = zip(letters, lettervariables)
-#
-#Variables = TexButton(name='Variables',
-#                       objects=letter_buttons)
-#
-#--------------------
-# Greek Variables
-#--------------------
-
-#greek_alphabet = ['alpha', 'beta', 'gamma', 'delta', 'epsilon',
-#'kappa', 'lambda', 'mu', 'nu', 'xi', 'pi', 'varpi', 'rho',
-#'varrho', 'sigma', 'varsigma', 'tau', 'upsilon', 'phi', 'varphi',
-#'chi', 'psi', 'omega', 'Gamma', 'Delta', 'Theta', 'Lambda', 'Xi',
-#'Pi', 'Sigma', 'Upsilon', 'Phi', 'Psi', 'Omega']
-#
-#greek_symbols = map(objects.Greek, greek_alphabet)
-#greek_latex = ['\\' + s for s in greek_alphabet]
-#greek_buttons = zip(greek_latex, greek_symbols)
-#
-#Greeks = TexButton(name='Greek',
-#                    objects=greek_buttons)
-
-greek_template = Template('''
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML">
-    <mrow>
-        <mn>{{symbol}}</mn>
-    </mrow>
-</math>
-''')
-
-greeks = []
-
-for letter, symbol in latex.greek_unicode_list:
-    mml = greek_template.render(Context({'symbol':symbol}))
-    greeks.append( (mml, objects.Variable(letter)) )
-
-Greeks = MathMLPanel(name="Greeks", objects=greeks,
-        use_template=True)
-
 #--------------------
 # Elementary Operations
 #--------------------
@@ -105,3 +60,28 @@ numtheory = [('buttons/gamma.xml',objects.Gamma),
 
 NumTheoryOperations = MathMLPanel(name='Number Theory',
                                   objects=numtheory)
+
+#--------------------
+# Letter Variables
+#--------------------
+
+#--------------------
+# Greek Variables
+#--------------------
+
+greek_template = Template('''
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML">
+    <mrow>
+        <mn>{{symbol}}</mn>
+    </mrow>
+</math>
+''')
+
+greeks = []
+
+for letter, symbol in latex.greek_unicode_list:
+    mml = greek_template.render(Context({'symbol':symbol}))
+    greeks.append( (mml, objects.Variable(letter)) )
+
+Greeks = MathMLPanel(name="Greeks", objects=greeks,
+        use_template=True)

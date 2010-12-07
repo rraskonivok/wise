@@ -4,6 +4,7 @@ _.templateSettings = {
 
 var cell_menu = _.template('<div class="cellbuttons"><span class="add ui-icon ui-icon-circle-plus"></span><span class="del ui-icon ui-icon-circle-minus"></span><span class="save ui-icon ui-icon-disk"></span></div>')
 var cell_template = _.template('<div id="{{id}}" class="cell"></div>');
+var cell_eqs = _.template('<div class="equations"></div>');
 
 // The view of the workspace Singleton
 var WorksheetView = Backbone.View.extend({
@@ -30,9 +31,11 @@ var CellView = Backbone.View.extend({
   },
 
   menu: cell_menu,
+  equations: cell_eqs,
 
   render: function () {
-    $(this.el).html(this.menu());
+    $(this.el).append(this.menu());
+    $(this.el).append(this.equations());
     return this;
   },
 
@@ -43,7 +46,7 @@ var CellView = Backbone.View.extend({
 
 
   addExpression: function (expr_view) {
-    $('.equations',this.el).append(expr_view);
+    this.$('.equations').append(expr_view);
   },
 
   addAssumption: function (expr_view) {
