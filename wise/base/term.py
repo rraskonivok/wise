@@ -84,16 +84,18 @@ class Term(object):
         raise Exception('Anonymous Term was caught with arguments ' + (args,kwargs))
 
     @property
-    def descriptio(self):
+    def description(self):
         return self.__doc__
 
     def _pure_(self):
-        # This is not defeind explicityly for the reason that inheriting
+        # This is not defined explicityly for the reason that inheriting
         # the method to generate a Pure object will often result in very
         # unexpected consequences if not well thought out. Just define
         # one for every object you create
         raise exception.PureError('No Pure representation of %s.' % self.classname)
 
+    # These may be defined as needed depending on which packages
+    # you want to integrate with
     def _latex_(self):
         raise exception.PureError('No LaTeX representation of %s.' % self.classname)
 

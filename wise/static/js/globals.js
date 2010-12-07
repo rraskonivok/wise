@@ -7,3 +7,5 @@ var active_cell = null;
 var cmd_visible = 0;
 
 var selection = new NodeSelectionManager();
+
+var DISABLE_TYPESETTING = true;

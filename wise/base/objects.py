@@ -31,7 +31,7 @@ from wise.translators.pure_wrap import PureSymbol, PureInt, PureDouble, ProtoRul
 
 import worksheet.exceptions as exception
 
-from utils.latex import greek_lookup
+from utils import latex
 from worksheet.utils import *
 
 from django import template
@@ -64,24 +64,39 @@ class Quote(PrefixOperation):
 #-------------------------------------------------------------
 
 class BaseSymbol(Term):
-
     def __init__(self,*args):
-        pass
+        raise Exception('Naked symbol invoked.')
 
-# Conviencence wrapper
-def Greek(symbol):
-    return Variable(symbol)
+class Greek(BaseSymbol):
+    '''A Greek symbol'''
+    pure = 'greek'
 
-class Variable(BaseSymbol):
-    '''A free variable'''
-
-    assumptions = None
-    bounds = None
-    pure = 'var'
+    # We don't need to italisize greeks
+    html = load_haml_template('constant.tpl')
 
     def __init__(self,symbol):
         self.symbol = symbol
         self.latex = greek_lookup(symbol)
+        self.args = [str(symbol)]
+
+    def _pure_(self):
+        return PureSymbol(self.symbol)
+
+    def _openmath_(self):
+        return self.symbol
+
+class Variable(BaseSymbol):
+    '''A free variable'''
+    pure = 'var'
+
+    def __init__(self,symbol):
+        if symbol in latex.greek_unicode:
+            self.latex = latex.greek_lookup(symbol)
+            self.html = load_haml_template('constant.tpl')
+        else:
+            self.latex = symbol
+
+        self.symbol = symbol
         self.args = [str(symbol)]
 
     def _pure_(self):
@@ -716,11 +731,11 @@ class Asinh(PrefixOperation):
     pure = 'Asinh'
 
 class Acosh(PrefixOperation):
-    symbol = 'cosh'
+    symbol = 'acosh'
     pure = 'Acosh'
 
 class Atanh(PrefixOperation):
-    symbol = 'tanh'
+    symbol = 'atanh'
     pure = 'Atanh'
 
 class Gamma(PrefixOperation):

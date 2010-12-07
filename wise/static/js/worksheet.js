@@ -236,60 +236,6 @@ function dialog(text) {
 }
 
 ///////////////////////////////////////////////////////////
-// Stretchy Operators
-///////////////////////////////////////////////////////////
-ap = [];
-
-function resize_all() {
-  _.each(ap, resize_parentheses);
-}
-
-function resize_parentheses(node) {
-  // TODO: Eventually change this to use a 'stretchy' class so
-  // that we can scale other outfix operators besides
-  // parentheses
-  if (!(node.view)) {
-    return;
-  }
-
-  if (!_.include(ap, node)) {
-    ap.push(node);
-  }
-
-  // This value is determined empirically, I really should write
-  // something prettier but I have better things to do
-  // with my time, MathJax does this much better, maybe imitate
-  // their 'fenced' style
-  var scaling_factor = 0.3;
-  var min_scale = 7;
-
-  var fontfamily = null;
-
-  var scale = node.view.el.height() * scaling_factor;
-
-  if (scale < min_scale) {
-    scale = min_scale
-  };
-  fontfamily = 'MathJax_Size4';
-
-  //if(scale < 10) {
-  //    fontfamily = 'MathJax_Size1';
-  //}
-  //if(scale > 20) {
-  //    fontfamily = 'MathJax_Size2';
-  //}
-  //if(scale > 30) {
-  //    fontfamily = 'MathJax_Size3';
-  //}
-  //if(scale > 40) {
-  //    fontfamily = 'MathJax_Size4';
-  //}
-  var ps = node.view.el.children('.pnths').
-  css('font-size', scale).
-  css('font-family', fontfamily);
-}
-
-///////////////////////////////////////////////////////////
 // Server Queries
 ///////////////////////////////////////////////////////////
 ajaxqueue = $.manageAjax.create('queue', {
@@ -299,7 +245,6 @@ ajaxqueue = $.manageAjax.create('queue', {
 });
 
 // Heartbeat to check to see whether the server is alive
-
 function heartbeat() {
   $.ajax({
     url: '/hb',
@@ -431,10 +376,6 @@ function apply_rule(rule, operands) {
           image.push(newnode);
 
         }
-
-        //Typeset any latex in the html the server just spit out
-//        mathjax_typeset($(nsym));
-        resize_parentheses(newnode);
       }
     }
 
@@ -453,7 +394,7 @@ function apply_def(def, selections) {
 
     //Fetch the math for each of the selections
     if (selection.count == 0) {
-      //            error("Selection is empty.");
+      //error("Selection is empty.");
       $('#selectionlist').effect("highlight", {
         color: '#E6867A'
       }, 500);
@@ -525,7 +466,6 @@ function apply_def(def, selections) {
     NAMESPACE_INDEX = data.namespace_index;
 
     base_mode();
-    resize_all();
   }, "json");
 }
 
@@ -619,7 +559,6 @@ function use_infix(code) {
       NAMESPACE_INDEX = data.namespace_index;
 
       base_mode();
-      resize_all();
     }
   });
 }
@@ -629,9 +568,6 @@ function apply_transform(transform, operands) {
   postdata.transform = transform;
   postdata.namespace_index = NAMESPACE_INDEX;
 
-  //if(operands.length == 1) {
-  //    selections[0].fadeOut();
-  //}
   if (!operands) {
     //Fetch the math for each of the selections
     if (selection.isEmpty()) {
@@ -641,7 +577,6 @@ function apply_transform(transform, operands) {
     // Get the sexps of the selected nodes
     postdata.selections = selection.sexps();
   } else {
-    //TODO: change data.selections -> data.operands
     postdata.selections = _.map(operands, function (obj) {
       if (obj.constructor == String) {
         return obj;
@@ -708,7 +643,6 @@ function apply_transform(transform, operands) {
       NAMESPACE_INDEX = response.namespace_index;
 
       base_mode();
-      resize_all();
     }
   });
 }
@@ -877,20 +811,21 @@ function new_cell() {
 function mathjax_typeset(element) {
   //Typeset a DOM element when passed, if no element is passed
   //then typeset the entire page
-  //if(DISABLE_TYPESETTING) {
-  //    return;
-  //}
+  if(DISABLE_TYPESETTING) {
+      return;
+  }
+
   //Refresh math for a specific element
-  //if (element) {
-  //  MathJax.Hub.Queue(["Typeset", MathJax.Hub, element[0]]);
-  //  MathJax.Hub.Queue();
-  //}
-  ////Refresh math Globally, shouldn't be called too much because
-  ////it bogs down the browser
-  //else {
-  //  console.log('Refreshing all math on the page');
-  //  MathJax.Hub.Process();
-  //}
+  if (element) {
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, element[0]]);
+    MathJax.Hub.Queue();
+  }
+  //Refresh math Globally, shouldn't be called too much because
+  //it bogs down the browser
+  else {
+    console.log('Refreshing all math on the page');
+    MathJax.Hub.Process();
+  }
 }
 
 ///////////////////////////////////////////////////////////

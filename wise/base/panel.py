@@ -2,8 +2,10 @@ import string
 import objects
 
 from objects import Placeholder
-from wise.worksheet.panel import TabularPanel, ArrayPanel, \
-ButtonPanel, MathMLPanel
+from wise.worksheet.panel import MathMLPanel
+
+from utils import latex
+from django.template import Template, Context
 
 #TODO: @extends decorator to append to existing panel
 
@@ -22,9 +24,7 @@ ButtonPanel, MathMLPanel
 # Greek Variables
 #--------------------
 
-# The greek alphabet... LaTeX style
 #greek_alphabet = ['alpha', 'beta', 'gamma', 'delta', 'epsilon',
-#'varepsilon', 'zeta', 'eta', 'theta', 'vartheta', 'gamma',
 #'kappa', 'lambda', 'mu', 'nu', 'xi', 'pi', 'varpi', 'rho',
 #'varrho', 'sigma', 'varsigma', 'tau', 'upsilon', 'phi', 'varphi',
 #'chi', 'psi', 'omega', 'Gamma', 'Delta', 'Theta', 'Lambda', 'Xi',
@@ -36,6 +36,23 @@ ButtonPanel, MathMLPanel
 #
 #Greeks = TexButton(name='Greek',
 #                    objects=greek_buttons)
+
+greek_template = Template('''
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML">
+    <mrow>
+        <mn>{{symbol}}</mn>
+    </mrow>
+</math>
+''')
+
+greeks = []
+
+for letter, symbol in latex.greek_unicode_list:
+    mml = greek_template.render(Context({'symbol':symbol}))
+    greeks.append( (mml, objects.Variable(letter)) )
+
+Greeks = MathMLPanel(name="Greeks", objects=greeks,
+        use_template=True)
 
 #--------------------
 # Elementary Operations

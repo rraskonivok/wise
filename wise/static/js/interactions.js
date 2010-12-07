@@ -143,11 +143,6 @@ function definition_apply() {
 }
 
 function remove_element() {
-    if(selection.isEmpty()) {
-        error('Selection is empty.');
-        return;
-    }
-
     selection.each(function(elem) {
 
         if(elem.get('toplevel')) {

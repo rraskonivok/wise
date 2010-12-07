@@ -21,15 +21,16 @@ def _map_panel_types(obj):
         args, varargs, keywords, defaults = getargspec(obj.__init__)
         try:
             # decrement the len(args) since we ignore the self
+            # argument
             ph = Placeholder
-            placeholder_tuple = (ph(),)*(len(args) - 1)
-            return obj(*placeholder_tuple)
+            placeholder_tuples = (ph(),)*(len(args) - 1)
+            return obj(*placeholder_tuples)
         except TypeError:
             print 'Type Error',args
-    elif isinstance(obj, Term):
-        return obj
     else:
-        print 'Invalid object in panel', isinstance(obj, ClassType), isinstance(obj,InstanceType), isinstance(obj, TypeType) ,type(obj)
+        # If an instance is passed do nothing and just pass it
+        # along
+        return obj
 
 class Panel:
     package = None
@@ -39,39 +40,6 @@ class Panel:
         objects = [obj.get_html() for obj in self.objects]
         c = Context({'name':self.name, 'objects': objects})
         return interface_ui.render(c)
-
-tablular_template = haml('''
-<table>
-    {% for object in objects %}
-        <tr>
-            <td>{{ object.0 }}</td>
-            <td>{{ object.1 }}</td>
-        </tr>
-    {% endfor %}
-</table>
-''')
-
-array_template = haml('''
-{% for html in objects %}
-    {{ html }}
-{% endfor %}
-''')
-
-button_template = haml('''
-{% for obj in objects %}
-    span.uniform_button
-        span onclick="subs('{{ obj.math }}');"
-            <img src="/img/buttons/{{ obj.label }}"/>
-{% endfor %}
-''')
-
-mathml_template = haml('''
-{% for obj in buttons %}
-    span.uniform_button
-        span onclick="subs('{{ obj.math }}');"
-            {{ obj.mathml|safe }}
-{% endfor %}
-''')
 
 mathml_template = '''
 <table>
@@ -90,92 +58,35 @@ mathml_template = '''
 </table>
 '''
 
-
-#tex_template = haml('''
-#{% for obj in objects %}
-#    span.uniform_button
-#        span onclick="subs('{{ obj.math }}');"
-#            $${{ obj.label }}$$
-#{% endfor %}
-#''')
-
-class TabularPanel(Panel):
-    template = Template(tablular_template)
-
-    def __init__(self, name, objects):
-        self.name = name
-        self.objects = [(label, _map_panel_types(obj)) for label,obj in objects]
-
-    def get_html(self):
-        interface_ui = self.template
-        objects = [(label, obj.get_html()) for label,obj in self.objects]
-        c = Context({'name':self.name, 'objects': objects})
-        return interface_ui.render(c)
-
-
-class ArrayPanel(Panel):
-    template = Template(array_template)
-
-    def __init__(self, name, objects):
-        self.name = name
-        self.objects = map(_map_panel_types, objects)
-
-class ButtonPanel(Panel):
-    template = Template(button_template)
-
-    def __init__(self, name, objects):
-        self.name = name
-        self.objects = [(label, _map_panel_types(obj)) for label,obj in objects]
-
-    def get_html(self):
-        interface_ui = self.template
-        objects = []
-        for label, obj in self.objects:
-            obj.label = label
-            objects.append(obj)
-
-        c = Context({'name':self.name, 'objects': objects})
-        return interface_ui.render(c)
-
 class MathMLPanel(Panel):
     template = Template(mathml_template)
 
-    def __init__(self, name, objects):
+    def __init__(self, name, objects, use_template=False):
         self.name = name
         self.objects = objects
-
+        self.use_template = use_template
 
     def get_html(self):
         buttons = []
 
-        for xml, obj in self.objects:
-            button = {}
-            button['mathml'] = open(self.package + '/' + xml).read()
-            button['math'] = _map_panel_types(obj)
-            buttons.append( button )
+        if self.use_template:
+            # Use a string template passed directly
+            for xml, obj in self.objects:
+                button = {}
+                button['mathml'] = xml
+                button['math'] = _map_panel_types(obj)
+                buttons.append( button )
+        else:
+            for xml, obj in self.objects:
+                button = {}
+                button['mathml'] = open(self.package + '/' + xml).read()
+                button['math'] = _map_panel_types(obj)
+                buttons.append( button )
 
         interface_ui = self.template
 
         c = Context({'name':self.name, 'buttons': buttons})
         return interface_ui.render(c)
-
-#class TexButton(Panel):
-#    template = Template(tex_template)
-#
-#    def __init__(self, name, objects):
-#        self.name = name
-#        self.objects = [(label, _map_panel_types(obj)) for label,obj in objects]
-#
-#    def get_html(self):
-#        interface_ui = self.template
-#        objects = []
-#        for label, obj in self.objects:
-#            obj.label = label
-#            objects.append(obj)
-#
-#        c = Context({'name':self.name, 'objects': objects})
-#        return interface_ui.render(c)
-
 
 def is_panel(obj):
     return isinstance(obj,Panel)
