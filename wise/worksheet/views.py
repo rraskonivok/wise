@@ -77,6 +77,11 @@ def home(request):
     return render_to_response('home.html', {'workspaces': workspaces})
 
 @login_required
+def ecosystem(request):
+    workspaces = Workspace.objects.filter(owner=request.user)
+    return render_to_response('ecosystem.html')
+
+@login_required
 def users(request):
     return render_to_response('users.html',{'users':User.objects.all()})
 
