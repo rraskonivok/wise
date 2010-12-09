@@ -2,6 +2,15 @@ _.templateSettings = {
   interpolate: /\{\{(.+?)\}\}/g
 };
 
+//TODO: Experiment with this somemore
+//$(window).scroll(function () {
+//    var a=$("#sidebar"),b=a.offset().top;
+//    var d = a.css("position") == "fixed",
+//        c = $(window).scrollTop() > b;
+//    if (!d && c) a.css("top", "20px").css("position", "fixed");
+//    else d && !c && a.css("top", "").css("left", "").css("position", "")
+//});
+
 var cell_menu = _.template('<div class="cellbuttons"><span class="add ui-icon ui-icon-circle-plus"></span><span class="del ui-icon ui-icon-circle-minus"></span><span class="save ui-icon ui-icon-disk"></span></div>')
 var cell_template = _.template('<div id="{{id}}" class="cell"></div>');
 var cell_eqs = _.template('<div class="equations"></div>');

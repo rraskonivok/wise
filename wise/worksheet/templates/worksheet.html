@@ -91,6 +91,23 @@ Init Function + Global Vars
     
     function init()
     {
+        if(!($.browser.mozilla)) {
+            $( "#dialog" ).dialog({
+                resizable: false,
+                height:300,
+                width: 350,
+                modal: true,
+                position: 'center',
+                buttons: {
+                    "Proceed Anyways": function() {
+                        $( this ).dialog( "close" );
+                    },
+                    "Go Back": function() {
+                        javascript:history.go(-1);
+                    }
+                }
+            });
+        }
         init_nodes();
         load_math_palette();
         load_rules_palette();
@@ -124,7 +141,38 @@ Equations
 
 {% block main %}
 
-<div id="dialog-ask" title="Are you sure?">
+<div id="dialog" style="display: none;">
+    It appears that you aren't using Firefox 3+. If the
+    mathematics displayed on the right does not match the image
+    on the left then your browser does not support enough MathML to
+    use the worksheet.
+
+    <table style="width: 100%; text-align: center;">
+        <tr>
+        <td>
+            <img src="/static/img/mathml_test.png"/>
+        </td>
+        <td>
+        <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+          <mrow>
+            <msup>
+              <mi>x</mi>
+              <mn>2</mn>
+            </msup>
+            <msup>
+              <mi>y</mi>
+              <mn>2</mn>
+            </msup>
+          </mrow>
+        </math>
+        </td>
+        </tr>
+    </table>
+
+    <p>
+    <input type="checkbox"/> Don't show me this message again.
+    </p>
+
 </div>
 
 <div id="selectionlist">

@@ -67,24 +67,6 @@ class BaseSymbol(Term):
     def __init__(self,*args):
         raise Exception('Naked symbol invoked.')
 
-class Greek(BaseSymbol):
-    '''A Greek symbol'''
-    pure = 'greek'
-
-    # We don't need to italisize greeks
-    html = load_haml_template('constant.tpl')
-
-    def __init__(self,symbol):
-        self.symbol = symbol
-        self.latex = greek_lookup(symbol)
-        self.args = [str(symbol)]
-
-    def _pure_(self):
-        return PureSymbol(self.symbol)
-
-    def _openmath_(self):
-        return self.symbol
-
 class Variable(BaseSymbol):
     '''A free variable'''
     pure = 'var'

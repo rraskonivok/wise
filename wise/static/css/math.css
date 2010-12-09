@@ -10,7 +10,15 @@
 
 #workspace math {
     font-size: 200%;
-    font-family: STIXGeneral,DejaVu Serif,DejaVu Sans,Cambria,Cambria Math,Times,Lucida Sans Unicode,OpenSymbol,Standard Symbols L,serif;
+    font-family: STIXGeneral,
+                 DejaVu Serif,
+                 DejaVu Sans,
+                 Cambria,
+                 Cambria Math,Times,
+                 Lucida Sans Unicode,
+                 OpenSymbol,
+                 Standard Symbols L,
+                 serif;
 }
 
 /* ------------------- 
@@ -42,7 +50,8 @@
     padding-left: 10px;
     padding-right: 10px;
     vertical-align: middle;
-    height: 25px;
+    height: 10px !important;
+    max-height: 10px;
 }
 
 .cell {

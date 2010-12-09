@@ -12,7 +12,7 @@ html {
  -------------------- */
 
 #sidebar {
-    position: fixed;
+/*    position: fixed;*/
     height: 100%;
     left: 73%;
 }
@@ -87,7 +87,7 @@ html {
     margin: -5px;
 }
 
-.selected .placeholder {
+.selected < .placeholder {
     background-color: #d4a5a5;
 }
 
