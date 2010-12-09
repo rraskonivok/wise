@@ -1,0 +1,165 @@
+{% extends "base.tpl" %}
+{% load bundler_tags %}
+
+{# --------------------------
+Worksheet specific javascript 
+-------------------------- #}
+{% block includes %}
+
+ <!-- Using /ws/mathjax/ ( which is just a url rewrite to
+ /static/js/mathjax ) avoids Firefox strange same-origin
+ policy for otf web fonts -->
+<!-- <script type="text/javascript"
+    src="/ws/mathjax/MathJax.js"></script>-->
+
+{% load_bundle "worksheet_js" %}
+{% load_bundle "worksheet_css" %}
+
+{% endblock %}
+
+{# --------------------------
+Worksheet Palettes
+-------------------------- #}
+{% block sidebar %}
+<div class="block">
+
+  <div class="secondary-navigation">
+    <ul class="wat-cf">
+      <li id="tab_math_palette" class="active first"><a href="javascript:palette(1)">Palette</a></li>
+      <li id="tab_rules_palette"><a href="javascript:palette(2)">Rules</a></li>
+    </ul>
+  </div>
+
+  <div id="math_palette" style="display:none" class="palette"> </div>
+
+  <div id="rules_palette" style="display:none" class="palette"> </div>
+
+</div>
+{% endblock %}
+
+{# --------------------------
+Init Function + Global Vars
+-------------------------- #}
+{% block inline-script %}
+<script>
+    // The id of the Worksheet corresponding to its index in the
+    // database
+    var WORKSHEET_ID = {{ ws_id }};
+
+    // This is passed by Django to help us keep track of the #uid
+    // counter
+    
+    // Count of how many "nodes"/uid tagged elements there are in the
+    // DOM
+    var NAMESPACE_INDEX = {{ namespace_index }};
+    
+    // Count of how many cells are in the workspace
+    var CELL_INDEX = {{ cell_index }};
+    
+    // Raw json sent from the server when the page
+    // initializes
+    var JSON_TREE = $.parseJSON('{{ json_cells|safe }}');
+    
+    // Lookup table of active equations which maps uid -> internal
+    // tree object
+    //var NODES = {};
+
+    // Array of cells, index corresponds to order on page. Each
+    // element contains another array of equations in that cell.
+    var CELLS = [];
+
+    // Dictionary of equations indexed by uid
+    var EQUATIONS = {};
+
+    //MathJax.Hub.Register.MessageHook("New Math", function (message) {
+    //  var script = MathJax.Hub.getJaxFor(message[1]).SourceElement();
+    //  console.log(message.join(" ")+": '"+script.text+"'");
+    //})
+
+    //Only show the workspace after all math is rendered
+    //MathJax.Hub.Register.MessageHook("End Process", function (message) {
+    //    $(".lines").show();
+    //})
+
+    var cmd_visible = 0;
+
+    $('#cmdline').submit(function() {
+        use_infix($("#cmdinput").val());
+        $("#cmdinput").blur();
+        return false;
+    });
+    
+    function init()
+    {
+        init_nodes();
+        load_math_palette();
+        load_rules_palette();
+
+        init_keyboard_shortcuts();
+
+        setInterval( "heartbeat()", 10000 );
+    
+        //Make buttons pretty
+        $('.equation button','#workspace').parent().buttonset();
+        $('button','#workspace').parent().buttonset();
+    
+        //Make equations sortable within each cell.
+        $(".cell table").sortable({
+            handle: '.hand',
+        });
+
+        $('.lines').disableSelection();
+    
+        //$('.editable').editable({loadurl: '#', loadtype: 'POST'})
+
+    }
+</script>
+{% endblock %}
+
+
+
+{# --------------------------
+Equations
+-------------------------- #}
+
+{% block main %}
+
+<div id="dialog-ask" title="Are you sure?">
+</div>
+
+<div id="selectionlist">
+</div>
+
+<div class="cmd" style="display: none">
+    <form id="cmdline" action="#">
+        <input id="cmdinput" type="text">
+    </form>
+</div>
+
+<div class="block" id="block-text">
+  <div class="secondary-navigation">
+    <ul class="wat-cf">
+      <li class="active first"><a href="#block-text">Worksheet</a></li>
+    </ul>
+  </div>
+  <div class="content">
+
+    <div id="cell_selection" class="pagination">
+        <a class="active" href="javascript:new_cell()">New Cell</a>
+    </div>
+
+    <div id="scratchpad" class="scatchpad">
+    </div>
+
+    <h2 class="title">{{title|title}}</h2>
+    <div class="inner">
+      <hr />
+        <div id="workspace">
+            {% for cell in cells %}
+                {{cell|safe}} 
+            {% endfor %}
+        </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

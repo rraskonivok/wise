@@ -1,5 +1,0 @@
-using DistributiveLattice;
-
-// Noetherian
-universal1 = binary_universal_left cap zero;
-universal2 = binary_universal_left cup one;

@@ -1,4 +1,0 @@
-using Lattice;
-
-distribute1 = pushdown cap cup;
-distribute2 = pushdown cup cap;
