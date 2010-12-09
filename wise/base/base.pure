@@ -669,3 +669,8 @@ nfunc f n p = nfunc (f p) (n-1) p if n > 1;
             = f p otherwise;
 
 ntuple n p = nfunc Tuple n p;
+
+integrate (1/Sqrt(1+x^2)) x = Asinh x;
+integrate (1/Sqrt(x^2+1)) x = Asinh x;
+GammaF(1/2) = Sqrt pi;
+GammaF(0.5) = Sqrt pi;

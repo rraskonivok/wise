@@ -29,6 +29,12 @@ ops = [
 
 Algebraic = MathMLPanel(name="Algebraic", objects=ops)
 
+calc = [
+          ('buttons/integral.xml',  objects.Integral),
+       ]
+
+Calculus = MathMLPanel(name="Calculus", objects=calc)
+
 #-------------------------
 # Trigonometric Operations
 #-------------------------

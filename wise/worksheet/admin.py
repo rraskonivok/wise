@@ -10,7 +10,7 @@ class ExpressionsInline(admin.StackedInline):
 
 class AssumptionsInline(admin.StackedInline):
     extra = 1
-    model = Expression
+    model = Assumption
 
 class WorkspaceAdmin(admin.ModelAdmin):
     fieldsets = [

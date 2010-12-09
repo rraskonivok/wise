@@ -636,6 +636,31 @@ class Set(Term):
 
         return self.html.render(c)
 
+class Integral(Term):
+    show_parenthesis = True
+    html = load_haml_template('integral.tpl')
+    pure = 'integrate'
+
+    def __init__(self, f, dx):
+        self.integrand = f
+        self.variable = dx
+        self.terms = [f, dx]
+
+    def _pure_(self):
+        return self.po(*purify(self.terms))
+
+    def get_html(self):
+        objects = [o.get_html() for o in self.terms]
+
+        c = template.Context({
+            'id': self.id,
+            'integrand': self.integrand.get_html(),
+            'variable': self.variable.get_html(),
+            })
+
+        return self.html.render(c)
+
+
 class CartesianProduct(InfixOperation):
     symbol = '×'
     pure = 'carts'
