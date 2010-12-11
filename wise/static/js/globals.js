@@ -11,15 +11,3 @@ Wise = {
 
     DISABLE_TYPESETTING: true,
 }
-
-//WORKSHEET = Wise.worksheet;
-//
-//NODES = Wise.nodes;
-//
-//active_cell = Wise.active_cell;
-//
-//cmd_visible = Wise.cmd_visible;
-//
-//selection = Wise.selection
-//
-//DISABLE_TYPESETTING = Wise.DISABLE_TYPESETTING;

@@ -19,30 +19,24 @@ transforms = {}
 # This is horribly inefficent but avoids using import * , and adds a level of security 
 # since only Mapping types can be called by the ajax apply_transform request
 
-for pack in settings.INSTALLED_MATH_PACKAGES:
-#    try:
-        path = '.'.join([ROOT_MODULE,pack,'transforms'])
-        packages[pack] = importlib.import_module(path)
-        for name, symbol in packages[pack].__dict__.iteritems():
-            # We short circuit in this order since is_mapping is simply a hash lookup while
-            # isinstance is potentially costly
-            if is_mapping(symbol) and isinstance(symbol,FunctionType):
-                if settings.DEBUG:
-                    pass
-                    #print "Importing transform ... %s/%s" % (pack, name)
-
-                transforms[name] = symbol
-#    except ImportError:
-#        raise exception.IncompletePackage(pack,'transforms.py')
+#for pack in settings.INSTALLED_MATH_PACKAGES:
+##    try:
+#        path = '.'.join([ROOT_MODULE,pack,'transforms'])
+#        packages[pack] = importlib.import_module(path)
+#        for name, symbol in packages[pack].__dict__.iteritems():
+#            # We short circuit in this order since is_mapping is simply a hash lookup while
+#            # isinstance is potentially costly
+#            if is_mapping(symbol) and isinstance(symbol,FunctionType):
+#                if settings.DEBUG:
+#                    pass
+#                    #print "Importing transform ... %s/%s" % (pack, name)
+#
+#                transforms[name] = symbol
+##    except ImportError:
+##        raise exception.IncompletePackage(pack,'transforms.py')
 
 def get_transform_by_path(pack, fun):
     return packages[pack].__dict__[fun]
 
 def get_transform_by_str(fun):
     return transforms[fun]
-
-# Hash the keys of the importing transforms, guaranteed to be unique to the specific
-# combinations of imported libraries.
-if settings.DEBUG:
-    pass
-    #print 'Aggregated transforms have checksum ...', hashdict(transforms.iterkeys())

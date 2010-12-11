@@ -1,18 +1,17 @@
-import wise.translators.pytopure as translate
-import wise.translators.pure_wrap as pure_wrap
-from wise.translators.pure_wrap import PureLevel, PureSymbol, reduce_with_pure_rules, PureClosure
+#import wise.translators.pytopure as translate
+#from wise.translators.pure_wrap import PureLevel, reduce_with_pure_rules
 
+from wise.utils.aggregator import Aggregator
 from worksheet.utils import hasharray
 import wise.worksheet.exceptions as exception
 
 from django.utils import importlib
 from django.conf import settings
 
-from wise.base.rules import PublicRule
+#from wise.translators.pure_wrap import PublicRule
 
 packages = {}
-rulesets = {}
-ROOT_MODULE = 'wise'
+rulesets = Aggregator(file='rule_cache')
 
 def ReduceWithRules( rules, expr ):
     '''Reduce the given expression with a list of PureRules
@@ -63,24 +62,3 @@ def ApplyExternalRule( ref, *expr ):
         print 'Reduced Pure:', pure_expr
 
     return pyexpr
-
-def is_rule(obj):
-    return isinstance(obj,PublicRule)
-
-# And so begin 4 nested for-loops, yah....
-for pack in settings.INSTALLED_MATH_PACKAGES:
-    try:
-        path = '.'.join([ROOT_MODULE,pack,'rules'])
-        packages[pack] = importlib.import_module(path)
-        for name, symbol in packages[pack].__dict__.iteritems():
-
-            # Merge dictionary into main
-            if name == 'panel':
-                rulesets.update(symbol)
-
-            # Register the rule in the translation dictionary
-            if hasattr(symbol,'register'):
-                symbol.register()
-
-    except ImportError:
-        raise exception.IncompletePackage(pack,'rules.py')

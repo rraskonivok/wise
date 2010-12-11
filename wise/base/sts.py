@@ -16,7 +16,6 @@ from wise.base.toplevel import Equation, Definition, Function
 from math import modf
 
 from wise.worksheet.utils import render_haml_to_response
-from wise.translators.pure_wrap import PureSymbol, PureInt, PureDouble, ProtoRule, p2i, i2p
 
 import worksheet.exceptions as exception
 

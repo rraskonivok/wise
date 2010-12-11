@@ -8,9 +8,9 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
-import wise.translators.pytopure as translate
-import wise.translators.mathobjects
-import wise.translators.pure_wrap as pure_wrap
+#import wise.translators.pytopure as translate
+#import wise.translators.mathobjects
+#import wise.translators.pure_wrap as pure_wrap
 
 from django import template
 from django.shortcuts import render_to_response
@@ -21,8 +21,10 @@ Http404
 # uidgen is imported from utils
 from wise.worksheet.utils import *
 from wise.worksheet.models import Workspace, Expression, Cell
-from wise.worksheet import transforms, rules
 import wise.worksheet.exceptions as exception
+
+import wise.worksheet.rules as rules
+import wise.worksheet.transforms as transforms
 
 from wise.base.cell import Cell as PyCell
 from wise.base.objects import EquationPrototype, AssumptionPrototype

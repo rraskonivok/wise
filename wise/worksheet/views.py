@@ -9,11 +9,9 @@
 # License, or (at your option) any later version.
 
 import traceback
-from transforms import get_transform_by_path
+#from transforms import get_transform_by_path
 
-import wise.translators.mathobjects as mathobjects
-import wise.translators.pure_wrap as pure_wrap
-from wise.translators.pytopure import parse_sexp
+#from wise.translators.pytopure import parse_sexp
 
 import panel
 
@@ -37,6 +35,7 @@ from wise.worksheet.utils import *
 from wise.worksheet.forms import LoginForm
 from wise.worksheet.models import Workspace, Expression, Cell, \
 Assumption
+
 from wise.base.cell import Cell as PyCell
 
 CACHE_INTERVAL = 30*60 # 5 Minutes
@@ -99,7 +98,8 @@ def log(request):
 def dict(request):
     ''' Dump the translation dictionary to a JSON object, for
     debugging purposes '''
-    return HttpResponse(str(pure_wrap.objects))
+    return None
+    #return HttpResponse(str(pure_wrap.objects))
     #return JsonResponse(pure_wrap.objects)
 
 # End Debugging Stuff

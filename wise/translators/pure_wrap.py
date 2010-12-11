@@ -9,20 +9,21 @@ from django.template import Template, Context
 
 import sys
 
-from pure.pure import PureEnv
-env = PureEnv()
-
-env.eval('using pure::prelude')
-
 from wise.pure.pure import PureInt, PureSymbol, PureLevel, \
 PureExpr, PureDouble, PureClosure, reduce_with_pure_rules, \
 new_level, restore_level, IManager, PureEnv
 
+print IManager.exists()
+
+env = PureEnv()
+#env.eval('using pure::prelude')
+
 from wise.pure.prelude import p2i, i2p, nargs
+from wise.utils.aggregator import Aggregator
 
 ROOT_MODULE = 'wise'
 packages = {}
-objects = {}
+objects = Aggregator(file='object_cache')
 
 OBJECTS = objects
 
@@ -36,6 +37,9 @@ def jit_compile_interp():
 
 def is_pure_expr(obj):
     return isinstance(obj,PureExpr)
+
+def is_rule(obj):
+    return isinstance(obj,PublicRule)
 
 for pack in settings.INSTALLED_MATH_PACKAGES:
     try:
@@ -51,6 +55,26 @@ for pack in settings.INSTALLED_MATH_PACKAGES:
                     raise Exception("Namespace collision, tried to import '%s' from package '%s' but symbol already exists")
     except ImportError:
         raise exception.IncompletePackage(pack,'%s.py' % pack)
+
+from wise.worksheet.utils import trim_docstring
+
+## And so begin 4 nested for-loops, yah....
+#for pack in settings.INSTALLED_MATH_PACKAGES:
+#    #try:
+#        path = '.'.join([ROOT_MODULE,pack,'rules'])
+#        packages[pack] = importlib.import_module(path)
+#        for name, symbol in packages[pack].__dict__.iteritems():
+#
+#            # Merge dictionary into main
+#            if name == 'panel':
+#                rulesets.update(symbol)
+#
+#            # Register the rule in the translation dictionary
+#            if hasattr(symbol,'register'):
+#                symbol.register()
+#
+#    #except ImportError:
+#    #    raise exception.IncompletePackage(pack,'rules.py')
 
 print 'Done importing objects'
 
@@ -89,3 +113,32 @@ class ProtoRule:
 
     def __repr__(self):
         return str(self._proto)
+
+class PublicRule:
+    po = None
+    ref = None
+    arity = -1
+    pure = None
+
+    def __init__(self, pure_symbol_name):
+        self.pure = pure_symbol_name
+        self.ref = self.pure
+        #self.po = PureClosure(self.pure)
+        #pure_wrap.objects[self.pure] = self.po
+        #self.po.arity = pure_wrap.nargs(self.po)
+
+    @property
+    def description(self):
+        return self.__doc__
+
+    #@classmethod
+    #def register(self):
+    #    if self.pure:
+
+    #        if hasattr(self,'__doc__') and self.__doc__:
+    #            self.desc = trim_docstring(self.__doc__)
+    #        else:
+    #            self.desc = 'No description available'
+
+    #        self.po = PureClosure(self.pure)
+    #        pure_wrap.objects[self.pure] = self.po

@@ -155,7 +155,6 @@ var NodeView = Backbone.View.extend({
     _.bindAll(this, 'render', 'make', 'onClick');
   },
 
-
   onClick: function (e) {
     // If the ctrl key is down the container selection mode
     // is enabled an 'leaf' nodes are ignored

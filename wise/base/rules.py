@@ -1,38 +1,5 @@
-import wise.translators.pytopure as translate
-import wise.translators.pure_wrap as pure_wrap
-from wise.translators.pure_wrap import PureLevel, PureSymbol, reduce_with_pure_rules, PureClosure
-
-from wise.worksheet.utils import trim_docstring
-
-class PublicRule:
-    po = None
-    ref = None
-    arity = -1
-    pure = None
-
-    def __init__(self, pure_symbol_name):
-        self.pure = pure_symbol_name
-        self.ref = self.pure
-        self.po = PureClosure(self.pure)
-        pure_wrap.objects[self.pure] = self.po
-
-        self.po.arity = pure_wrap.nargs(self.po)
-
-    @property
-    def description(self):
-        return self.__doc__
-
-    @classmethod
-    def register(self):
-        if self.pure:
-
-            if hasattr(self,'__doc__') and self.__doc__:
-                self.desc = trim_docstring(self.__doc__)
-            else:
-                self.desc = 'No description available'
-
-            self.po = PureClosure(self.pure)
-            pure_wrap.objects[self.pure] = self.po
+#from wise.translators.pure_wrap import PureLevel, PureSymbol, reduce_with_pure_rules, PureClosure
+from wise.translators.pure_wrap import PublicRule
 
 # Toplevel Panel dictionary, must be called 'panel'
 

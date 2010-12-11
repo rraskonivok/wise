@@ -3,7 +3,7 @@ from wise.translators.parser import eq_parse
 #Used for hashing trees
 from hashlib import sha1
 
-from wise.translators.mathobjects import *
+from wise.translators.mathobjects import Variable, Placeholder
 
 from wise.worksheet.utils import *
 import wise.worksheet.exceptions as exception
