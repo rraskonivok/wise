@@ -216,7 +216,7 @@ var NodeSelectionView = Backbone.View.extend({
   initialize: function () {
     _.bindAll(this, 'render', 'make', 'unselect');
     this.model.bind('change:selected', this.unselect);
-    selection.getByCid(this.model.cid).selectionview = this;
+    Wise.Selection.getByCid(this.model.cid).selectionview = this;
   },
 
   render: function () {

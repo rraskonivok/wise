@@ -21,7 +21,7 @@ prefix 1000 evali; // Evaluation to integer
 prefix 1000 evalf; // Evaluation to float
 prefix 1000 evals; // Evaluation to symbolic value
 
-//def a::int/b::int = (rational a b);
+def a::int/b::int = (rational a b);
 
 /* ..
    Algebraic Ordering
@@ -672,5 +672,10 @@ ntuple n p = nfunc Tuple n p;
 
 integrate (1/Sqrt(1+x^2)) x = Asinh x;
 integrate (1/Sqrt(x^2+1)) x = Asinh x;
+integrate x x = x^2;
+integrate (x^(n::int)) x = x^(n+1)/(n+1) if n ~= -1;
+integrate (x^(-1)) x = ln x;
+integrate (f+g) x = integrate f x + integrate g x;
+
 GammaF(1/2) = Sqrt pi;
 GammaF(0.5) = Sqrt pi;

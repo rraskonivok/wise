@@ -56,20 +56,20 @@ window.log = function () {
 // Begin Debuggin' Stuff
 // ---------------------
 function showmath() {
-  return selection.at(0).sexp();
+  return Wise.Selection.at(0).sexp();
 }
 
 function shownode() {
-  if (selection.isEmpty()) {
+  if (Wise.Selection.isEmpty()) {
     window.log('Select something idiot!');
   }
-  return selection.at(0);
+  return Wise.Selection.at(0);
 }
 
 function rebuild_node() {
   //Shit went down, so rebuild the sexp
   //apply_transform('base/Rebuild',[selection.at(0)]);
-  selection.at(0).msexp();
+  Wise.Selection.at(0).msexp();
 }
 
 // Beat on the server
@@ -108,7 +108,7 @@ $.fn.cid = function () {
 
 // Extract the id of an object and lookup its node
 $.fn.node = function () {
-  var node = NODES.getByCid($(this).id())
+  var node = Wise.Nodes.getByCid($(this).id())
   if (!node) {
     error("The term you selected is 'broken', try refreshing its corresponding equation.");
     window.log($(this).id(), 'not initalized in term db.');
@@ -151,12 +151,18 @@ function sleep(milliseconds) {
 // the term database
 
 function init_nodes() {
-  NODES = new Backbone.Collection();
-  WORKSHEET = new Worksheet();
+//  Wise.Nodes = new Backbone.Collection();
+//  Wise.Worksheet = new Worksheet();
+
+//    Wise.Worksheet = Wise.worksheet;
+
+    Wise.Worksheet = new WorksheetModel();
+    Wise.Selection = new NodeSelectionManager();
+    Wise.Nodes = new Backbone.Collection();
 
   _.each(JSON_TREE, function (cell_json) {
     var new_cell = build_cell_from_json(cell_json);
-    WORKSHEET.add(new_cell);
+    Wise.Worksheet.add(new_cell);
 
     var cs = new CellSelection({
       model: new_cell,
@@ -178,7 +184,7 @@ function selection_matches_pattern(pattern) {
   // _.all( [true, false] ) = false => does not match pattern
   //TODO add support for matching by toplevel or number of
   //children
-  var zipped = _.zip(selection, pattern);
+  var zipped = _.zip(Wise.Selection, pattern);
   return _.map(zipped, _.isEqual);
 }
 
@@ -268,7 +274,7 @@ function apply_rule(rule, operands) {
   // the workspace's current selection
   if (!operands) {
 
-    if (selection.isEmpty()) {
+    if (Wise.Selection.isEmpty()) {
       //error("Selection is empty.");
       $('#selectionlist').effect("highlight", {
         color: '#E6867A'
@@ -278,8 +284,8 @@ function apply_rule(rule, operands) {
     }
     //Fetch the sexps for each of the selections and pass it
     //as a JSON array
-    data.operands = selection.sexps();
-    operands = selection.toArray();
+    data.operands = Wise.Selection.sexps();
+    operands = Wise.Selection.toArray();
 
   } else {
     // Operands can a mix of Expression objects or literal string 
@@ -348,7 +354,7 @@ function apply_rule(rule, operands) {
           // !!!!!!!!!!!!!!!!
           newnode = graft_toplevel_from_json(
           // Graft on top of the old node
-          NODES.getByCid(preimage.cid),
+          Wise.Nodes.getByCid(preimage.cid),
           // Build the new node from the response JSON
           response.new_json[i],
           // Optionally tell the new node what is
@@ -364,7 +370,7 @@ function apply_rule(rule, operands) {
 
           newnode = graft_tree_from_json(
           // Graft on top of the old node
-          NODES.getByCid(preimage.cid),
+          Wise.Nodes.getByCid(preimage.cid),
           // Build the new node from the response JSON
           response.new_json[i],
           // Optionally tell the new node what is
@@ -392,7 +398,7 @@ function apply_def(def, selections) {
   if (selections == null) {
 
     //Fetch the math for each of the selections
-    if (selection.count == 0) {
+    if (Wise.Selection.count == 0) {
       //error("Selection is empty.");
       $('#selectionlist').effect("highlight", {
         color: '#E6867A'
@@ -400,7 +406,8 @@ function apply_def(def, selections) {
       return;
     }
 
-    data.selections = selection.list_attr('math');
+    //TODO: This is vestigal
+    data.selections = Wise.Selection.list_attr('math');
 
   }
   else {
@@ -447,18 +454,16 @@ function apply_def(def, selections) {
           build_tree_from_json(data.new_json[i])
 
           graft_tree_from_json(
-          NODES.getByCid(obj.id()), data.new_json[i], 'apply_def');
+          Wise.Nodes.getByCid(obj.id()), data.new_json[i], 'apply_def');
 
         } else {
 
           graft_tree_from_json(
-          NODES.getByCid(obj.id()), data.new_json[i], 'apply_def');
+          Wise.Nodes.getByCid(obj.id()), data.new_json[i], 'apply_def');
 
         }
 
         var nsym = obj.replace(data.new_html[i]);
- //       nsym.fadeIn('slow');
-//        mathjax_typeset($(nsym));
       }
     }
 
@@ -472,20 +477,20 @@ function use_infix(code) {
   // Sends raw Pure code to the server and attempts to create
   // new nodes from the result, this function is *NOT* secure
   // since Pure can execute arbitrary shell commands
-  if (selection.isEmpty()) {
+  if (Wise.Selection.isEmpty()) {
     $('#selectionlist').effect("highlight", {
       color: '#E6867A'
     }, 500);
     return;
   }
 
-  if (selection.at(0).get('toplevel')) {
+  if (Wise.Selection.at(0).get('toplevel')) {
     //        error('Cannot rewrite toplevel element');
-    selection.at(0).errorFlash();
+    Wise.Selection.at(0).errorFlash();
     return;
   }
 
-  selections = selection.toArray();
+  selections = Wise.Selection.toArray();
 
   postdata = {};
   postdata.namespace_index = NAMESPACE_INDEX;
@@ -541,17 +546,15 @@ function use_infix(code) {
             nsym = obj.dom().replace(data.new_html[i]);
 
             graft_tree_from_json(
-            NODES.getByCid(obj.cid), data.new_json[i]);
+            Wise.Nodes.getByCid(obj.cid), data.new_json[i]);
 
           } else {
             nsym = obj.dom().replace(data.new_html[i]);
 
             graft_tree_from_json(
-            NODES.getByCid(obj.cid), data.new_json[i]);
+            Wise.Nodes.getByCid(obj.cid), data.new_json[i]);
 
           }
-          //Typeset any latex in the html the server just spit out
-          mathjax_typeset($(nsym));
         }
       }
 
@@ -569,12 +572,12 @@ function apply_transform(transform, operands) {
 
   if (!operands) {
     //Fetch the math for each of the selections
-    if (selection.isEmpty()) {
+    if (Wise.Selection.isEmpty()) {
       error("No selection to apply transform to");
       return;
     }
     // Get the sexps of the selected nodes
-    postdata.selections = selection.sexps();
+    postdata.selections = Wise.Selection.sexps();
   } else {
     postdata.selections = _.map(operands, function (obj) {
       if (obj.constructor == String) {
@@ -626,16 +629,14 @@ function apply_transform(transform, operands) {
             nsym = obj.dom().replace(response.new_html[i]);
 
             graft_toplevel_from_json(
-            NODES.getByCid(obj.cid), response.new_json[i], postdata.transform);
+            Wise.Nodes.getByCid(obj.cid), response.new_json[i], postdata.transform);
 
           } else {
             nsym = obj.dom().replace(response.new_html[i]);
 
             graft_tree_from_json(
-            NODES.getByCid(obj.cid), response.new_json[i], postdata.transform);
+            Wise.Nodes.getByCid(obj.cid), response.new_json[i], postdata.transform);
           }
-
-          mathjax_typeset($(nsym));
         }
       }
 
@@ -653,12 +654,12 @@ function new_line(type, index) {
   data.type = type;
 
   if (index != undefined) {
-    active_cell = WORKSHEET.getByCid(index);
+    active_cell = Wise.Worksheet.getByCid(index);
   }
 
   if (!active_cell) {
-    if (WORKSHEET.length == 1) {
-      active_cell = WORKSHEET.at(0);
+    if (Wise.Worksheet.length == 1) {
+      active_cell = Wise.Worksheet.at(0);
     } else {
       error("Select a cell to insert into");
       return;
@@ -690,10 +691,6 @@ function new_line(type, index) {
         cell: active_cell.id
       });
       active_cell.addExpression(eq);
-
-      // Render the html of the new expression
-      mathjax_typeset(new_expr_html);
-
     }
 
     NAMESPACE_INDEX = data.namespace_index;
@@ -707,12 +704,12 @@ function new_assum(type, index) {
   data.type = type;
 
   if (index != undefined) {
-    active_cell = WORKSHEET.getByCid(index);
+    active_cell = Wise.Worksheet.getByCid(index);
   }
 
   if (!active_cell) {
-    if (WORKSHEET.length == 1) {
-      active_cell = WORKSHEET.at(0);
+    if (Wise.Worksheet.length == 1) {
+      active_cell = Wise.Worksheet.at(0);
     } else {
       error("Select a cell to insert into");
       return;
@@ -745,9 +742,6 @@ function new_assum(type, index) {
       });
       active_cell.addAssumption(expr);
 
-      // Render the html of the new expression
-      mathjax_typeset(new_expr_html);
-
     }
 
     NAMESPACE_INDEX = data.namespace_index;
@@ -774,7 +768,7 @@ function new_cell() {
       var cell = build_cell_from_json(response.new_json);
       active_cell = cell;
 
-      WORKSHEET.add(cell);
+      Wise.Worksheet.add(cell);
       CELL_INDEX = response.cell_index;
       NAMESPACE_INDEX = response.namespace_index;
 
@@ -817,7 +811,7 @@ function new_cell() {
 function mathjax_typeset(element) {
   //Typeset a DOM element when passed, if no element is passed
   //then typeset the entire page
-  if(DISABLE_TYPESETTING) {
+  if(Worksheet.DISABLE_TYPESETTING) {
       return;
   }
 

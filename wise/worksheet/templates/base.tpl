@@ -16,6 +16,9 @@
  {% block includes %}
  {% endblock %}
 
+ {% block globals %}
+ {% endblock %}
+
 </head>
 <body>
 

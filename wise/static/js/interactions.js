@@ -1,11 +1,11 @@
 function show_pnths() {
-   var node = selection.at(0);
+   var node = Wise.Selection.at(0);
    node.view.el.children('.pnths').toggle(); 
    resize_parentheses(node);
 }
 
 function add_shift() {
-    var node = selection.at(0);
+    var node = Wise.Selection.at(0);
     var root = get_root(node);
 
     if(node && root) {
@@ -16,7 +16,7 @@ function add_shift() {
 }
 
 function sub_shift() {
-    var node = selection.at(0);
+    var node = Wise.Selection.at(0);
     var root = get_root(node);
 
     if(node && root) {
@@ -27,7 +27,7 @@ function sub_shift() {
 }
 
 function mul_shift() {
-    var node = selection.at(0);
+    var node = Wise.Selection.at(0);
     var root = get_root(node);
 
     if(node && root) {
@@ -38,7 +38,7 @@ function mul_shift() {
 }
 
 function div_shift() {
-    var node = selection.at(0);
+    var node = Wise.Selection.at(0);
     var root = get_root(node);
 
     if(node && root) {
@@ -50,7 +50,7 @@ function div_shift() {
 
 //Select the toplevel element
 function select_parent(clear) {
-    var start = selection.last();
+    var start = Wise.Selection.last();
     
     if(start.toplevel) {
         return;
@@ -64,7 +64,7 @@ function select_parent(clear) {
 }
 
 function select_root(clear) {
-    var start = selection.last();
+    var start = Wise.Selection.last();
 
     if(clear) {
         base_mode();
@@ -75,16 +75,16 @@ function select_root(clear) {
 
 function iter_left() {
     // Get the largest addition container
-    if(selection.at(0)) {
-        parents_until_not_type(selection.at(0),'Addition').select();
+    if(Wise.Selection.at(0)) {
+        parents_until_not_type(Wise.Selection.at(0),'Addition').select();
     }
-    if(selection.at(1)) {
-        return apply_rule('iter_left',[selection.at(1),selection.at(0)]);
+    if(Wise.Selection.at(1)) {
+        return apply_rule('iter_left',[Wise.Selection.at(1), Wise.Selection.at(0)]);
     }
 }
 
 function select_left_root(clear) {
-    var start = selection.last();
+    var start = Wise.Selection.last();
 
     if(clear) {
         base_mode();
@@ -94,7 +94,7 @@ function select_left_root(clear) {
 }
 
 function select_right_root(clear) {
-    var start = selection.last();
+    var start = Wise.Selection.last();
 
     if(clear) {
         base_mode();
@@ -105,9 +105,9 @@ function select_right_root(clear) {
 
 // ( Placeholder, Placeholder , ... , Expression )
 function placeholder_substitute() {
-    if (selection.length >= 2) {
-        var heads = selection.first(selection.length - 1);
-        var last = selection.last();
+    if (Wise.Selection.length >= 2) {
+        var heads = Wise.Selection.first(Wise.Selection.length - 1);
+        var last = Wise.Selection.last();
 
         if(last.get('toplevel')) {
             //error('Cannot substitute toplevel element into expression');
@@ -131,9 +131,9 @@ function placeholder_substitute() {
 
 // ( Definition, Definition , ... , Expression )
 function definition_apply() {
-    if (selection.count == 2) {
-        fst = selection.nth(0);
-        snd = selection.nth(1);
+    if (Wise.Selection.count == 2) {
+        fst = Wise.Selection.nth(0);
+        snd = Wise.Selection.nth(1);
 
         if(fst.is_definition() && !snd.is_definition()) {
             apply_def(fst,[snd]);
@@ -142,7 +142,7 @@ function definition_apply() {
 }
 
 function remove_element() {
-    selection.each(function(elem) {
+    Wise.Selection.each(function(elem) {
 
         if(elem.get('toplevel')) {
             root = get_root(elem).tree;
@@ -163,8 +163,8 @@ function remove_element() {
 }
 
 function subs(obj) {
-    if(selection.length > 0) {
-        apply_transform('base/PlaceholderSubstitute',[selection.at(0), obj]);
+    if(Wise.Selection.length > 0) {
+        apply_transform('base/PlaceholderSubstitute',[Wise.Selection.at(0), obj]);
     } else {
         error('Select an object to substitute into.');
     }

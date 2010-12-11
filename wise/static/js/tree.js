@@ -49,7 +49,7 @@
 //             .     .
 //             .     .
 //             .     .
-var Worksheet = Backbone.Collection.extend({
+var WorksheetModel = Backbone.Collection.extend({
   url: '/ws',
 
   initialize: function () {
@@ -209,8 +209,8 @@ function build_tree_from_json(json_input, top_class) {
       node.index = 0;
     }
 
-    if (!NODES.getByCid(node.cid)) {
-      NODES.add(node);
+    if (!Wise.Nodes.getByCid(node.cid)) {
+      Wise.Nodes.add(node);
     }
 
 
@@ -221,7 +221,7 @@ function build_tree_from_json(json_input, top_class) {
   for (term in json_input) {
     var index = term;
     var term = json_input[term];
-    var prent = NODES.getByCid(term.id);
+    var prent = Wise.Nodes.getByCid(term.id);
 
     if (index == 0) {
       T = new top_class(prent);
@@ -232,7 +232,7 @@ function build_tree_from_json(json_input, top_class) {
 
     for (var child in term.children) {
       child = term.children[child];
-      prent.addNode(NODES.getByCid(child));
+      prent.addNode(Wise.Nodes.getByCid(child));
     }
   }
 
@@ -376,7 +376,7 @@ var Node = Backbone.Model.extend({
     _.invoke(this.children, 'delNode');
 
     //Destroy the node itself
-    NODES.remove(this);
+    Wise.Nodes.remove(this);
 
     // Tell the tree that it has changed contents and needs
     // to pushed to the server.
@@ -466,7 +466,7 @@ var Expression = Node.extend({
     this.set({
       selected: false
     });
-    selection.remove(this);
+    Wise.Selection.remove(this);
     this.view.el.removeClass('selected');
   },
 
@@ -475,17 +475,17 @@ var Expression = Node.extend({
     this.set({
       selected: true
     });
-    selection.add(this);
+    Wise.Selection.add(this);
     this.view.el.addClass('selected');
 
-    // Move this to the selection view handler
+    // Move this to the Wise.Selection view handler
     var bt = new NodeSelectionView({
       model: this,
     });
 
     bt.render();
 
-    $("#selectionlist").append(bt.el);
+    $("#Wise.Selectionlist").append(bt.el);
 
     substitute_stoplist = ['Placeholder'];
 
@@ -622,12 +622,12 @@ function sexp(head, args) {
 }
 
 function garbage_collect() {
-  // This is sort of expensive since it involves #(NODES.length)
+  // This is sort of expensive since it involves #(Wise.Nodes.length)
   // of jquery lookups, don't call it much.
-  NODES.each(function (node) {
+  Wise.Nodes.each(function (node) {
     if (!node.view) {
       window.log('Garbage collecting', node.cid);
-      NODES.del(node);
+      Wise.Nodes.del(node);
     }
   });
 }

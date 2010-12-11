@@ -65,7 +65,6 @@ function base_mode() {
     $('#basemode-indicator').fadeTo('fast',1);
     $("#selectionlist").empty();
     hide_tooltips();
-    selection.clear();
+    Wise.Selection.clear();
     hide_cmdline();
-    ctrlPressed = false;
 }

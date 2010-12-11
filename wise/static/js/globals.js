@@ -1,11 +1,25 @@
-var WORKSHEET = null;
+Wise = {
+    version: '0.1alpha',
 
-var NODES = null;
+    // Created upon call of init()
+    Worksheet: null,
+    Nodes: null,
+    Selection: null,
 
-var active_cell = null;
+    active_cell: null,
+    cmd_visible: null,
 
-var cmd_visible = 0;
+    DISABLE_TYPESETTING: true,
+}
 
-var selection = new NodeSelectionManager();
-
-var DISABLE_TYPESETTING = true;
+//WORKSHEET = Wise.worksheet;
+//
+//NODES = Wise.nodes;
+//
+//active_cell = Wise.active_cell;
+//
+//cmd_visible = Wise.cmd_visible;
+//
+//selection = Wise.selection
+//
+//DISABLE_TYPESETTING = Wise.DISABLE_TYPESETTING;

@@ -40,7 +40,7 @@ Worksheet Palettes
 {# --------------------------
 Init Function + Global Vars
 -------------------------- #}
-{% block inline-script %}
+{% block globals %}
 <script>
     // The id of the Worksheet corresponding to its index in the
     // database
@@ -67,9 +67,12 @@ Init Function + Global Vars
     // Array of cells, index corresponds to order on page. Each
     // element contains another array of equations in that cell.
     var CELLS = [];
+</script>
 
-    // Dictionary of equations indexed by uid
-    var EQUATIONS = {};
+{% endblock %}
+
+{% block inline-script %}
+<script>
 
     //MathJax.Hub.Register.MessageHook("New Math", function (message) {
     //  var script = MathJax.Hub.getJaxFor(message[1]).SourceElement();
