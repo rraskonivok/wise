@@ -57,5 +57,7 @@ def build_translation():
         for cls in mod_top:
             generate_translation(root=cls)
 
+build_translation()
+
 #import worksheet.uml as uml
 #uml.generate(Term)

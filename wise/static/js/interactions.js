@@ -171,6 +171,6 @@ function subs(obj) {
 }
 
 function save_worksheet(e) {
-    WORKSHEET.saveAll();
+    Wise.Worksheet.saveAll();
     e.preventDefault();
 }

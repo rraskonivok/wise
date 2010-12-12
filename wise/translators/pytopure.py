@@ -3,7 +3,9 @@ from wise.translators.parser import eq_parse
 #Used for hashing trees
 from hashlib import sha1
 
-from wise.translators.mathobjects import Variable, Placeholder
+from wise.base.objects import Placeholder, Variable
+from wise.translators.mathobjects import translation_table, \
+translate_pure
 
 from wise.worksheet.utils import *
 import wise.worksheet.exceptions as exception
@@ -259,7 +261,6 @@ class Branch(object):
 
         #Evalute by descent
         def f(x):
-            #Ugly Hack
             if isinstance(x,str):
                 if is_number(x):
                     obj = Numeric(x)

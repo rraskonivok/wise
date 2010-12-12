@@ -11,8 +11,7 @@
 import traceback
 #from transforms import get_transform_by_path
 import wise.translators.pure_wrap as pure_wrap
-
-#from wise.translators.pytopure import parse_sexp
+from wise.translators.pytopure import parse_sexp
 
 import panel
 
@@ -139,7 +138,6 @@ def ws(request, eq_id):
         # ---------------------
         eqs = Expression.objects.filter(cell=cell).order_by('index')
         asms = Assumption.objects.filter(cell=cell).order_by('index')
-
         top_nodes = []
         top_asms = []
 

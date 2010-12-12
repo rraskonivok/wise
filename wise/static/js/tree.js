@@ -119,7 +119,7 @@ var Cell = Backbone.Model.extend({
         // Highlight the expression to give the user
         // some visual feedback on what was just
         // committed
-        expr.root.dom().effect("highlight", {}, 1500);
+        //expr.root.dom().effect("highlight", {}, 1500);
 
         expr.set({
           sexp: expr.sexp()
