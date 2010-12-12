@@ -113,17 +113,16 @@ class Relation(object):
         if not self.id:
             self.id = self.idgen.next()
 
-    def uid_walk(self, uid):
+    def uid_walk(self, uid, overwrite=False):
         """Walk the expression tree handing out uids to anyone
         who needs one
         """
-        if not self.id:
+        if overwrite or not self.id:
             self.id = uid.next()
 
         for term in self.terms:
-            term.uid_walk(uid)
+            term.uid_walk(uid, overwrite)
         return self
-
 
 class Equation(Relation):
     """This symbol represents the binary equality function.

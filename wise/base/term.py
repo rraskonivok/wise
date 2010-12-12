@@ -198,15 +198,15 @@ class Term(object):
         f(self)
         return self
 
-    def uid_walk(self, uid):
+    def uid_walk(self, uid, overwrite=True):
         """Walk the expression tree handing out uids to anyone
         who needs one
         """
-        if not self.id:
+        if overwrite or not self.id:
             self.id = uid.next()
 
         for term in self.terms:
-            term.uid_walk(uid)
+            term.uid_walk(uid, overwrite)
         return self
 
 class Placeholder(Term):

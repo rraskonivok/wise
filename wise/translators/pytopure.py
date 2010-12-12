@@ -135,21 +135,6 @@ class Branch(object):
         self.valid = True
         return self.hash
 
-    def gen_uids(self,uid_generator):
-        '''Take a uid generator and walk the tree assigning each
-        node a unique id'''
-
-        self.id = uid_generator.next()
-        self.idgen = uid_generator
-
-        for node in self.walk():
-            node.id = uid_generator.next()
-            # Give the element the uid generator so it can spawn
-            # new elements that don't conflict in the HTML
-            # id/namespace
-            node.idgen = uid_generator
-
-
     def is_toplevel(self):
         return self.parent == None
 

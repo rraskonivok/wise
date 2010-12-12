@@ -103,7 +103,7 @@ def apply_rule(request):
     rule = request.POST.get('rule')
 
     new_expr_tree = rule_reduce(rule, sexps)
-    new_expr_tree.uid_walk(uid)
+    new_expr_tree.uid_walk(uid, overwrite=True)
 
     return JsonResponse({'new_html': [html(new_expr_tree)],
                          'new_json': [json_flat(new_expr_tree)],
@@ -322,9 +322,8 @@ def new_line(request):
         new.uid_walk(uid)
     else:
         error('invalid type of inline')
-    newline_html = html(new)
 
-    return JsonResponse({'new_html': newline_html,
+    return JsonResponse({'new_html': html(new),
                          'new_json': json_flat(new),
                          'namespace_index': uid.next()[3:],
                          'cell_index': cell_index + 1})
