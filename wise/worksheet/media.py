@@ -40,6 +40,7 @@ MEDIA_BUNDLES = (
         'json2.js',
         'underscore.js',
         'backbone.js',
+        'async.js',
         'qtip.js',
         'pnotify.js',
         'keys.js',
@@ -62,5 +63,6 @@ MEDIA_BUNDLES = (
         'notifications.js',
         'globals.js',
         'keyshortcuts.js',
+        'pattern_match.js',
      )},
 )

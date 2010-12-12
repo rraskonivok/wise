@@ -198,7 +198,7 @@ class Term(object):
         f(self)
         return self
 
-    def uid_walk(self, uid, overwrite=True):
+    def uid_walk(self, uid, overwrite=False):
         """Walk the expression tree handing out uids to anyone
         who needs one
         """

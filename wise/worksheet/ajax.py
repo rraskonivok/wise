@@ -87,9 +87,6 @@ def apply_rule(request):
     # preimage/operands of the rule
     sexps = tuple(request.POST.getlist('operands[]'))
 
-    if '' in sexps:
-        raise Exception('Empty sexp was passed.')
-
     # The uniqe client id ( cid ) used to refer to objets in the
     # workspace.
     namespace_index = int( request.POST.get('namespace_index') )
@@ -97,12 +94,18 @@ def apply_rule(request):
     if not namespace_index:
         raise Exception('No namespace index given in request.')
 
+    if '' in sexps:
+        raise Exception('Empty sexp was passed.')
+
     # Spawn a new generator to give out new uids to newly created
     # objects
     uid = uidgen(namespace_index)
     rule = request.POST.get('rule')
 
     new_expr_tree = rule_reduce(rule, sexps)
+
+    # Overwrite all uids, in case we're working with a cached
+    # objects which has some leftover uids
     new_expr_tree.uid_walk(uid, overwrite=True)
 
     return JsonResponse({'new_html': [html(new_expr_tree)],

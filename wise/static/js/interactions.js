@@ -7,7 +7,6 @@ function show_pnths() {
 function add_shift() {
     var node = Wise.Selection.at(0);
     var root = get_root(node);
-
     if(node && root) {
         apply_rule('eq_add', [root, node]);
     } else {
@@ -21,6 +20,7 @@ function sub_shift() {
 
     if(node && root) {
         apply_rule('eq_sub', [root, node]);
+        value = val;
     } else {
         node.errorFlash();
     }
