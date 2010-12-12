@@ -66,7 +66,7 @@ cdef class PureEnv:
         im = IManager.active()
         im.add(self)
 
-        print 'Exited'
+        print 'Done!'
 
     def __dealloc__(self):
         pass

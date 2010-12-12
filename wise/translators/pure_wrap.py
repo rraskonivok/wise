@@ -9,17 +9,18 @@ from django.template import Template, Context
 
 import sys
 
+# Spawn new Interpreter
+from pure.pure import PureEnv
+env = PureEnv()
+env.eval('using pure::prelude')
+
 from wise.pure.pure import PureInt, PureSymbol, PureLevel, \
 PureExpr, PureDouble, PureClosure, reduce_with_pure_rules, \
 new_level, restore_level, IManager, PureEnv
 
-print IManager.exists()
-
-env = PureEnv()
-#env.eval('using pure::prelude')
-
 from wise.pure.prelude import p2i, i2p, nargs
 from wise.utils.aggregator import Aggregator
+from wise.worksheet.rules import rulesets
 
 ROOT_MODULE = 'wise'
 packages = {}
@@ -55,44 +56,6 @@ for pack in settings.INSTALLED_MATH_PACKAGES:
                     raise Exception("Namespace collision, tried to import '%s' from package '%s' but symbol already exists")
     except ImportError:
         raise exception.IncompletePackage(pack,'%s.py' % pack)
-
-from wise.worksheet.utils import trim_docstring
-
-## And so begin 4 nested for-loops, yah....
-#for pack in settings.INSTALLED_MATH_PACKAGES:
-#    #try:
-#        path = '.'.join([ROOT_MODULE,pack,'rules'])
-#        packages[pack] = importlib.import_module(path)
-#        for name, symbol in packages[pack].__dict__.iteritems():
-#
-#            # Merge dictionary into main
-#            if name == 'panel':
-#                rulesets.update(symbol)
-#
-#            # Register the rule in the translation dictionary
-#            if hasattr(symbol,'register'):
-#                symbol.register()
-#
-#    #except ImportError:
-#    #    raise exception.IncompletePackage(pack,'rules.py')
-
-print 'Done importing objects'
-
-if settings.PRECOMPILE:
-    jit_compile_interp()
-
-# Traverse the root class and process all classes that inherit from
-# it, these are stored in in the internal .po method of the class
-def generate_pure_objects(root):
-    if root.pure:
-        #print 'Building Cython symbol for ... ', root.pure
-        if root.pure not in OBJECTS:
-            root.po = PureSymbol(root.pure)
-        else:
-            print 'Namespace collision'
-
-    for cls in root.__subclasses__():
-        generate_pure_objects(cls)
 
 # This is a statefull change in the interpreter, if this is
 # called at the root definition level it applies globally
@@ -142,3 +105,41 @@ class PublicRule:
 
     #        self.po = PureClosure(self.pure)
     #        pure_wrap.objects[self.pure] = self.po
+
+from wise.worksheet.utils import trim_docstring
+
+# And so begin 4 nested for-loops, yah....
+for pack in settings.INSTALLED_MATH_PACKAGES:
+    #try:
+        path = '.'.join([ROOT_MODULE,pack,'rules'])
+        packages[pack] = importlib.import_module(path)
+        for name, symbol in packages[pack].__dict__.iteritems():
+
+            # Merge dictionary into main
+            #if name == 'panel':
+            #    rulesets.update(symbol)
+
+            # Register the rule in the translation dictionary
+            if hasattr(symbol,'register'):
+                symbol.register()
+
+    #except ImportError:
+    #    raise exception.IncompletePackage(pack,'rules.py')
+
+print 'Done importing objects'
+
+if settings.PRECOMPILE:
+    jit_compile_interp()
+
+# Traverse the root class and process all classes that inherit from
+# it, these are stored in in the internal .po method of the class
+def generate_pure_objects(root):
+    if root.pure:
+        #print 'Building Cython symbol for ... ', root.pure
+        if root.pure not in OBJECTS:
+            root.po = PureSymbol(root.pure)
+        else:
+            print 'Namespace collision'
+
+    for cls in root.__subclasses__():
+        generate_pure_objects(cls)
