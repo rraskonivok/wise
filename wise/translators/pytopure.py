@@ -8,9 +8,9 @@ import wise.worksheet.exceptions as exception
 
 # i2p ~ Infix to Prefix
 # p2i ~ Prefix to Infix
-from wise.translators.pure_wrap import p2i, i2p
+from wise.pure.prelude import p2i, i2p
 
-#from wise.base.objects import Placeholder, Variable
+from wise.base.objects import Placeholder, Variable, Numeric
 from wise.translators.mathobjects import translation_table, \
 translate_pure, pyobjects
 

@@ -16,7 +16,6 @@ class Aggregator(Borg):
     locked = False
 
     def __init__(self, **args):
-        print args, 'file' in args
         if self.filename:
             self.persistance = shelve.open(self.filename)
         elif 'file' in args:

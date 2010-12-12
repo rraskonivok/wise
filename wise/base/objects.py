@@ -27,7 +27,7 @@ PostfixOperation, SupOperation, SubOperation, OutfixOperation, \
 Operation
 
 from wise.worksheet.utils import render_haml_to_response
-#from wise.translators.pure_wrap import PureSymbol, PureInt, PureDouble, ProtoRule, p2i, i2p
+from wise.translators.pure_wrap import PureSymbol, PureInt, PureDouble, ProtoRule, p2i, i2p
 
 import worksheet.exceptions as exception
 

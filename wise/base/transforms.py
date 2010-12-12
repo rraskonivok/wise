@@ -18,11 +18,6 @@ def GenFunc( func, term ):
 def Rebuild( term ):
     return term
 
-@Map( _( Term , Term ) >> _( Term ) )
-def CommandLine( old, cmd ):
-    new = pure_to_python(env.eval(cmd))
-    return new, 'pass'
-
 @Map( _( Term ) >> _( Placeholder ) )
 def Delete( first ):
     return Placeholder()

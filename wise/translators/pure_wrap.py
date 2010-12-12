@@ -4,7 +4,6 @@ import wise.worksheet.exceptions as exception
 
 from wise.worksheet.utils import haml
 from types import ClassType, InstanceType
-from inspect import getargspec
 from django.template import Template, Context
 
 import sys
@@ -22,9 +21,13 @@ from wise.pure.prelude import p2i, i2p, nargs
 from wise.utils.aggregator import Aggregator
 from wise.worksheet.rules import rulesets
 
+#from wise.translators.pytopure import pure_to_python, \
+#python_to_pure
+
 ROOT_MODULE = 'wise'
 packages = {}
 objects = Aggregator(file='object_cache')
+rules = Aggregator(file='rules_cache')
 
 def use(package, library):
     # Paths are relative to the /wise/ directory
@@ -68,7 +71,7 @@ class ProtoRule:
     def __call__(self):
         self._proto = proto_op(self.lhs, self.rhs)
         print 'Init rule:', self._proto
-        # instance ( lhs --> rhs )
+        # instance ( lhs --> rhs )1/
         instance(self._proto)
 
     def __repr__(self):
@@ -80,8 +83,7 @@ class PublicRule:
     arity = -1
     pure = None
 
-    def __init__(self, pure_symbol_name):
-        self.pure = pure_symbol_name
+    def __init__(self):
         self.ref = self.pure
         #self.po = PureClosure(self.pure)
         #pure_wrap.objects[self.pure] = self.po
@@ -91,17 +93,29 @@ class PublicRule:
     def description(self):
         return self.__doc__
 
-    @classmethod
-    def register(self):
-        if self.pure:
+    def reduce_with(self, *expr):
+        po = PureClosure(self.pure)
+        return po(*expr)
 
-            if hasattr(self,'__doc__') and self.__doc__:
-                self.desc = trim_docstring(self.__doc__)
-            else:
-                self.desc = 'No description available'
+#        pure_expr = po(*pexpr)
+#        pyexpr = pure_to_python(pure_expr,expr[0].idgen)
+#
+#        print 'Reduced Sexp:', pyexpr
+#        print 'Reduced Pure:', pure_expr
 
-            self.po = PureClosure(self.pure)
-            pure_wrap.objects[self.pure] = self.po
+        return pyexpr
+
+    #@classmethodn
+    #def register(self):
+    #    if self.pure:
+
+    #        if hasattr(self,'__doc__') and self.__doc__:
+    #            self.desc = trim_docstring(self.__doc__)
+    #        else:
+    #            self.desc = 'No description available'
+
+    #        self.po = PureClosure(self.pure)
+    #        pure_wrap.objects[self.pure] = self.po
 
 from wise.worksheet.utils import trim_docstring
 
@@ -113,12 +127,16 @@ for pack in settings.INSTALLED_MATH_PACKAGES:
         for name, symbol in packages[pack].__dict__.iteritems():
 
             # Merge dictionary into main
-            #if name == 'panel':
-            #    rulesets.update(symbol)
+            if name == 'panel':
+                rulesets.update(symbol)
+
+            if type(symbol) is ClassType and issubclass(symbol,
+                    PublicRule):
+                rules[name] = symbol
 
             # Register the rule in the translation dictionary
             if hasattr(symbol,'register'):
-                symbol.register()
+                symbol.register(a)
 
     #except ImportError:
     #    raise exception.IncompletePackage(pack,'rules.py')

@@ -86,12 +86,16 @@ def apply_rule(request):
     uid = uidgen(namespace_index)
 
     args = [translate.parse_sexp(sexp, uid) for sexp in sexps]
+    pargs = map(translate.python_to_pure, args)
 
     try:
-        ref = pure_wrap.objects[rule]
+        ref = pure_wrap.rules[rule]()
     except KeyError:
         raise Exception('Have reference to object %s, but no executable \
                 form.' % rule)
+
+    pure_expr = ref.reduce_with(*pargs)
+    new = translate.pure_to_python(pure_expr,uid)
 
     # God this casting is ugly
     #try:
@@ -103,7 +107,7 @@ def apply_rule(request):
     #except ValueError:
     #    pass
 
-    new = rules.ApplyExternalRule(ref,*args)
+    #new = rules.ApplyExternalRule(ref,*args)
 
     new_html = [html(new)]
     new_json = [json_flat(new)]

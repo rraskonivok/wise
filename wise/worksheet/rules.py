@@ -11,7 +11,7 @@ from django.conf import settings
 #from wise.translators.pure_wrap import PublicRule
 
 packages = {}
-rulesets = Aggregator(file='rule_cache')
+rulesets = {}
 
 def ReduceWithRules( rules, expr ):
     '''Reduce the given expression with a list of PureRules

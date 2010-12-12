@@ -61,6 +61,3 @@ def build_translation():
             generate_translation(root=cls)
 
 build_translation()
-
-#import worksheet.uml as uml
-#uml.generate(Term)
