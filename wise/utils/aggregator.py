@@ -24,6 +24,9 @@ class Aggregator(Borg):
         else:
             raise OSError('No file persistance for Aggregator.')
 
+    def all(self):
+        return [i for i in self.persistance]
+
     def __contains__(self, key):
         return key in self.persistance
 
@@ -31,7 +34,8 @@ class Aggregator(Borg):
 
         #if self.persistance:
             try:
-                return self.persistance[key]
+                # These things don't like Unicode
+                return self.persistance[str(key)]
             except AttributeError:
                 raise Exception('Pickled object cannot be initialized from persistance since corresponding object does not exist.')
         #else:

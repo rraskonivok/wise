@@ -3,16 +3,16 @@ from wise.translators.parser import eq_parse
 #Used for hashing trees
 from hashlib import sha1
 
-from wise.base.objects import Placeholder, Variable
-from wise.translators.mathobjects import translation_table, \
-translate_pure
-
 from wise.worksheet.utils import *
 import wise.worksheet.exceptions as exception
 
 # i2p ~ Infix to Prefix
 # p2i ~ Prefix to Infix
 from wise.translators.pure_wrap import p2i, i2p
+
+#from wise.base.objects import Placeholder, Variable
+from wise.translators.mathobjects import translation_table, \
+translate_pure, pyobjects
 
 #-------------------------------------------------------------
 # Parse Tree
@@ -210,12 +210,6 @@ class Branch(object):
         and pass the node's arguments ( self.args ) to the new
         instance'''
 
-        # We call the evil eval a couple of times but it's OK
-        # because any arguments are previously run through the
-        # sexp parser and if the user tries to inject
-        # anything other than (Equation ...)  it will throw an
-        # error and not reach this point anyways.
-
         # Recursive descent
         def f(x):
             if isinstance(x,unicode) or isinstance(x,str):
@@ -242,7 +236,9 @@ class Branch(object):
             print self.type
             obj = typ(*self.args)
         else:
-            obj = apply(eval(self.type),(map(f,self.args)))
+            type_key = pyobjects[str(self.type)]
+            arguments = map(f, self.args)
+            obj = type_key(*arguments)
 
         #obj.hash = self.gethash()
         obj.id = self.id

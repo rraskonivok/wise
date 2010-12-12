@@ -98,8 +98,9 @@ def log(request):
 def dict(request):
     ''' Dump the translation dictionary to a JSON object, for
     debugging purposes '''
-    return None
-    #return HttpResponse(str(pure_wrap.objects))
+    from wise.translators.mathobjects import pyobjects
+
+    return HttpResponse(pyobjects)
     #return JsonResponse(pure_wrap.objects)
 
 # End Debugging Stuff

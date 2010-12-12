@@ -20,7 +20,7 @@ from math import modf
 from wise.base.cell import Cell
 from wise.base.term import Term, Placeholder, ph
 
-from wise.base.toplevel import *
+from wise.base.toplevel import Relation, EquationPrototype
 
 from wise.base.operations import PrefixOperation, InfixOperation, \
 PostfixOperation, SupOperation, SubOperation, OutfixOperation, \

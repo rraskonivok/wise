@@ -26,8 +26,6 @@ ROOT_MODULE = 'wise'
 packages = {}
 objects = Aggregator(file='object_cache')
 
-OBJECTS = objects
-
 def use(package, library):
     # Paths are relative to the /wise/ directory
     print 'Importing library ' + '/'.join([package, library])
@@ -46,7 +44,6 @@ for pack in settings.INSTALLED_MATH_PACKAGES:
     try:
         path = '.'.join([ROOT_MODULE,pack,pack])
         packages[pack] = importlib.import_module(path)
-        #use(pack,'prelude')
         for name, obj in packages[pack].__dict__.iteritems():
             if is_pure_expr(obj):
                 #print "Importing symbol '%s' from pack %s" % (name, pack)
@@ -94,17 +91,17 @@ class PublicRule:
     def description(self):
         return self.__doc__
 
-    #@classmethod
-    #def register(self):
-    #    if self.pure:
+    @classmethod
+    def register(self):
+        if self.pure:
 
-    #        if hasattr(self,'__doc__') and self.__doc__:
-    #            self.desc = trim_docstring(self.__doc__)
-    #        else:
-    #            self.desc = 'No description available'
+            if hasattr(self,'__doc__') and self.__doc__:
+                self.desc = trim_docstring(self.__doc__)
+            else:
+                self.desc = 'No description available'
 
-    #        self.po = PureClosure(self.pure)
-    #        pure_wrap.objects[self.pure] = self.po
+            self.po = PureClosure(self.pure)
+            pure_wrap.objects[self.pure] = self.po
 
 from wise.worksheet.utils import trim_docstring
 
@@ -136,7 +133,7 @@ if settings.PRECOMPILE:
 def generate_pure_objects(root):
     if root.pure:
         #print 'Building Cython symbol for ... ', root.pure
-        if root.pure not in OBJECTS:
+        if root.pure not in objects:
             root.po = PureSymbol(root.pure)
         else:
             print 'Namespace collision'

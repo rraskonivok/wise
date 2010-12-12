@@ -22,16 +22,19 @@ from wise.translators.pure_wrap import generate_pure_objects
 ROOT_MODULE = 'wise'
 
 translation_table = {}
+pyobjects = {}
 
 def generate_translation(root):
     generate_pure_objects(root=root)
     if root.pure:
         translation_table[root.pure] = root
 
+    pyobjects[root.__name__] = root
+
     for cls in root.__subclasses__():
         if cls.pure:
             if not cls.pure in translation_table:
-                print cls.classname
+                pyobjects[cls.__name__] = cls
                 translation_table[cls.pure] = cls
         generate_translation(cls)
 
@@ -50,7 +53,7 @@ def build_translation():
         #    globals()[k] = mod.__dict__[k]
 
         # I give up
-        exec('from %s.%s.objects import *' % (ROOT_MODULE,pack))
+        exec('from %s.%s.objects import initialize' % (ROOT_MODULE,pack))
         mod_top, mod_table = initialize()
         translation_table.update(mod_table)
 
