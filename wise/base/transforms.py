@@ -20,7 +20,7 @@ def Rebuild( term ):
 
 @Map( _( Term ) >> _( Placeholder ) )
 def Delete( first ):
-    return Placeholder()
+    return Placeholder(),
 
 def ReduceWithRules( rules, expr ):
     hsh = hasharray(rules)

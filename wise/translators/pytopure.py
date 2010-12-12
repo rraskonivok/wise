@@ -40,6 +40,7 @@ class Branch(object):
     # collisions than CRC32. But it's much slower.
 
     atomic = False
+    idgen = None
 
     def __init__(self,typ,args,parent):
         self.type = typ
@@ -238,7 +239,10 @@ class Branch(object):
         else:
             type_key = pyobjects[str(self.type)]
             arguments = map(f, self.args)
-            obj = type_key(*arguments)
+            try:
+                obj = type_key(*arguments)
+            except TypeError:
+                raise Exception("Wrong arguments: %s" %arguments)
 
         #obj.hash = self.gethash()
         obj.id = self.id
@@ -266,7 +270,10 @@ class Branch(object):
                     obj = Variable(x)
 
                 obj.idgen = self.idgen
-                obj.id = self.idgen.next()
+
+                if self.idgen:
+                    obj.id = self.idgen.next()
+
                 return obj
             elif isinstance(x,Branch):
                 '''create a new class from the Branch type'''
@@ -314,27 +321,24 @@ def ParseTree(str,ignore_atomic=True):
 
     return branch
 
-def parse_pure_exp(expr, uidgen=None):
+def parse_pure_exp(expr):
     #Get the string representation of the pure expression
     parsed = ParseTree(str(expr),ignore_atomic=False)
-    if uidgen:
-        parsed.gen_uids(uidgen)
-    else:
-        print "You better be manually assigning or craaazy shit is going to go down."
+
     #Map into the Python wrapper classes
     return parsed.eval_pure()
 
 #Convenience wrappers with more obvious names...
-def pure_to_python(obj,uidgen=None,wrap_infix=True):
+def pure_to_python(obj, wrap_infix=True):
     '''Maps a set of Pure objects (as translated by the Cython
     wrapper into internal Python objects'''
 
     if wrap_infix:
-        return parse_pure_exp(i2p(obj),uidgen)
+        return parse_pure_exp(i2p(obj))
     else:
-        return parse_pure_exp(obj,uidgen)
+        return parse_pure_exp(obj)
 
-def python_to_pure(obj,wrap_infix=True):
+def python_to_pure(obj, wrap_infix=True):
     '''Maps internal Python objects into their pure equivelents'''
 
     if wrap_infix:
@@ -342,8 +346,7 @@ def python_to_pure(obj,wrap_infix=True):
     else:
         return obj._pure_()
 
-def parse_sexp(code, uid):
+def parse_sexp(code):
     parsed = ParseTree(code)
-    parsed.gen_uids(uid)
     evaled = parsed.eval_args()
     return evaled

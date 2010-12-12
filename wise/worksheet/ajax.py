@@ -38,10 +38,29 @@ def heartbeat(request):
     response['Cache-Control'] = 'no-cache'
     return response
 
+@memoize
+def rule_reduce(rule, sexps):
+    # >>>>>>>>>>>>>>>>>>>>>>>>>>
+    # Reduce the passed arguments by applying them to the given
+    # rule
+
+    args = [translate.parse_sexp(sexp) for sexp in sexps]
+    pargs = map(translate.python_to_pure, args)
+
+    try:
+        ref = pure_wrap.rules[rule]()
+    except KeyError:
+        raise Exception('Could not find executable form of rule: %s' % rule)
+
+    pure_expr = ref.reduce_with(*pargs)
+    new_expr_tree = translate.pure_to_python(pure_expr)
+    return new_expr_tree
+
+    # <<<<<<<<<<<<<<<<<<<<<<<<<<
+
 @login_required
 @errors
 @ajax_request
-#@cache_page(CACHE_INTERVAL)
 def apply_rule(request):
     """
     Applies a Pure rule to tuple of elements. The codomain tuple
@@ -71,49 +90,23 @@ def apply_rule(request):
     if '' in sexps:
         raise Exception('Empty sexp was passed.')
 
-    # The name of the rule to apply in form package/name
-    rule = request.POST.get('rule')
-
     # The uniqe client id ( cid ) used to refer to objets in the
     # workspace.
     namespace_index = int( request.POST.get('namespace_index') )
 
     if not namespace_index:
-        raise Exception('No namespace index given in request')
+        raise Exception('No namespace index given in request.')
 
     # Spawn a new generator to give out new uids to newly created
     # objects
     uid = uidgen(namespace_index)
+    rule = request.POST.get('rule')
 
-    args = [translate.parse_sexp(sexp, uid) for sexp in sexps]
-    pargs = map(translate.python_to_pure, args)
+    new_expr_tree = rule_reduce(rule, sexps)
+    new_expr_tree.uid_walk(uid)
 
-    try:
-        ref = pure_wrap.rules[rule]()
-    except KeyError:
-        raise Exception('Have reference to object %s, but no executable \
-                form.' % rule)
-
-    pure_expr = ref.reduce_with(*pargs)
-    new = translate.pure_to_python(pure_expr,uid)
-
-    # God this casting is ugly
-    #try:
-    #    arity = int(str(ref.arity))
-
-    #    if (arity != len(args)) and (arity != -1):
-    #        raise Exception('Wrong number of arguments given')
-    #        print arity, len(args)
-    #except ValueError:
-    #    pass
-
-    #new = rules.ApplyExternalRule(ref,*args)
-
-    new_html = [html(new)]
-    new_json = [json_flat(new)]
-
-    return JsonResponse({'new_html': new_html,
-                         'new_json': new_json,
+    return JsonResponse({'new_html': [html(new_expr_tree)],
+                         'new_json': [json_flat(new_expr_tree)],
                          'namespace_index': uid.next()[3:]})
 
 @login_required
@@ -231,17 +224,18 @@ def use_infix(request):
 
     # TODO: This is dangerous
     pure_expr = pure_wrap.i2p(pure_wrap.env.eval(code))
-    new = translate.pure_to_python(pure_expr, uid)
+    new_expr_tree = translate.pure_to_python(pure_expr)
+    new_expr_tree.uid_walk(uid)
 
-    return JsonResponse({'new_html': [html(new)],
-                         'new_json': [json_flat(new)],
+    return JsonResponse({'new_html': [html(new_expr_tree)],
+                         'new_json': [json_flat(new_expr_tree)],
                          'namespace_index': uid.next()[3:]})
 
 
 @login_required
 @errors
 @ajax_request
-@cache_page(CACHE_INTERVAL)
+#@cache_page(CACHE_INTERVAL)
 def apply_transform(request):
     code = tuple(request.POST.getlist('selections[]'))
     transform = unencode( request.POST.get('transform') )
@@ -249,7 +243,7 @@ def apply_transform(request):
 
     uid = uidgen(namespace_index)
 
-    args = [translate.parse_sexp(cde, uid) for cde in code]
+    args = [translate.parse_sexp(cde) for cde in code]
 
     try:
         pack, fun = transform.split('/')
@@ -264,33 +258,33 @@ def apply_transform(request):
     for arg in args:
         arg.idgen = uid
 
-    new = transform(*args)
+    image = transform(*args)
 
-    #Yah, this is ugly
-    if hasattr(new,'__iter__'):
-        for nval in new:
-            if not isinstance(nval,str):
-                nval.idgen = uid
-                nval.ensure_id()
-    else:
-        new.idgen = uid
-        new.ensure_id()
+    if len(image) == 0:
+        raise Exception('Resulting image of transformation cannot\
+                be empty.')
 
-    #Yah, remove this soon. UGLY
-    def mappy_html(obj):
-        if isinstance(obj,str):
-            return obj
+    actions = ['pass','delete','flash']
+
+    new_html = []
+    new_json = []
+
+    for el in image:
+        # Handle action strings
+        if isinstance(el,str):
+            if el in actions:
+                new_html.append(el)
+                new_json.append(el)
+            else:
+                # If something stranged is passed
+                raise Exception('Unknown action returned by\
+                        transform (%s, %s)' % (el, fun))
+
+        # Handle mathematical terms
         else:
-            return html(obj)
-
-    def mappy_json(obj):
-        if isinstance(obj,str):
-            return obj
-        else:
-            return json_flat(obj)
-
-    new_html = maps(mappy_html, new)
-    new_json = maps(mappy_json, new)
+            el.uid_walk(uid)
+            new_html.append(html(el))
+            new_json.append(json_flat(el))
 
     return JsonResponse({'new_html': new_html,
                          'new_json': new_json,
@@ -300,7 +294,7 @@ def apply_transform(request):
 @login_required
 @errors
 @ajax_request
-@cache_page(CACHE_INTERVAL)
+#@cache_page(CACHE_INTERVAL)
 def new_line(request):
     namespace_index = request.POST.get('namespace_index')
 
@@ -334,7 +328,6 @@ def new_line(request):
                          'new_json': json_flat(new),
                          'namespace_index': uid.next()[3:],
                          'cell_index': cell_index + 1})
-
 
 @errors
 def new_cell(request):

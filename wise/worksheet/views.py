@@ -144,14 +144,18 @@ def ws(request, eq_id):
 
         for eq in eqs:
             # Build up the object from the sexp in the database
-            etree = parse_sexp(eq.sexp, uid)
+            etree = parse_sexp(eq.sexp)
+            etree.uid_walk(uid)
+
             etree.sid = eq.id
             etree.annotation = eq.annotation
             top_nodes.append(etree)
 
         for asm in asms:
             # Build up the object from the sexp in the database
-            etree = parse_sexp(asm.sexp, uid)
+            etree = parse_sexp(asm.sexp)
+            etree.uid_walk(uid)
+
             etree.sid = asm.id
             etree.annotation = asm.annotation
             top_asms.append(etree)
