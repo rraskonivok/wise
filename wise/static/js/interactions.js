@@ -103,29 +103,46 @@ function select_right_root(clear) {
     get_rhs(start).select(); 
 }
 
+function is_placeholder(node) {
+    return node.get('type') == 'Placeholder';
+} 
+
+function is_not_placeholder(node) {
+    return node.get('type') != 'Placeholder';
+} 
+
+function is_toplevel(node) {
+    return node.get('toplevel');
+} 
+
+substitute_stoplist = ['Placeholder'];
+
 // ( Placeholder, Placeholder , ... , Expression )
 function placeholder_substitute() {
     if (Wise.Selection.length >= 2) {
-        var heads = Wise.Selection.first(Wise.Selection.length - 1);
-        var last = Wise.Selection.last();
 
-        if(last.get('toplevel')) {
-            //error('Cannot substitute toplevel element into expression');
-            last.errorFlash();
-            return;
-        }
+//        if(last.get('toplevel')) {
+//            //error('Cannot substitute toplevel element into expression');
+//            last.errorFlash();
+//            return;
+//        }
 
-        stream_of_phs = _.all(heads, 
-            function(s) {
-                return s.get('type') == 'Placeholder';
-            }
-        );
+        var sub = Wise.Selection.detect(is_not_placeholder);
+        if(!sub) return;
 
-        if(stream_of_phs) {
-            _.each(heads, function(slt) {
-                apply_transform('base/PlaceholderSubstitute',[slt,last]);
-            });
-        }
+        var phs = Wise.Selection.select(is_placeholder);
+
+        var tr_name = 'base/PlaceholderSubstitute';
+
+        queue = [];
+
+        _.each(phs, function(ph) {
+            queue.push(
+                async.apply(apply_transform, tr_name, [ph, sub])
+            );
+        });
+
+        async.parallel(queue);
     }
 }
 

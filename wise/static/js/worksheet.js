@@ -243,11 +243,6 @@ function dialog(text) {
 ///////////////////////////////////////////////////////////
 // Server Queries
 ///////////////////////////////////////////////////////////
-ajaxqueue = $.manageAjax.create('queue', {
-  queue: false,
-  preventDoubbleRequests: false,
-  cacheResponse: true
-});
 
 // Heartbeat to check to see whether the server is alive
 function heartbeat() {
@@ -496,9 +491,8 @@ function use_infix(code) {
   postdata.namespace_index = NAMESPACE_INDEX;
   postdata.code = code;
 
-  ajaxqueue.add({
+  $.ajax({
     type: 'POST',
-    async: 'false',
     url: "/cmds/use_infix/",
     data: postdata,
     datatype: 'json',
@@ -588,9 +582,8 @@ function apply_transform(transform, operands) {
     });
   }
 
-  ajaxqueue.add({
+  $.ajax({
     type: 'POST',
-    async: 'false',
     url: "/cmds/apply_transform/",
     data: postdata,
     datatype: 'json',
@@ -639,10 +632,7 @@ function apply_transform(transform, operands) {
           }
         }
       }
-
       NAMESPACE_INDEX = response.namespace_index;
-
-      base_mode();
     }
   });
 }

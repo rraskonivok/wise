@@ -1,4 +1,4 @@
-Wise = {
+Wise = Backbone.Model.extend({
     version: '0.1alpha',
 
     // Created upon call of init()
@@ -10,4 +10,4 @@ Wise = {
     cmd_visible: null,
 
     DISABLE_TYPESETTING: true,
-}
+});

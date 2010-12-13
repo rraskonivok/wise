@@ -44,7 +44,6 @@ MEDIA_BUNDLES = (
         'qtip.js',
         'pnotify.js',
         'keys.js',
-        'jquery.ajaxmanager.js',
      )},
 
     {"type": "javascript",

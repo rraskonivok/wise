@@ -487,11 +487,7 @@ var Expression = Node.extend({
 
     $("#Wise.Selectionlist").append(bt.el);
 
-    substitute_stoplist = ['Placeholder'];
-
-    if (this.get('type') != 'Placeholder') {
-      placeholder_substitute();
-    }
+    placeholder_substitute();
 
   }
 
