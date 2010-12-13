@@ -5,6 +5,7 @@ PACKAGES = Aggregator(file='packages_cache')
 
 class Package(object):
     name = 'unknown'
+    author = 'unknown'
     version = 'unknown'
     path = 'unknown'
     date = 'unknown'

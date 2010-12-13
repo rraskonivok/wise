@@ -35,25 +35,47 @@ function sub_shift() {
 }
 
 function mul_shift() {
-    var node = Wise.Selection.at(0);
-    var root = get_root(node);
-
-    if(node && root) {
-        apply_rule('eq_mul', [root, node]);
-    } else {
-        node.errorFlash();
+    // TODO: use currying for this
+    function add_rule(args) {
+        return function() {
+            apply_rule('eq_mul', args);
+        }
     }
+
+    fst = Wise.Selection.at(0);
+    snd = Wise.Selection.at(1);
+
+    var selection_types = Wise.Selection.pluck('type');
+
+    selection_pattern = Match(
+            [ 'Equation', String ], add_rule( [fst, snd] ),
+            [ String, 'Equation' ], add_rule( [snd, fst] ),
+            [ String ],             add_rule( [get_root(fst), fst] )
+    );
+
+    selection_pattern(selection_types);
 }
 
 function div_shift() {
-    var node = Wise.Selection.at(0);
-    var root = get_root(node);
-
-    if(node && root) {
-        apply_rule('eq_div', [root, node]);
-    } else {
-        node.errorFlash();
+    // TODO: use currying for this
+    function add_rule(args) {
+        return function() {
+            apply_rule('eq_div', args);
+        }
     }
+
+    fst = Wise.Selection.at(0);
+    snd = Wise.Selection.at(1);
+
+    var selection_types = Wise.Selection.pluck('type');
+
+    selection_pattern = Match(
+            [ 'Equation', String ], add_rule( [fst, snd] ),
+            [ String, 'Equation' ], add_rule( [snd, fst] ),
+            [ String ],             add_rule( [get_root(fst), fst] )
+    );
+
+    selection_pattern(selection_types);
 }
 
 //Select the toplevel element

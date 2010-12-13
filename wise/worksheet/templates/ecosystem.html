@@ -26,12 +26,21 @@
   </div>
   <div class="content">
     <div class="inner">
-      <div class="package_block">
+      <ul class="package list">
+          <li>
       {% for package in packages %}
-          <h3>{{package.name}}</h3>
-          <hr/>
-          <p>{{package.date}}</p>
-              <a href="#" onclick="toggle_next(this)">Provides</a>
+          <h3 onclick="toggle_next(this)">{{package.name}}</h3>
+          <span>
+              <hr/>
+              <p>Date: {{package.date}}</p>
+              <p>Author: {{package.author}}</p>
+              <p>Version: {{package.version}}</p>
+              <p>
+                  <a href="#">Export GraphViz</a> | 
+                  <a href="#">Export XML</a> |
+                  <a href="#">Export JSON</a>
+              </p>
+                  <a href="#" onclick="toggle_next(this)">Provides</a>
                   <table style="display: none">
                   <tr>
                       {% for symbol in package.symbols %}
@@ -43,9 +52,11 @@
                       {% endfor %}
                   </tr>
                   </table>
+          </span>
           </ul>
       {% endfor %}
-      </div>
+          </li>
+      </ul>
     </div>
   </div>
 </div>
