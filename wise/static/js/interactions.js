@@ -1,17 +1,25 @@
-function show_pnths() {
-   var node = Wise.Selection.at(0);
-   node.view.el.children('.pnths').toggle(); 
-   resize_parentheses(node);
-}
-
 function add_shift() {
-    var node = Wise.Selection.at(0);
-    var root = get_root(node);
-    if(node && root) {
-        apply_rule('eq_add', [root, node]);
-    } else {
-        node.errorFlash();
+
+    // TODO: use currying for this
+    function add_rule(args) {
+        return function() {
+            apply_rule('eq_add', args);
+        }
     }
+
+    fst = Wise.Selection.at(0);
+    snd = Wise.Selection.at(1);
+
+    var selection_types = Wise.Selection.pluck('type');
+
+    selection_pattern = Match(
+            [ 'Equation', String ], add_rule( [fst, snd] ),
+            [ String, 'Equation' ], add_rule( [snd, fst] ),
+            [ String ],             add_rule( [get_root(fst), fst] )
+    );
+
+    selection_pattern(selection_types);
+
 }
 
 function sub_shift() {
@@ -65,6 +73,7 @@ function select_parent(clear) {
 
 function select_root(clear) {
     var start = Wise.Selection.last();
+
 
     if(clear) {
         base_mode();
