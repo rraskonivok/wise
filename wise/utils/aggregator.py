@@ -1,14 +1,14 @@
 import shelve
 
-class Borg(object):
-    _shared_state = {}
+#class Borg(object):
+#    _shared_state = {}
+#
+#    def __new__(cls, *a, **k):
+#        obj = object.__new__(cls, *a, **k)
+#        obj.__dict__ = cls._shared_state
+#        return obj
 
-    def __new__(cls, *a, **k):
-        obj = object.__new__(cls, *a, **k)
-        obj.__dict__ = cls._shared_state
-        return obj
-
-class Aggregator(Borg):
+class Aggregator(object):
     filename = None
     persistance = None
     sha = None
@@ -26,8 +26,14 @@ class Aggregator(Borg):
     def all(self):
         return [i for i in self.persistance]
 
+    def __len__(self):
+        return len(self.persistance)
+
     def __contains__(self, key):
         return key in self.persistance
+
+    def iteritems(self):
+        return self.persistance.iteritems()
 
     def __getitem__(self, key):
 
@@ -44,8 +50,6 @@ class Aggregator(Borg):
         if self.locked:
             raise Exception('Cannot write key since Aggregator is locked.')
             return
-
-        print key, value
 
 #        if self.persistance:
         self.persistance[key] = value

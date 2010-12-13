@@ -68,6 +68,10 @@ class Operation(Term):
 
         self.arity = len(self.terms)
 
+    @property
+    def description(self):
+        return self.__doc__
+
     def _pure_(self):
         if self.po:
             return self.po(*purify(self.terms))

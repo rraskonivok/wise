@@ -9,11 +9,8 @@
 # License, or (at your option) any later version.
 
 import traceback
-#from transforms import get_transform_by_path
 import wise.translators.pure_wrap as pure_wrap
 from wise.translators.pytopure import parse_sexp
-
-import panel
 
 from logger import debug, getlogger
 
@@ -30,6 +27,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.views.decorators.cache import cache_page
 from django.contrib.auth.models import User
+
+import panel
 
 from wise.worksheet.utils import *
 from wise.worksheet.forms import LoginForm
@@ -77,8 +76,21 @@ def home(request):
 
 @login_required
 def ecosystem(request):
-    workspaces = Workspace.objects.filter(owner=request.user)
-    return render_to_response('ecosystem.html')
+    from wise.meta_inspector import PACKAGES
+
+    packages = []
+
+    for name, pack in PACKAGES.iteritems():
+        pack.symbols = []
+        packages.append(pack)
+
+        for symbol in pack.provided_symbols.itervalues():
+            symbol_desc = {}
+            symbol_desc['description'] = symbol.__doc__
+            symbol_desc['name'] = symbol.__name__
+            pack.symbols.append(symbol_desc)
+
+    return render_to_response('ecosystem.html',{'packages':packages})
 
 @login_required
 def users(request):

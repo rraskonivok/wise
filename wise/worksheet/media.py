@@ -13,6 +13,15 @@ MEDIA_BUNDLES = (
         'ui/ui.css',
      )},
 
+    {"type": "css",
+     "name": "ecosystem_css",
+     "path": MEDIA_ROOT,
+     "url": MEDIA_URL,
+     "minify": False,
+     "files": (
+        'css/ecosystem.css',
+     )},
+
     # Worksheet stylesheets
     {"type": "css",
      "name": "worksheet_css",

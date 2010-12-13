@@ -5,12 +5,6 @@
 
 import os
 
-APPEND_SLASH = True
-DEBUG = True
-TEMPLATE_DEBUG = DEBUG
-LOG_FILE = 'session.log'
-
-DISABLE_PURE = False
 
 # A quick note about security. *WISE IS ALPHA SOFTWARE AND NOT SECURE* (yet)
 ADMINS = (
@@ -53,6 +47,16 @@ USE_ETAGS = True
 SITE_ROOT = os.path.realpath(os.path.dirname(__file__))
 MEDIA_ROOT = os.path.join(SITE_ROOT, 'static')
 MEDIA_URL = '/static/'
+
+# In case somebody wants to fork under a new name
+ROOT_MODULE = 'wise'
+
+APPEND_SLASH = True
+DEBUG = True
+TEMPLATE_DEBUG = DEBUG
+LOG_FILE = 'session.log'
+
+DISABLE_PURE = False
 
 # In order to use the Django admin interface with gunicorn you'll 
 # need to grab the admin resources from your local install. Use

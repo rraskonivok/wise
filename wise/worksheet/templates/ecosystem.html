@@ -1,0 +1,78 @@
+{% extends "base.tpl" %}
+{% load bundler_tags %}
+
+{% block includes %}
+{% load_bundle "ecosystem_css" %}
+{% endblock %}
+
+{% block main-navigation %}
+<ul class="wat-cf">
+  <li class="first"><a href="/home">Main Page</a></li>
+  <li class="active"><a href="/ecosystem">Ecosystem</a></li>
+  <li class=""><a href="#">Worksheet</a></li>
+  <li class=""><a href="/share">Share</a></li>
+</ul>
+{% endblock %}
+
+
+{# List the available worksheets #}
+
+{% block main %}
+<div class="block" id="packages">
+  <div class="secondary-navigation">
+    <ul class="wat-cf">
+      <li class="first active"><a href="#">Installed Packages</a></li>
+    </ul>
+  </div>
+  <div class="content">
+    <div class="inner">
+      <div class="package_block">
+      {% for package in packages %}
+          <h3>{{package.name}}</h3>
+          <hr/>
+          <p>{{package.date}}</p>
+              <a href="#" onclick="toggle_next(this)">Provides</a>
+                  <table style="display: none">
+                  <tr>
+                      {% for symbol in package.symbols %}
+                      <td>{{symbol.name}}</td>
+                      {% if forloop.counter|divisibleby:"5" %}
+                        </tr><tr>
+                      {% endif %}
+                      </td>
+                      {% endfor %}
+                  </tr>
+                  </table>
+          </ul>
+      {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="block" id="objects">
+  <div class="secondary-navigation">
+    <ul class="wat-cf">
+      <li class="first active"><a href="#">Available Objects</a></li>
+    </ul>
+  </div>
+  <div class="content">
+    <div class="inner">
+        Lorem Ipsum Dolor Sit Amet
+    </div>
+  </div>
+</div>
+
+<div id="footer">
+      <div class="block"> </div>
+</div>
+
+{% endblock %}
+
+{% block inline-script %}
+<script>
+    function toggle_next(el) {
+        $(el).next().toggle();
+    }
+</script>
+{% endblock %}

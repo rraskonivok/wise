@@ -1,0 +1,10 @@
+.package_block {
+    width: 100%;
+    border: 1px solid #ccc;
+    margin-top: 15px;
+}
+
+.package_block table {
+    width: 100%;
+    text-align: center;
+}

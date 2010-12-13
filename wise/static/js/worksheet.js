@@ -292,7 +292,6 @@ function apply_rule(rule, operands) {
         return obj.sexp();
       }
     });
-    //data.selections = _.invoke(operands,'sexp');
   }
 
   // Fade elements while we wait for the server's response
@@ -380,8 +379,6 @@ function apply_rule(rule, operands) {
     }
 
   }, "json");
-
-  return image;
 }
 
 function apply_def(def, selections) {
@@ -633,6 +630,7 @@ function apply_transform(transform, operands) {
         }
       }
       NAMESPACE_INDEX = response.namespace_index;
+      base_mode();
     }
   });
 }

@@ -8,35 +8,42 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
+from meta_inspector import Package
+import meta_inspector
+
 from django.conf import settings
 
 from wise.worksheet.utils import *
 import wise.worksheet.exceptions as exception
 
+import wise.worksheet.exceptions as exception
 from wise.translators.pure_wrap import generate_pure_objects
 
 #-------------------------------------------------------------
 # Pure Wrapper
 #-------------------------------------------------------------
 
-ROOT_MODULE = 'wise'
-
 translation_table = {}
 pyobjects = {}
 
-def generate_translation(root):
+def generate_translation(root, package):
+
     generate_pure_objects(root=root)
     if root.pure:
         translation_table[root.pure] = root
 
     pyobjects[root.__name__] = root
+    package.provided_symbols[root.__name__] = root
 
     for cls in root.__subclasses__():
         if cls.pure:
             if not cls.pure in translation_table:
                 pyobjects[cls.__name__] = cls
+                package.provided_symbols[cls.__name__] = cls
+
                 translation_table[cls.pure] = cls
-        generate_translation(cls)
+
+        generate_translation(cls, package)
 
 def translate_pure(key):
     try:
@@ -45,19 +52,17 @@ def translate_pure(key):
         raise exception.NoWrapper(key)
 
 def build_translation():
-    for pack in settings.INSTALLED_MATH_PACKAGES:
-        #path = '.'.join([ROOT_MODULE,pack,'objects'])
-        #mod = __import__(str(path),globals(),locals())
-        #for k in dir(mod):
-        #    print mod.__dict__[k]
-        #    globals()[k] = mod.__dict__[k]
-
-        # I give up
-        exec('from %s.%s.objects import initialize' % (ROOT_MODULE,pack))
+    for name, package in meta_inspector.PACKAGES.iteritems():
+        exec('from %s.%s.objects import initialize' % (settings.ROOT_MODULE, name))
         mod_top, mod_table = initialize()
         translation_table.update(mod_table)
 
-        for cls in mod_top:
-            generate_translation(root=cls)
+        package = Package(name=name)
+
+        for toplevel in mod_top:
+            generate_translation(toplevel, package)
+
+        meta_inspector.PACKAGES[name] = package
+        meta_inspector.PACKAGES.sync()
 
 build_translation()

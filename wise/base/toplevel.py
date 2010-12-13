@@ -62,6 +62,10 @@ class Relation(object):
         return msexp(self, self.terms)
 
     @property
+    def description(self):
+        return self.__doc__
+
+    @property
     def classname(self):
         return self.__class__.__name__
 

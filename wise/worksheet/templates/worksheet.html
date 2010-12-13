@@ -1,6 +1,15 @@
 {% extends "base.tpl" %}
 {% load bundler_tags %}
 
+{% block main-navigation %}
+<ul class="wat-cf">
+  <li class="first"><a href="/">Main Page</a></li>
+  <li class=""><a href="/ecosystem">Ecosystem</a></li>
+  <li class="active"><a href="#">Worksheet</a></li>
+  <li class=""><a href="/share">Share</a></li>
+</ul>
+{% endblock %}
+
 {# --------------------------
 Worksheet specific javascript 
 -------------------------- #}
