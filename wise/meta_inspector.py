@@ -36,4 +36,6 @@ if len(PACKAGES) == 0:
     rebuild_modules()
 else:
     if settings.DEBUG:
+        for name, package in PACKAGES.iteritems():
+            print package.provided_symbols
         print 'Using cached Package directory.'

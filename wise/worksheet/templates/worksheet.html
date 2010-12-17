@@ -30,6 +30,8 @@ Worksheet specific javascript
 Worksheet Palettes
 -------------------------- #}
 {% block sidebar %}
+
+<!--
 <div class="block">
 
   <div class="secondary-navigation">
@@ -44,6 +46,7 @@ Worksheet Palettes
   <div id="rules_palette" class="palette"> </div>
 
 </div>
+-->
 {% endblock %}
 
 {# --------------------------
@@ -184,7 +187,6 @@ Equations
     <p>
     <input type="checkbox"/> Don't show me this message again.
     </p>
-
 </div>
 
 <div id="selectionlist">
@@ -195,6 +197,14 @@ Equations
         <input id="cmdinput" type="text"></input>
     </form>
 </div>
+
+<div id="workspace">
+    {% for cell in cells %}
+        {{cell|safe}} 
+    {% endfor %}
+</div>
+
+<!--
 
 <div class="block" id="block-text">
   <div class="secondary-navigation">
@@ -222,4 +232,7 @@ Equations
     </div>
   </div>
 </div>
+
+-->
+
 {% endblock %}

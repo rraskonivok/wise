@@ -1,10 +1,15 @@
 div#cell{{index}}.cell
+
+    div.content-node-outline
+        PASS
+
     div.assumptions
         {% for asm in assumptions %}
             {{ asm }}
         {% endfor %}
         
     div.equations
+
         div.cellbuttons
             .hide.ui-icon.ui-icon-triangle-1-n
                 PASS
