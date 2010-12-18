@@ -33,6 +33,7 @@ var CellView = Backbone.View.extend({
   },
 
   events: {
+    "click .node-outline": "collapse",
     "click .hide": "toggleAssums",
     "click .add": "add",
     "click .del": "destroy",
@@ -64,6 +65,10 @@ var CellView = Backbone.View.extend({
 
   add: function () {
     new_line('eq', this.model.cid);
+  },
+
+  collapse: function() {
+    this.$('.equations').toggle(); 
   },
 
   toggleAssums: function() {

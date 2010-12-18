@@ -25,25 +25,19 @@
    Toplevel Elements 
    ----------------- */
 
-/* Spacing between lines */
-.equation td {
-    padding-top: 0.5em;
-    padding-bottom: 0.5em;
-}
-
-.equation > .equalsign {
-    padding-right: 1em;
-    padding-left: 1em;
-}
-
-.equation {
-    width: 100%;
+.toplevel {
+    position: relative;
+    margin-bottom: 10px;
 }
 
 .assumption {
     clear: right;
     padding-right: 25px;
 }
+
+/* ------------------- 
+   Node Styling
+   ----------------- */
 
 .placeholder {
     border: 1px dashed #d4a5a5 !important;
@@ -55,16 +49,16 @@
 }
 
 .cell {
-    margin-bottom: 20px;
-    margin-top: 5px;
-    margin-bottom: 3px; 
+    /* Frame around cell */
     border-right: 5px solid #ccc;
     border-top: 5px solid #ccc;  
-    min-height: 100px;
-    position: relative;
-}
 
-.cell:hover {
+    /* Collapsed height */
+    min-height: 50px;
+
+    position: relative;
+    padding-top: 5px;
+    padding-bottom: 5px;
 }
 
 .cell .assumptions {
@@ -76,10 +70,5 @@
     min-height: 50px;
 }
 
-.cell.active {
-    border-right: 5px solid red;
-}
-
 .cell .cellbuttons {
-    float :right;
 }

@@ -12,23 +12,41 @@ html {
  -------------------- */
 
 #workspace {
-    background: none repeat scroll 0 0 #fff;
+    background: white;
     margin: 0 20px 0 50px;
     position: relative;
 }
 
-.content-node-outline {
-  left: -50px;
+/* -------------------- 
+    Outline Sidebar
+ -------------------- */
+
+.node-outline {
+  bottom: 0;
+  top: 0;
+  position: absolute;
+  width: 10px;
+  z-index: 1;
 }
 
-.content-node-outline {
-  border-bottom: 3px solid blue;
-  border-left: 3px solid blue;
-  border-top: 3px solid blue;
-  bottom: 0;
-  position: absolute;
-  top: 0;
-  width: 10px;
+.toplevel > .node-outline {
+  left: -40px;
+  border-bottom: 3px solid #888;
+  border-left: 3px solid #888;
+  border-top: 3px solid #888;
+}
+
+.cell > .node-outline {
+  left: -50px;
+  border-bottom: 3px solid #555;
+  border-left: 3px solid #555;
+  border-top: 3px solid #555;
+}
+
+.toplevel.selected > .node-outline {
+  border-bottom: 3px solid red;
+  border-left: 3px solid red;
+  border-top: 3px solid red;
 }
 
 /* -------------------- 
@@ -36,7 +54,6 @@ html {
  -------------------- */
 
 #sidebar {
-/*    position: fixed;*/
     height: 100%;
     left: 73%;
 }
@@ -106,10 +123,11 @@ html {
     margin: 5px;
 }
 
-.selected {
+math .selected {
     border: 5px solid #d4a5a5;
     margin: -5px;
 }
+
 
 .selected < .placeholder {
     background-color: #d4a5a5;

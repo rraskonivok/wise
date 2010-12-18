@@ -1,6 +1,6 @@
 div#cell{{index}}.cell
 
-    div.content-node-outline
+    div.node-outline
         PASS
 
     div.assumptions

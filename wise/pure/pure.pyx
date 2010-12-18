@@ -41,17 +41,16 @@ cdef class PureEnv:
 
         args = ['--noprelude']
 
-        cdef char *xp
-        cdef char *xps[5]
-        for i in range(0,len(args)):
-            #xp = <char *>malloc(len(args[i]) * sizeof(char))
-            #xps[i] = <char *>malloc( (len(args[i])+2) * sizeof( char* ) )
-            #xp = '--noprelude'
-            xp = 'h'
-            strcpy(xps[i],xp)
+        #cdef char *xp
+        #cdef char *xps[5]
+        #for i in range(0,len(args)):
+        #    xp = <char *>malloc(len(args[i]) * sizeof(char))
+        #    xps[i] = <char *>malloc( (len(args[i])+2) * sizeof( char* ) )
+        #    xp = '--noprelude'
+        #    xp = 'h'
+        #    strcpy(xps[i],xp)
 
-        self._interp = pure.pure_create_interp(len(args),xps)
-        print 'Created succesfully!'
+        self._interp = pure.pure_create_interp(0,NULL)
         #try:
         #    print 'Created succesfully!'
         #finally:
@@ -66,7 +65,7 @@ cdef class PureEnv:
         im = IManager.active()
         im.add(self)
 
-        print 'Done!'
+        print 'Created succesfully!'
 
     def __dealloc__(self):
         pass
