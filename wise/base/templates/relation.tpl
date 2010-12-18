@@ -7,6 +7,6 @@ div#{{id}}.toplevel
         mrow
             {{lhs}}
 
-            <mo>=</mo>
+            <mo>{{symbol}}</mo>
 
             {{rhs}}

@@ -11,13 +11,67 @@ _.templateSettings = {
 //    else d && !c && a.css("top", "").css("left", "").css("position", "")
 //});
 
-var cell_menu = _.template('<div class="cellbuttons"><span class="add ui-icon ui-icon-circle-plus"></span><span class="del ui-icon ui-icon-circle-minus"></span><span class="save ui-icon ui-icon-disk"></span></div>')
-var cell_template = _.template('<div id="{{id}}" class="cell"></div>');
-var cell_eqs = _.template('<div class="equations"></div>');
+var button_template = _.template("<button>{{label}}</button>");
 
-// The view of the workspace Singleton
-var WorksheetView = Backbone.View.extend({
-  id: 'workspace',
+var toplevel_types = [
+    {
+        label: 'Equation', 
+        sexp: 'eq',
+    },
+
+    {
+        label: 'Definition', 
+        sexp: 'def',
+    },
+
+    {
+        label: '>', 
+        sexp: '(Gt (Placeholder ) (Placeholder ))',
+    },
+
+    {
+        label: '<', 
+        sexp: '(Lt (Placeholder ) (Placeholder ))',
+    },
+]
+
+var InsertionToolbar = Backbone.View.extend({
+   tagName: 'div',
+
+   //Reference to the cell, where objects are appended
+   model: null,
+
+   initialize: function() {
+       _.bindAll(this, 'new_type');
+   },
+
+   render: function() {
+       for(var tt in toplevel_types) {
+           tt = toplevel_types[tt];
+
+           var button = $(button_template({
+               label: tt.label,
+           }));
+
+           button.bind('click', 
+               async.apply(this.new_type, tt.sexp)
+           );
+
+           $(this.el).hide();
+           $(this.el).append(button);
+       }
+       return this;
+   },
+
+   new_type: function(type) {
+        new_line(type, this.model);
+        $(this.el).toggle();
+   },
+
+   toggle: function() {
+        $(this.el).toggle();
+   }
+
 });
 
 // Cell object as manifest in the Workspace, This can be 
@@ -27,21 +81,30 @@ var CellView = Backbone.View.extend({
   tagName: 'div',
 
   className: 'cell',
+  insetion_menu: null,
 
   initialize: function () {
-    //this.model.bind('change', this.render);
+      this.insertion_menu = new InsertionToolbar({
+          model: this.model,
+      }).render();
+
+      this.$('.insertion_toolbar').html(
+          this.insertion_menu.el
+      );
   },
 
   events: {
     "click .node-outline": "collapse",
     "click .hide": "toggleAssums",
-    "click .add": "add",
+    "click .add": "insertion_menu",
     "click .del": "destroy",
     "click .save": "saveCell",
   },
 
-  menu: cell_menu,
-  equations: cell_eqs,
+
+  insertion_menu: function() {
+      this.insertion_menu.toggle();
+  },
 
   render: function () {
     $(this.el).append(this.menu());
@@ -60,7 +123,7 @@ var CellView = Backbone.View.extend({
   },
 
   addAssumption: function (expr_view) {
-    $('.assumptions',this.el).append(expr_view);
+    this.$('.assumptions').append(expr_view);
   },
 
   add: function () {
@@ -72,7 +135,11 @@ var CellView = Backbone.View.extend({
   },
 
   toggleAssums: function() {
-    $('.assumptions',this.el).toggle();
+    this.$('.assumptions').toggle();
+  },
+
+  toggleExpressions: function() {
+    this.$('.equations').toggle();
   },
 
   saveCell: function () {
@@ -163,10 +230,6 @@ var NodeView = Backbone.View.extend({
   onClick: function (e) {
     // If the ctrl key is down the container selection mode
     // is enabled an 'leaf' nodes are ignored
-    
-    //if(serverisfucked) {
-    //    warnuser;
-    //}
     if (e.ctrlKey) {
       if (this.model.hasChildren()) {
         this.model.toggleSelect();
@@ -231,6 +294,7 @@ var NodeSelectionView = Backbone.View.extend({
       label: this.model.get('type'),
       text: true
     });
+    $("#selectionlist").append(this.el);
     return this;
   },
 
@@ -246,26 +310,26 @@ var NodeSelectionView = Backbone.View.extend({
   },
 
   highlight: function (e) {
-    if (this.css3effect) {
-      $('.MathJax_Display').addClass('modal');
-      typsets = this.model.dom().find('.MathJax_Display');
-      _.each(typsets, function (t) {
-        $(t).removeClass('modal');
-      });
-      this.model.view.el.addClass('shadow');
-      this.model.view.el.removeClass('selected');
-    } else if (this.highlighteffect) {
-      this.model.view.el.addClass('highlight');
-    }
+    //if (this.css3effect) {
+    //  $('.MathJax_Display').addClass('modal');
+    //  typsets = this.model.dom().find('.MathJax_Display');
+    //  _.each(typsets, function (t) {
+    //    $(t).removeClass('modal');
+    //  });
+    //  this.model.view.el.addClass('shadow');
+    //  this.model.view.el.removeClass('selected');
+    //} else if (this.highlighteffect) {
+    //  this.model.view.el.addClass('highlight');
+    //}
   },
 
   unhighlight: function (e) {
-    if (this.css3effect) {
-      $('.MathJax_Display').removeClass('modal');
-      this.model.view.el.removeClass('shadow');
-    } else if (this.highlighteffect) {
-      this.model.view.el.removeClass('highlight');
-    }
+    //if (this.css3effect) {
+    //  $('.MathJax_Display').removeClass('modal');
+    //  this.model.view.el.removeClass('shadow');
+    //} else if (this.highlighteffect) {
+    //  this.model.view.el.removeClass('highlight');
+    //}
   },
 
 });

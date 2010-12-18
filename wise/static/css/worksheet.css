@@ -18,6 +18,18 @@ html {
 }
 
 /* -------------------- 
+    Insertion Menu
+ -------------------- */
+
+.cell.add {
+    float: left;
+}
+
+.insertion_toolbar {
+    text-align: center;
+}
+
+/* -------------------- 
     Outline Sidebar
  -------------------- */
 
@@ -128,7 +140,6 @@ math .selected {
     margin: -5px;
 }
 
-
 .selected < .placeholder {
     background-color: #d4a5a5;
 }
@@ -148,6 +159,10 @@ math .selected {
 .lines.preselect {
     border-left: 5px solid #f00;
 }
+
+/* -------------------- 
+   Commandline
+ -------------------- */
 
 .cmd {
     position: fixed;

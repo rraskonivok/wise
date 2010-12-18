@@ -314,7 +314,8 @@ def new_line(request):
     # TODO we should do this without parsing, this is really slow
     # and inefficent
     if newtype == u'def':
-        new = translate.parse_sexp('(Definition (Placeholder) (Placeholder))',uid)
+        new = translate.parse_sexp('(Definition (Placeholder) (Placeholder))')
+        new.uid_walk(uid)
     elif newtype == u'func':
         new = translate.parse_sexp('(Function (Placeholder) (Placeholder) (Placeholder))',uid)
     elif newtype == u'eq':
@@ -324,7 +325,8 @@ def new_line(request):
         new = AssumptionPrototype()
         new.uid_walk(uid)
     else:
-        error('invalid type of inline')
+        new = translate.parse_sexp(newtype)
+        new.uid_walk(uid)
 
     return JsonResponse({'new_html': html(new),
                          'new_json': json_flat(new),

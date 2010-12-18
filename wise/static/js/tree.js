@@ -407,6 +407,7 @@ var Node = Backbone.Model.extend({
     // to pushed to the server.
   },
 
+  //TODO: move this to the view
   errorFlash: function () {
     $(this.view.el).effect("highlight", {
       color: '#E6867A'
@@ -446,7 +447,7 @@ var Expression = Node.extend({
     // If for some reason we don't have a sexp, then build it
     if(this._math.length == 0) { this.msexp(); }
     //TODO: REMOVE THIS!!!!!
-    this.msexp();
+    //this.msexp();
     return _.flatten(this._math).join(' ')
   },
 
@@ -455,7 +456,7 @@ var Expression = Node.extend({
   },
 
   toggleSelect: function () {
-    if (this.get('selected') == true) {
+    if (this.get('selected') === true) {
       this.unselect();
     } else {
       this.select();
@@ -470,22 +471,17 @@ var Expression = Node.extend({
     this.view.el.removeClass('selected');
   },
 
-
   select: function () {
-    this.set({
-      selected: true
-    });
+    this.set({ selected: true });
     Wise.Selection.add(this);
+
     this.view.el.addClass('selected');
+    this.selectionview = bt;
 
     // Move this to the Wise.Selection view handler
     var bt = new NodeSelectionView({
       model: this,
-    });
-
-    bt.render();
-
-    $("#Wise.Selectionlist").append(bt.el);
+    }).render();
 
     placeholder_substitute();
 
@@ -594,8 +590,6 @@ function graft_toplevel_from_json(old_node, json_input, transformation) {
 //Build a Node from a json specifiction and then then 
 //graft ( by replacement ) onto a existing expression tree.
 // TODO: change this to graft_node_from_json to avoid amguity
-
-
 function graft_tree_from_json(old_node, json_input, transformation) {
   var newtree = build_tree_from_json(json_input);
 
@@ -629,8 +623,6 @@ function garbage_collect() {
 }
 
 // Tree Traversal
-
-
 function get_parent(node) {
   return node._parent;
 }
@@ -648,8 +640,6 @@ function get_root(node) {
 }
 
 // Equation Traversal
-
-
 function get_lhs(node) {
   return get_root(node).children[0];
 }
@@ -660,8 +650,6 @@ function get_rhs(node) {
 
 // Traverse the tree upwards until it find a node matching
 // [filter], behaves like jQuery's parents
-
-
 function parents(node, filter) {
   if (node._parent) {
     var prent = node._parent;
@@ -675,8 +663,6 @@ function parents(node, filter) {
 // Traverse the tree upwards until it find a node matching
 // [filter] inclusive on the matched nodee, behaves like 
 // jQuery's parents
-
-
 function parentsUntil(node, filter) {
   if (node._parent) {
     var prent = node._parent;
@@ -689,8 +675,6 @@ function parentsUntil(node, filter) {
 
 // Traverse the tree upwards until it find a node who's 'type'
 // attribute matches [type].
-
-
 function parents_until_type(node, type) {
   return parentsUntil(node, function (n) {
     return n.get('type') == type;

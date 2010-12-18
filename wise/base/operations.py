@@ -149,7 +149,6 @@ class Operation(Term):
 
             c = template.Context({
                 'id': self.id,
-                'math': self.get_math(),
                 'type': self.classname,
                 'operand': self.operand.get_html(),
                 'symbol1': self.symbol1.get_html(),
@@ -166,7 +165,6 @@ class Operation(Term):
 
             c = template.Context({
                 'id': self.id,
-                'math': self.get_math(),
                 'type': self.classname,
                 'operand': self.operand.get_html(),
                 'symbol1': self.symbol1,
@@ -183,7 +181,6 @@ class Operation(Term):
 
             c = template.Context({
                 'id': self.id,
-                'math': self.get_math(),
                 'type': self.classname,
                 'operand': self.operand.get_html(),
                 'parenthesis': self.show_parenthesis,

@@ -49,6 +49,8 @@ class Relation(object):
     pure = None # A string containing the name symbol in Pure
     po = None # Reference to the type of object
 
+    toplevel = True
+
     def __init__(self, lhs, rhs):
         self.lhs = lhs
         self.rhs = rhs
@@ -155,7 +157,7 @@ class Lt(Relation):
     pure = 'lt'
 
 class Gt(Relation):
-    symbol = '<'
+    symbol = '>'
     pure = 'gt'
 
 class Gte(Relation):
@@ -175,7 +177,7 @@ class Approx(Relation):
     pure = 'approx'
 
 class Definition(Relation):
-    symbol = 'Def'
+    symbol = ':='
 
     def _pure_(self):
         lhs = self.lhs._pure_()

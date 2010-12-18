@@ -635,31 +635,30 @@ function apply_transform(transform, operands) {
   });
 }
 
-function new_line(type, index) {
+function new_line(type, cell) {
+
+  // If we aren't given an explicit cell and the number of cells
+  // and there is not a single 
+  if(!cell && Wise.Worksheet.length != 1) {
+    error('Dont know where to insert');
+    return;
+  } else if (!cell && Wise.Worksheet.length == 1) {
+    cell = Wise.Worksheet.at(0);
+  }
+
   var data = {};
   data.namespace_index = NAMESPACE_INDEX;
   data.cell_index = CELL_INDEX;
   data.type = type;
 
-  if (index != undefined) {
-    active_cell = Wise.Worksheet.getByCid(index);
-  }
-
-  if (!active_cell) {
-    if (Wise.Worksheet.length == 1) {
-      active_cell = Wise.Worksheet.at(0);
-    } else {
-      error("Select a cell to insert into");
-      return;
-    }
-  }
-
   // If the cell new then commit it to the database before we
   // so that all foreign keys on expression objects will
   // resolve properly
-  if (active_cell.isNew()) {
-    active_cell.save();
+  if (cell.isNew()) {
+    cell.save();
   }
+
+  console.log(data);
 
   $.post("/cmds/new_line/", data, function (data) {
 
@@ -668,17 +667,17 @@ function new_line(type, index) {
     }
 
     if (data.new_html) {
-      new_expr_html = $(data.new_html);
-      active_cell.view.addExpression(new_expr_html);
+      var new_expr_html = $(data.new_html);
+      cell.view.addExpression(new_expr_html);
 
       // Initiale the new expression in the term db
       var eq = build_tree_from_json(data.new_json);
 
-      eq.cell = active_cell;
+      eq.cell = cell;
       eq.set({
-        cell: active_cell.id
+        cell: cell.id
       });
-      active_cell.addExpression(eq);
+      cell.addExpression(eq);
     }
 
     NAMESPACE_INDEX = data.namespace_index;
