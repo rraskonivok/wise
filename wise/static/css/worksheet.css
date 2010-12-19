@@ -3,6 +3,10 @@ html {
     overflow-y: scroll;
 }
 
+.hidden {
+    display: none;
+}
+
 .modal {
     opacity: 0.2;
 }
@@ -66,9 +70,24 @@ html {
  -------------------- */
 
 #sidebar {
+    position: fixed;
     height: 100%;
     left: 73%;
 }
+
+#sidebar .palette {
+    min-width: 100px;
+}
+
+#sidebar .buttons {
+   float: right; 
+}
+
+#sidebar .buttons button {
+    float: right;
+    clear: right; 
+}
+
 
 #sidebar .block {
     height: 100%;

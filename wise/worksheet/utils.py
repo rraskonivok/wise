@@ -244,7 +244,7 @@ def purify(obj):
     else:
         return obj._pure_()
 
-@memoize
+#@memoize
 def load_haml_template(fname):
     '''Returns a haml template specified by filename from the
     locations specified in TEMPLATE_DIRS '''

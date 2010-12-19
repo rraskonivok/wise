@@ -5,9 +5,15 @@ Wise = Backbone.Model.extend({
     Worksheet: null,
     Nodes: null,
     Selection: null,
+    Sidebar: null,
 
     active_cell: null,
     cmd_visible: null,
 
-    DISABLE_TYPESETTING: true,
 });
+
+Wise.Settings = {
+
+    DISABLE_TYPESETTING: false,
+
+}

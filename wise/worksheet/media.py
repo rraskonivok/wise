@@ -30,6 +30,7 @@ MEDIA_BUNDLES = (
      "minify": False,
      "files": (
         'math.css',
+        'mathml.css',
         'worksheet.css',
      )},
 
@@ -69,8 +70,8 @@ MEDIA_BUNDLES = (
         'worksheet_views.js',
         'tree.js',
         'notifications.js',
-        'globals.js',
         'keyshortcuts.js',
         'pattern_match.js',
+        'globals.js',
      )},
 )

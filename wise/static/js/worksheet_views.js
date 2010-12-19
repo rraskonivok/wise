@@ -3,13 +3,13 @@ _.templateSettings = {
 };
 
 //TODO: Experiment with this somemore
-//$(window).scroll(function () {
-//    var a=$("#sidebar"),b=a.offset().top;
-//    var d = a.css("position") == "fixed",
-//        c = $(window).scrollTop() > b;
-//    if (!d && c) a.css("top", "20px").css("position", "fixed");
-//    else d && !c && a.css("top", "").css("left", "").css("position", "")
-//});
+$(window).scroll(function () {
+    var a=$("#sidebar"),b=a.offset().top;
+    var d = a.css("position") == "fixed",
+        c = $(window).scrollTop() > b;
+    if (!d && c) a.css("top", "20px").css("position", "fixed");
+    else d && !c && a.css("top", "").css("left", "").css("position", "")
+});
 
 var button_template = _.template("<button>{{label}}</button>");
 
@@ -34,6 +34,13 @@ var toplevel_types = [
         sexp: '(Lt (Placeholder ) (Placeholder ))',
     },
 ]
+
+var SidebarView = Backbone.View.extend({
+
+   initialize: function() {
+   },
+
+})
 
 var InsertionToolbar = Backbone.View.extend({
    tagName: 'div',

@@ -123,13 +123,13 @@ INSTALLED_APPS = (
     # Gunicorn needs to be installed in site-packages or dropped
     # into the same directory as this file, if you can't run
     # ' import gunicorn ' form this directory then it will fail
-    'reversion',
     'piston',
-    # Django extensions can be safely disabled if you do not want
-    # all its managmenet features
-    'django_extensions',
     'media_bundler',
-#    'debug_toolbar',
+
+    # Optional Applications - mostly for development
+    #'reversion',
+    #'debug_toolbar',
+    #'django_extensions',
 )
 
 # Some browsers require the Content-Type to be

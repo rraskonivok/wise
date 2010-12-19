@@ -31,22 +31,25 @@ Worksheet Palettes
 -------------------------- #}
 {% block sidebar %}
 
-<!--
-<div class="block">
+    <div class="buttons">
+        <button class='notebook'>
+            <img src="/static/img/svg/notebook.svg"/>
+        </button>
 
-  <div class="secondary-navigation">
-    <ul class="wat-cf">
-      <li id="tab_math_palette" class="active first"><a href="javascript:palette(1)">Palette</a></li>
-      <li id="tab_rules_palette"><a href="javascript:palette(2)">Rules</a></li>
-    </ul>
-  </div>
+        <button class='math'>
+            <img src="/static/img/svg/sigma.svg"/>
+        </button>
 
-  <div id="math_palette" class="palette"> </div>
+        <button class='rules'>
+            <img src="/static/img/svg/transform.svg"/>
+        </button>
+    </div>
 
-  <div id="rules_palette" class="palette"> </div>
+    <div id="assum_palette" class="palette hidden"></div>
+    <div id="math_palette" class="palette hidden"></div>
+    <div id="rules_palette" class="palette hidden"></div>
+    </div>
 
-</div>
--->
 {% endblock %}
 
 {# --------------------------
@@ -123,9 +126,11 @@ Init Function + Global Vars
                 }
             });
         }
+
         init_nodes();
         load_math_palette();
         load_rules_palette();
+        Wise.Sidebar = new SidebarView({el: $("#sidebar")});
 
         init_keyboard_shortcuts();
 
@@ -155,6 +160,7 @@ Equations
 -------------------------- #}
 
 {% block main %}
+
 
 <div id="dialog" style="display: none;">
     It appears that you aren't using Firefox 3+. If the
@@ -198,45 +204,10 @@ Equations
     </form>
 </div>
 
-<div id="insertion_toolbar" style="display: none">
-    <button onclick="new_line('eq')">Equation</button>
-</div>
-
 <div id="workspace">
     {% for cell in cells %}
         {{cell|safe}} 
     {% endfor %}
 </div>
-
-<!--
-
-<div class="block" id="block-text">
-  <div class="secondary-navigation">
-    <ul class="wat-cf">
-      <li class="active first"><a href="#block-text">Worksheet</a></li>
-    </ul>
-  </div>
-  <div class="content">
-
-    <div id="cell_selection" class="pagination">
-        <a class="active" href="javascript:new_cell()">New Cell</a>
-    </div>
-
-    <div id="scratchpad" class="scatchpad">
-    </div>
-
-    <h2 class="title">{{title|title}}</h2>
-    <div class="inner">
-      <hr />
-        <div id="workspace">
-            {% for cell in cells %}
-                {{cell|safe}} 
-            {% endfor %}
-        </div>
-    </div>
-  </div>
-</div>
-
--->
 
 {% endblock %}
