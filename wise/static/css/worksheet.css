@@ -69,18 +69,9 @@ html {
     Sidebar Palettes
  -------------------- */
 
-kbd {
-    background: #EEE;
-    border-color: #CCC #AAA #888 #BBB;
-    border-style: solid;
-    border-width: 1px 3px 3px 1px;
-    color: black;
-    padding: 2px 4px;
-    white-space: nowrap;
-}
 
-#sidebar {
-    height: 100%;
+#worksheet_sidebar {
+    float: right;
     left: 75%;
     width: 25%;
 }
@@ -94,26 +85,25 @@ kbd {
     height: 95%; 
 }
 
-#sidebar .palette {
+#worksheet_sidebar .palette {
     min-width: 100px;
+    padding: 10px;
 }
 
-#sidebar .buttons {
+#worksheet_sidebar .buttons {
    float: right; 
    height: 100%;
 }
 
-#sidebar .buttons button {
+#worksheet_sidebar .buttons button {
     float: right;
     clear: right; 
+    padding: 5px;
 }
 
-#sidebar .block {
-    height: 100%;
-}
-
-#sidebar #math_palette {
-    height: 85%;
+#keys_palette dd {
+    text-align: center;
+    margin-bottom: 5px;
 }
 
 .uniform_button {
@@ -137,13 +127,15 @@ kbd {
 .panel_category { 
     clear: both;
     display: block;
-    padding: 0px 15px;
     margin: 0;
     font-size: 13px;
+    text-align: center;
+    background-color: #f5f5f5;
 }
 
 .panel_frame {
-    padding: 10px;
+    height: 100%;
+    list-style-type: none;
 }
 
 .panel_frame table {
@@ -152,6 +144,20 @@ kbd {
 
 .panel_frame table td {
     text-align: center;
+}
+
+/* -------------------- 
+   Keyboard Buttons
+ -------------------- */
+
+kbd {
+    background: #EEE;
+    border-color: #CCC #AAA #888 #BBB;
+    border-style: solid;
+    border-width: 1px 3px 3px 1px;
+    color: black;
+    padding: 2px 4px;
+    white-space: nowrap;
 }
 
 /* -------------------- 

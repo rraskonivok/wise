@@ -48,10 +48,8 @@
         {% block main %}
         {% endblock %}
       </div>
-      <div id="sidebar">
         {% block sidebar %}
         {% endblock %}
-      </div>
       <div id="box">
         {% block box %}
         {% endblock %}

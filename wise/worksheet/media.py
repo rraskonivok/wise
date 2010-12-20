@@ -45,7 +45,7 @@ MEDIA_BUNDLES = (
         'jquery.js',
         'xml.js',
         'jquery-ui.js',
-#        'jquery.ui.position.js',
+        'jquery.ui.position.js',
 #        'dimensions.js',
         'json2.js',
         'underscore.js',
@@ -70,8 +70,8 @@ MEDIA_BUNDLES = (
         'worksheet_views.js',
         'tree.js',
         'notifications.js',
-        'keyshortcuts.js',
         'pattern_match.js',
         'globals.js',
+        'keyshortcuts.js',
      )},
 )

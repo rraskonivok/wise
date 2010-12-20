@@ -13,9 +13,10 @@ Wise = Backbone.Model.extend({
 
 });
 
-Wise.Settings = {
+Wise.Settings = new Backbone.Model({
 
     DEBUG: true,
     DISABLE_TYPESETTING: false,
+    DISABLE_MATH: false,
 
-}
+})

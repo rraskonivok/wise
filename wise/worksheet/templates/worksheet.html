@@ -31,33 +31,36 @@ Worksheet Palettes
 -------------------------- #}
 {% block sidebar %}
 
+<div id="worksheet_sidebar">
+
     <div class="buttons">
-        <button class='notebook'>
-            <img src="/static/img/svg/notebook.svg"/>
-        </button>
-
         <button class='math'>
-            <img src="/static/img/svg/sigma.svg"/>
+            <img src="/static/img/icons/sigma.svg"/>
+        </button>
+        
+        <button class='rules'>
+            <img src="/static/img/icons/transform.svg"/>
         </button>
 
-        <button class='rules'>
-            <img src="/static/img/svg/transform.svg"/>
+
+        <button class='notebook'>
+            <img src="/static/img/icons/notebook.svg"/>
         </button>
 
         <button class='settings'>
-            <img src="/static/img/svg/settings.svg"/>
+            <img src="/static/img/icons/settings.svg"/>
         </button>
 
         <button class='keys'>
-            <img src="/static/img/svg/keys.png"/>
+            <img src="/static/img/icons/keys.png"/>
         </button>
 
         <button id="log_indicator" class='terminal'>
-            <img src="/static/img/svg/terminal.png"/>
+            <img src="/static/img/icons/terminal.png"/>
         </button>
 
         <button class='snapshot'>
-            <img src="/static/img/svg/snapshot.svg"/>
+            <img src="/static/img/icons/snapshot.svg"/>
         </button>
     </div>
 
@@ -78,9 +81,18 @@ Worksheet Palettes
         </form>
     </div>
 
+    <div id="keys_palette" class="palette hidden">
+        <h3>Keyboard Shortcuts</h3> 
+        <dl class="list">
+        </dl>
+    </div>
+
     <div id="terminal_palette" class="palette hidden">
+        <h3>Error Log</h3>
         <div class="history"></div>
     </div>
+
+</div>
 
 {% endblock %}
 
@@ -162,15 +174,15 @@ Init Function + Global Vars
         init_nodes();
         load_math_palette();
         load_rules_palette();
-        Wise.Sidebar = new SidebarView({el: $("#sidebar")});
+        Wise.Sidebar = new SidebarView({
+            el: $("#worksheet_sidebar")
+        });
         Wise.Log = new Logger();
 
-        var logger_view =  new LoggerView({
+        Wise.Log.view =  new LoggerView({
             el: $('#terminal_palette'),
             model: Wise.Log,
         });
-
-        Wise.Log.view = logger_view;
 
         init_keyboard_shortcuts();
 

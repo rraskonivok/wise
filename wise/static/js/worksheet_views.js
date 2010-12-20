@@ -2,13 +2,22 @@ _.templateSettings = {
   interpolate: /\{\{(.+?)\}\}/g
 };
 
-//TODO: Experiment with this somemore
-$(window).scroll(function () {
-    var a=$("#sidebar"),b=a.offset().top;
-    var d = a.css("position") == "fixed",
-        c = $(window).scrollTop() > b;
-    if (!d && c) a.css("top", "20px").css("position", "fixed");
-    else d && !c && a.css("top", "").css("left", "").css("position", "")
+//TODO: This still doesn't work
+$(window).scroll(function() {
+    var $sidebar = $("#worksheet_sidebar");
+    var offset = $sidebar.offset();
+    var topPadding = 20;
+    var $window = $(window);
+
+    if ($window.scrollTop() > offset.top) {
+        $sidebar.css({
+            top: $window.scrollTop() - offset.top + topPadding,
+        });
+    } else {
+        $sidebar.css({
+           top: 20,
+        });
+    }
 });
 
 var button_template = _.template("<button>{{label}}</button>");
@@ -81,11 +90,13 @@ var LoggerView = Backbone.View.extend({
         var severity = err.get('severity');
         // Display the color indicator corresponding to the worst
         // active error
-        if(severity > this.colorstate) {
+        if(severity >= this.colorstate) {
+            console.log(err);
             var color = this.colors[err.get('severity')-1];
             $('#log_indicator').css('background-color', color); 
             this.colorstate = severity;
         }
+        $('#log_indicator').effect('highlight');
         this.$('.history').append(err.get('message'));
     },
 
@@ -99,17 +110,33 @@ var SidebarView = Backbone.View.extend({
 
   events: {
     "click .math": "toggleMath",
+    "dblclick .math": "expandAllMath",
+
     "click .rules": "toggleRules",
     "click .settings": "toggleSettings",
     "click .terminal": "toggleTerminal",
+    "click .keys": "toggleKeys",
   },
 
    initialize: function() {
-       _.bindAll(this, 'toggleMath');
+        // Make the buttons jQuery-ui buttons
+        this.$('.buttons button').button();
 
-       if(!Wise.Settings.DEBUG) {
-            this.$('.terminal').hide();
-       }
+       _.bindAll(this, 'toggleMath', 'onDisableMath');
+        Wise.Settings.bind('change:DISABLE_MATH', this.onDisableMath); 
+
+   },
+
+   onDisableMath: function(model, state) {
+        // If the server is unavailble to perform operations then
+        // disable related panels
+
+        this.$('.math').button({disabled: state});
+        this.$('.rules').button({disabled: state});
+   },
+
+   expandAllMath: function() {
+        this.$('#math_palette .panel_frame').toggle();
    },
 
    toggleMath: function() {
@@ -125,6 +152,11 @@ var SidebarView = Backbone.View.extend({
    toggleSettings: function() {
         this.$('.palette').hide();
         this.$('#settings_palette').show();
+   },
+
+   toggleKeys: function() {
+        this.$('.palette').hide();
+        this.$('#keys_palette').show();
    },
 
    toggleTerminal: function() {
