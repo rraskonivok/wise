@@ -31,6 +31,7 @@ MEDIA_BUNDLES = (
      "files": (
         'math.css',
         'mathml.css',
+        'opera_mathml.css',
         'worksheet.css',
      )},
 

@@ -7,6 +7,12 @@ var _infix = function(code) {
     }
 }
 
+var _rule = function(rule) {
+    return function() {
+        apply_rule(rule);
+    }
+}
+
 Wise.Accelerators = new Backbone.Collection([
 
     {
@@ -39,7 +45,25 @@ Wise.Accelerators = new Backbone.Collection([
         action: _infix('z'),
     },
 
-])
+    {
+        keys: 'alt+a',
+        name: 'Add to Both Sides of Equality',
+        action: add_shift,
+    },
+
+    {
+        keys: 'alt+a',
+        name: 'Add to Both Sides of Equality',
+        action: add_shift,
+    },
+
+    {
+        keys: 's',
+        name: 'Reduce to Algebraic Normal Form',
+        action: _rule('algebra_normal'),
+    },
+
+]);
 
 
 

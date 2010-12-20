@@ -192,6 +192,9 @@ var InsertionToolbar = Backbone.View.extend({
            $(this.el).hide();
            $(this.el).append(button);
        }
+
+       //Make buttons pretty
+       this.$('button').parent().buttonset();
        return this;
    },
 

@@ -35,20 +35,20 @@ Worksheet Palettes
 
     <div class="buttons">
         <button class='math'>
-            <img src="/static/img/icons/sigma.svg"/>
+            <img src="/static/img/icons/sigma.png"/>
         </button>
         
         <button class='rules'>
-            <img src="/static/img/icons/transform.svg"/>
+            <img src="/static/img/icons/transform.png"/>
         </button>
 
 
         <button class='notebook'>
-            <img src="/static/img/icons/notebook.svg"/>
+            <img src="/static/img/icons/notebook.png"/>
         </button>
 
         <button class='settings'>
-            <img src="/static/img/icons/settings.svg"/>
+            <img src="/static/img/icons/settings.png"/>
         </button>
 
         <button class='keys'>
@@ -171,7 +171,10 @@ Init Function + Global Vars
             });
         }
 
+        //TODO: move this into its own worker thread
         init_nodes();
+        init_keyboard_shortcuts();
+
         load_math_palette();
         load_rules_palette();
         Wise.Sidebar = new SidebarView({
@@ -184,22 +187,12 @@ Init Function + Global Vars
             model: Wise.Log,
         });
 
-        init_keyboard_shortcuts();
 
-        setInterval( "heartbeat()", 10000 );
-    
-        //Make buttons pretty
-        $('.equation button','#workspace').parent().buttonset();
-        $('button','#workspace').parent().buttonset();
-    
-        //Make equations sortable within each cell.
-        $(".cell table").sortable({
-            handle: '.hand',
-        });
+        if(Wise.Settings.get('SERVER_HEARTBEAT')) {
+            setInterval( "heartbeat()", 10000 );
+        }
 
         $('.lines').disableSelection();
-    
-        //$('.editable').editable({loadurl: '#', loadtype: 'POST'})
 
     }
 </script>

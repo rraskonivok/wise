@@ -18,5 +18,6 @@ Wise.Settings = new Backbone.Model({
     DEBUG: true,
     DISABLE_TYPESETTING: false,
     DISABLE_MATH: false,
+    SERVER_HEARTBEAT: false,
 
 })
