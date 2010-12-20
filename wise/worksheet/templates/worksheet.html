@@ -43,11 +43,43 @@ Worksheet Palettes
         <button class='rules'>
             <img src="/static/img/svg/transform.svg"/>
         </button>
+
+        <button class='settings'>
+            <img src="/static/img/svg/settings.svg"/>
+        </button>
+
+        <button class='keys'>
+            <img src="/static/img/svg/keys.png"/>
+        </button>
+
+        <button id="log_indicator" class='terminal'>
+            <img src="/static/img/svg/terminal.png"/>
+        </button>
+
+        <button class='snapshot'>
+            <img src="/static/img/svg/snapshot.svg"/>
+        </button>
     </div>
 
     <div id="assum_palette" class="palette hidden"></div>
     <div id="math_palette" class="palette hidden"></div>
     <div id="rules_palette" class="palette hidden"></div>
+    <div id="settings_palette" class="palette hidden">
+        <form class="form" method="get" action="#">
+            <div class="group">
+                <label class="label">Radio</label>
+                <div>
+                <input type="radio" value="1" class="checkbox" id="radio_1" name="radio"> <label class="radio" for="radio_1">Option 1</label>
+                </div>
+                <div>
+                <input type="radio" value="2" class="checkbox" id="radio_2" name="radio"> <label class="radio" for="radio_2">Option 2</label>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div id="terminal_palette" class="palette hidden">
+        <div class="history"></div>
     </div>
 
 {% endblock %}
@@ -131,6 +163,14 @@ Init Function + Global Vars
         load_math_palette();
         load_rules_palette();
         Wise.Sidebar = new SidebarView({el: $("#sidebar")});
+        Wise.Log = new Logger();
+
+        var logger_view =  new LoggerView({
+            el: $('#terminal_palette'),
+            model: Wise.Log,
+        });
+
+        Wise.Log.view = logger_view;
 
         init_keyboard_shortcuts();
 

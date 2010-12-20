@@ -6,6 +6,7 @@ Wise = Backbone.Model.extend({
     Nodes: null,
     Selection: null,
     Sidebar: null,
+    Log: null,
 
     active_cell: null,
     cmd_visible: null,
@@ -14,6 +15,7 @@ Wise = Backbone.Model.extend({
 
 Wise.Settings = {
 
+    DEBUG: true,
     DISABLE_TYPESETTING: false,
 
 }

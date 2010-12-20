@@ -69,10 +69,29 @@ html {
     Sidebar Palettes
  -------------------- */
 
+kbd {
+    background: #EEE;
+    border-color: #CCC #AAA #888 #BBB;
+    border-style: solid;
+    border-width: 1px 3px 3px 1px;
+    color: black;
+    padding: 2px 4px;
+    white-space: nowrap;
+}
+
 #sidebar {
-    position: fixed;
     height: 100%;
-    left: 73%;
+    left: 75%;
+    width: 25%;
+}
+
+#terminal_palette textarea {
+    width: 100%; 
+}
+
+#terminal_palette .history {
+    position: relative;
+    height: 95%; 
 }
 
 #sidebar .palette {
@@ -81,13 +100,13 @@ html {
 
 #sidebar .buttons {
    float: right; 
+   height: 100%;
 }
 
 #sidebar .buttons button {
     float: right;
     clear: right; 
 }
-
 
 #sidebar .block {
     height: 100%;

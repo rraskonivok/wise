@@ -35,12 +35,105 @@ var toplevel_types = [
     },
 ]
 
+var Logger = Backbone.Collection.extend({
+
+    fatal: function(msg) {
+        var err = {
+            message: msg, 
+            severity: 3,
+        };
+        this.add(err);
+    },
+
+    error: function(msg) {
+        var err = {
+            message: msg, 
+            severity: 2,
+        };
+        this.add(err);
+    },
+
+    warn: function(msg) {
+        var err = {
+            message: msg, 
+            severity: 1,
+        };
+        this.add(err);
+    },
+
+});
+
+var LoggerView = Backbone.View.extend({
+
+    colors: ['yellow',      // Warnings 
+             'lightsalmon', // Errors
+             'red'          // Fatal Errors
+            ],
+
+    colorstate: 0,
+    
+    initialize: function() {
+        _.bindAll(this, 'newError');
+        this.model.bind('add',this.newError);
+    },
+
+    newError: function(err) {
+        var severity = err.get('severity');
+        // Display the color indicator corresponding to the worst
+        // active error
+        if(severity > this.colorstate) {
+            var color = this.colors[err.get('severity')-1];
+            $('#log_indicator').css('background-color', color); 
+            this.colorstate = severity;
+        }
+        this.$('.history').append(err.get('message'));
+    },
+
+    resetState: function(err) {
+        this.colorstate = 0;
+        $('#log_indicator').css('background-color', ""); 
+    }
+});
+
 var SidebarView = Backbone.View.extend({
 
+  events: {
+    "click .math": "toggleMath",
+    "click .rules": "toggleRules",
+    "click .settings": "toggleSettings",
+    "click .terminal": "toggleTerminal",
+  },
+
    initialize: function() {
+       _.bindAll(this, 'toggleMath');
+
+       if(!Wise.Settings.DEBUG) {
+            this.$('.terminal').hide();
+       }
    },
 
-})
+   toggleMath: function() {
+        this.$('.palette').hide();
+        this.$('#math_palette').show();
+   },
+
+   toggleRules: function() {
+        this.$('.palette').hide();
+        this.$('#rules_palette').show();
+   },
+
+   toggleSettings: function() {
+        this.$('.palette').hide();
+        this.$('#settings_palette').show();
+   },
+
+   toggleTerminal: function() {
+        this.$('.palette').hide();
+        this.$('#terminal_palette').show();
+        Wise.Log.view.resetState();
+   },
+
+});
 
 var InsertionToolbar = Backbone.View.extend({
    tagName: 'div',
