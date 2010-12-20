@@ -34,12 +34,12 @@ var toplevel_types = [
     },
 
     {
-        label: '>', 
+        label: 'Greater Than', 
         sexp: '(Gt (Placeholder ) (Placeholder ))',
     },
 
     {
-        label: '<', 
+        label: 'Less Than', 
         sexp: '(Lt (Placeholder ) (Placeholder ))',
     },
 ]
@@ -91,7 +91,6 @@ var LoggerView = Backbone.View.extend({
         // Display the color indicator corresponding to the worst
         // active error
         if(severity >= this.colorstate) {
-            console.log(err);
             var color = this.colors[err.get('severity')-1];
             $('#log_indicator').css('background-color', color); 
             this.colorstate = severity;

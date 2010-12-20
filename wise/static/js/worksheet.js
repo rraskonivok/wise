@@ -658,8 +658,6 @@ function new_line(type, cell) {
     cell.save();
   }
 
-  console.log(data);
-
   $.post("/cmds/new_line/", data, function (data) {
 
     if (data.error) {

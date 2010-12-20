@@ -60,26 +60,14 @@ Worksheet Palettes
         </button>
 
         <button class='snapshot'>
-            <img src="/static/img/icons/snapshot.svg"/>
+            <img src="/static/img/icons/snapshot.png"/>
         </button>
     </div>
 
     <div id="assum_palette" class="palette hidden"></div>
     <div id="math_palette" class="palette hidden"></div>
     <div id="rules_palette" class="palette hidden"></div>
-    <div id="settings_palette" class="palette hidden">
-        <form class="form" method="get" action="#">
-            <div class="group">
-                <label class="label">Radio</label>
-                <div>
-                <input type="radio" value="1" class="checkbox" id="radio_1" name="radio"> <label class="radio" for="radio_1">Option 1</label>
-                </div>
-                <div>
-                <input type="radio" value="2" class="checkbox" id="radio_2" name="radio"> <label class="radio" for="radio_2">Option 2</label>
-                </div>
-            </div>
-        </form>
-    </div>
+    <div id="settings_palette" class="palette hidden"></div>
 
     <div id="keys_palette" class="palette hidden">
         <h3>Keyboard Shortcuts</h3> 
@@ -219,24 +207,26 @@ Equations
             <img src="/static/img/mathml_test.png"/>
         </td>
         <td>
-        <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-          <mrow>
-            <msup>
-              <mi>x</mi>
-              <mn>2</mn>
-            </msup>
-            <msup>
-              <mi>y</mi>
-              <mn>2</mn>
-            </msup>
-          </mrow>
-        </math>
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mrow>
+                <msup>
+                  <mi>x</mi>
+                  <mn>2</mn>
+                </msup>
+                <msup>
+                  <mi>y</mi>
+                  <mn>2</mn>
+                </msup>
+              </mrow>
+            </math>
         </td>
         </tr>
     </table>
 
     <p>
-    <input type="checkbox"/> Don't show me this message again.
+    <!--
+    <input type="checkbox"> Don't show me this message again.</input>
+    -->
     </p>
 </div>
 

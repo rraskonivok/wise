@@ -52,12 +52,6 @@ Wise.Accelerators = new Backbone.Collection([
     },
 
     {
-        keys: 'alt+a',
-        name: 'Add to Both Sides of Equality',
-        action: add_shift,
-    },
-
-    {
         keys: 's',
         name: 'Reduce to Algebraic Normal Form',
         action: _rule('algebra_normal'),
@@ -71,10 +65,10 @@ function init_keyboard_shortcuts() {
 
     var doc = $(document);
     var key_template = _.template("<kbd>{{kstr}}</kbd>");
-    var accel_template = _.template("<dt>{{label}}</dt><dd>{{keys}}");
+    var accel_template = _.template("<dt>{{label}}</dt><dd>{{keys}}</dd>");
 
-    //TODO: this function is a good canidate for memoiziation
-    //with a localstorage cachce
+    // TODO: this function is a good canidate for memoiziation
+    // with a localstorage cachce
 
     Wise.Accelerators.each(function(shortcut) {
 

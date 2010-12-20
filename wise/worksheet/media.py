@@ -31,7 +31,7 @@ MEDIA_BUNDLES = (
      "files": (
         'math.css',
         'mathml.css',
-        'opera_mathml.css',
+#        'opera_mathml.css',
         'worksheet.css',
      )},
 
@@ -46,7 +46,7 @@ MEDIA_BUNDLES = (
         'jquery.js',
         'xml.js',
         'jquery-ui.js',
-        'jquery.ui.position.js',
+#        'jquery.ui.position.js',
 #        'dimensions.js',
         'json2.js',
         'underscore.js',

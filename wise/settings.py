@@ -135,7 +135,7 @@ INSTALLED_APPS = (
 # Some browsers require the Content-Type to be
 # 'application/xhtml+xml' in order to render mixed doctype HTML +
 # MathML
-FORCE_XHTML = False
+FORCE_XHTML = True
 
 # Sphinx sometimes complains about paths if it is run from a
 # different directory so this flag disables all the template

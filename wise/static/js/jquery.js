@@ -1625,7 +1625,8 @@ jQuery.fn.extend({
     isMath: function( selector ) {
 		var className = " " + selector + " ";
 		for ( var i = 0, l = this.length; i < l; i++ ) {
-			if ( this[i].namespaceURI.indexOf("MathML") > -1 ) {
+            var namespace = this[i].namespaceURI;
+			if ( namespace && namespace.indexOf("MathML") > -1 ) {
 				return true;
 			}
 		}
@@ -4963,7 +4964,8 @@ jQuery.fn.extend({
 					parent = this.parentNode;
 
                 // Graft MathML XML
-                if ( this.namespaceURI.indexOf("MathML") > -1 ) {
+                var namespace = this.namespaceURI;
+                if ( namespace && namespace.indexOf("MathML") > -1 ) {
 
                     var htmlDocument = parent.ownerDocument;
                     var mathMLNamespace = "http://www.w3.org/1998/Math/MathML";
@@ -5372,9 +5374,15 @@ jQuery.extend({
 	// Get and set the style property on a DOM Node
 	style: function( elem, name, value, extra ) {
 
-        // Ugly hack to overcome that fact that MathML elements
-        // don't have writable .style attributes
-        if ( elem.namespaceURI.indexOf("MathML") > -1 ) {
+        var namespace = elem.namespaceURI;
+
+        // Opera can sometimes have null namespaces for reasons I
+        // do not understand
+        if ( namespace && namespace.indexOf("MathML") > -1 ) {
+            // Ugly hack to overcome that fact that MathML elements
+            // don't have writable .style attributes, just use a
+            // key value store and write to the style=""
+            // attribute directly on the tag
             var styleline = '';
             if(!elem.cssProps) { elem.cssProps = {} };
             elem.cssProps[name] = value;
