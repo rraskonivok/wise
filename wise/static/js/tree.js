@@ -79,7 +79,6 @@ var Cell = Backbone.Model.extend({
     this.set({
       index: CELL_INDEX,
       workspace: WORKSHEET_ID,
-      active: false,
     });
 
     this._expressions = [];
@@ -511,7 +510,6 @@ function build_cell_from_json(json_input) {
 
   new_view = new CellView({
     el: nel,
-    active: false,
     model: new_cell,
   });
 

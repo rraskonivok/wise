@@ -19,7 +19,7 @@ from django.conf import settings
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, get_object_or_404
 from django.utils import simplejson as json
 from django.utils.html import strip_spaces_between_tags as strip_whitespace
 from django.contrib.auth import authenticate, login, logout
@@ -31,13 +31,17 @@ from django.contrib.auth.models import User
 import panel
 
 from wise.worksheet.utils import *
-from wise.worksheet.forms import LoginForm
+from wise.worksheet.forms import WorksheetForm
 from wise.worksheet.models import Workspace, Expression, Cell, \
 Assumption
 
 from wise.base.cell import Cell as PyCell
 
 CACHE_INTERVAL = 30*60 # 5 Minutes
+
+#---------------------------
+# User Authentication
+#---------------------------
 
 def account_login(request):
     form = AuthenticationForm()
@@ -63,6 +67,99 @@ def account_login(request):
             # Return an 'invalid login' error message.
     else:
         return render_to_response('login.html', {'form': form})
+
+#---------------------------
+# Worksheet CRUD
+#---------------------------
+
+def new_worksheet_prototype(attrs):
+    ws = Workspace(**attrs)
+    ws.save()
+
+    Cell(workspace=ws, index=0).save()
+
+    return ws
+
+
+def worksheet_delete(request, ws_id):
+    ws = get_object_or_404(Workspace,pk=ws_id)
+
+    if ( ws.owner.id != request.user.id ):
+        return HttpResponse('You do not have permission to access this worksheet.')
+
+    ws.delete()
+    return HttpResponseRedirect('/')
+
+@login_required
+def worksheet_edit(request, ws_id = None):
+
+    errors = []
+    id = None
+
+    # -- Update --
+    if ws_id:
+        action = 'Update'
+
+        ws = get_object_or_404(Workspace,pk=ws_id)
+
+        if ( ws.owner.id != request.user.id ):
+            return HttpResponse('You do not have permission to access this worksheet.')
+
+        # -- Receiveing post data from form --
+        if request.method == 'POST':
+            form = WorksheetForm(request.POST)
+
+            if not request.POST.get('name', ''):
+                errors.append('Worksheet name is invalid')
+
+            ws.name = request.POST.get('name')
+            ws.public = not request.POST.get('public') 
+
+            ws.save();
+
+            if not errors and form.is_valid():
+                return HttpResponseRedirect('/')
+
+        # -- Render form --
+        else:
+            id = ws.id
+
+            form = WorksheetForm({
+                'name': ws.name,
+                'public': ws.public
+            })
+
+    # -- Create --
+    else:
+        action = 'Create'
+
+        # -- Receiveing post data from form --
+        if request.method == 'POST':
+            form = WorksheetForm(request.POST)
+
+            if not request.POST.get('name', ''):
+                errors.append('Worksheet name is invalid')
+
+            if not errors and form.is_valid():
+
+                ws = new_worksheet_prototype({
+                    'name'   : request.POST.get('name'),
+                    'public' : not request.POST.get('public'),
+                    'owner'  : request.user,
+                })
+
+                return HttpResponseRedirect('/ws/%i' % ws.id)
+
+        # -- Render form --
+        else:
+            form = WorksheetForm()
+
+    return render_to_response('worksheet_edit.html', {
+        'form': form,
+        'errors': errors,
+        'action': action,
+        'id': id,
+    })
 
 def account_logout(request):
     logout(request)
@@ -96,44 +193,20 @@ def ecosystem(request):
 def users(request):
     return render_to_response('users.html',{'users':User.objects.all()})
 
-# Debugging Stuff
-
-@login_required
-def log(request):
-    log = open('session.log').read()
-    log_html = log.replace("\n","<br />\n")
-
-    return render_to_response('log.html', {'log': log_html})
-
-@login_required
-@errors
-def dict(request):
-    ''' Dump the translation dictionary to a JSON object, for
-    debugging purposes '''
-    from wise.translators.mathobjects import pyobjects
-
-    return HttpResponse(pyobjects)
-    #return JsonResponse(pure_wrap.objects)
-
-# End Debugging Stuff
-
 @login_required
 def translate(request):
     return render_to_response('translate.html')
 
 @login_required
 @errors
-def ws(request, eq_id):
-
-    ws = Workspace.objects.get(id=eq_id)
+def ws(request, ws_id):
+ 
+    ws = get_object_or_404(Workspace, pk=ws_id)
 
     if ( ws.owner.id != request.user.id ) and not ws.public:
         return HttpResponse('You do not have permission to access this worksheet.')
 
-    try:
-        cells = Cell.objects.filter(workspace=eq_id)
-    except ObjectDoesNotExist:
-        return HttpResponse('No cells found in worksheet')
+    cells = Cell.objects.filter(workspace=ws_id)
 
     uid = uidgen()
 
@@ -197,7 +270,7 @@ def ws(request, eq_id):
         })
 
 #---------------------------
-# Palette ------------------
+# Palette
 #---------------------------
 
 #@cache_page(CACHE_INTERVAL)
@@ -214,4 +287,26 @@ def generate_palette():
 
     return render_haml_to_response('palette_template.tpl',{'panels': render_panels})
 
+# Debugging Stuff
+
+@login_required
+def log(request):
+    log = open('session.log').read()
+    log_html = log.replace("\n","<br />\n")
+
+    return render_to_response('log.html', {'log': log_html})
+
+@login_required
+@errors
+def dict(request):
+    ''' Dump the translation dictionary to a JSON object, for
+    debugging purposes '''
+    from wise.translators.mathobjects import pyobjects
+
+    return HttpResponse(pyobjects)
+    #return JsonResponse(pure_wrap.objects)
+
+# End Debugging Stuff
+
 #vim: ai ts=4 sts=4 et sw=4
+

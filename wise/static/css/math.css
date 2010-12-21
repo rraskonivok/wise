@@ -8,7 +8,7 @@
     margin-bottom: 0px !important;
 }
 
-#workspace math {
+#worksheet math {
     font-size: 200%;
 }
 
@@ -48,7 +48,7 @@
     min-height: 50px;
 
     position: relative;
-    padding-top: 5px;
+    padding-top: 10px;
     padding-bottom: 5px;
 }
 

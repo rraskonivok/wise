@@ -135,13 +135,19 @@ Init Function + Global Vars
 
     $('#cmdline').submit(function() {
         use_infix($("#cmdinput").val());
+        $("#cmdinput").val("");
         $("#cmdinput").blur();
         return false;
     });
     
     function init()
     {
+
+        // Warn the user if the browser doesn't support MathML
         if(!($.browser.mozilla)) {
+
+            $("#worksheet").hide();
+
             $( "#dialog" ).dialog({
                 resizable: false,
                 height:300,
@@ -151,6 +157,7 @@ Init Function + Global Vars
                 buttons: {
                     "Proceed Anyways": function() {
                         $( this ).dialog( "close" );
+                        $("#worksheet").show();
                     },
                     "Go Back": function() {
                         javascript:history.go(-1);
@@ -165,9 +172,12 @@ Init Function + Global Vars
 
         load_math_palette();
         load_rules_palette();
+
+        // Initialize Views
         Wise.Sidebar = new SidebarView({
             el: $("#worksheet_sidebar")
         });
+
         Wise.Log = new Logger();
 
         Wise.Log.view =  new LoggerView({
@@ -175,12 +185,9 @@ Init Function + Global Vars
             model: Wise.Log,
         });
 
-
         if(Wise.Settings.get('SERVER_HEARTBEAT')) {
             setInterval( "heartbeat()", 10000 );
         }
-
-        $('.lines').disableSelection();
 
     }
 </script>
@@ -195,7 +202,7 @@ Equations
 {% block main %}
 
 
-<div id="dialog" style="display: none;">
+<div id="dialog" class="hidden">
     It appears that you aren't using Firefox 3+. If the
     mathematics displayed on the right does not match the image
     on the left then your browser does not support enough MathML to
@@ -233,13 +240,13 @@ Equations
 <div id="selectionlist">
 </div>
 
-<div class="cmd" style="display: none">
+<div class="cmd hidden">
     <form id="cmdline" action="#">
         <input id="cmdinput" type="text"></input>
     </form>
 </div>
 
-<div id="workspace">
+<div id="worksheet">
     {% for cell in cells %}
         {{cell|safe}} 
     {% endfor %}

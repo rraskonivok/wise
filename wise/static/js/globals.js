@@ -8,7 +8,9 @@ Wise = Backbone.Model.extend({
     Sidebar: null,
     Log: null,
 
-    active_cell: null,
+    last_cell: null,
+    last_expr: null,
+
     cmd_visible: null,
 
 });

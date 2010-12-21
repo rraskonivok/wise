@@ -15,7 +15,7 @@ html {
     Main Palette
  -------------------- */
 
-#workspace {
+#worksheet {
     background: white;
     margin: 0 20px 0 50px;
     position: relative;
@@ -47,22 +47,22 @@ html {
 
 .toplevel > .node-outline {
   left: -40px;
-  border-bottom: 3px solid #888;
-  border-left: 3px solid #888;
-  border-top: 3px solid #888;
+  border-bottom: 2px solid #888;
+  border-left: 2px solid #888;
+  border-top: 2px solid #888;
 }
 
 .cell > .node-outline {
   left: -50px;
-  border-bottom: 3px solid #555;
-  border-left: 3px solid #555;
-  border-top: 3px solid #555;
+  border-bottom: 2px solid #555;
+  border-left: 2px solid #555;
+  border-top: 2px solid #555;
 }
 
 .toplevel.selected > .node-outline {
-  border-bottom: 3px solid red;
-  border-left: 3px solid red;
-  border-top: 3px solid red;
+  border-bottom: 2px solid red;
+  border-left: 2px solid red;
+  border-top: 2px solid red;
 }
 
 /* -------------------- 
@@ -88,6 +88,7 @@ html {
 #worksheet_sidebar .palette {
     min-width: 100px;
     padding: 10px;
+    height: 500px;
 }
 
 #worksheet_sidebar .buttons {

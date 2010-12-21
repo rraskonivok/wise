@@ -21,6 +21,10 @@
 ///////////////////////////////////////////////////////////
 $(document).ajaxError(function () {
     Notifications.raise('AJAX_FAIL');
+
+    // Disable math operations until we restablish a connection
+    Wise.Settings.set({DISABLE_MATH: true});
+    Wise.Log.warn('Operation failed, since server did not respond');
 });
 
 $(document).ready(function () {
@@ -186,19 +190,6 @@ function selection_matches_pattern(pattern) {
   //children
   var zipped = _.zip(Wise.Selection, pattern);
   return _.map(zipped, _.isEqual);
-}
-
-function activate_cell(cell) {
-  // If there is a active cell make it inactive
-  if (active_cell) {
-    active_cell.set({
-      active: false
-    });
-  }
-  cell.set({
-    active: true
-  });
-  active_cell = cell;
 }
 
 ///////////////////////////////////////////////////////////
@@ -639,11 +630,16 @@ function new_line(type, cell) {
 
   // If we aren't given an explicit cell and the number of cells
   // and there is not a single 
-  if(!cell && Wise.Worksheet.length != 1) {
-    error('Dont know where to insert');
-    return;
-  } else if (!cell && Wise.Worksheet.length == 1) {
-    cell = Wise.Worksheet.at(0);
+  if(!cell) {
+
+      if(Wise.Worksheet.length == 1) {
+        cell = Wise.Worksheet.at(0);
+      } else if ( Wise.last_cell ) {
+        cell = Wise.last_cell;
+      } else {
+        error('Dont know where to insert');
+        return;
+      }
   }
 
   var data = {};
@@ -682,56 +678,56 @@ function new_line(type, cell) {
   }, 'json')
 }
 
-function new_assum(type, index) {
-  var data = {};
-  data.namespace_index = NAMESPACE_INDEX;
-  data.cell_index = CELL_INDEX;
-  data.type = type;
-
-  if (index != undefined) {
-    active_cell = Wise.Worksheet.getByCid(index);
-  }
-
-  if (!active_cell) {
-    if (Wise.Worksheet.length == 1) {
-      active_cell = Wise.Worksheet.at(0);
-    } else {
-      error("Select a cell to insert into");
-      return;
-    }
-  }
-
-  // If the cell new then commit it to the database before we
-  // so that all foreign keys on expression objects will
-  // resolve properly
-  if (active_cell.isNew()) {
-    active_cell.save();
-  }
-
-  $.post("/cmds/new_line/", data, function (data) {
-
-    if (data.error) {
-      error(data.error);
-    }
-
-    if (data.new_html) {
-      new_expr_html = $(data.new_html);
-      active_cell.view.addAssumption(new_expr_html);
-
-      // Initiale the new expression in the term db
-      var expr = build_tree_from_json(data.new_json, AssumptionTree);
-
-      expr.cell = active_cell;
-      expr.set({
-        cell: active_cell.id
-      });
-      active_cell.addAssumption(expr);
-
-    }
-
-    NAMESPACE_INDEX = data.namespace_index;
-  }, 'json')
-}
+//function new_assum(type, index) {
+//  var data = {};
+//  data.namespace_index = NAMESPACE_INDEX;
+//  data.cell_index = CELL_INDEX;
+//  data.type = type;
+//
+//  if (index != undefined) {
+//    active_cell = Wise.Worksheet.getByCid(index);
+//  }
+//
+//  if (!active_cell) {
+//    if (Wise.Worksheet.length == 1) {
+//      active_cell = Wise.Worksheet.at(0);
+//    } else {
+//      error("Select a cell to insert into");
+//      return;
+//    }
+//  }
+//
+//  // If the cell new then commit it to the database before we
+//  // so that all foreign keys on expression objects will
+//  // resolve properly
+//  if (active_cell.isNew()) {
+//    active_cell.save();
+//  }
+//
+//  $.post("/cmds/new_line/", data, function (data) {
+//
+//    if (data.error) {
+//      error(data.error);
+//    }
+//
+//    if (data.new_html) {
+//      new_expr_html = $(data.new_html);
+//      active_cell.view.addAssumption(new_expr_html);
+//
+//      // Initiale the new expression in the term db
+//      var expr = build_tree_from_json(data.new_json, AssumptionTree);
+//
+//      expr.cell = active_cell;
+//      expr.set({
+//        cell: active_cell.id
+//      });
+//      active_cell.addAssumption(expr);
+//
+//    }
+//
+//    NAMESPACE_INDEX = data.namespace_index;
+//  }, 'json')
+//}
 
 function new_cell() {
   data = {};
@@ -751,7 +747,7 @@ function new_cell() {
     if (response.new_html) {
 
       var cell = build_cell_from_json(response.new_json);
-      active_cell = cell;
+      Wise.last_cell = cell;
 
       Wise.Worksheet.add(cell);
       CELL_INDEX = response.cell_index;
@@ -776,27 +772,21 @@ function new_cell() {
       // TODO: Wtf?
       $(view.el).addClass('cell');
 
-      $("#workspace").append(view.el);
+      $("#worksheet").append(view.el);
       $('#cell_selection').append(cs.el);
 
-      // Make the new cell active
-      cell.set({
-        active: true
-      });
-
-      activate_cell(cell);
     }
   });
 }
 
 ///////////////////////////////////////////////////////////
-// Math Parsing & Generating
+// Typesetting
 ///////////////////////////////////////////////////////////
 
+//Typeset a DOM element when passed, if no element is passed
+//then typeset the entire page
 function mathjax_typeset(element) {
-  //Typeset a DOM element when passed, if no element is passed
-  //then typeset the entire page
-  if(Worksheet.DISABLE_TYPESETTING) {
+  if(Worksheet.Settings.get('DISABLE_TYPESETTING')) {
       return;
   }
 

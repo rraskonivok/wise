@@ -12,6 +12,7 @@ class Workspace(models.Model):
         return self.name
 
 class Cell(models.Model):
+    """A collection of expressions and bindings"""
     workspace = models.ForeignKey(Workspace, blank=False,null=False)
     index = models.IntegerField(blank=False,null=False)
 
@@ -19,7 +20,7 @@ class Cell(models.Model):
         return self.workspace.name + ('[%s]' % (self.index))
 
 class Expression(models.Model):
-    """Context-free expressions inside a cell a cell."""
+    """Context-free expressions inside a cell."""
     cell = models.ForeignKey(Cell,blank=False,null=False)
     #cell = models.ManyToManyField(Cell)
 

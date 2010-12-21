@@ -35,6 +35,7 @@ function sub_shift() {
 }
 
 function mul_shift() {
+
     // TODO: use currying for this
     function add_rule(args) {
         return function() {
@@ -96,7 +97,6 @@ function select_parent(clear) {
 function select_root(clear) {
     var start = Wise.Selection.last();
 
-
     if(clear) {
         base_mode();
     }
@@ -152,20 +152,24 @@ substitute_stoplist = ['Placeholder'];
 function placeholder_substitute() {
     if (Wise.Selection.length >= 2) {
 
-//        if(last.get('toplevel')) {
-//            //error('Cannot substitute toplevel element into expression');
-//            last.errorFlash();
-//            return;
-//        }
-
         var sub = Wise.Selection.detect(is_not_placeholder);
         if(!sub) return;
 
         var phs = Wise.Selection.select(is_placeholder);
-
         var tr_name = 'base/PlaceholderSubstitute';
 
-        queue = [];
+        if(!phs) {
+            return;
+        }
+
+        // Don't let the user subsitute a toplevel element into
+        // placeholder
+        if(sub.get('toplevel')) {
+            sub.errorFlash();
+            return;
+        }
+
+        var queue = [];
 
         _.each(phs, function(ph) {
             queue.push(
@@ -173,7 +177,7 @@ function placeholder_substitute() {
             );
         });
 
-        async.parallel(queue);
+        async.series(queue);
     }
 }
 
@@ -221,4 +225,13 @@ function subs(obj) {
 function save_worksheet(e) {
     Wise.Worksheet.saveAll();
     e.preventDefault();
+}
+
+function next_placeholder() {
+    ph = Wise.Nodes.detect(is_placeholder);
+
+    // If we found one and its not already selected
+    if(ph && !ph.get('selected')) {
+        ph.select();
+    }
 }

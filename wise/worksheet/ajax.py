@@ -238,7 +238,6 @@ def use_infix(request):
 @login_required
 @errors
 @ajax_request
-#@cache_page(CACHE_INTERVAL)
 def apply_transform(request):
     code = tuple(request.POST.getlist('selections[]'))
     transform = unencode( request.POST.get('transform') )
@@ -297,7 +296,6 @@ def apply_transform(request):
 @login_required
 @errors
 @ajax_request
-#@cache_page(CACHE_INTERVAL)
 def new_line(request):
     namespace_index = request.POST.get('namespace_index')
 

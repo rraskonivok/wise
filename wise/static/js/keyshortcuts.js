@@ -16,18 +16,6 @@ var _rule = function(rule) {
 Wise.Accelerators = new Backbone.Collection([
 
     {
-        keys: 'del',
-        name: 'Remove Element',
-        action: remove_element,
-    },
-
-    {
-        keys: 'esc',
-        name: 'Base Mode',
-        action: base_mode,
-    },
-
-    {
         keys: 'x',
         name: 'Insert Variable x',
         action: _infix('x'),
@@ -46,15 +34,135 @@ Wise.Accelerators = new Backbone.Collection([
     },
 
     {
-        keys: 'alt+a',
-        name: 'Add to Both Sides of Equality',
-        action: add_shift,
+        keys: 't',
+        name: 'Insert Variable t',
+        action: _infix('t'),
+    },
+
+    {
+        keys: 'd',
+        name: 'Remove Element',
+        action: remove_element,
     },
 
     {
         keys: 's',
         name: 'Reduce to Algebraic Normal Form',
         action: _rule('algebra_normal'),
+    },
+
+    {
+        keys: 'esc',
+        name: 'Clear Selection',
+        action: base_mode,
+    },
+
+    {
+        keys: 'alt+a',
+        name: 'Add to Both Sides of Equality',
+        action: add_shift,
+    },
+
+    {
+        keys: 'alt+m',
+        name: 'Multiply Both Sides of Equality',
+        action: mul_shift,
+    },
+
+    {
+        keys: 'alt+d',
+        name: 'Divide Both Sides of Equality',
+        action: div_shift,
+    },
+
+    {
+        keys: 'alt+s',
+        name: 'Subtract from Both Sides of Equality',
+        action: sub_shift,
+    },
+
+    {
+        keys: '+',
+        name: 'Addition',
+        action: _infix('ph+ph'),
+    },
+
+    {
+        keys: '-',
+        name: 'Unary Negation',
+        action: _infix('-ph'),
+    },
+
+    {
+        keys: '*',
+        name: 'Multiplication',
+        action: _infix('ph*ph'),
+    },
+
+    {
+        keys: '/',
+        name: 'Division',
+        action: _infix('ph/ph'),
+    },
+
+    {
+        keys: '1',
+        name: 'Insert 1',
+        action: _infix('1'),
+    },
+
+    {
+        keys: '2',
+        name: 'Insert 2',
+        action: _infix('2'),
+    },
+
+    {
+        keys: '0',
+        name: 'Insert 0',
+        action: _infix('0'),
+    },
+    
+    {
+        keys: 'ctrl+space',
+        name: 'Quick Insert',
+        action: toggle_cmdline,
+    },
+
+    {
+        keys: 'shift+v',
+        name: 'Select Top Parent',
+        action: select_root,
+    },
+    
+    {
+        keys: 'w',
+        name: 'Select Next Placeholder',
+        action: next_placeholder,
+    },
+
+    {
+        keys: 'ctrl+s',
+        name: 'Save Worksheet',
+        action: save_worksheet,
+    },
+
+    {
+        keys: 'p',
+        name: 'Select Parent',
+        action: select_parent,
+    },
+
+    {
+        keys: 'c',
+        name: 'Commute Elementary Operations',
+        action: _rule('commute_elementary'),
+    },
+
+    {
+        keys: 'e',
+        name: 'Algebra Expand',
+        action: _rule('algebra_expand'),
     },
 
 ]);
@@ -68,8 +176,8 @@ function init_keyboard_shortcuts() {
     var accel_template = _.template("<dt>{{label}}</dt><dd>{{keys}}</dd>");
 
     // TODO: this function is a good canidate for memoiziation
-    // with a localstorage cachce
-
+    // with a localstorage cache
+    
     Wise.Accelerators.each(function(shortcut) {
 
         keys = shortcut.get('keys');
@@ -90,45 +198,5 @@ function init_keyboard_shortcuts() {
 
         $("#keys_palette .list").append(list_item);
     });
-
-    //$(document).bind('keydown', 'del', function() {remove_element()})
-    //    .bind('keydown', 'd', function() {remove_element()})
-    //    .bind('keydown', 'esc', function() {base_mode();})
-    //    .bind('keydown', 'r', function() {rebuild_node()})
-    //    .bind('keydown', 'w', function() {next_placeholder()})
-    //    .bind('keydown', 'o', function() {new_line('eq')})
-    //    .bind('keydown', 'shift+/', function() {new_assum('assum')})
-    //    .bind('keydown', 's', function() {apply_rule('algebra_normal',null)})
-    //    .bind('keydown', 'c', function() {apply_rule('commute_elementary',null)})
-    //    .bind('keydown', 'e', function() {apply_rule('algebra_expand',null)})
-    //    .bind('keydown', 'p', function() {select_parent(true)})
-    //    .bind('keydown', 'shift+v', function() {select_root(true)})
-    //    .bind('keydown', '$', function() {select_right_root(true)})
-    //    .bind('keydown', '^', function() {select_left_root(true)})
-    //    .bind('keydown', 'alt+a', add_shift)
-    //    .bind('keydown', 'alt+m', mul_shift)
-    //    .bind('keydown', 'alt+d', div_shift)
-    //    .bind('keydown', 'alt+s', sub_shift)
-    //    .bind('keydown', 'ctrl+s', save_worksheet)
-    //    .bind('keydown', 'shift+left', iter_left)
-    //    // Variable substitutions 
-    //    .bind('keydown', 'x', function() {use_infix('x')})
-    //    .bind('keydown', 'y', function() {use_infix('y')})
-    //    .bind('keydown', 'z', function() {use_infix('z')})
-    //    .bind('keydown', 't', function() {use_infix('t')})
-    //    // Operation substitutions
-    //    .bind('keydown', '+', function() {use_infix('ph+ph')})
-    //    .bind('keydown', '/', function() {use_infix('ph/ph')})
-    //    .bind('keydown', '*', function() {use_infix('ph*ph')})
-    //    .bind('keydown', '-', function() {use_infix('-ph')})
-    //    //.bind('keydown', '^', function() {use_infix('ph^ph')})
-    //    .bind('keydown', 'shift+I', function() {use_infix('integral ph')})
-    //    .bind('keydown', 'shift+D', function() {use_infix('diff ph')})
-    //    // Number substitutions
-    //    .bind('keydown', '2', function() {use_infix('2')})
-    //    .bind('keydown', '1', function() {use_infix('1')})
-    //    .bind('keydown', '0', function() {use_infix('0')})
-    //    .bind('keydown', 'ctrl+space', function() {toggle_cmdline()}
-    //);
 
 }

@@ -1,5 +1,6 @@
 from django import forms
 
-class LoginForm(forms.Form):
-    email = forms.EmailField(label="Email", max_length=30)
-    password = forms.CharField(label="Password", widget=forms.PasswordInput)
+class WorksheetForm(forms.Form):
+    name = forms.CharField(max_length=200,
+            widget=forms.TextInput(attrs={'class':'text_field'}))
+    public = forms.BooleanField( required=False )

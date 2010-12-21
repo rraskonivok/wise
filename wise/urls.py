@@ -25,9 +25,14 @@ urlpatterns = patterns('',
      (r'^accounts/logout/$', 'wise.worksheet.views.account_logout'),
 
      # Worksheet
-     (r'^ws/(?P<eq_id>\d+)/$', 'wise.worksheet.views.ws'),
+     (r'^ws/(?P<ws_id>\d+)/$', 'wise.worksheet.views.ws'),
      (r'^palette/$', 'wise.worksheet.views.palette'),
      (r'^rule_request/$', 'wise.worksheet.ajax.rules_request'),
+
+     # Worksheet CRUD
+     (r'^worksheet_delete/(?P<ws_id>\d+)/$', 'wise.worksheet.views.worksheet_delete'),
+     (r'^worksheet_edit/(?P<ws_id>\d+)/$', 'wise.worksheet.views.worksheet_edit'),
+     (r'^worksheet_edit/$', 'wise.worksheet.views.worksheet_edit'),
 
      # Worksheet Commands
      (r'^cmds/new_line/$', 'wise.worksheet.ajax.new_line'),
