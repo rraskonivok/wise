@@ -159,7 +159,6 @@ var Cell = Backbone.Model.extend({
 
 });
 
-
 function build_tree_from_json(json_input, top_class) {
 
   //TODO: remove this ugly hack
@@ -544,6 +543,8 @@ function build_cell_from_json(json_input) {
 
     new_cell.addAssumption(expr_tree);
   });
+
+  Wise.last_cell = new_cell;
 
   return new_cell;
 }

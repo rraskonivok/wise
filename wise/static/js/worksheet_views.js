@@ -241,8 +241,8 @@ var CellView = Backbone.View.extend({
   },
 
   render: function () {
-    $(this.el).append(this.menu());
-    $(this.el).append(this.equations());
+//    $(this.el).append(this.menu());
+//    $(this.el).append(this.equations());
     return this;
   },
 

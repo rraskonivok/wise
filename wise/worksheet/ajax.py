@@ -351,10 +351,10 @@ def new_cell(request):
     uid = uidgen(namespace_index)
 
     # Create any empty equation in the new cell
-    new_eq = EquationPrototype()
-    new_eq.uid_walk(uid)
+    # new_eq = EquationPrototype()
+    # new_eq.uid_walk(uid)
 
-    new_cell = PyCell([new_eq],[])
+    new_cell = PyCell([],[])
     new_cell.index = cell_index + 1;
 
     return JsonResponse({'new_html': html(new_cell),

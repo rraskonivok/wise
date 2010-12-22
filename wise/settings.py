@@ -5,7 +5,6 @@
 
 import os
 
-
 # A quick note about security. *WISE IS ALPHA SOFTWARE AND NOT SECURE* (yet)
 ADMINS = (
     # ('Leonhard Euler', 'leuler@unibas.ch'),
@@ -79,10 +78,11 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-#    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'middleware.XHTMLMiddleware',
 )
 
+from worksheet.media import MEDIA_BUNDLES
 MEDIA_GENERATORS = (
     'mediagenerator.generators.copyfiles.CopyFiles',
     'mediagenerator.generators.bundles.Bundles',
@@ -93,11 +93,9 @@ ROOT_URLCONF = 'wise.urls'
 ROOTDIR = os.path.abspath(os.path.dirname(__file__))
 
 # Template directories include:
-#
 # templates/
 # worksheet/templates
-# worksheet/$PACKAGES/templates
-
+# $PACKAGES/templates
 TEMPLATE_DIRS = tuple(
         [ROOTDIR +'/templates'] +
         [ROOTDIR + ('/%s/templates' % pack) for pack in INSTALLED_MATH_PACKAGES]
@@ -128,7 +126,7 @@ INSTALLED_APPS = (
 
     # Optional Applications - mostly for development
     #'reversion',
-    #'debug_toolbar',
+    'debug_toolbar',
     #'django_extensions',
 )
 
@@ -149,6 +147,3 @@ IGNORE_PATHS = False
 # more often then not.
 PRECOMPILE  = False
 
-from worksheet.media import MEDIA_BUNDLES
-
-# TODO: move this to worksheet/ so it isn't unsightly

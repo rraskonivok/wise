@@ -165,9 +165,19 @@ Wise.Accelerators = new Backbone.Collection([
         action: _rule('algebra_expand'),
     },
 
+    {
+        keys: 'shift+o',
+        name: 'New Cell',
+        action: new_cell,
+    },
+
+    {
+        keys: 'o',
+        name: 'New Cell',
+        action: function() { new_line('eq', Wise.last_cell) },
+    },
+
 ]);
-
-
 
 function init_keyboard_shortcuts() {
 
@@ -177,7 +187,6 @@ function init_keyboard_shortcuts() {
 
     // TODO: this function is a good canidate for memoiziation
     // with a localstorage cache
-    
     Wise.Accelerators.each(function(shortcut) {
 
         keys = shortcut.get('keys');

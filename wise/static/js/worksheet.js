@@ -642,6 +642,10 @@ function new_line(type, cell) {
       }
   }
 
+  if(!type) {
+    type = 'eq';
+  }
+
   var data = {};
   data.namespace_index = NAMESPACE_INDEX;
   data.cell_index = CELL_INDEX;
@@ -657,7 +661,7 @@ function new_line(type, cell) {
   $.post("/cmds/new_line/", data, function (data) {
 
     if (data.error) {
-      error(data.error);
+      Wise.Log.error(data.error);
     }
 
     if (data.new_html) {
@@ -736,12 +740,8 @@ function new_cell() {
 
   $.post("/cmds/new_cell/", data, function (response) {
 
-    if (!response) {
-      error("Server did not respond.");
-    }
-
     if (response.error) {
-      error(response.error);
+      Wise.Log.error(response.error);
     }
 
     if (response.new_html) {
@@ -753,10 +753,13 @@ function new_cell() {
       CELL_INDEX = response.cell_index;
       NAMESPACE_INDEX = response.namespace_index;
 
+      $("#worksheet").append(response.new_html);
+
       // Make the cell workspace object
       var view = new CellView({
         model: cell,
         id: cell.cid,
+        el: $("#"+cell.cid),
       });
 
       view.render();
@@ -770,10 +773,9 @@ function new_cell() {
       cs.render();
 
       // TODO: Wtf?
-      $(view.el).addClass('cell');
-
-      $("#worksheet").append(view.el);
       $('#cell_selection').append(cs.el);
+
+      Wise.last_cell = cell;
 
     }
   });
