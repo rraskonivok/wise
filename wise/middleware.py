@@ -7,6 +7,6 @@ class XHTMLMiddleware(object):
             response.content = short(response.content)
             # Mixed MathML + HTML contents needs this content
             # type otherwise Firefox won't render the MathML
-            if settings.FORCE_XHTML:
+            if hasattr(response,'xhtml') or settings.FORCE_XHTML:
                 response["Content-Type"] = "application/xhtml+xml; charset=utf-8"
         return response

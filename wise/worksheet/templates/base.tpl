@@ -1,14 +1,20 @@
 {% load bundler_tags %}
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1 plus MathML 2.0//EN" 
-               "http://www.w3.org/Math/DTD/mathml2/xhtml-math11-f.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"> 
+{% load html %}
+
+
+{% if xhtml %}
+{% doctype "xhtmlmath" %}
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+{% else %}
+{% doctype "html5" %}
+<html>
+{% endif %}
 <head>
   <title>Wise ( {{title|title}} ) </title>
   <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
   <meta http-equiv="Content-Language" content="en" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <meta http-equiv="Content-Script-Type" content="text/javascript" />
-
 
  {% load_bundle "base_js" %}
  {% load_bundle "base_css" %}

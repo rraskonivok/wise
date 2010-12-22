@@ -2,6 +2,8 @@ if (!this.JSON) {
     this.JSON = {};
 }
 
+var x = 3;
+
 (function () {
 
     function f(n) {

@@ -9,21 +9,17 @@
 # License, or (at your option) any later version.
 
 import sys
-import os.path
 import traceback
 from decorator import decorator
-from logger import debug, getlogger
 from operator import xor
 from binascii import crc32
 
 from django import template
 from django.template import loader
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseRedirect, Http404
+from django.http import HttpResponse
 from django.utils.html import strip_spaces_between_tags as strip_whitespace
 from django.utils import simplejson as json
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.cache import cache_page
 
 from wise.utils import shpaml
 
@@ -41,9 +37,9 @@ def errors(f):
             print traceback.print_exc()
 
             if settings.DEBUG:
-                return HttpResponse(json.dumps({'error': str(e)}))
+                return JsonResponse({'error': str(e)})
             else:
-                return HttpResponse(json.dumps({'error': 'A server-side error occured'}))
+                return JsonResponse({'error': 'A server-side error occured.'})
             raise e
     return wrapper
 
@@ -99,7 +95,7 @@ def ajax_request(func):
 # Documentation
 #-------------------------------------------------------------
 
-# Trim docstrings for output
+# Trim docstrings for output, adapted from PEP 257
 def trim_docstring(docstring):
     if not docstring:
         return ''
@@ -124,9 +120,18 @@ def trim_docstring(docstring):
 #-------------------------------------------------------------
 
 class JsonResponse(HttpResponse):
-    ''' HttpResponse descendant, which return response with ``application/json`` mimetype.  '''
+    """HttpResponse descendant, which returns a response with
+    ``application/json`` mimetype.
+
+    Data passed must castable into unicode.
+    """
+
     def __init__(self, data):
-        super(JsonResponse, self).__init__(content=json.dumps(data), mimetype='application/json')
+
+        # ensure_ascii increases performance
+        super(JsonResponse, self).__init__(
+                content=json.dumps(data, ensure_ascii=False),
+                mimetype='application/json')
 
 @errors
 def render_haml_to_response(tname, context):

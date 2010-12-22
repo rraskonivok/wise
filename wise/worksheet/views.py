@@ -2,28 +2,29 @@
 
 # Wise
 # Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
-import traceback
-import wise.translators.pure_wrap as pure_wrap
+from wise.translators import pure_wrap
 from wise.translators.pytopure import parse_sexp
 
-from logger import debug, getlogger
+#from logger import debug, getlogger
 
-from django.template import Template, Context
-from django.conf import settings
-from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponse, HttpResponseRedirect, Http404
+
+from django.http import HttpResponse, HttpResponseRedirect, \
+HttpResponseForbidden
+
 from django.shortcuts import render_to_response, get_object_or_404
 from django.utils import simplejson as json
 from django.utils.html import strip_spaces_between_tags as strip_whitespace
 from django.contrib.auth import authenticate, login, logout
+
 from django.contrib.auth.decorators import login_required
+
 from django.contrib.auth.forms import AuthenticationForm
 from django.views.decorators.cache import cache_page
 from django.contrib.auth.models import User
@@ -63,7 +64,10 @@ def account_login(request):
                 return HttpResponse('Account Disabled')
                 # Return a 'disabled account' error message
         else:
-            return render_to_response('login.html', {'form': form, 'errors': ['Invalid Login']})
+            return render_to_response('login.html', {
+                       'form': form,
+                       'errors': ['Invalid Login'],
+                   })
             # Return an 'invalid login' error message.
     else:
         return render_to_response('login.html', {'form': form})
@@ -85,7 +89,8 @@ def worksheet_delete(request, ws_id):
     ws = get_object_or_404(Workspace,pk=ws_id)
 
     if ( ws.owner.id != request.user.id ):
-        return HttpResponse('You do not have permission to access this worksheet.')
+        return HttpResponseForbidden('You do not have permission to access \
+                this worksheet.')
 
     ws.delete()
     return HttpResponseRedirect('/')
@@ -103,7 +108,8 @@ def worksheet_edit(request, ws_id = None):
         ws = get_object_or_404(Workspace,pk=ws_id)
 
         if ( ws.owner.id != request.user.id ):
-            return HttpResponse('You do not have permission to access this worksheet.')
+            return HttpResponse('You do not have permission to access this\
+                    worksheet.')
 
         # -- Receiveing post data from form --
         if request.method == 'POST':
@@ -113,7 +119,7 @@ def worksheet_edit(request, ws_id = None):
                 errors.append('Worksheet name is invalid')
 
             ws.name = request.POST.get('name')
-            ws.public = not request.POST.get('public') 
+            ws.public = not request.POST.get('public')
 
             ws.save();
 
@@ -198,9 +204,8 @@ def translate(request):
     return render_to_response('translate.html')
 
 @login_required
-@errors
 def ws(request, ws_id):
- 
+
     ws = get_object_or_404(Workspace, pk=ws_id)
 
     if ( ws.owner.id != request.user.id ) and not ws.public:
@@ -210,9 +215,7 @@ def ws(request, ws_id):
 
     uid = uidgen()
 
-    json_cells = []
     html_cells = []
-
     py_cells = []
 
     # Process Cells
@@ -257,17 +260,30 @@ def ws(request, ws_id):
         # Initialize the Cell
         cell.id = db_id
         py_cells.append(cell)
-        json_cells.append(cell)
 
-    return render_to_response('worksheet.html', {
+        json_cells = [json_flat(cell) for cell in py_cells]
+
+    response = render_to_response('worksheet.html', {
+
         'title': ws.name,
         'ws_id': ws.id,
+
         'cells': [html(cell) for cell in py_cells],
-        'username': request.user.username,
+
         'namespace_index': uid.next()[3:],
         'cell_index': len(cells),
-        'json_cells': json.dumps([json_flat(cell) for cell in py_cells]),
+
+        'json_cells': json.dumps(json_cells,ensure_ascii=False),
+
+        'xhtml': True,
         })
+
+    # XHTMLMiddleware will look for this attribute and set
+    # Content-Type to application/xhtml+xml which is needed by
+    # some browsers (i.e. Firefox 3.5) to render MathML
+    response.xhtml = True
+
+    return response
 
 #---------------------------
 # Palette
@@ -275,7 +291,10 @@ def ws(request, ws_id):
 
 #@cache_page(CACHE_INTERVAL)
 def palette(request):
-    return generate_palette()
+    response = generate_palette()
+    response.content = minimize_html(response.content)
+    response.xhtml = True
+    return response
 
 @errors
 def generate_palette():

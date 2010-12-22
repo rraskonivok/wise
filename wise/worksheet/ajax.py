@@ -2,35 +2,29 @@
 
 # Wise
 # Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
-import wise.translators.pytopure as translate
-#import wise.translators.mathobjects
-
-import wise.translators.pure_wrap as pure_wrap
-
-from django import template
-from django.shortcuts import render_to_response
-from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponse, HttpResponseRedirect, \
-Http404
+from django.http import HttpResponse
+from wise.worksheet.utils import JsonResponse
+from django.contrib.auth.decorators import login_required
 
 # uidgen is imported from utils
 from wise.worksheet.utils import *
-from wise.worksheet.models import Workspace, Expression, Cell
 import wise.worksheet.exceptions as exception
+from django.core.exceptions import ObjectDoesNotExist
 
 import wise.worksheet.rules as rules
 import wise.worksheet.transforms as transforms
 
-from wise.base.cell import Cell as PyCell
-from wise.base.objects import EquationPrototype, AssumptionPrototype
+import wise.translators.pytopure as translate
+import wise.translators.pure_wrap as pure_wrap
 
-CACHE_INTERVAL = 30*60 # 5 Minutes
+from wise.base.cell import Cell
+from wise.base.objects import EquationPrototype, AssumptionPrototype
 
 def heartbeat(request):
     # Server is up and life is good
@@ -38,15 +32,21 @@ def heartbeat(request):
     response['Cache-Control'] = 'no-cache'
     return response
 
+# ------------------------------------
+# Note:
+# All ajax requests should return JSON
+# Use JsonResponse
+# ------------------------------------
+
 @memoize
 def rule_reduce(rule, sexps):
-    # >>>>>>>>>>>>>>>>>>>>>>>>>>
     # Reduce the passed arguments by applying them to the given
     # rule
 
     args = [translate.parse_sexp(sexp) for sexp in sexps]
     pargs = map(translate.python_to_pure, args)
 
+    # >>>>>>>>>>>>>>>>>>>>>>>>>>
     try:
         ref = pure_wrap.rules[rule]()
     except KeyError:
@@ -54,9 +54,9 @@ def rule_reduce(rule, sexps):
 
     pure_expr = ref.reduce_with(*pargs)
     new_expr_tree = translate.pure_to_python(pure_expr)
-    return new_expr_tree
-
     # <<<<<<<<<<<<<<<<<<<<<<<<<<
+
+    return new_expr_tree
 
 @login_required
 @errors
@@ -97,8 +97,7 @@ def apply_rule(request):
     if '' in sexps:
         raise Exception('Empty sexp was passed.')
 
-    # Spawn a new generator to give out new uids to newly created
-    # objects
+    # Spawn a new generator uid generator to walk the parse tree
     uid = uidgen(namespace_index)
     rule = request.POST.get('rule')
 
@@ -115,30 +114,26 @@ def apply_rule(request):
 @login_required
 @errors
 @ajax_request
-#@cache_page(CACHE_INTERVAL)
 def apply_def(request):
     sexps = tuple(request.POST.getlist('selections[]'))
 
-    # Handle client-side ID
     namespace_index = int( request.POST.get('namespace_index') )
 
     if not namespace_index:
         raise Exception('No namespace index given in request.')
 
+    # Spawn a new generator uid generator to walk the parse tree
     uid = uidgen(namespace_index)
-
-    # Build up the pure representation of the definition from
-    # the sexp
 
     def_sexp = request.POST.get('def')
 
     if not def_sexp:
         raise Exception('No definiton specified.')
 
+    # Build up the Pure representation of the definition from
+    # the sexp
     def_py = translate.parse_sexp(def_sexp,uid)
     def_pure = purify(def_py)
-
-    # ---
 
     args = [translate.parse_sexp(sexp, uid) for sexp in sexps]
 
@@ -175,7 +170,6 @@ def apply_def(request):
 
 @login_required
 @errors
-#@cache_page(CACHE_INTERVAL)
 def rules_request(request):
     return render_haml_to_response('ruleslist.tpl',
             {'rulesets':rules.rulesets})
@@ -183,7 +177,6 @@ def rules_request(request):
 #@login_required
 #@errors
 #@ajax_request
-#@cache_page(CACHE_INTERVAL)
 #def lookup_transform(request):
 #    typs = tuple(request.POST.getlist('selections[]'))
 #
@@ -208,12 +201,11 @@ def rules_request(request):
 #
 #    return JsonResponse(mappings_list)
 
-
 @login_required
 @errors
 @ajax_request
 def use_infix(request):
-    # TODO: We should preparse this and define a lookup table 
+    # TODO: We should preparse this and define a lookup table
     # for a bunch of common macros instead of just passing
     # this off to Pure eval, otherwise we get kind of unwiedly
     # constructions of things ex: Tuple x y z could be better
@@ -350,11 +342,7 @@ def new_cell(request):
     # Create a new uid generator
     uid = uidgen(namespace_index)
 
-    # Create any empty equation in the new cell
-    # new_eq = EquationPrototype()
-    # new_eq.uid_walk(uid)
-
-    new_cell = PyCell([],[])
+    new_cell = Cell([],[])
     new_cell.index = cell_index + 1;
 
     return JsonResponse({'new_html': html(new_cell),

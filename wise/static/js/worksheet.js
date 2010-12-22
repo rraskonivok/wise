@@ -103,16 +103,16 @@ $.fn.replace = function (htmlstr) {
 
 //TODO: This is here for compatability reasons, move to fn.cid
 $.fn.id = function () {
-  return $(this).attr('id')
+  return $(this).attr('id');
 };
 
 $.fn.cid = function () {
-  return $(this).attr('id')
+  return $(this).attr('id');
 };
 
 // Extract the id of an object and lookup its node
 $.fn.node = function () {
-  var node = Wise.Nodes.getByCid($(this).id())
+  var node = Wise.Nodes.getByCid($(this).id());
   if (!node) {
     error("The term you selected is 'broken', try refreshing its corresponding equation.");
     window.log($(this).id(), 'not initalized in term db.');
@@ -312,7 +312,7 @@ function apply_rule(rule, operands) {
     for (var i = 0; i < response.new_html.length; i++) {
       var preimage = operands[i];
 
-      if (response.new_html[i] == null) {
+      if (response.new_html[i] === null) {
         //Desroy the preimage
         preimage.remove();
       }
@@ -325,7 +325,7 @@ function apply_rule(rule, operands) {
       }
       else {
         // Is the image a toplevel element (i.e. Equation ) 
-        var is_toplevel = (response.new_json[i][0].toplevel)
+        var is_toplevel = (response.new_json[i][0].toplevel);
 
         if (is_toplevel) {
 
@@ -383,10 +383,10 @@ function apply_rule(rule, operands) {
 function apply_def(def, selections) {
   var data = {};
 
-  data.def = def.sexp()
+  data.def = def.sexp();
   data.namespace_index = NAMESPACE_INDEX;
 
-  if (selections == null) {
+  if (selections) {
 
     //Fetch the math for each of the selections
     if (Wise.Selection.count == 0) {
