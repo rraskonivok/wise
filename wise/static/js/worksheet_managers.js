@@ -1,8 +1,10 @@
 var NodeSelectionManager = Backbone.Collection.extend({
+    //TODO: can we remove this?
+
     // For compatibility
-    nth: function(index) {
-        return this.at(index);
-    },
+    //nth: function(index) {
+    //    return this.at(index);
+    //},
 
     clear: function() {
         // Tell all the models they are no longer selected, this

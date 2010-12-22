@@ -30,7 +30,6 @@ INSTALLED_MATH_PACKAGES = ('base',)
 #`
 #    python manage.py createcachetable
 # 
-# if you want to use a database cache
 #CACHE_BACKEND = 'db://cache'
 
 TIME_ZONE = 'America/Chicago'
@@ -78,7 +77,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
+#    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'middleware.XHTMLMiddleware',
 )
 
@@ -126,7 +125,7 @@ INSTALLED_APPS = (
 
     # Optional Applications - mostly for development
     #'reversion',
-    'debug_toolbar',
+    #'debug_toolbar',
     #'django_extensions',
 )
 
@@ -146,4 +145,3 @@ IGNORE_PATHS = False
 # This is experimental and is also quite slow and breaks
 # more often then not.
 PRECOMPILE  = False
-

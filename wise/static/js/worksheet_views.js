@@ -3,22 +3,22 @@ _.templateSettings = {
 };
 
 //TODO: This still doesn't work
-$(window).scroll(function() {
-    var $sidebar = $("#worksheet_sidebar");
-    var offset = $sidebar.offset();
-    var topPadding = 20;
-    var $window = $(window);
-
-    if ($window.scrollTop() > offset.top) {
-        $sidebar.css({
-            top: $window.scrollTop() - offset.top + topPadding,
-        });
-    } else {
-        $sidebar.css({
-           top: 20,
-        });
-    }
-});
+//$(window).scroll(function() {
+//    var $sidebar = $("#worksheet_sidebar");
+//    var offset = $sidebar.offset();
+//    var topPadding = 20;
+//    var $window = $(window);
+//
+//    if ($window.scrollTop() > offset.top) {
+//        $sidebar.css({
+//            top: $window.scrollTop() - offset.top + topPadding,
+//        });
+//    } else {
+//        $sidebar.css({
+//           top: 20,
+//        });
+//    }
+//});
 
 var button_template = _.template("<button>{{label}}</button>");
 
@@ -35,12 +35,12 @@ var toplevel_types = [
 
     {
         label: 'Greater Than', 
-        sexp: '(Gt (Placeholder ) (Placeholder ))',
+        sexp: '(Gt (Placeholder ) (Placeholder ) )',
     },
 
     {
         label: 'Less Than', 
-        sexp: '(Lt (Placeholder ) (Placeholder ))',
+        sexp: '(Lt (Placeholder ) (Placeholder ) )',
     },
 ]
 
@@ -465,5 +465,20 @@ var NodeSelectionView = Backbone.View.extend({
     //  this.model.view.el.removeClass('highlight');
     //}
   },
+
+});
+
+var CmdLineView = Backbone.View.extend({
+    events: {
+        "submit": "evaluate",
+    },
+
+    evaluate: function(e) {
+        var input = this.$('#cmdinput');
+        use_infix( input.val() );
+        input.val("");
+        input.blur();
+        return false;
+    },
 
 });

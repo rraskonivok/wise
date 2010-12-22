@@ -1,4 +1,4 @@
-Wise = Backbone.Model.extend({
+var Wise = Backbone.Model.extend({
     version: '0.1alpha',
 
     // Created upon call of init()
@@ -15,6 +15,8 @@ Wise = Backbone.Model.extend({
 
 });
 
+// Set up as a Backbone model so we can attach events to changes
+// in state
 Wise.Settings = new Backbone.Model({
 
     DEBUG: true,
@@ -22,4 +24,4 @@ Wise.Settings = new Backbone.Model({
     DISABLE_MATH: false,
     SERVER_HEARTBEAT: false,
 
-})
+});

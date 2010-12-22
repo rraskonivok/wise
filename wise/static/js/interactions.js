@@ -165,7 +165,7 @@ function placeholder_substitute() {
         // Don't let the user subsitute a toplevel element into
         // placeholder
         if(sub.get('toplevel')) {
-            sub.errorFlash();
+//            sub.errorFlash();
             return;
         }
 
@@ -233,5 +233,6 @@ function next_placeholder() {
     // If we found one and its not already selected
     if(ph && !ph.get('selected')) {
         ph.select();
+        return;
     }
 }

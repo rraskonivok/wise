@@ -305,7 +305,6 @@ function apply_rule(rule, operands) {
 
     NAMESPACE_INDEX = response.namespace_index;
 
-
     //Iterate over the elements in the image of the
     //transformation, attempt to map them 1:1 with the
     //elements in the domain. Elements mapped to 'null'
@@ -338,30 +337,39 @@ function apply_rule(rule, operands) {
           // doesn't exist anymore
           // !!!!!!!!!!!!!!!!
           newnode = graft_toplevel_from_json(
-          // Graft on top of the old node
-          Wise.Nodes.getByCid(preimage.cid),
-          // Build the new node from the response JSON
-          response.new_json[i],
-          // Optionally tell the new node what is
-          // was before and which transform created
-          // it
-          data.rule);
+
+              // Graft on top of the old node
+              Wise.Nodes.getByCid(preimage.cid),
+
+              // Build the new node from the response JSON
+              response.new_json[i],
+
+              // Optionally tell the new node what is
+              // was before and which transform created
+              // it
+              data.rule
+
+          );
 
           image.push(newnode);
 
-        } else {
+        } 
+        else {
 
           nsym = preimage.dom().replace(response.new_html[i]);
 
           newnode = graft_tree_from_json(
-          // Graft on top of the old node
-          Wise.Nodes.getByCid(preimage.cid),
-          // Build the new node from the response JSON
-          response.new_json[i],
-          // Optionally tell the new node what is
-          // was before and which transform created
-          // it 
-          data.rule);
+              // Graft on top of the old node
+              Wise.Nodes.getByCid(preimage.cid),
+
+              // Build the new node from the response JSON
+              response.new_json[i],
+
+              // Optionally tell the new node what is
+              // was before and which transform created
+              // it 
+              data.rule
+          );
 
           image.push(newnode);
 
@@ -488,7 +496,6 @@ function use_infix(code) {
 
       if (data.error) {
         error(data.error);
-        base_mode();
         return;
       }
 
@@ -560,7 +567,11 @@ function apply_transform(transform, operands) {
     }
     // Get the sexps of the selected nodes
     postdata.selections = Wise.Selection.sexps();
-  } else {
+  } 
+  else {
+    // Let the user pass mixed Node and String type objects to
+    // maximize flexibility and map everything into some form of
+    // sexp
     postdata.selections = _.map(operands, function (obj) {
       if (obj.constructor == String) {
         return obj;
@@ -584,7 +595,6 @@ function apply_transform(transform, operands) {
 
       if (response.error) {
         error(response.error);
-        base_mode();
         return
       }
 
@@ -621,7 +631,6 @@ function apply_transform(transform, operands) {
         }
       }
       NAMESPACE_INDEX = response.namespace_index;
-      base_mode();
     }
   });
 }
