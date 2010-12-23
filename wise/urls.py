@@ -5,10 +5,11 @@ from django.conf import settings
 admin.autodiscover()
 
 urlpatterns = patterns('',
-     (r'^$', 'wise.worksheet.views.home'),
-     (r'^home$', 'wise.worksheet.views.home'),
+     url(r'^$', 'wise.worksheet.views.home', name='index'),
+     url(r'^home$', 'wise.worksheet.views.home', name='home'),
+
      (r'^ecosystem$', 'wise.worksheet.views.ecosystem'),
-     (r'^users$', 'wise.worksheet.views.users'),
+#     (r'^users$', 'wise.worksheet.views.users'),
 #     (r'^test$', 'wise.worksheet.views.test'),
      (r'^log$', 'wise.worksheet.views.log'),
      (r'^dict$', 'wise.worksheet.views.dict'),
@@ -21,8 +22,11 @@ urlpatterns = patterns('',
      (r'^hb$', 'wise.worksheet.ajax.heartbeat'),
 
      # Authentication
-     (r'^accounts/login/$', 'wise.worksheet.views.account_login'),
-     (r'^accounts/logout/$', 'wise.worksheet.views.account_logout'),
+     (r'^accounts/', include('registration.backends.default.urls')),
+     #(r'^/accounts/login/$', 'wise.worksheet.views.account_login'),
+     #(r'^/accounts/logout/$', 'wise.worksheet.views.account_logout'),
+     #(r'^/accounts/password/reset/$', password_reset,
+     #    {'template_name': 'my_templates/password_reset.html'}),
 
      # Worksheet
      (r'^ws/(?P<ws_id>\d+)/$', 'wise.worksheet.views.ws'),
@@ -50,16 +54,22 @@ urlpatterns = patterns('',
      (r'^admin/', include(admin.site.urls)),
 
      # Sphinx documentation
-     (r'^docs/(?P<path>.*)$', 'django.views.static.serve', {'document_root': 'docs/_build/html','show_indexes': True}),
+     (r'^docs/(?P<path>.*)$', 'django.views.static.serve',
+         {'document_root': 'docs/_build/html','show_indexes': True}),
 
-
-     # TODO: Firefox 4 has some issue with OpenType fonts being loaded 
-     # from /static when the current page is /ws since it is one level 
+     # TODO: Firefox 4 has some issue with OpenType fonts being loaded
+     # from /static when the current page is /ws since it is one level
      # up which violates it's same origin policy
-     (r'^ws/mathjax/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT + '/mathjax'}),
+     (r'^ws/mathjax/(?P<path>.*)$', 'django.views.static.serve',
+             {'document_root': settings.MEDIA_ROOT + '/mathjax'}),
 
-     (r'^img/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT + '/img'}),
-     (r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT + '/admin'}),
-     (r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
+     (r'^img/(?P<path>.*)$', 'django.views.static.serve',
+             {'document_root': settings.MEDIA_ROOT + '/img'}),
+
+     (r'^media/(?P<path>.*)$', 'django.views.static.serve',
+             {'document_root': settings.MEDIA_ROOT + '/admin'}),
+
+     (r'^static/(?P<path>.*)$', 'django.views.static.serve',
+             {'document_root': settings.MEDIA_ROOT}),
 )
 

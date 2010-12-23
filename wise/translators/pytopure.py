@@ -24,15 +24,15 @@ translate_pure, pyobjects
 
 
 class Branch(object):
-    #                                                             
-    #         O            The hash of a non-terminal node is 
+    #
+    #         O            The hash of a non-terminal node is
     #        / \           hash of its children's hashes.
-    #       /   \                
-    #      O     O         Terminal nodes have carry a unicode   
+    #       /   \
+    #      O     O         Terminal nodes have carry a unicode
     #     /|\    |         string which is hashed yield the hash
-    #    / | \   |         of the node.                         
-    #   #  #  #  O                                               
-    #           / \        All nodes have carry a unicode      
+    #    / | \   |         of the node.
+    #   #  #  #  O
+    #           / \        All nodes have carry a unicode
     #          /   \       string 'type' which is hashed
     #         #     #      into the node.
 
@@ -79,26 +79,26 @@ class Branch(object):
 
     def gethash(self):
 
-        #      Eq. 1     =      Eq. 2          
-        #       / \              / \          
-        #      /   \            /   \         
-        #    LHS   RHS         LHS   RHS          
-        #    /|\    |           |    /|\  
-        #   / | \   |           |   / | \ 
+        #      Eq. 1     =      Eq. 2
+        #       / \              / \
+        #      /   \            /   \
+        #    LHS   RHS         LHS   RHS
+        #    /|\    |           |    /|\
+        #   / | \   |           |   / | \
         #  x  y  z add         add x  y  z
-        #          / \         / \    
-        #         /   \       /   \   
-        #        1     2     2     1      
+        #          / \         / \
+        #         /   \       /   \
+        #        1     2     2     1
         #
         # The point of this hash function is so that equivalent
         # mathobjects "bubble" up through the tree. Since
-        # addition is commutative: 
+        # addition is commutative:
         #
-        # hash ( 1 + 0 ) = hash( 1 ) + hash ( 0 ) 
+        # hash ( 1 + 0 ) = hash( 1 ) + hash ( 0 )
         #                = hash( 0 ) + hash ( 1 )
         #
         # Mathematical structures are in general much too
-        # complex for this to be very usefull, but it is very 
+        # complex for this to be very usefull, but it is very
         # usefulfor substitutions on toplevel nodes like Equation.
 
         #HASH_ALGORITHM = sha1
@@ -120,7 +120,7 @@ class Branch(object):
 
         # Hashing the type assures that
         # Addition( x y ) and Multiplication( x y )
-        # yield different hashes 
+        # yield different hashes
         digester.update(self.type)
 
         if self.commutative:
@@ -316,7 +316,7 @@ def parse_pure_exp(expr):
 #Convenience wrappers with more obvious names...
 def pure_to_python(obj, wrap_infix=True):
     '''Maps a set of Pure objects (as translated by the Cython
-    wrapper into internal Python objects'''
+    wrapper) into internal Python objects'''
 
     if wrap_infix:
         return parse_pure_exp(i2p(obj))
@@ -324,7 +324,7 @@ def pure_to_python(obj, wrap_infix=True):
         return parse_pure_exp(obj)
 
 def python_to_pure(obj, wrap_infix=True):
-    '''Maps internal Python objects into their pure equivelents'''
+    """Maps internal Python objects into their Pure equivelents"""
 
     if wrap_infix:
         return p2i(obj._pure_())
@@ -335,3 +335,17 @@ def parse_sexp(code):
     parsed = ParseTree(code)
     evaled = parsed.eval_args()
     return evaled
+
+def is_valid_sexp(sexp):
+    try:
+        ParseTree(str(expr))
+    except ParseError:
+        return False
+    return True
+
+def is_valid_pure(sexp):
+    try:
+        ParseTree(str(expr))
+    except ParseError:
+        return False
+    return True

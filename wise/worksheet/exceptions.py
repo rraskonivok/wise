@@ -1,9 +1,21 @@
-class ParseError(Exception):
+class GeneralError(Exception):
     def __init__(self,expr):
         self.value = expr
 
     def __str__(self):
         return self.value
+
+class CallbackError(Exception):
+    """ An error that induces some Javascript callback in the
+    Worksheet
+    """
+    pass
+
+class ParseError(GeneralError):
+    pass
+
+class EvaluationError(Exception):
+    pass
 
 class InternalMathObjectNotFound(Exception):
     def __init__(self,expr):

@@ -33,6 +33,8 @@
     {% block header %}
     <div id="header">
       <h1><a href="/">Wise</a></h1>
+
+      {% if user.is_authenticated %}
       <div id="user-navigation">
         <ul class="wat-cf">
           <li><a href="#">Profile</a></li>
@@ -46,12 +48,16 @@
           {% endblock %}
         </ul>
       </div>
+      {% endif %}
     </div>
     {% endblock %}
 
     <div id="wrapper" class="wat-cf">
       <div id="main">
         {% block main %}
+        {% endblock %}
+
+        {% block content %}
         {% endblock %}
       </div>
         {% block sidebar %}

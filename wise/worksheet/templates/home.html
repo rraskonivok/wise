@@ -9,7 +9,6 @@
 </ul>
 {% endblock %}
 
-
 {# List the available worksheets #}
 
 {% block main %}
@@ -35,19 +34,19 @@
           {% load humanize %} 
           {% for workspace in workspaces %}
           <tr class="odd">
-              <td><input type="checkbox" class="checkbox" name="id" value="{{workspace.id}}" /></td>
+              <td><input type="checkbox" class="checkbox" name="id" value="{{ workspace.id }}" /></td>
 
-              <td><b><a href="ws/{{workspace.id}}">{{workspace.name}}</a></b></td>
+              <td><b><a href="ws/{{ workspace.id }}">{{ workspace.name|escape }}</a></b></td>
 
-              <td>{{ workspace.public|yesno|title}}</td>
+              <td>{{ workspace.public|yesno|title }}</td>
 
-              <td>{{ workspace.timestamp|naturalday|title}}</td>
+              <td>{{ workspace.timestamp|naturalday|title }}</td>
 
-              <td>{{ workspace.tags }}</td>
+              <td>{{ workspace.tags|escape }}</td>
 
               <td class="last">
-                <a href="/worksheet_edit/{{workspace.id}}">edit</a> |
-                <a href="/worksheet_delete/{{workspace.id}}">delete</a>
+                <a href="/worksheet_edit/{{ workspace.id }}">edit</a> |
+                <a href="/worksheet_delete/{{ workspace.id }}">delete</a>
               </td>
           </tr>
           {% endfor %}

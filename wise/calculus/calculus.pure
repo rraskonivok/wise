@@ -26,11 +26,11 @@ with
     //diff (Ln x) x = 1/x if x ~= 0;
     //diff (Ln (func@_ u)) x = (diff (func u) x)/(func x);
 
-    //// Linearity 
+    //// Linearity
     //diff (u+v) x = (diff u x) + (diff v x);
 
     //// Product Rule
-    //diff (u*v) x = (diff u x) * v + u * (diff v x); 
+    //diff (u*v) x = (diff u x) * v + u * (diff v x);
 
     //// Quotient rule
     //diff (u/v) x = (((diff u x)*v) - (u*(diff v x)))/(v^2);

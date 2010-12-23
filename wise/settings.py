@@ -121,7 +121,9 @@ INSTALLED_APPS = (
     # into the same directory as this file, if you can't run
     # ' import gunicorn ' form this directory then it will fail
     'piston',
+
     'media_bundler',
+    'registration',
 
     # Optional Applications - mostly for development
     #'reversion',
