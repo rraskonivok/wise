@@ -1,29 +1,27 @@
 General Installation on Linux / OS X:
 -------------------------------------
 
-1) Install:
+1) You'll need Python 2.6-2.7 (but not Python 3) and distribution
+    tools: On Ubuntu:
 
-        python 2.x 
-        pip 
-        sqlite3
-
-    from your distributions repository. On Ubuntu these are
-    installed by default. 
+    $ sudo apt-get install python-setuptools python-dev build-essential
 
     *Note, if you are using Python2.7 then you will need to
     adjust the Makefile in (4) to use '/usr/include/python2.7'.
 
+    $ sudo easy_install -U pip
+    $ sudo pip install -U virtualenv
 
 2) Install Pure and LLVM:
 
    a) There are packages are source code available for Fedora, Arch,
    OS X and a few other package managers available here:
 
-       http://code.google.com/p/pure-lang 
+       http://code.google.com/p/pure-lang
 
    If your distribution does not carry pure then you can find
    directions for compiling from source here:
-        
+
         http://pure-lang.googlecode.com/hg/pure/INSTALL
 
    b) It is highly likely that your distribution has a package for
@@ -33,12 +31,31 @@ General Installation on Linux / OS X:
         http://pure-lang.googlecode.com/hg/pure/INSTALL
 
 
-3) Install python libraries:
+3) Set up a new virtualenv, if you aren't using virtualenv then
+   start. If this is your first virtualenv then run the following
+   two commands:
 
-    $ sudo pip install django gunicorn cython pysqlite
+   $ mkdir -p ~/.virtualenvs
+   $ cd ~/.virtualenvs
+
+   Create a Wise virtualenv:
+
+   $ virtualenv --no-site-packages --distribute wise
+
+   Activate the new enviroment:
+
+   $ source wise/bin/activate
+
+   Install python libraries:
+
+   $ pip install -E wise -r /path/to/wise/dir/requirements.txt
+
+   If you are a developer you may want the optional packages
+
+   $ pip install -E wise -r /path/to/wise/dir/optional.txt
 
 4) Build the Pure module
-    
+
     $ cd wise/worksheet/pure
     $ make
 
@@ -47,7 +64,7 @@ General Installation on Linux / OS X:
     search path is '/usr/include/python2.6'
 
 5) Create the database:
-    
+
     $ cd wise/
     $ python mange.py syncdb
 
@@ -55,8 +72,8 @@ General Installation on Linux / OS X:
     the local database in wise.db
 
 6) Run Wise:
-    
-    $ gunicorn_django 
+
+    $ gunicorn_django
 
     This will run the Wise worksheet at 'localhost:8000' by
     default. To use a different address or port use the -b switch

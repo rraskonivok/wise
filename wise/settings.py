@@ -119,13 +119,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.humanize',
+
+    'wise.worksheet',
+
     'gunicorn',
 
     # In order to use admin with gunicorn you'll need to grab the
     # admin resources from your local install. Use the script
     # static/copy_admin_resources.sh to do this
 
-    'wise.worksheet',
     # Gunicorn needs to be installed in site-packages or dropped
     # into the same directory as this file, if you can't run
     # ' import gunicorn ' form this directory then it will fail
@@ -140,6 +142,8 @@ INSTALLED_APPS = [
 ]
 
 # Check if we have any optional apps
+
+# Logging with django-sentry
 try:
     import indexer, paging, sentry, sentry.client
     INSTALLED_APPS  += ['indexer', 'paging', 'sentry', 'sentry.client']
