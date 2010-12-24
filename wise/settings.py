@@ -26,10 +26,10 @@ DATABASE_PORT = ''             # Set to empty string for default. Not used with 
 INSTALLED_MATH_PACKAGES = ('base',)
 
 # Change to your desired cache or disable. Initially you may need
-# to run 
+# to run
 #`
 #    python manage.py createcachetable
-# 
+#
 #CACHE_BACKEND = 'db://cache'
 
 TIME_ZONE = 'America/Chicago'
@@ -56,10 +56,10 @@ LOG_FILE = 'session.log'
 
 DISABLE_PURE = False
 
-# In order to use the Django admin interface with gunicorn you'll 
+# In order to use the Django admin interface with gunicorn you'll
 # need to grab the admin resources from your local install. Use
 # the script static/copy_admin_resources.sh to do this. This
-# script will build /static/admin 
+# script will build /static/admin
 ADMIN_MEDIA_PREFIX = '/static/admin/'
 
 # Change this to something special, Django uses this to salt
@@ -71,6 +71,13 @@ INTERNAL_IPS = ('127.0.0.1',)
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.load_template_source',
     'django.template.loaders.app_directories.load_template_source',
+)
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+    "django.contrib.auth.context_processors.auth",
+    "django.core.context_processors.debug",
+    "django.core.context_processors.media",
+    "django.contrib.messages.context_processors.messages"
 )
 
 MIDDLEWARE_CLASSES = (
@@ -96,8 +103,8 @@ ROOTDIR = os.path.abspath(os.path.dirname(__file__))
 # worksheet/templates
 # $PACKAGES/templates
 TEMPLATE_DIRS = tuple(
-        [ROOTDIR +'/templates'] +
-        [ROOTDIR + ('/%s/templates' % pack) for pack in INSTALLED_MATH_PACKAGES]
+    [ROOTDIR +'/templates'] +
+    [ROOTDIR + ('/%s/templates' % pack) for pack in INSTALLED_MATH_PACKAGES]
 )
 
 USE_BUNDLES = False

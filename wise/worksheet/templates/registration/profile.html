@@ -1,0 +1,41 @@
+{% extends "base.tpl" %}
+
+{% block main-navigation %}
+<ul class="wat-cf">
+    <li class="first active"><a href="{% url home %}">Main Page</a></li>
+  <li class=""><a href="/ecosystem">Ecosystem</a></li>
+  <li class=""><a href="#">Worksheet</a></li>
+  <li class=""><a href="/share">Share</a></li>
+</ul>
+{% endblock %}
+
+{% block main %}
+<div class="block" id="block-tables">
+  <div class="content">
+    <h2 class="title">Profile</h2>
+
+    <div class="inner">
+    <p><b>Username:</b> {{ user.username|escape }} </p>
+    {% if user.first_name %}
+    <p><b>Full Name:</b> {{ user.first_name }} {{user.last_name }} </p>
+    {% else %}
+    <p><b>Full Name:</b> Not Specified </p>
+    {% endif %}
+    <p><b>Email:</b> {{user.email }} (Private)</p>
+    </div>
+
+    <table style="display: none">
+    <tr>
+        {% for symbol in package.symbols %}
+        <td>{{symbol.name}}</td>
+        {% if forloop.counter|divisibleby:"5" %}
+          </tr><tr>
+        {% endif %}
+        </td>
+        {% endfor %}
+    </tr>
+    </table>
+
+  </div>
+</div>
+{% endblock %}

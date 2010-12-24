@@ -1,16 +1,5 @@
 {% extends "base.tpl" %}
 
-{% block main-navigation %}
-<ul class="wat-cf">
-  <li class="first active"><a href="">Main Page</a></li>
-  <li class=""><a href="/ecosystem">Ecosystem</a></li>
-  <li class=""><a href="#">Worksheet</a></li>
-  <li class=""><a href="/share">Share</a></li>
-</ul>
-{% endblock %}
-
-{# List the available worksheets #}
-
 {% block main %}
 <div class="block" id="block-tables">
   <div class="secondary-navigation">
@@ -31,7 +20,7 @@
             <th>Tags</th>
             <th class="last">&nbsp;</th>
           </tr>
-          {% load humanize %} 
+          {% load humanize %}
           {% for workspace in workspaces %}
           <tr class="odd">
               <td><input type="checkbox" class="checkbox" name="id" value="{{ workspace.id }}" /></td>

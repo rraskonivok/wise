@@ -1,7 +1,6 @@
 {% load bundler_tags %}
 {% load html %}
 
-
 {% if xhtml %}
 {% doctype "xhtmlmath" %}
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
@@ -9,21 +8,26 @@
 {% doctype "html5" %}
 <html>
 {% endif %}
+
 <head>
   <title>Wise ( {{title|title}} ) </title>
+
+  {% if xhtml %}
   <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+  {% endif %}
+
   <meta http-equiv="Content-Language" content="en" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <meta http-equiv="Content-Script-Type" content="text/javascript" />
 
- {% load_bundle "base_js" %}
- {% load_bundle "base_css" %}
+  {% load_bundle "base_js" %}
+  {% load_bundle "base_css" %}
 
- {% block includes %}
- {% endblock %}
+  {% block includes %}
+  {% endblock %}
 
- {% block globals %}
- {% endblock %}
+  {% block globals %}
+  {% endblock %}
 
 </head>
 <body>
@@ -37,14 +41,20 @@
       {% if user.is_authenticated %}
       <div id="user-navigation">
         <ul class="wat-cf">
-          <li><a href="#">Profile</a></li>
-          <li><a href="#">Settings</a></li>
-          <li><a class="logout" href="/accounts/logout">Logout</a></li>
+          <li><b><a href="{% url profile %}">{{ user.username }}</a></b></li>
+          <li><a href="{% url docs None %}">Docs</a></li>
+          <li><a class="logout" href="{%url auth_logout %}">Logout</a></li>
         </ul>
       </div>
       <div id="main-navigation">
         <ul class="wat-cf">
           {% block main-navigation %}
+            <ul class="wat-cf">
+              <li class="first active"><a href="{% url home %}">Main Page</a></li>
+              <li class=""><a href="/ecosystem">Ecosystem</a></li>
+              <li class=""><a href="#">Worksheet</a></li>
+              <li class=""><a href="/share">Share</a></li>
+            </ul>
           {% endblock %}
         </ul>
       </div>

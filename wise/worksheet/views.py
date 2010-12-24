@@ -11,23 +11,24 @@
 from wise.translators import pure_wrap
 from wise.translators.pytopure import parse_sexp
 
-#from logger import debug, getlogger
-
 from django.core.exceptions import ObjectDoesNotExist
 
 from django.http import HttpResponse, HttpResponseRedirect, \
 HttpResponseForbidden
 
+from django.shortcuts import redirect
 from django.shortcuts import render_to_response, get_object_or_404
+
+from django.template import RequestContext
+
 from django.utils import simplejson as json
-from django.utils.html import strip_spaces_between_tags as strip_whitespace
+
 from django.contrib.auth import authenticate, login, logout
-
 from django.contrib.auth.decorators import login_required
-
 from django.contrib.auth.forms import AuthenticationForm
-from django.views.decorators.cache import cache_page
 from django.contrib.auth.models import User
+
+#from django.views.decorators.cache import cache_page
 
 import panel
 
@@ -38,39 +39,9 @@ Assumption
 
 from wise.base.cell import Cell as PyCell
 
+from wise.meta_inspector import PACKAGES
+
 CACHE_INTERVAL = 30*60 # 5 Minutes
-
-#---------------------------
-# User Authentication
-#---------------------------
-
-def account_login(request):
-    form = AuthenticationForm()
-
-    if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        if 'next' in request.GET:
-            redirect = request.GET['next']
-        else:
-            redirect = '/'
-
-        user = authenticate(username=username, password=password)
-        if user is not None:
-            if user.is_active:
-                login(request, user)
-                return HttpResponseRedirect(redirect)
-            else:
-                return HttpResponse('Account Disabled')
-                # Return a 'disabled account' error message
-        else:
-            return render_to_response('login.html', {
-                       'form': form,
-                       'errors': ['Invalid Login'],
-                   })
-            # Return an 'invalid login' error message.
-    else:
-        return render_to_response('login.html', {'form': form})
 
 #---------------------------
 # Worksheet CRUD
@@ -132,7 +103,7 @@ def worksheet_edit(request, ws_id = None):
 
             form = WorksheetForm({
                 'name': ws.name,
-                'public': ws.public
+                'public': ws.public,
             })
 
     # -- Create --
@@ -151,7 +122,6 @@ def worksheet_edit(request, ws_id = None):
                 ws = new_worksheet_prototype({
                     'name'   : request.POST.get('name'),
                     'public' : not request.POST.get('public'),
-                    'owner'  : request.user,
                 })
 
                 return HttpResponseRedirect('/ws/%i' % ws.id)
@@ -160,12 +130,14 @@ def worksheet_edit(request, ws_id = None):
         else:
             form = WorksheetForm()
 
-    return render_to_response('worksheet_edit.html', {
-        'form': form,
-        'errors': errors,
-        'action': action,
-        'id': id,
-    })
+    return render_to_response('worksheet_edit.html',
+                              {
+                                'form': form,
+                                'errors': errors,
+                                'action': action,
+                                'id': id,
+                              },
+                              context_instance=RequestContext(request))
 
 def account_logout(request):
     logout(request)
@@ -175,11 +147,16 @@ def account_logout(request):
 @login_required
 def home(request):
     workspaces = Workspace.objects.filter(owner=request.user)
-    return render_to_response('home.html', {'workspaces': workspaces})
+
+    return render_to_response('home.html',
+                              {'workspaces': workspaces},
+                              context_instance=RequestContext(request))
 
 @login_required
 def ecosystem(request):
-    from wise.meta_inspector import PACKAGES
+
+    context = RequestContext(request)
+    context['workspaces'] = Workspace.objects.filter(owner=request.user)
 
     packages = []
 
@@ -193,11 +170,9 @@ def ecosystem(request):
             symbol_desc['name'] = symbol.__name__
             pack.symbols.append(symbol_desc)
 
-    return render_to_response('ecosystem.html',{'packages':packages})
-
-@login_required
-def users(request):
-    return render_to_response('users.html',{'users':User.objects.all()})
+    return render_to_response('ecosystem.html',
+                              {'packages': packages},
+                              context_instance=RequestContext(request))
 
 @login_required
 def translate(request):
@@ -276,7 +251,9 @@ def ws(request, ws_id):
         'json_cells': json.dumps(json_cells,ensure_ascii=False),
 
         'xhtml': True,
-        })
+        },
+        context_instance = RequestContext(request),
+    )
 
     # XHTMLMiddleware will look for this attribute and set
     # Content-Type to application/xhtml+xml which is needed by
