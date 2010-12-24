@@ -14,12 +14,16 @@ MANAGERS = ADMINS
 
 # Set your database information here
 
-DATABASE_ENGINE = 'sqlite3'    # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-DATABASE_NAME = 'wise.db'      # Or path to database file if using sqlite3.
-DATABASE_USER = ''             # Not used with sqlite3.
-DATABASE_PASSWORD = ''         # Not used with sqlite3.
-DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
-DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
+DATABASES = {
+    'default': {
+        'ENGINE': 'sqlite3',# Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': 'wise.db',  # Or path to database file if using sqlite3.
+        'USER': '',         # Not used with sqlite3.
+        'PASSWORD': '',     # Not used with sqlite3.
+        'HOST': '',         # Set to empty string for localhost. Not used with sqlite3.
+        'PORT': '',         # Set to empty string for default. Not used with sqlite3.
+    }
+}
 
 # ('base',) is the minimum needed to run
 #INSTALLED_MATH_PACKAGES = ('base','logic','calculus')
@@ -39,15 +43,13 @@ LANGUAGE_CODE = 'en-us'
 SITE_ID = 1
 
 USE_I18N = False
+USE_L10N = False
 
-USE_ETAGS = True
+USE_ETAGS = False
 
 SITE_ROOT = os.path.realpath(os.path.dirname(__file__))
 MEDIA_ROOT = os.path.join(SITE_ROOT, 'static')
 MEDIA_URL = '/static/'
-
-# In case somebody wants to fork under a new name
-ROOT_MODULE = 'wise'
 
 APPEND_SLASH = True
 DEBUG = True
@@ -86,6 +88,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 #    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'middleware.XHTMLMiddleware',
+    'middleware.ErrorMiddleware',
 )
 
 from worksheet.media import MEDIA_BUNDLES
@@ -110,7 +113,7 @@ TEMPLATE_DIRS = tuple(
 USE_BUNDLES = False
 DEFER_JAVASCRIPT = False
 
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -121,7 +124,6 @@ INSTALLED_APPS = (
     # In order to use admin with gunicorn you'll need to grab the
     # admin resources from your local install. Use the script
     # static/copy_admin_resources.sh to do this
-    'django.contrib.admin',
 
     'wise.worksheet',
     # Gunicorn needs to be installed in site-packages or dropped
@@ -133,10 +135,32 @@ INSTALLED_APPS = (
     'registration',
 
     # Optional Applications - mostly for development
-    #'reversion',
     #'debug_toolbar',
     #'django_extensions',
-)
+]
+
+# Check if we have any optional apps
+try:
+    import indexer, paging, sentry, sentry.client
+    INSTALLED_APPS  += ['indexer', 'paging', 'sentry', 'sentry.client']
+except ImportError:
+    pass
+
+# Prettier admin interface
+try:
+    import grappelli
+    INSTALLED_APPS += ['grappelli','django.contrib.admin']
+except ImportError:
+    INSTALLED_APPS += ['django.contrib.admin']
+
+# Version control on Models
+try:
+    INSTALLED_APPS += ['reversion']
+except ImportError:
+    pass
+
+# In case somebody wants to fork under a new name
+ROOT_MODULE = 'wise'
 
 # Some browsers require the Content-Type to be
 # 'application/xhtml+xml' in order to render mixed doctype HTML +

@@ -23,9 +23,7 @@ from django.template import RequestContext
 
 from django.utils import simplejson as json
 
-from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 
 #from django.views.decorators.cache import cache_page
@@ -266,14 +264,13 @@ def ws(request, ws_id):
 # Palette
 #---------------------------
 
-#@cache_page(CACHE_INTERVAL)
+@login_required
 def palette(request):
     response = generate_palette()
     response.content = minimize_html(response.content)
     response.xhtml = True
     return response
 
-@errors
 def generate_palette():
     render_panels = []
 
@@ -293,7 +290,6 @@ def log(request):
     return render_to_response('log.html', {'log': log_html})
 
 @login_required
-@errors
 def dict(request):
     ''' Dump the translation dictionary to a JSON object, for
     debugging purposes '''

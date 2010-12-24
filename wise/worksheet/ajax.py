@@ -8,6 +8,8 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
+import logging
+
 from django.http import HttpResponse
 from wise.worksheet.utils import JsonResponse
 from django.contrib.auth.decorators import login_required
@@ -59,7 +61,6 @@ def rule_reduce(rule, sexps):
     return new_expr_tree
 
 @login_required
-@errors
 @ajax_request
 def apply_rule(request):
     """
@@ -112,7 +113,6 @@ def apply_rule(request):
                          'namespace_index': uid.next()[3:]})
 
 @login_required
-@errors
 @ajax_request
 def apply_def(request):
     sexps = tuple(request.POST.getlist('selections[]'))
@@ -169,13 +169,11 @@ def apply_def(request):
 
 
 @login_required
-@errors
 def rules_request(request):
     return render_haml_to_response('ruleslist.tpl',
             {'rulesets':rules.rulesets})
 
 #@login_required
-#@errors
 #@ajax_request
 #def lookup_transform(request):
 #    typs = tuple(request.POST.getlist('selections[]'))
@@ -202,7 +200,6 @@ def rules_request(request):
 #    return JsonResponse(mappings_list)
 
 @login_required
-@errors
 @ajax_request
 def use_infix(request):
     # TODO: We should preparse this and define a lookup table
@@ -228,7 +225,6 @@ def use_infix(request):
 
 
 @login_required
-@errors
 @ajax_request
 def apply_transform(request):
     code = tuple(request.POST.getlist('selections[]'))
@@ -286,7 +282,6 @@ def apply_transform(request):
 
 
 @login_required
-@errors
 @ajax_request
 def new_line(request):
     namespace_index = request.POST.get('namespace_index')
@@ -323,7 +318,6 @@ def new_line(request):
                          'namespace_index': uid.next()[3:],
                          'cell_index': cell_index + 1})
 
-@errors
 def new_cell(request):
     namespace_index = request.POST.get('namespace_index')
     cell_index = request.POST.get('cell_index')

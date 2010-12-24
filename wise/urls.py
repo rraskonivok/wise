@@ -16,7 +16,6 @@ urlpatterns = patterns('',
      (r'^api/', include('wise.api.urls')),
 
 #     (r'^test$', 'wise.worksheet.views.test'),
-     (r'^log$', 'wise.worksheet.views.log'),
      (r'^dict$', 'wise.worksheet.views.dict'),
      (r'^translate$', 'wise.worksheet.views.translate'),
 
@@ -72,3 +71,12 @@ urlpatterns = patterns('',
              {'document_root': settings.MEDIA_ROOT}),
 )
 
+if 'grappelli' in settings.INSTALLED_APPS:
+    urlpatterns += patterns('',
+        (r'^grappelli/', include('grappelli.urls')),
+    )
+
+if 'sentry' in settings.INSTALLED_APPS:
+    urlpatterns += patterns('',
+     url(r'^sentry/', include('sentry.urls'), name='sentry'),
+    )

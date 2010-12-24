@@ -9,7 +9,6 @@
 # License, or (at your option) any later version.
 
 import sys
-import traceback
 from decorator import decorator
 from operator import xor
 from binascii import crc32
@@ -24,24 +23,24 @@ from django.utils import simplejson as json
 from wise.utils import shpaml
 
 #-------------------------------------------------------------
-# Decorators
+# Logging
 #-------------------------------------------------------------
 
-def errors(f):
-    '''Decorator to wrap errors out to server log and javascript popup'''
-    def wrapper(*args,**kwargs):
-        try:
-            return f(*args,**kwargs)
-        except Exception,e:
-            print e
-            print traceback.print_exc()
+from sentry.client.handlers import SentryHandler
+import logging
+logger = logging.getLogger()
+# ensure we havent already registered the handler
+if SentryHandler not in map(lambda x: x.__class__, logger.handlers):
+    logger.addHandler(SentryHandler())
 
-            if settings.DEBUG:
-                return JsonResponse({'error': str(e)})
-            else:
-                return JsonResponse({'error': 'A server-side error occured.'})
-            raise e
-    return wrapper
+    # Add StreamHandler to sentry's default so you can catch missed exceptions
+    logger = logging.getLogger('sentry.errors')
+    logger.propagate = False
+    logger.addHandler(logging.StreamHandler())
+
+#-------------------------------------------------------------
+# Decorators
+#-------------------------------------------------------------
 
 def _memoize(func, *args, **kw):
     if kw: # frozenset is used to ensure hashability
@@ -133,7 +132,6 @@ class JsonResponse(HttpResponse):
                 content=json.dumps(data, ensure_ascii=False),
                 mimetype='application/json')
 
-@errors
 def render_haml_to_response(tname, context):
     tps, tpo = loader.find_template_source(tname)
     tpl = template.Template(haml(tps))

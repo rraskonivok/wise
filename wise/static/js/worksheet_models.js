@@ -1,6 +1,10 @@
 var WorksheetModel = Backbone.Collection.extend({
   url: '/ws',
 
+//  url: function(){
+//     return this.get('resource_uri') || this.collection.url;
+//  }
+
   initialize: function () {
     this.url = '/ws/' + WORKSHEET_ID;
     this.id = WORKSHEET_ID;
@@ -23,6 +27,10 @@ var Cell = Backbone.Model.extend({
       return '/api/cell/';
     }
   },
+
+//  url: function(){
+//     return this.get('resource_uri') || this.collection.url;
+//  }
 
   initialize: function (exs) {
     this.set({
@@ -105,9 +113,13 @@ var Cell = Backbone.Model.extend({
 
 // This a generic Node in a tree structure ( of which ExpressionNode inherits)
 var Node = Backbone.Model.extend({
-  url: '/eq',
   tree: null,
   depth: null,
+
+  url: '/eq',
+//  url: function(){
+//     return this.get('resource_uri') || this.collection.url;
+//  }
 
   initialize: function () {
     this.children = [];

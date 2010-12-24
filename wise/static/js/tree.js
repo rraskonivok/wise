@@ -169,6 +169,10 @@ ExpressionTree = RootedTree.extend({
     }
   },
 
+//  url: function(){
+//     return this.get('resource_uri') || this.collection.url;
+//  }
+
   sexp: function () {
     this.root.msexp();
     return this.root.sexp();
