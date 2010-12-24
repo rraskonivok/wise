@@ -71,6 +71,13 @@ urlpatterns = patterns('',
              {'document_root': settings.MEDIA_ROOT}),
 )
 
+if settings.DEBUG:
+    urlpatterns += patterns('',
+        (r'^tests/(?P<path>.*)$', 'django.views.static.serve',
+                {'document_root': settings.MEDIA_ROOT + '/js/tests'}),
+    )
+
+
 if 'grappelli' in settings.INSTALLED_APPS:
     urlpatterns += patterns('',
         (r'^grappelli/', include('grappelli.urls')),
