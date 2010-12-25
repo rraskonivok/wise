@@ -57,31 +57,57 @@ var RootedTree = Backbone.Model.extend({
     root.depth = 1;
     root._parent = this;
 
-    root.set({toplevel: true});
-
-    this.tree = this;
-    this.nodes = [];
-    this.levels = [];
-    this.depth = 0;
-
     this.root = root;
-    this.levels[0] = [root];
+    this.tree = this;
+
+    // A hash of all nodes in the tree, in no particular order
+    this.nodes = {};
+    this.nodes[root.cid] = root;
+
+    this.depth = 0;
   },
 
+  count: function() {
+    return _.keys(this.nodes).length;
+  },
 
-  walk: function () {
+  walk: function (node) {
 
     if (!node) {
-      node = this.root;
+      node = this;
     }
 
     if (node.hasChildren()) {
       for (child in node.children) {
-        this.walk(node.children[child]);
+        return node.walk(node.children[child]);
       }
     }
+    return this;
 
   },
+});
+
+var TreeFragment = Backbone.Model.extend({
+
+  initialize: function (root) {
+    root.depth = 1;
+    root._parent = this;
+
+    this.root = root;
+
+    // A hash of all nodes in the tree, in no particular order
+    this.nodes = {};
+    this.nodes[root.cid] = root;
+
+    this.depth = 0;
+  },
+
+  bindToTree: function(tree) {
+    for (node in this.nodes) {
+        this.nodes[node].tree = tree;
+    }
+  },
+
 });
 
 // This a generic Node in a tree structure ( of which ExpressionNode inherits)
@@ -104,12 +130,23 @@ var Node = Backbone.Model.extend({
     return this.view.el;
   },
 
+  register: function() {
+    this.tree = this._parent.tree;
+
+    if(this.hasChildren()) {
+        for(child in this.children) { 
+            this.children[child].register();
+        }
+    }
+
+  },
+
   hasChildren: function () {
     return this.children.length > 0;
   },
 
   treeIndex: function () {
-    if (this.get('toplevel')) {
+    if (this.depth === 1) {
       this._treeindex = [0];
       return this._treeindex;
     } else {
@@ -123,10 +160,13 @@ var Node = Backbone.Model.extend({
   //     O           O
   //    / \   ->   / | \
   //   O   O      O  O  O
-  addNode: function (node) {
+  addNode: function (node, silent) {
+    if (!this.tree) {
+        throw 'Cannot attached to orphan node, attach parent to tree first.';
+    }
+
     if (this.tree.depth < this.depth + 1) {
       this.tree.depth = this.depth + 1;
-      this.tree.levels[this.depth] = [];
     }
 
     node.tree = this.tree;
@@ -135,14 +175,19 @@ var Node = Backbone.Model.extend({
     node.index = this.children.length;
 
     this.children.push(node);
-    (this.tree.levels[node.depth - 1]).push(node);
 
-    this.childrenChanged();
+    this.tree.nodes[node.cid] = node;
+
+    if(!silent) {
+        this.trigger('struct_change');
+    }
+
+  //  this.childrenChanged();
   },
 
-  //      O           O   
-  //    / | \   ->   / \  
-  //   O  O  O      O   O 
+  //      O           O
+  //    / | \   ->   / \
+  //   O  O  O      O   O
   delNode: function () {
     // The node is about to be destroyed so fire any ui events
     // that occur when a node is unselected
@@ -169,7 +214,6 @@ var Node = Backbone.Model.extend({
   // <O> +  / \   ->   / \  
   //       O   O      O  <O> 
   swapNode: function (newNode) {
-    //This is your standard tree graft
     newNode._parent = this._parent;
     newNode.index = this.index;
     newNode.depth = this.depth;
@@ -205,15 +249,11 @@ function get_parent(node) {
 }
 
 function get_root(node) {
+  // This doesn't work if .tree isn't set right
   if (node && !node.tree) {
-    window.log('Node is unattached', node);
-    return;
+    throw 'Node is unattached';
   }
-  if (node && !node.get('toplevel')) {
-    return get_root(node.tree.root);
-  } else {
-    return node;
-  }
+  return node.tree.root;
 }
 
 // Equation Traversal

@@ -6,6 +6,7 @@ var Wise = Backbone.Model.extend({
     Nodes: null,
     Selection: null,
     Sidebar: null,
+    Accelerators: null,
     Log: null,
 
     last_cell: null,

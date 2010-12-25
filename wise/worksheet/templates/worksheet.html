@@ -91,11 +91,8 @@ Init Function + Global Vars
     // The id of the Worksheet corresponding to its index in the
     // database
     var WORKSHEET_ID = {{ ws_id }};
-
-    // This is passed by Django to help us keep track of the #uid
-    // counter
     
-    // Count of how many "nodes"/uid tagged elements there are in the
+    // Count of how many "nodes"/cid tagged elements there are in the
     // DOM
     var NAMESPACE_INDEX = {{ namespace_index }};
     
@@ -113,6 +110,10 @@ Init Function + Global Vars
     // Array of cells, index corresponds to order on page. Each
     // element contains another array of equations in that cell.
     var CELLS = [];
+
+    // If we have a UI to render too, false if we are running
+    // unit tests
+    var HAS_BROWSER = true;
 </script>
 
 {% endblock %}

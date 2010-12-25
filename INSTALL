@@ -56,7 +56,7 @@ General Installation on Linux / OS X:
 
 4) Build the Pure module
 
-    $ cd wise/worksheet/pure
+    $ cd wise/pure
     $ make
 
     You may need to adjust the the include directory in Makefile

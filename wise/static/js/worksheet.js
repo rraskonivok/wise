@@ -164,17 +164,17 @@ function init_nodes() {
     Wise.Selection = new NodeSelectionManager();
     Wise.Nodes = new Backbone.Collection();
 
-  _.each(JSON_TREE, function (cell_json) {
-    var new_cell = build_cell_from_json(cell_json);
-    Wise.Worksheet.add(new_cell);
+    _.each(JSON_TREE, function (cell_json) {
+        var new_cell = build_cell_from_json(cell_json);
+        Wise.Worksheet.add(new_cell);
 
-    var cs = new CellSelection({
-      model: new_cell,
+        var cs = new CellSelection({
+          model: new_cell,
+        });
+        cs.render();
+
+        $('#cell_selection').append(cs.el);
     });
-    cs.render();
-
-    $('#cell_selection').append(cs.el);
-  });
 }
 
 ///////////////////////////////////////////////////////////
@@ -329,7 +329,7 @@ function apply_rule(rule, operands) {
 
         if (is_toplevel) {
 
-          nsym = preimage.dom().replace(response.new_html[i]);
+          nsym = preimage.view.el.replace(response.new_html[i]);
 
           // !!!!!!!!!!!!!!!!
           // Swap the nodes reference in its Cell so
@@ -353,10 +353,10 @@ function apply_rule(rule, operands) {
 
           image.push(newnode);
 
-        } 
+        }
         else {
 
-          nsym = preimage.dom().replace(response.new_html[i]);
+          nsym = preimage.view.el.replace(response.new_html[i]);
 
           newnode = graft_tree_from_json(
               // Graft on top of the old node
@@ -367,7 +367,7 @@ function apply_rule(rule, operands) {
 
               // Optionally tell the new node what is
               // was before and which transform created
-              // it 
+              // it
               data.rule
           );
 
@@ -492,10 +492,10 @@ function use_infix(code) {
     url: "/cmds/use_infix/",
     data: postdata,
     datatype: 'json',
-    success: function (data) {
+    success: function (response) {
 
-      if (data.error) {
-        error(data.error);
+      if (response.error) {
+        error(response.error);
         return;
       }
 
@@ -507,24 +507,26 @@ function use_infix(code) {
       //  hide_cmdline();
       //}
 
+      NAMESPACE_INDEX = response.namespace_index;
+
       //Iterate over the elements in the image of the
       //transformation, attempt to map them 1:1 with the
       //elements in the domain. Elements mapped to 'null'
       //are deleted.
-      for (var i = 0; i < data.new_html.length; i++) {
+      for (var i = 0; i < response.new_html.length; i++) {
         obj = selections[i];
 
-        if (data.new_html[i] == null) {
+        if (response.new_html[i] === null) {
           obj.remove();
         }
-        else if (data.new_html[i] == 'pass') {
+        else if (response.new_html[i] == 'pass') {
           //console.log("Doing nothing");
         }
-        else if (data.new_html[i] == 'delete') {
+        else if (response.new_html[i] == 'delete') {
           //console.log("Deleting - at some point in the future");
         }
         else {
-          var is_toplevel = (data.new_json[i][0].toplevel);
+          var is_toplevel = (response.new_json[i][0].toplevel);
 
           if (is_toplevel) {
             if (!obj.toplevel) {
@@ -532,22 +534,21 @@ function use_infix(code) {
               obj.errorFlash();
               //return;
             }
-            nsym = obj.dom().replace(data.new_html[i]);
+            nsym = obj.dom().replace(response.new_html[i]);
 
             graft_tree_from_json(
-            Wise.Nodes.getByCid(obj.cid), data.new_json[i]);
+            Wise.Nodes.getByCid(obj.cid), response.new_json[i]);
 
           } else {
-            nsym = obj.dom().replace(data.new_html[i]);
+            nsym = obj.dom().replace(response.new_html[i]);
 
             graft_tree_from_json(
-            Wise.Nodes.getByCid(obj.cid), data.new_json[i]);
+            Wise.Nodes.getByCid(obj.cid), response.new_json[i]);
 
           }
         }
       }
 
-      NAMESPACE_INDEX = data.namespace_index;
 
       base_mode();
     }

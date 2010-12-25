@@ -6,8 +6,8 @@ var WorksheetModel = Backbone.Collection.extend({
 //  }
 
   initialize: function () {
-    this.url = '/ws/' + WORKSHEET_ID;
-    this.id = WORKSHEET_ID;
+//   this.url = '/ws/' + Wise.Worksheet.get('id');
+//   this.id = WORKSHEET_ID;
     this.children = [];
     this._parent = null;
   },
@@ -223,14 +223,9 @@ AssumptionTree = RootedTree.extend({
 
 });
 
-// Utilities for JSON <-> Expression Trees
-/// Initialize a cell and all its attached nodes from a JSON
-// represenattion of the cell generateed by json_flat(PyCell)
-
-function sexp(head, args) {
-  // Builds an array of the form (head arg[1] arg[2] ...)
-  return _.flatten(['(', head, args, ')']);
-}
+///////////////////////////////////////////////////////////
+// Construction Operations
+///////////////////////////////////////////////////////////
 
 function build_tree_from_json(json_input, top_class) {
 
@@ -368,6 +363,10 @@ function build_cell_from_json(json_input) {
   return new_cell;
 }
 
+///////////////////////////////////////////////////////////
+// Graft Operations
+///////////////////////////////////////////////////////////
+
 //       E  (Expression Tree)        F  ( Different Expression Tree)
 //       |                           |
 //      <A>                     →    X
@@ -375,6 +374,7 @@ function build_cell_from_json(json_input) {
 //     B   C                       Y   Z
 //Build a tree from a json specifiction and then then graft (
 //by replacement) onto a existing expression tree.
+
 function graft_toplevel_from_json(old_node, json_input, transformation) {
   var cell = old_node.tree.cell;
   var old_index = old_node.tree.get('index');
@@ -403,23 +403,40 @@ function graft_toplevel_from_json(old_node, json_input, transformation) {
 //      <A>                     →   <X>
 //      / \                         / \
 //     B   C                       Y   Z
-//Build a Node from a json specifiction and then then 
+//Build a Node from a json specifiction and then then
 //graft ( by replacement ) onto a existing expression tree.
-// TODO: change this to graft_node_from_json to avoid amguity
-function graft_tree_from_json(old_node, json_input, transformation) {
-  var newtree = build_tree_from_json(json_input);
 
-  if (!old_node) {
-    //error('Could not attach branch');
-    return;
+function graft_fragment_from_json(old_node, json_input, transformation) {
+
+  if(!old_node) {
+    throw 'Must specify which node to graft on top of';
   }
 
-  old_node.msexp();
-  newtree.root.transformed_by = transformation;
-  newtree.root.prev_state = old_node.sexp();
+  if(!json_input) {
+    throw 'Empty JSON passed to graft_fragment_from_json';
+  }
 
-  old_node.swapNode(newtree.root);
-  return newtree;
+  var treefrag = build_tree_from_json(json_input, TreeFragment);
+
+  old_node.msexp();
+  treefrag.root.transformed_by = transformation;
+  treefrag.root.prev_state = old_node.sexp();
+
+  treefrag.bindToTree(old_node.tree);
+  old_node.swapNode(treefrag.root);
+
+  return treefrag;
+}
+
+var graft_tree_from_json = graft_fragment_from_json;
+
+///////////////////////////////////////////////////////////
+// Misc
+///////////////////////////////////////////////////////////
+
+function sexp(head, args) {
+  // Builds an array of the form (head arg[1] arg[2] ...)
+  return _.flatten(['(', head, args, ')']);
 }
 
 

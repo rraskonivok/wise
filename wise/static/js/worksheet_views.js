@@ -119,7 +119,7 @@ var SidebarView = Backbone.View.extend({
 
    initialize: function() {
         // Make the buttons jQuery-ui buttons
-        this.$('.buttons button').button();
+        //this.$('.buttons button').button();
 
        _.bindAll(this, 'toggleMath', 'onDisableMath');
         Wise.Settings.bind('change:DISABLE_MATH', this.onDisableMath); 
@@ -177,6 +177,10 @@ var InsertionToolbar = Backbone.View.extend({
    },
 
    render: function() {
+        if(!HAS_BROWSER) {
+            return;
+        }
+
        for(var tt in toplevel_types) {
            tt = toplevel_types[tt];
 
@@ -184,7 +188,7 @@ var InsertionToolbar = Backbone.View.extend({
                label: tt.label,
            }));
 
-           button.bind('click', 
+           button.bind('click',
                async.apply(this.new_type, tt.sexp)
            );
 
@@ -193,7 +197,7 @@ var InsertionToolbar = Backbone.View.extend({
        }
 
        //Make buttons pretty
-       this.$('button').parent().buttonset();
+       //this.$('button').parent().buttonset();
        return this;
    },
 
@@ -222,9 +226,11 @@ var CellView = Backbone.View.extend({
           model: this.model,
       }).render();
 
-      this.$('.insertion_toolbar').html(
-          this.insertion_menu.el
-      );
+      if(HAS_BROWSER) {
+          this.$('.insertion_toolbar').html(
+              this.insertion_menu.el
+          );
+      }
   },
 
   events: {
@@ -235,14 +241,16 @@ var CellView = Backbone.View.extend({
     "click .save": "saveCell",
   },
 
-
   insertion_menu: function() {
       this.insertion_menu.toggle();
   },
 
   render: function () {
-//    $(this.el).append(this.menu());
-//    $(this.el).append(this.equations());
+    if(!HAS_BROWSER) {
+        return;
+    }
+    $(this.el).append(this.menu());
+    $(this.el).append(this.equations());
     return this;
   },
 
@@ -313,6 +321,9 @@ var CellSelection = Backbone.View.extend({
   },
 
   render: function () {
+    if(!HAS_BROWSER) {
+        return;
+    }
     $(this.el).html(this.model.cid);
     $(this.el).bind("contextmenu", function (e) {
       return false;
@@ -421,6 +432,10 @@ var NodeSelectionView = Backbone.View.extend({
   },
 
   render: function () {
+    if(!HAS_BROWSER) {
+        return;
+    }
+
     $(this.el).button({
       icons: {
         primary: "ui-icon-circle-close"

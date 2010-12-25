@@ -122,7 +122,7 @@ Wise.Accelerators = new Backbone.Collection([
         name: 'Insert 0',
         action: _infix('0'),
     },
-    
+
     {
         keys: 'ctrl+space',
         name: 'Quick Insert',
@@ -134,7 +134,7 @@ Wise.Accelerators = new Backbone.Collection([
         name: 'Select Top Parent',
         action: select_root,
     },
-    
+
     {
         keys: 'w',
         name: 'Select Next Placeholder',
@@ -179,33 +179,3 @@ Wise.Accelerators = new Backbone.Collection([
 
 ]);
 
-function init_keyboard_shortcuts() {
-
-    var doc = $(document);
-    var key_template = _.template("<kbd>{{kstr}}</kbd>");
-    var accel_template = _.template("<dt>{{label}}</dt><dd>{{keys}}</dd>");
-
-    // TODO: this function is a good canidate for memoiziation
-    // with a localstorage cache
-    Wise.Accelerators.each(function(shortcut) {
-
-        keys = shortcut.get('keys');
-        doc.bind('keydown', 
-            shortcut.get('keys'), 
-            shortcut.get('action')
-        );
-        var key_strokes = shortcut.get('keys').split('+');
-
-        var accel = _.map(key_strokes, function(kstr){ 
-            return key_template({kstr: kstr});
-        }).join('+');
-
-        var list_item = accel_template({
-            label: shortcut.get('name'), 
-            keys: accel,
-        });
-
-        $("#keys_palette .list").append(list_item);
-    });
-
-}
