@@ -52,7 +52,7 @@ MEDIA_ROOT = os.path.join(SITE_ROOT, 'static')
 MEDIA_URL = '/static/'
 
 APPEND_SLASH = True
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 LOG_FILE = 'session.log'
 
@@ -69,6 +69,7 @@ ADMIN_MEDIA_PREFIX = '/static/admin/'
 SECRET_KEY = 'changeme'
 
 INTERNAL_IPS = ('127.0.0.1',)
+BLOCKED_IPS = []
 
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.load_template_source',
@@ -89,6 +90,8 @@ MIDDLEWARE_CLASSES = (
 #    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'middleware.XHTMLMiddleware',
     'middleware.ErrorMiddleware',
+    'middleware.BlockedIpMiddleware',
+    'privatebeta.middleware.PrivateBetaMiddleware',
 )
 
 from worksheet.media import MEDIA_BUNDLES
@@ -132,6 +135,7 @@ INSTALLED_APPS = [
     # into the same directory as this file, if you can't run
     # ' import gunicorn ' form this directory then it will fail
     'piston',
+    'privatebeta',
 
     'media_bundler',
     'registration',
@@ -162,6 +166,7 @@ try:
     INSTALLED_APPS += ['reversion']
 except ImportError:
     pass
+
 
 # In case somebody wants to fork under a new name
 ROOT_MODULE = 'wise'

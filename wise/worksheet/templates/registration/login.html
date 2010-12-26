@@ -13,8 +13,10 @@
       {% csrf_token %}
     </form>
 
-    <p><a href="{% url auth_password_reset %}">Forgot Password</a> |
-    <a href="{% url registration_register %}">Register</a></p>
+<!--    <p><a href="{% url auth_password_reset %}">Forgot
+    Password</a> | -->
+
+    <p>Don't have an account? <a href="{% url registration_register %}">Register</a></p>
     {% endblock %}
 
     </div>

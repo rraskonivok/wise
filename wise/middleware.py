@@ -1,7 +1,6 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 from django.conf import settings
 from django.utils.html import strip_spaces_between_tags as short
-from django.utils import simplejson as json
 from sentry.client.models import sentry_exception_handler
 
 class XHTMLMiddleware(object):
@@ -19,11 +18,11 @@ class ErrorMiddleware(object):
         # Make sure the exception signal is fired for Sentry
         sentry_exception_handler(request=request)
 
-        if settings.DEBUG:
-            print exception
-            return HttpResponse(content=json.dumps({'error': exception}),
-                    mimetype='application/json')
-        else:
-            return HttpResponse(content=json.dumps(
-                {'error': 'A server error occured'}),
-                mimetype='application/json')
+        print exception
+        return exception
+
+class BlockedIpMiddleware(object):
+    def process_request(self, request):
+        if request.META['REMOTE_ADDR'] in settings.BLOCKED_IPS:
+            return HttpResponseForbidden('<h1>Your IP address has been reported for abuse.</h1>')
+        return None

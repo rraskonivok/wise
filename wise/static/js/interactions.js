@@ -1,4 +1,4 @@
-function add_shift() {
+function add_shift(e) {
 
     // TODO: use currying for this
     function add_rule(args) {
@@ -19,10 +19,10 @@ function add_shift() {
     );
 
     selection_pattern(selection_types);
-
+    e.preventDefault();
 }
 
-function sub_shift() {
+function sub_shift(e) {
     var node = Wise.Selection.at(0);
     var root = get_root(node);
 
@@ -32,9 +32,10 @@ function sub_shift() {
     } else {
         node.errorFlash();
     }
+    e.preventDefault();
 }
 
-function mul_shift() {
+function mul_shift(e) {
 
     // TODO: use currying for this
     function add_rule(args) {
@@ -55,9 +56,10 @@ function mul_shift() {
     );
 
     selection_pattern(selection_types);
+    e.preventDefault();
 }
 
-function div_shift() {
+function div_shift(e) {
     // TODO: use currying for this
     function add_rule(args) {
         return function() {
@@ -77,6 +79,7 @@ function div_shift() {
     );
 
     selection_pattern(selection_types);
+    e.preventDefault();
 }
 
 function select_parent(clear) {

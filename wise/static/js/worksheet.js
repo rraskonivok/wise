@@ -551,18 +551,22 @@ function use_infix(code) {
               obj.errorFlash();
               //return;
             }
-            nsym = obj.view.el.replace(response.new_html[i]);
+            obj.view.el.replace(response.new_html[i]);
 
-            graft_tree_from_json(
+            var newtree = graft_tree_from_json(
                 Wise.Nodes.getByCid(obj.cid), response.new_json[i]
             );
+
+            Wise.last_expr = newtree.root;
 
           } else {
             nsym = obj.view.el.replace(response.new_html[i]);
 
-            graft_fragment_from_json(
+            var newtree = graft_fragment_from_json(
                 Wise.Nodes.getByCid(obj.cid), response.new_json[i]
             );
+
+            Wise.last_expr = newtree.root;
 
           }
         }
@@ -638,14 +642,22 @@ function apply_transform(transform, operands) {
           if (is_toplevel) {
             nsym = obj.dom().replace(response.new_html[i]);
 
-            graft_toplevel_from_json(
-            Wise.Nodes.getByCid(obj.cid), response.new_json[i], postdata.transform);
+            var newtree = graft_toplevel_from_json(
+                Wise.Nodes.getByCid(obj.cid), response.new_json[i],
+                postdata.transform
+            );
+
+            Wise.last_expr = newtree.root;
 
           } else {
             nsym = obj.dom().replace(response.new_html[i]);
 
-            graft_tree_from_json(
-            Wise.Nodes.getByCid(obj.cid), response.new_json[i], postdata.transform);
+            var newtree = graft_fragment_from_json(
+                Wise.Nodes.getByCid(obj.cid), response.new_json[i],
+                postdata.transform
+            );
+
+            Wise.last_expr = newtree.root;
           }
         }
       }

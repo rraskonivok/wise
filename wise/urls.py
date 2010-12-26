@@ -4,6 +4,9 @@ from django.views.generic.simple import direct_to_template
 from django.contrib import admin
 from django.conf import settings
 
+from django.contrib.auth.views import password_change
+
+
 admin.autodiscover()
 
 urlpatterns = patterns('',
@@ -24,6 +27,9 @@ urlpatterns = patterns('',
 
      # Authentication
      (r'^accounts/', include('registration.backends.default.urls')),
+     (r'^invite/', include('privatebeta.urls')),
+     (r'^/accounts/password/change/$', password_change,
+         {'template_name': 'registration/password_reset_form.html'}),
 
      url(r'^accounts/profile/$', direct_to_template,
          {'template': 'registration/profile.html'}, name='profile'),
@@ -47,7 +53,7 @@ urlpatterns = patterns('',
      (r'^cmds/use_infix/$', 'wise.worksheet.ajax.use_infix'),
 
      # Uncomment the next line to enable the admin:
-     (r'^admin/', include(admin.site.urls)),
+     url(r'^admin/', include(admin.site.urls), name='admin'),
 
      # Sphinx documentation
      url(r'^docs/(?P<path>.*)$', 'django.views.static.serve',

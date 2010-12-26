@@ -22,19 +22,8 @@
     <p><b>Full Name:</b> Not Specified </p>
     {% endif %}
     <p><b>Email:</b> {{user.email }} (Private)</p>
+    <p><b>Password: </b> <a href="{% url auth_password_change %}">Change Password</a></p>
     </div>
-
-    <table style="display: none">
-    <tr>
-        {% for symbol in package.symbols %}
-        <td>{{symbol.name}}</td>
-        {% if forloop.counter|divisibleby:"5" %}
-          </tr><tr>
-        {% endif %}
-        </td>
-        {% endfor %}
-    </tr>
-    </table>
 
   </div>
 </div>
