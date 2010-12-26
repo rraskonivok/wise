@@ -177,5 +177,11 @@ Wise.Accelerators = new Backbone.Collection([
         action: function() { new_line('eq', Wise.last_cell) },
     },
 
+    {
+        keys: 'h',
+        name: 'Debug',
+        action: highlight_orphans,
+    },
+
 ]);
 

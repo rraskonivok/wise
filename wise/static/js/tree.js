@@ -127,14 +127,14 @@ var Node = Backbone.Model.extend({
 
   //TODO: remove this, its ugly and we should be using views
   dom: function () {
-    return this.view.el;
+    return $(this.view.el);
   },
 
   register: function() {
     this.tree = this._parent.tree;
 
     if(this.hasChildren()) {
-        for(child in this.children) { 
+        for(child in this.children) {
             this.children[child].register();
         }
     }
@@ -219,6 +219,12 @@ var Node = Backbone.Model.extend({
     newNode.depth = this.depth;
     newNode.tree = this.tree;
     newNode.toplevel = this.toplevel;
+
+    if(this._parent.tree === null) {
+        console.log('Null tree');
+    }
+
+    newNode.register();
 
     if (this._parent.children) {
       // Assign the new node the index of the old node 

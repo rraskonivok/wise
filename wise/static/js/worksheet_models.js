@@ -111,8 +111,6 @@ var Cell = Backbone.Model.extend({
 
 });
 
-
-
 var Expression = Node.extend({
   _math: [],
 
@@ -380,8 +378,8 @@ function graft_toplevel_from_json(old_node, json_input, transformation) {
   var old_index = old_node.tree.get('index');
   var newtree = build_tree_from_json(json_input);
 
-  newtree.root.transformed_by = transformation;
-  newtree.root.prev_state = old_node.sexp();
+//  newtree.root.transformed_by = transformation;
+//  newtree.root.prev_state = old_node.sexp();
 
   old_node.swapNode(newtree.root);
   newtree.set(old_node.attributes);
@@ -392,6 +390,8 @@ function graft_toplevel_from_json(old_node, json_input, transformation) {
   newtree.set({
     index: old_index
   });
+
+  console.log('toplevel graft');
 
   newtree.cell = old_node.cell;
 
@@ -406,6 +406,7 @@ function graft_toplevel_from_json(old_node, json_input, transformation) {
 //Build a Node from a json specifiction and then then
 //graft ( by replacement ) onto a existing expression tree.
 
+
 function graft_fragment_from_json(old_node, json_input, transformation) {
 
   if(!old_node) {
@@ -416,13 +417,16 @@ function graft_fragment_from_json(old_node, json_input, transformation) {
     throw 'Empty JSON passed to graft_fragment_from_json';
   }
 
-  var treefrag = build_tree_from_json(json_input, TreeFragment);
+  var treefrag = build_tree_from_json(json_input);
 
   old_node.msexp();
   treefrag.root.transformed_by = transformation;
   treefrag.root.prev_state = old_node.sexp();
 
-  treefrag.bindToTree(old_node.tree);
+  // Associate new nodes with the active tree
+  treefrag.root.tree = old_node.tree;
+  console.log('binding ' + treefrag.root.cid);
+
   old_node.swapNode(treefrag.root);
 
   return treefrag;
@@ -439,6 +443,13 @@ function sexp(head, args) {
   return _.flatten(['(', head, args, ')']);
 }
 
+function highlight_orphans() {
+    Wise.Nodes.each(function(node) {
+        if(node.tree === null) {
+            $(node.view.el).css('background-color','red');
+        }
+    });
+}
 
 function garbage_collect() {
   // This is sort of expensive since it involves #(Wise.Nodes.length)

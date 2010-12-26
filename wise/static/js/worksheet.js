@@ -251,7 +251,7 @@ function heartbeat() {
   });
 }
 
-function apply_rule(rule, operands) {
+function apply_rule(rule, operands, callback) {
   var data = {};
   data.rule = rule;
   data.namespace_index = NAMESPACE_INDEX;
@@ -337,7 +337,6 @@ function apply_rule(rule, operands) {
           // doesn't exist anymore
           // !!!!!!!!!!!!!!!!
           newnode = graft_toplevel_from_json(
-
               // Graft on top of the old node
               Wise.Nodes.getByCid(preimage.cid),
 
@@ -348,7 +347,6 @@ function apply_rule(rule, operands) {
               // was before and which transform created
               // it
               data.rule
-
           );
 
           image.push(newnode);
@@ -358,7 +356,7 @@ function apply_rule(rule, operands) {
 
           nsym = preimage.view.el.replace(response.new_html[i]);
 
-          newnode = graft_tree_from_json(
+          newnode = graft_fragment_from_json(
               // Graft on top of the old node
               Wise.Nodes.getByCid(preimage.cid),
 
@@ -374,6 +372,9 @@ function apply_rule(rule, operands) {
           image.push(newnode);
 
         }
+
+        callback(image);
+
       }
     }
 
@@ -476,7 +477,7 @@ function use_infix(code) {
   }
 
   if (Wise.Selection.at(0).get('toplevel')) {
-    //        error('Cannot rewrite toplevel element');
+    //error('Cannot rewrite toplevel element');
     Wise.Selection.at(0).errorFlash();
     return;
   }
@@ -534,23 +535,22 @@ function use_infix(code) {
               obj.errorFlash();
               //return;
             }
-            nsym = obj.dom().replace(response.new_html[i]);
+            nsym = obj.view.el.replace(response.new_html[i]);
 
             graft_tree_from_json(
-            Wise.Nodes.getByCid(obj.cid), response.new_json[i]);
+                Wise.Nodes.getByCid(obj.cid), response.new_json[i]
+            );
 
           } else {
-            nsym = obj.dom().replace(response.new_html[i]);
+            nsym = obj.view.el.replace(response.new_html[i]);
 
-            graft_tree_from_json(
-            Wise.Nodes.getByCid(obj.cid), response.new_json[i]);
+            graft_fragment_from_json(
+                Wise.Nodes.getByCid(obj.cid), response.new_json[i]
+            );
 
           }
         }
       }
-
-
-      base_mode();
     }
   });
 }
