@@ -148,9 +148,33 @@ Wise.Accelerators = new Backbone.Collection([
     },
 
     {
-        keys: 'p',
+        keys: 'k',
         name: 'Select Parent',
         action: select_parent,
+    },
+
+    {
+        keys: 'j',
+        name: 'Select Child',
+        action: select_child,
+    },
+
+    {
+        keys: 'l',
+        name: 'Select Next Sibling',
+        action: select_next_sibling,
+    },
+
+    {
+        keys: 'h',
+        name: 'Select Previous Sibling',
+        action: select_prev_sibling,
+    },
+
+    {
+        keys: ":",
+        name: 'Select Last Node',
+        action: select_last_node,
     },
 
     {
@@ -177,11 +201,11 @@ Wise.Accelerators = new Backbone.Collection([
         action: function() { new_line('eq', Wise.last_cell) },
     },
 
-    {
-        keys: 'h',
-        name: 'Debug',
-        action: highlight_orphans,
-    },
+    //{
+    //    keys: 'h',
+    //    name: 'Debug',
+    //    action: highlight_orphans,
+    //},
 
 ]);
 

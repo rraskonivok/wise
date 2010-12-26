@@ -79,29 +79,107 @@ function div_shift() {
     selection_pattern(selection_types);
 }
 
-//Select the toplevel element
 function select_parent(clear) {
     var start = Wise.Selection.last();
+
+    if(!start) {
+        return;
+    }
     
-    if(start.toplevel) {
+    if(start.get('toplevel')) {
         return;
     }
 
-    if(clear) {
-        base_mode();
+    var parent = start._parent;
+
+    if(parent && (parent.cid != start.cid)) {
+        if(clear) {
+            base_mode();
+        }
+        parent.select();
     }
 
-    get_parent(start).select();
+}
+
+function select_child(clear) {
+    var start = Wise.Selection.last();
+
+    if(!start) {
+        return;
+    }
+    
+    if(!start.hasChildren()) {
+        return;
+    }
+
+    var child = start.children[0];
+    if(child) {
+        if(clear) {
+            base_mode();
+        }
+        child.select();
+    }
+}
+
+function select_next_sibling(clear) {
+    var start = Wise.Selection.last();
+
+    if(!start || !start._parent.children) {
+        return;
+    }
+
+    var next = start._parent.children[start.index+1];
+
+    if(next) {
+        if(clear) {
+            base_mode();
+        }
+        next.select();
+    } 
+    //else {
+    //    select_parent(clear);
+    //}
+}
+
+function select_prev_sibling(clear) {
+    var start = Wise.Selection.last();
+
+    if(!start || !start._parent.children) {
+        return;
+    }
+
+    var prev = start._parent.children[start.index-1];
+
+    if(prev) {
+        if(clear) {
+            base_mode();
+        }
+        prev.select();
+    }
+    //else {
+    //    select_parent(clear);
+    //}
+}
+
+function select_last_node() {
+    Wise.last_expr.toggleSelect();
 }
 
 function select_root(clear) {
     var start = Wise.Selection.last();
 
-    if(clear) {
-        base_mode();
+    if(!start) {
+        return;
     }
 
-    get_root(start).select();
+    var root = start.tree.root;
+
+    if(root && (root.cid != start.cid)) {
+        if(clear) {
+            base_mode();
+        }
+        root.select();
+    }
 }
 
 function iter_left() {

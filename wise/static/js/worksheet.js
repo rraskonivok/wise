@@ -308,9 +308,6 @@ function apply_rule(rule, operands, callback) {
     }
     NAMESPACE_INDEX = response.namespace_index;
 
-    console.log(operands);
-
-
     //Iterate over the elements in the image of the
     //transformation, attempt to map them 1:1 with the
     //elements in the domain. Elements mapped to 'null'
@@ -321,7 +318,6 @@ function apply_rule(rule, operands, callback) {
       if (response.new_html[i] === undefined) {
         //Desroy the preimage
         preimage.remove();
-        console.log('destroying');
       }
       else if (response.new_html[i] == 'pass') {
         //Do nothing, map the preimage to itself
@@ -336,7 +332,6 @@ function apply_rule(rule, operands, callback) {
 
         if (is_toplevel) {
 
-          console.log(preimage.cid);
           nsym = preimage.view.el.replace(response.new_html[i]);
 
           // !!!!!!!!!!!!!!!!
@@ -358,6 +353,7 @@ function apply_rule(rule, operands, callback) {
           );
 
           image.push(newnode);
+          Wise.last_expr = newnode.root;
 
         }
         else {
@@ -378,6 +374,7 @@ function apply_rule(rule, operands, callback) {
           );
 
           image.push(newnode);
+          Wise.last_expr = newnode.root;
 
         }
 
@@ -831,7 +828,6 @@ function mathjax_typeset(element) {
   //Refresh math Globally, shouldn't be called too much because
   //it bogs down the browser
   else {
-    console.log('Refreshing all math on the page');
     MathJax.Hub.Process();
   }
 }

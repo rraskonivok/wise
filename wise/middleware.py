@@ -1,6 +1,7 @@
 from django.http import HttpResponse
 from django.conf import settings
 from django.utils.html import strip_spaces_between_tags as short
+from django.utils import simplejson as json
 from sentry.client.models import sentry_exception_handler
 
 class XHTMLMiddleware(object):
