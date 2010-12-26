@@ -114,14 +114,6 @@ var Cell = Backbone.Model.extend({
 var Expression = Node.extend({
   _math: [],
 
-  childrenChanged: function () {
-    //        this.msexp();
-    this.tree.set({
-      sexp: this.tree.sexp()
-    });
-    this.tree._changed = true;
-  },
-
   //Generates the array of strings which is compiled iff we
   //need to get a sexp.
   msexp: function () {
@@ -138,10 +130,7 @@ var Expression = Node.extend({
   },
 
   sexp: function () {
-    // If for some reason we don't have a sexp, then build it
-    if(this._math.length === 0) { this.msexp(); }
-    //TODO: REMOVE THIS!!!!!
-    //this.msexp();
+    this.msexp();
     return _.flatten(this._math).join(' ');
   },
 
@@ -179,7 +168,19 @@ var Expression = Node.extend({
 
     placeholder_substitute();
 
-  }
+  },
+
+  register: function() {
+    this.tree = this._parent.tree;
+
+    if(this.hasChildren()) {
+        for(child in this.children) {
+            this.children[child].bind('struct_change',this.msexp);
+            this.children[child].register();
+        }
+    }
+
+  },
 
 });
 
@@ -375,6 +376,8 @@ function build_cell_from_json(json_input) {
 
 function graft_toplevel_from_json(old_node, json_input, transformation) {
   var cell = old_node.tree.cell;
+
+  // cell index
   var old_index = old_node.tree.get('index');
   var newtree = build_tree_from_json(json_input);
 
@@ -382,6 +385,7 @@ function graft_toplevel_from_json(old_node, json_input, transformation) {
 //  newtree.root.prev_state = old_node.sexp();
 
   old_node.swapNode(newtree.root);
+  old_node.tree.root = newtree.root;
   newtree.set(old_node.attributes);
 
   //TODO: this is causing assumption grafted at the toplevel to
@@ -390,8 +394,6 @@ function graft_toplevel_from_json(old_node, json_input, transformation) {
   newtree.set({
     index: old_index
   });
-
-  console.log('toplevel graft');
 
   newtree.cell = old_node.cell;
 
@@ -419,13 +421,12 @@ function graft_fragment_from_json(old_node, json_input, transformation) {
 
   var treefrag = build_tree_from_json(json_input);
 
-  old_node.msexp();
-  treefrag.root.transformed_by = transformation;
-  treefrag.root.prev_state = old_node.sexp();
+  //old_node.msexp();
+  //treefrag.root.transformed_by = transformation;
+  //treefrag.root.prev_state = old_node.sexp();
 
   // Associate new nodes with the active tree
   treefrag.root.tree = old_node.tree;
-  console.log('binding ' + treefrag.root.cid);
 
   old_node.swapNode(treefrag.root);
 
@@ -449,6 +450,10 @@ function highlight_orphans() {
             $(node.view.el).css('background-color','red');
         }
     });
+}
+
+function check() {
+    return shownode()._parent.children[shownode().index].cid == shownode().cid;
 }
 
 function garbage_collect() {

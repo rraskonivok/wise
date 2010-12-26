@@ -87,29 +87,6 @@ var RootedTree = Backbone.Model.extend({
   },
 });
 
-var TreeFragment = Backbone.Model.extend({
-
-  initialize: function (root) {
-    root.depth = 1;
-    root._parent = this;
-
-    this.root = root;
-
-    // A hash of all nodes in the tree, in no particular order
-    this.nodes = {};
-    this.nodes[root.cid] = root;
-
-    this.depth = 0;
-  },
-
-  bindToTree: function(tree) {
-    for (node in this.nodes) {
-        this.nodes[node].tree = tree;
-    }
-  },
-
-});
-
 // This a generic Node in a tree structure ( of which ExpressionNode inherits)
 var Node = Backbone.Model.extend({
   tree: null,
@@ -131,13 +108,13 @@ var Node = Backbone.Model.extend({
   },
 
   register: function() {
-    this.tree = this._parent.tree;
+    //this.tree = this._parent.tree;
 
-    if(this.hasChildren()) {
-        for(child in this.children) {
-            this.children[child].register();
-        }
-    }
+    //if(this.hasChildren()) {
+    //    for(child in this.children) {
+    //        this.children[child].register();
+    //    }
+    //}
 
   },
 
@@ -182,13 +159,12 @@ var Node = Backbone.Model.extend({
         this.trigger('struct_change');
     }
 
-  //  this.childrenChanged();
   },
 
   //      O           O
   //    / | \   ->   / \
   //   O  O  O      O   O
-  delNode: function () {
+  delNode: function (silent) {
     // The node is about to be destroyed so fire any ui events
     // that occur when a node is unselected
     this.set({
@@ -208,35 +184,47 @@ var Node = Backbone.Model.extend({
     // Tell the tree that it has changed contents and needs
     // to pushed to the server.
     delete this;
+
+    if(!silent) {
+        this.trigger('struct_change');
+    }
   },
 
-  //         O          O   
-  // <O> +  / \   ->   / \  
-  //       O   O      O  <O> 
-  swapNode: function (newNode) {
+  //         O          O
+  // <O> +  / \   ->   / \
+  //       O   O      O  <O>
+  swapNode: function (newNode, silent) {
+
+    if(!this._parent) {
+        Wise.Log.error('Null tree');
+        throw 'Null tree';
+        return;
+    }
+
+    if(this.index === undefined) {
+        Wise.Log.error('Null index');
+        throw 'Null index';
+        return;
+    }
+
     newNode._parent = this._parent;
     newNode.index = this.index;
     newNode.depth = this.depth;
     newNode.tree = this.tree;
     newNode.toplevel = this.toplevel;
 
-    if(this._parent.tree === null) {
-        console.log('Null tree');
-    }
-
-    newNode.register();
-
     if (this._parent.children) {
-      // Assign the new node the index of the old node 
+      // Assign the new node the index of the old node
       // and inform the parent
       this._parent.children[this.index] = newNode;
-      this._parent.childrenChanged();
     }
 
     this.delNode();
+    newNode.register();
 
-    // Tell the tree that it has changed contents and needs
-    // to pushed to the server.
+    if(!silent) {
+        this.trigger('struct_change');
+    }
   },
 
   //TODO: move this to the view
@@ -255,7 +243,6 @@ function get_parent(node) {
 }
 
 function get_root(node) {
-  // This doesn't work if .tree isn't set right
   if (node && !node.tree) {
     throw 'Node is unattached';
   }
@@ -284,7 +271,7 @@ function parents(node, filter) {
 }
 
 // Traverse the tree upwards until it find a node matching
-// [filter] inclusive on the matched nodee, behaves like 
+// [filter] inclusive on the matched nodee, behaves like
 // jQuery's parents
 function parentsUntil(node, filter) {
   if (node._parent) {

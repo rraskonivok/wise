@@ -17,4 +17,12 @@ class ErrorMiddleware(object):
     def process_exception(self, request, exception):
         # Make sure the exception signal is fired for Sentry
         sentry_exception_handler(request=request)
-        return HttpResponse('500')
+
+        if settings.DEBUG:
+            print exception
+            return HttpResponse(content=json.dumps({'error': exception}),
+                    mimetype='application/json')
+        else:
+            return HttpResponse(content=json.dumps(
+                {'error': 'A server error occured'}),
+                mimetype='application/json')

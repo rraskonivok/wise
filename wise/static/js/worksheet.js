@@ -298,12 +298,18 @@ function apply_rule(rule, operands, callback) {
     }
 
     if (response.error) {
-      error(response.error);
-      base_mode();
+      Wise.Log.error(response.error);
       return;
     }
 
+    if(!response.namespace_index) {
+        Wise.Log.error('Null namespace index');
+        return;
+    }
     NAMESPACE_INDEX = response.namespace_index;
+
+    console.log(operands);
+
 
     //Iterate over the elements in the image of the
     //transformation, attempt to map them 1:1 with the
@@ -312,9 +318,10 @@ function apply_rule(rule, operands, callback) {
     for (var i = 0; i < response.new_html.length; i++) {
       var preimage = operands[i];
 
-      if (response.new_html[i] === null) {
+      if (response.new_html[i] === undefined) {
         //Desroy the preimage
         preimage.remove();
+        console.log('destroying');
       }
       else if (response.new_html[i] == 'pass') {
         //Do nothing, map the preimage to itself
@@ -329,6 +336,7 @@ function apply_rule(rule, operands, callback) {
 
         if (is_toplevel) {
 
+          console.log(preimage.cid);
           nsym = preimage.view.el.replace(response.new_html[i]);
 
           // !!!!!!!!!!!!!!!!
@@ -373,7 +381,10 @@ function apply_rule(rule, operands, callback) {
 
         }
 
-        callback(image);
+        if(callback) { 
+            callback(image);
+        }
+        Wise.Selection.clear();
 
       }
     }
@@ -494,11 +505,21 @@ function use_infix(code) {
     data: postdata,
     datatype: 'json',
     success: function (response) {
-
-      if (response.error) {
-        error(response.error);
+      if (!response) {
+        error('Server did not repsond to request.');
         return;
       }
+
+      if (response.error) {
+        Wise.Log.error(response.error);
+        return;
+      }
+
+      if(!response.namespace_index) {
+          Wise.Log.error('Null namespace index');
+          return;
+      }
+      NAMESPACE_INDEX = response.namespace_index;
 
       //if (!data.new_html) {
       //  error("Statement is not well-formed");
@@ -507,8 +528,6 @@ function use_infix(code) {
       //} else {
       //  hide_cmdline();
       //}
-
-      NAMESPACE_INDEX = response.namespace_index;
 
       //Iterate over the elements in the image of the
       //transformation, attempt to map them 1:1 with the
@@ -551,6 +570,8 @@ function use_infix(code) {
           }
         }
       }
+
+      Wise.Selection.clear();
     }
   });
 }
