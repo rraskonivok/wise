@@ -1,7 +1,6 @@
 math {
     /* Nice looking math fonts See:
      * developer.mozilla.org/en/Mozilla_MathML_Project/Fonts
-    */
     font-family: STIXGeneral,
                  DejaVu Serif,
                  DejaVu Sans,
@@ -11,6 +10,8 @@ math {
                  OpenSymbol,
                  Standard Symbols L,
                  serif;
+     */
+    font-family: STIX;
 }
 
 mfrac>*{

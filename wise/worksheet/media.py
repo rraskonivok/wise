@@ -33,6 +33,7 @@ MEDIA_BUNDLES = (
         'mathml.css',
 #        'opera_mathml.css',
         'worksheet.css',
+        'fonts.css',
      )},
 
     # Base Javascript libraries, mostly jQuery plugins, backbone
@@ -44,7 +45,7 @@ MEDIA_BUNDLES = (
      "minify": False,
      "files": (
         'jquery.js',
-        'xml.js',
+#        'xml.js',
         'jquery-ui.js',
 #        'jquery.ui.position.js',
 #        'dimensions.js',

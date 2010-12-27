@@ -12,8 +12,8 @@
     font-size: 200%;
 }
 
-/* ------------------- 
-   Toplevel Elements 
+/* -------------------
+   Toplevel Elements
    ----------------- */
 
 .toplevel {
@@ -26,7 +26,7 @@
     padding-right: 25px;
 }
 
-/* ------------------- 
+/* -------------------
    Node Styling
    ----------------- */
 
@@ -42,7 +42,7 @@
 .cell {
     /* Frame around cell */
     border-right: 5px solid #ccc;
-    border-top: 5px solid #ccc;  
+    border-top: 5px solid #ccc;
 
     /* Collapsed height */
     min-height: 50px;
