@@ -2,7 +2,7 @@
 
 # Wise
 # Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
@@ -13,8 +13,8 @@ import token
 # Special thanks to fellow Arch Linux user Andrey Vlasovskikh for
 # writing this genius library, it scales wonderfully and has been
 # the one fixed point in my code for 6 months of development.
-from wise.translators.funcparserlib.parser import some, a, many, skip, finished, maybe, forward_decl, with_forward_decls
-from wise.translators.funcparserlib.util import pretty_tree
+from funcparserlib.parser import some, a, many, skip, finished, maybe, forward_decl, with_forward_decls
+from funcparserlib.util import pretty_tree
 
 from tokenize import generate_tokens
 from StringIO import StringIO
@@ -55,12 +55,11 @@ def tokval(tok):
 op = (lambda s: some(lambda tok: tok.type == 'OP' and tok.value == s) >> tokval)
 op_ = lambda s: skip(op(s))
 const = lambda x: lambda _: x
-makeop = lambda s, f: op(s) >> const(f)
 
 number = some(lambda tok: tok.type == 'NUMBER') >> tokval
-
 var = some(lambda tok: tok.type == 'NAME') >> tokval
 string = some(lambda tok: tok.type == 'STRING') >> tokval
+
 po = op_('(')
 pc = op_(')')
 
@@ -68,7 +67,6 @@ negnum = maybe(po) + op('-') + number + maybe(pc)
 realnum = negnum | number
 
 #TODO: Make this into two parsers...
-
 @with_forward_decls
 def primary():
     return ((var|string|realnum) + many(var|string|realnum|primary)) | (po + primary + pc)
@@ -81,7 +79,5 @@ def sexp_parser():
 def pure_parser():
     return ((var|string|realnum) + many(var|string|realnum|primary)) | (po + primary + pc)
 
-toplevel = primary
-
 def eq_parse(str):
-	return toplevel.parse(tokenize(str))
+	return primary.parse(tokenize(str))

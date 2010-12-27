@@ -1,4 +1,4 @@
-General Installation on Linux / OS X:
+General Installation on Linux / OSX:
 -------------------------------------
 
 1) You'll need Python 2.6-2.7 (but not Python 3) and distribution
@@ -19,7 +19,7 @@ General Installation on Linux / OS X:
 
        http://code.google.com/p/pure-lang
 
-   If your distribution does not carry pure then you can find
+   If your distribution does not carry Pure then you can find
    directions for compiling from source here:
 
         http://pure-lang.googlecode.com/hg/pure/INSTALL
@@ -29,7 +29,6 @@ General Installation on Linux / OS X:
    directions on the pure site:
 
         http://pure-lang.googlecode.com/hg/pure/INSTALL
-
 
 3) Set up a new virtualenv, if you aren't using virtualenv then
    start. If this is your first virtualenv then run the following
@@ -49,7 +48,7 @@ General Installation on Linux / OS X:
 
    Comamnds marked with 
    
-   $(wise) 
+        $(wise) 
    
    refer to commands that should be
    run in the wise virtualenv shell.

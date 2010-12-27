@@ -1,4 +1,4 @@
-from wise.translators.parser import eq_parse
+from parser import eq_parse
 
 #Used for hashing trees
 from hashlib import sha1
@@ -13,6 +13,8 @@ from wise.pure.prelude import p2i, i2p
 from wise.base.objects import Placeholder, Variable, Numeric
 from wise.translators.mathobjects import translation_table, \
 translate_pure, pyobjects
+
+from funcparserlib.util import pretty_tree
 
 #-------------------------------------------------------------
 # Parse Tree
@@ -199,12 +201,10 @@ class Branch(object):
         # Recursive descent
         def f(x):
             if isinstance(x,unicode) or isinstance(x,str):
-                # The two special cases where a string in the
+                # The special case where a string in the
                 # parse tree is not a string
                 if x == 'Placeholder':
                     return Placeholder()
-                elif x == 'None':
-                    return Empty()
                 else:
                     return x
             elif isinstance(x,int):
@@ -269,7 +269,6 @@ class Branch(object):
             else:
                 print 'something strange is being passed'
 
-        #print 'HERE IT IS',self,type(self.args[0])
         typ = translate_pure(self.type)
 
         try:
@@ -331,8 +330,8 @@ def python_to_pure(obj, wrap_infix=True):
     else:
         return obj._pure_()
 
-def parse_sexp(code):
-    parsed = ParseTree(code)
+def parse_sexp(sexp_str):
+    parsed = ParseTree(sexp_str)
     evaled = parsed.eval_args()
     return evaled
 
@@ -349,3 +348,16 @@ def is_valid_pure(sexp):
     except ParseError:
         return False
     return True
+
+def ptree(t):
+    def kids(x):
+        if isinstance(x, Branch):
+            return x.kids
+        else:
+            return []
+    def show(x):
+        if isinstance(x, Branch):
+            return '{}'
+        else:
+            return repr(x)
+    return pretty_tree(t, kids, show)

@@ -1,3 +1,6 @@
 #!/bin/bash
+# Execute an interactive Pure shell with all active Wise
+# libraries
 
-pure -q -i base/base.pure
+shell=`python meta_inspector.py -s`
+${shell}

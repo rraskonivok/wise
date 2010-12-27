@@ -1,7 +1,13 @@
 from django.http import HttpResponse, HttpResponseForbidden
 from django.conf import settings
 from django.utils.html import strip_spaces_between_tags as short
-from sentry.client.models import sentry_exception_handler
+
+try:
+    from sentry.client.models import sentry_exception_handler
+    has_sentry = True
+except:
+    has_sentry = False
+
 
 class XHTMLMiddleware(object):
     def process_response(self, request, response):
@@ -16,7 +22,9 @@ class XHTMLMiddleware(object):
 class ErrorMiddleware(object):
     def process_exception(self, request, exception):
         # Make sure the exception signal is fired for Sentry
-        sentry_exception_handler(request=request)
+
+        if has_sentry:
+            sentry_exception_handler(request=request)
 
         print exception
         return exception
