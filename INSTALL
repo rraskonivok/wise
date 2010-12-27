@@ -42,17 +42,25 @@ General Installation on Linux / OS X:
 
    $ virtualenv --no-site-packages --distribute wise
 
-   Activate the new enviroment:
-
+   Activate the new enviroment which gives you a shell where
+   all commands run in python are run in your local virtualenv.
+ 
    $ source wise/bin/activate
+
+   Comamnds marked with 
+   
+   $(wise) 
+   
+   refer to commands that should be
+   run in the wise virtualenv shell.
 
    Install python libraries:
 
-   $ pip install -E wise -r /path/to/wise/dir/requirements.txt
+   (wise)$ pip install -r /path/to/wise/dir/requirements.txt
 
    If you are a developer you may want the optional packages
 
-   $ pip install -E wise -r /path/to/wise/dir/optional.txt
+   (wise)$ pip install -r /path/to/wise/dir/optional.txt
 
 4) Build the Pure module
 
@@ -65,19 +73,19 @@ General Installation on Linux / OS X:
 
 5) Create the database:
 
-    $ cd wise/
-    $ python mange.py syncdb
+    (wise)$ cd wise/
+    (wise)$ python mange.py syncdb
 
     This will prompt you to create a admin user and create
     the local database in wise.db
 
 6) Run Wise:
 
-    $ gunicorn_django
+    (wise)$ gunicorn_django
 
     This will run the Wise worksheet at 'localhost:8000' by
     default. To use a different address or port use the -b switch
 
     Example:
 
-    $ gunicorn_django -b 192.168.0.1:1234
+    (wise)$ gunicorn_django -b 192.168.0.1:1234
