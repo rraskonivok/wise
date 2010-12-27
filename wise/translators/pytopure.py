@@ -342,22 +342,9 @@ def is_valid_sexp(sexp):
         return False
     return True
 
-def is_valid_pure(sexp):
+def is_valid_pure(code):
     try:
-        ParseTree(str(expr))
+        ParseTree(str(code))
     except ParseError:
         return False
     return True
-
-def ptree(t):
-    def kids(x):
-        if isinstance(x, Branch):
-            return x.kids
-        else:
-            return []
-    def show(x):
-        if isinstance(x, Branch):
-            return '{}'
-        else:
-            return repr(x)
-    return pretty_tree(t, kids, show)

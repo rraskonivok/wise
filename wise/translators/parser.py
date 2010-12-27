@@ -63,7 +63,7 @@ string = some(lambda tok: tok.type == 'STRING') >> tokval
 po = op_('(')
 pc = op_(')')
 
-negnum = maybe(po) + op('-') + number + maybe(pc)
+negnum = op_('-') + number
 realnum = negnum | number
 
 #TODO: Make this into two parsers...
