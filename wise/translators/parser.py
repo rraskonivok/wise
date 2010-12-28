@@ -63,7 +63,7 @@ string = some(lambda tok: tok.type == 'STRING') >> tokval
 po = op_('(')
 pc = op_(')')
 
-integer = oneplus(number)
+integer = number
 atom =  string| var | number
 
 @with_forward_decls
