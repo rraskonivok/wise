@@ -1,12 +1,12 @@
 export PURE_STACK=1024;
 
+// For all x: i2p . p2i x = p2i . i2p x
+
 // Hack to overcome the fact that we can't overload the internal
 // `neg` function for integers
-
-
 i2p x::double |
-i2p x::int = x if x > 0;
-           = Neg $ -x if x < 0;
+i2p x::int = Numeric x if x > 0;
+           = Neg $ Numeric $ abs x if x < 0;
 
 // Convert Infix to Prefix
 i2p X = reduce X with
@@ -20,6 +20,7 @@ end;
 
 // Convert Prefix to Infix
 p2i X = reduce X with
+    Numeric x     = x;
     Neg x         =  - x;
     add x y       =  x + y; 
     mul x y       =  x * y;

@@ -1,5 +1,3 @@
-from parser import eq_parse
-
 #Used for hashing trees
 from hashlib import sha1
 
@@ -10,11 +8,11 @@ import wise.worksheet.exceptions as exception
 # p2i ~ Prefix to Infix
 from wise.pure.prelude import p2i, i2p
 
-from wise.base.objects import Placeholder, Variable, Numeric
+from wise.base.objects import Variable, Numeric
 from wise.translators.mathobjects import translation_table, \
 translate_pure, pyobjects
 
-from funcparserlib.util import pretty_tree
+from parser import sexp_parse, pure_parse
 
 #-------------------------------------------------------------
 # Parse Tree
@@ -44,7 +42,7 @@ class Branch(object):
     atomic = False
     idgen = None
 
-    def __init__(self,typ,args,parent):
+    def __init__(self,typ,args):
         self.type = typ
         self.id = None
 
@@ -59,15 +57,13 @@ class Branch(object):
             if type(ob) is str or type(ob) is unicode:
                 return ob
             else:
-                return reduce(lambda a,b: Branch(a,b,self), ob)
+                return reduce(lambda a,b: Branch(a,b), ob)
 
         #Allow for the possibility of argument-less/terminal Branches
         if args:
             self.args = map(descend,args)
         else:
             self.args = []
-
-        self.parent = parent
 
     def __repr__(self):
         return 'Branch: %s(%r)' % (self.type,self.args)
@@ -136,9 +132,6 @@ class Branch(object):
         self.valid = True
         return self.hash
 
-    def is_toplevel(self):
-        return self.parent == None
-
     def walk(self):
         for i in self.args:
             if isinstance(i,Branch):
@@ -200,22 +193,14 @@ class Branch(object):
         # Recursive descent
         def f(x):
             if isinstance(x,unicode) or isinstance(x,str):
-                # The special case where a string in the
-                # parse tree is not a string
-                if x == 'Placeholder':
-                    return Placeholder()
-                else:
-                    return x
+                return x
             elif isinstance(x,int):
                 return x
             elif isinstance(x,Branch):
-                #create a new class from the Branch type
-                try:
-                    return x.eval_args()
-                except KeyError:
-                    raise exception.InternalMathObjectNotFound(x)
+                # If nested, recurse on arguments
+                return x.eval_args()
             else:
-                print 'something strange is being passed'
+                raise exception.ParseError("Invalid arguments: %s, %s" % (self.args, typ))
 
         if self.atomic:
             print self.type
@@ -283,9 +268,10 @@ class Branch(object):
 
         return obj
 
-def ParseTree(str, ignore_atomic=True):
-    atomic = False
-    parsed = eq_parse(str)
+def ParseTree(s, parser):
+    """ Recursively maps the output of the sexp parser to
+    expression tree Branch objects.
+    """
 
     # the parser generates nested tuples, in the simplest case it
     # looks like:
@@ -293,7 +279,7 @@ def ParseTree(str, ignore_atomic=True):
     # SEXP:
     # (head arg1 arg2 arg3)
     #
-    # PARSER OUTPUT--->
+    # PARSER OUTPUT:
     # ( head [arg1, arg2, arg3] )
     #
     #  Which has tree form:
@@ -308,7 +294,7 @@ def ParseTree(str, ignore_atomic=True):
     # SEXP:
     # ( head1 (head2 arg1 arg2) arg3 arg4 )
     #
-    # PARSER OUTPUT--->
+    # PARSER OUTPUT:
     # ( head1 [(head2 [arg1,arg2]), arg3, arg4])
     #
     # head
@@ -318,31 +304,37 @@ def ParseTree(str, ignore_atomic=True):
     # |-- 'arg3'        # atomic
     # `-- 'arg4'        # atomic
 
-    if not ignore_atomic:
-        if not parsed[1]: # the sexp doesn't have any arguments
-            atomic = True
-            tag, args = parsed
-            if tag.isdigit():
-                parsed = ('num',[tag])
-            elif is_number(tag):
-                parsed = ('num',[tag])
-            else:
-                parsed = ('var',[tag])
 
-    branch = reduce(lambda type, args: Branch(type,args,None), parsed)
-    branch.atomic = atomic
+    if parser == 'sexp':
+        parsed = sexp_parse(s)
+    elif parser == 'pure':
+        parsed = pure_parse(s)
 
-    return branch
+    atomic = len(parsed) == 1
+
+    if atomic:
+        tag, args = parsed
+        if tag.isdigit():
+            parsed = ('num',[tag])
+        elif is_number(tag):
+            parsed = ('num',[tag])
+        else:
+            parsed = ('var',[tag])
+
+    top_node = reduce(lambda type, args: Branch(type,args), parsed)
+    top_node.atomic = atomic
+
+    return top_node
 
 def parse_pure_exp(expr):
     #Get the string representation of the pure expression
-    parsed = ParseTree(str(expr),ignore_atomic=False)
+    parsed = ParseTree(str(expr),'pure')
 
     #Map into the Python wrapper classes
     return parsed.eval_pure()
 
 def parse_sexp(sexp_str):
-    parsed = ParseTree(sexp_str)
+    parsed = ParseTree(sexp_str, 'sexp')
     evaled = parsed.eval_args()
     return evaled
 
@@ -366,14 +358,14 @@ def python_to_pure(obj, wrap_infix=True):
 
 def is_valid_sexp(sexp):
     try:
-        ParseTree(str(expr))
+        ParseTree(str(expr), 'sexp')
     except ParseError:
         return False
     return True
 
 def is_valid_pure(code):
     try:
-        ParseTree(str(code))
+        ParseTree(str(code), 'pure')
     except ParseError:
         return False
     return True

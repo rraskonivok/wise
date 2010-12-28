@@ -63,21 +63,19 @@ string = some(lambda tok: tok.type == 'STRING') >> tokval
 po = op_('(')
 pc = op_(')')
 
-negnum = op_('-') + number
-realnum = negnum | number
-
-#TODO: Make this into two parsers...
-@with_forward_decls
-def primary():
-    return ((var|string|realnum) + many(var|string|realnum|primary)) | (po + primary + pc)
+#integer = maybe(op_('-')) + number
 
 @with_forward_decls
-def sexp_parser():
-    return ((var|string|realnum) + many(var|string|realnum|primary)) | (po + primary + pc)
+def _sexp():
+    #           HEAD             ARGS
+    return ((var|string) + many(var|number|_sexp)) | (po + _sexp + pc)
 
 @with_forward_decls
-def pure_parser():
-    return ((var|string|realnum) + many(var|string|realnum|primary)) | (po + primary + pc)
+def _pure():
+    return ((var|string|number) + many(var|number|_pure)) | (po + _pure + pc)
 
-def eq_parse(str):
-	return primary.parse(tokenize(str))
+def pure_parse(str):
+	return _pure.parse(tokenize(str))
+
+def sexp_parse(str):
+	return _sexp.parse(tokenize(str))
