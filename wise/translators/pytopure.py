@@ -288,19 +288,17 @@ class Branch(object):
         return obj
 
 def map_to_sexp(parsed, depth=0):
-    atomic = len(parsed) == 1
+    atomic = not hasattr(parsed,'__len__') or len(parsed) == 1
 
-    # (head arg1 arg 2)
     if not atomic:
         head = parsed[0]
         args = parsed[1]
 
-        if args:
-            return Branch(head, [map_to_sexp(arg, depth+1) for arg in args])
+        return Branch(head, [map_to_sexp(arg, depth+1) for arg in args])
     # arg
     else:
-        head = parsed[0]
-        return head
+        parsed = str(parsed)
+        return parsed
 
 def ParseTree(s, parser):
     """ Recursively maps the output of the sexp parser to
@@ -346,13 +344,12 @@ def ParseTree(s, parser):
         parsed = pure_parse(s)
         arity = len(parsed[1])
 
-        if arity == 0:
-            atom = parsed[0]
-            if is_number(atom):
-                parsed = ('num',[atom])
-            else:
-                parsed = ('var',[atom])
-
+    if arity == 0:
+        atom = parsed[0]
+        if is_number(atom):
+            parsed = ('num',[str(atom)])
+        else:
+            parsed = ('var',[str(atom)])
 
     print parsed, arity
     top_node = map_to_sexp(parsed)

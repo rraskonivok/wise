@@ -60,11 +60,15 @@ number = some(lambda tok: tok.type == 'NUMBER') >> tokval
 var = some(lambda tok: tok.type == 'NAME') >> tokval
 string = some(lambda tok: tok.type == 'STRING') >> tokval
 
+digits = oneplus(number)
+
+to_int = lambda ds: sum(int(d)*10**m for m,d in enumerate(reversed(ds)))
+integer = digits >> to_int
+
 po = op_('(')
 pc = op_(')')
 
-integer = number
-atom =  string| var | number
+atom =  string| var | integer
 
 @with_forward_decls
 def _funcapp():
