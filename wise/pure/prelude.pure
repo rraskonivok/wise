@@ -3,6 +3,8 @@ export PURE_STACK=1024;
 // Hack to overcome the fact that we can't overload the internal
 // `neg` function for integers
 
+
+i2p x::double |
 i2p x::int = x if x > 0;
            = Neg $ -x if x < 0;
 

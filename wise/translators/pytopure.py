@@ -39,7 +39,7 @@ class Branch(object):
     #         #     #      into the node.
 
     # We use the SHA1 algorithm, since it likely to have
-    # collisions than CRC32. But it's much slower.
+    # collisions than CRC32.
 
     atomic = False
     idgen = None
@@ -59,7 +59,6 @@ class Branch(object):
             if type(ob) is str or type(ob) is unicode:
                 return ob
             else:
-                #Yah, there is a serious functional slant to this
                 return reduce(lambda a,b: Branch(a,b,self), ob)
 
         #Allow for the possibility of argument-less/terminal Branches
@@ -284,13 +283,43 @@ class Branch(object):
 
         return obj
 
-def ParseTree(str,ignore_atomic=True):
+def ParseTree(str, ignore_atomic=True):
     atomic = False
     parsed = eq_parse(str)
 
-    # Our sexp is atomic ( only occurs in Pure -> Python translation)
+    # the parser generates nested tuples, in the simplest case it
+    # looks like:
+    #
+    # SEXP:
+    # (head arg1 arg2 arg3)
+    #
+    # PARSER OUTPUT--->
+    # ( head [arg1, arg2, arg3] )
+    #
+    #  Which has tree form:
+    #
+    # head
+    #   |-- 'arg1'     # atomic
+    #   |-- 'arg2'     # atomic
+    #   `-- 'arg3'     # atomic
+    #
+    # For nested sexp it looks something like:
+    #
+    # SEXP:
+    # ( head1 (head2 arg1 arg2) arg3 arg4 )
+    #
+    # PARSER OUTPUT--->
+    # ( head1 [(head2 [arg1,arg2]), arg3, arg4])
+    #
+    # head
+    # |-- head2
+    # |   |-- 'arg1'    # atomic
+    # |   `-- 'arg2'    # atomic
+    # |-- 'arg3'        # atomic
+    # `-- 'arg4'        # atomic
+
     if not ignore_atomic:
-        if not parsed[1]:
+        if not parsed[1]: # the sexp doesn't have any arguments
             atomic = True
             tag, args = parsed
             if tag.isdigit():
@@ -312,6 +341,11 @@ def parse_pure_exp(expr):
     #Map into the Python wrapper classes
     return parsed.eval_pure()
 
+def parse_sexp(sexp_str):
+    parsed = ParseTree(sexp_str)
+    evaled = parsed.eval_args()
+    return evaled
+
 #Convenience wrappers with more obvious names...
 def pure_to_python(obj, wrap_infix=True):
     '''Maps a set of Pure objects (as translated by the Cython
@@ -329,11 +363,6 @@ def python_to_pure(obj, wrap_infix=True):
         return p2i(obj._pure_())
     else:
         return obj._pure_()
-
-def parse_sexp(sexp_str):
-    parsed = ParseTree(sexp_str)
-    evaled = parsed.eval_args()
-    return evaled
 
 def is_valid_sexp(sexp):
     try:

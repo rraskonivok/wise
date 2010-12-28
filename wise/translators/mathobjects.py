@@ -2,13 +2,12 @@
 
 # Wise
 # Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
-from meta_inspector import Package
 import meta_inspector
 
 from django.conf import settings
@@ -40,7 +39,6 @@ def generate_translation(root, package):
             if not cls.pure in translation_table:
                 pyobjects[cls.__name__] = cls
                 package.provided_symbols[cls.__name__] = cls
-
                 translation_table[cls.pure] = cls
 
         generate_translation(cls, package)
@@ -57,7 +55,7 @@ def build_translation():
         mod_top, mod_table = initialize()
         translation_table.update(mod_table)
 
-        package = Package(name=name)
+        package = meta_inspector.Package(name=name)
 
         for toplevel in mod_top:
             generate_translation(toplevel, package)

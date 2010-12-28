@@ -20,9 +20,7 @@ new_level, restore_level, IManager, PureEnv
 from wise.pure.prelude import p2i, i2p, nargs
 from wise.utils.aggregator import Aggregator
 from wise.worksheet.rules import rulesets
-
-#from wise.translators.pytopure import pure_to_python, \
-#python_to_pure
+from wise.worksheet.utils import trim_docstring
 
 ROOT_MODULE = 'wise'
 packages = {}
@@ -117,7 +115,6 @@ class PublicRule:
     #        self.po = PureClosure(self.pure)
     #        pure_wrap.objects[self.pure] = self.po
 
-from wise.worksheet.utils import trim_docstring
 
 # And so begin 4 nested for-loops, yah....
 for pack in settings.INSTALLED_MATH_PACKAGES:
