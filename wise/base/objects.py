@@ -2,7 +2,7 @@
 
 # Wise
 # Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
@@ -90,13 +90,8 @@ class Variable(BaseSymbol):
 class Numeric(Term):
     numeric_type = 'float'
 
-    def __init__(self,number):
-
+    def __init__(self, number):
         self.number = float(number)
-
-        #TODO: wtf?
-        if self.number == 1.0:
-            self.number = 1
 
         fpart, ipart = modf(self.number)
 
@@ -407,9 +402,9 @@ class Product(InfixOperation):
 
         self.terms = list(terms)
 
-        for term in self.terms:
-            if term.terms and len(term.terms) > 1:
-                term.show_parenthesis = True
+        #for term in self.terms:
+        #    if term.terms and len(term.terms) > 1:
+        #        term.show_parenthesis = True
 
         self.operand = self.terms
 

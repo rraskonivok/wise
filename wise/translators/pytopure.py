@@ -1,5 +1,12 @@
-#Used for hashing trees
-from hashlib import sha1
+# -*- coding: utf-8 -*-
+
+# Wise
+# Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
 
 from wise.worksheet.utils import *
 import wise.worksheet.exceptions as exception
@@ -13,6 +20,9 @@ from wise.translators.mathobjects import translation_table, \
 translate_pure, pyobjects
 
 from parser import sexp_parse, pure_parse
+
+#Used for hashing trees
+from hashlib import sha1
 
 #-------------------------------------------------------------
 # Parse Tree
@@ -42,28 +52,26 @@ class Branch(object):
     atomic = False
     idgen = None
 
-    def __init__(self,typ,args):
+    def __init__(self, typ, args):
         self.type = typ
         self.id = None
 
         self.valid = False
         #self.hash = False
-        self.commutative = False
 
-        if self.type == 'Addition':
-            self.commutative = True
+        #def descend(ob):
+        #    if type(ob) is str or type(ob) is unicode:
+        #        return ob
+        #    else:
+        #        return reduce(lambda a,b: Branch(a,b), ob)
 
-        def descend(ob):
-            if type(ob) is str or type(ob) is unicode:
-                return ob
-            else:
-                return reduce(lambda a,b: Branch(a,b), ob)
+        ##Allow for the possibility of argument-less/terminal Branches
+        #if args:
+        #    self.args = map(descend,args)
+        #else:
+        #    self.args = []
 
-        #Allow for the possibility of argument-less/terminal Branches
-        if args:
-            self.args = map(descend,args)
-        else:
-            self.args = []
+        self.args = args
 
     def __repr__(self):
         return 'Branch: %s(%r)' % (self.type,self.args)
@@ -193,14 +201,24 @@ class Branch(object):
         # Recursive descent
         def f(x):
             if isinstance(x,unicode) or isinstance(x,str):
-                return x
+                # The two special cases where a string in the
+                # parse tree is not a string
+                if x == 'Placeholder':
+                    return Placeholder()
+                elif x == 'None':
+                    return Empty()
+                else:
+                    return x
             elif isinstance(x,int):
                 return x
             elif isinstance(x,Branch):
-                # If nested, recurse on arguments
-                return x.eval_args()
+                #create a new class from the Branch type
+                try:
+                    return x.eval_args()
+                except KeyError:
+                    raise exception.InternalMathObjectNotFound(x)
             else:
-                raise exception.ParseError("Invalid arguments: %s, %s" % (self.args, typ))
+                print 'something strange is being passed'
 
         if self.atomic:
             print self.type
@@ -259,7 +277,8 @@ class Branch(object):
             if self.atomic:
                 obj = typ(*self.args)
             else:
-                obj = apply(typ,(map(f,self.args)))
+                args = map(f, self.args)
+                obj = typ(*args)
 
             obj.id = self.id
             obj.idgen = self.idgen
@@ -267,6 +286,21 @@ class Branch(object):
             raise exception.ParseError("Invalid function arguments: %s, %s" % (self.args, typ))
 
         return obj
+
+def map_to_sexp(parsed, depth=0):
+    atomic = len(parsed) == 1
+
+    # (head arg1 arg 2)
+    if not atomic:
+        head = parsed[0]
+        args = parsed[1]
+
+        if args:
+            return Branch(head, [map_to_sexp(arg, depth+1) for arg in args])
+    # arg
+    else:
+        head = parsed[0]
+        return head
 
 def ParseTree(s, parser):
     """ Recursively maps the output of the sexp parser to
@@ -304,24 +338,27 @@ def ParseTree(s, parser):
     # |-- 'arg3'        # atomic
     # `-- 'arg4'        # atomic
 
-
     if parser == 'sexp':
         parsed = sexp_parse(s)
+        atomic = len(parsed) == 1
+
     elif parser == 'pure':
         parsed = pure_parse(s)
+        atomic = len(parsed) == 1
 
-    atomic = len(parsed) == 1
+        # Atomic Expression Ex:
+        # ('x', [])
 
-    if atomic:
-        tag, args = parsed
-        if tag.isdigit():
-            parsed = ('num',[tag])
-        elif is_number(tag):
-            parsed = ('num',[tag])
-        else:
-            parsed = ('var',[tag])
+        if atomic:
+            atom = parsed
+            if is_number(atom):
+                parsed = ('num',[atom])
+            else:
+                parsed = ('var',[atom])
 
-    top_node = reduce(lambda type, args: Branch(type,args), parsed)
+
+    print parsed, atomic
+    top_node = map_to_sexp(parsed)
     top_node.atomic = atomic
 
     return top_node

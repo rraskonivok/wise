@@ -13,8 +13,8 @@ import token
 # Special thanks to fellow Arch Linux user Andrey Vlasovskikh for
 # writing this genius library, it scales wonderfully and has been
 # the one fixed point in my code for 6 months of development.
-from funcparserlib.parser import some, a, many, skip, finished, maybe, forward_decl, with_forward_decls
-from funcparserlib.util import pretty_tree
+from funcparserlib.parser import some, a, many, skip, finished, \
+maybe, forward_decl, with_forward_decls, oneplus
 
 from tokenize import generate_tokens
 from StringIO import StringIO
@@ -52,7 +52,7 @@ def tokval(tok):
     'Token -> str'
     return tok.value
 
-op = (lambda s: some(lambda tok: tok.type == 'OP' and tok.value == s) >> tokval)
+op = lambda s: some(lambda tok: tok.type == 'OP' and tok.value == s) >> tokval
 op_ = lambda s: skip(op(s))
 const = lambda x: lambda _: x
 
@@ -63,16 +63,21 @@ string = some(lambda tok: tok.type == 'STRING') >> tokval
 po = op_('(')
 pc = op_(')')
 
-#integer = maybe(op_('-')) + number
+integer = oneplus(number)
+atom =  var | number
+
+@with_forward_decls
+def _funcapp():
+    return ( var + oneplus(_funcapp|atom) ) | (po + _funcapp + pc)
 
 @with_forward_decls
 def _sexp():
-    #           HEAD             ARGS
-    return ((var|string) + many(var|number|_sexp)) | (po + _sexp + pc)
+    #           HEAD       ARGS
+    return po + atom + many(atom|_sexp) + pc
 
 @with_forward_decls
 def _pure():
-    return ((var|string|number) + many(var|number|_pure)) | (po + _pure + pc)
+    return _funcapp | atom
 
 def pure_parse(str):
 	return _pure.parse(tokenize(str))
