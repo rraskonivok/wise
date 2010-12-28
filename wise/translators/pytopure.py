@@ -340,26 +340,23 @@ def ParseTree(s, parser):
 
     if parser == 'sexp':
         parsed = sexp_parse(s)
-        atomic = len(parsed) == 1
+        arity = len(parsed[1])
 
     elif parser == 'pure':
         parsed = pure_parse(s)
-        atomic = len(parsed) == 1
+        arity = len(parsed[1])
 
-        # Atomic Expression Ex:
-        # ('x', [])
-
-        if atomic:
-            atom = parsed
+        if arity == 0:
+            atom = parsed[0]
             if is_number(atom):
                 parsed = ('num',[atom])
             else:
                 parsed = ('var',[atom])
 
 
-    print parsed, atomic
+    print parsed, arity
     top_node = map_to_sexp(parsed)
-    top_node.atomic = atomic
+    top_node.atomic = arity == 0
 
     return top_node
 

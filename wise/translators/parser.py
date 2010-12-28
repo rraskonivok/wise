@@ -64,11 +64,12 @@ po = op_('(')
 pc = op_(')')
 
 integer = oneplus(number)
-atom =  var | string | number
+atom =  string| var | number
 
 @with_forward_decls
 def _funcapp():
-    return ((var|string|integer) + oneplus(var|string|integer|_funcapp)) | (po + _funcapp + pc)
+    #return atom + ( oneplus(_funcapp|(po + _funcapp + pc)|atom) )
+    return (var|string|integer) + many(var|string|integer|_sexp)
 
 @with_forward_decls
 def _sexp():
@@ -77,7 +78,7 @@ def _sexp():
 
 @with_forward_decls
 def _pure():
-    return _funcapp | atom
+    return _funcapp | ( atom + finished )
 
 def pure_parse(str):
 	return _pure.parse(tokenize(str))
