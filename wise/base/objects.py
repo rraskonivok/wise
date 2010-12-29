@@ -41,6 +41,7 @@ def initialize():
 
     translation_table = {'num' : Numeric,
                          'var' : Variable,
+                         'ph' : Placeholder,
                          '-'   : Negate}
 
     return TOP_CLASSES, translation_table

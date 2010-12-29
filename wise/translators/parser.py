@@ -59,11 +59,11 @@ def pure_parse(seq):
 
     @with_forward_decls
     def funcapp():
-        return (var | number) + many(atom|sexp)
+        return var + many(atom|sexp)
 
     @with_forward_decls
     def pure():
-        return funcapp | ( atom + skip(finished) )
+        return ( atom + skip(finished) ) | funcapp
 
     primary = pure
 

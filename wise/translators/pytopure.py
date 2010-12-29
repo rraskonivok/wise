@@ -213,23 +213,17 @@ class Branch(object):
                 return x
             elif isinstance(x,Branch):
                 #create a new class from the Branch type
-                try:
-                    return x.eval_args()
-                except KeyError:
-                    raise exception.InternalMathObjectNotFound(x)
+                return x.eval_args()
             else:
+                print x
                 print 'something strange is being passed'
 
-        if self.atomic:
-            print self.type
-            obj = typ(*self.args)
-        else:
-            type_key = pyobjects[str(self.type)]
-            arguments = map(f, self.args)
-            try:
-                obj = type_key(*arguments)
-            except TypeError:
-                raise Exception("Wrong arguments: %s" %arguments)
+        type_key = pyobjects[str(self.type)]
+        arguments = [f(arg) for arg in self.args]
+        try:
+            obj = type_key(*arguments)
+        except TypeError:
+            raise Exception("Wrong arguments: %s" %arguments)
 
         #obj.hash = self.gethash()
         obj.id = self.id
@@ -243,14 +237,17 @@ class Branch(object):
     def eval_pure(self):
         '''Like pure_eval but instead of mapping into internal
         python objects it maps into Pure Objects. This is used
-        for when we run an expression through pure and want to
+        for when we run an expression through Pure and want to
         map the result into something to use in Python.'''
 
         #Evalute by descent
         def f(x):
             if isinstance(x,str):
+                print 'DESCENT',x
                 if is_number(x):
                     obj = Numeric(x)
+                elif x == 'ph':
+                    obj = Placeholder()
                 elif x in translation_table:
                     obj = translate_pure(x)()
                 else:
@@ -264,10 +261,7 @@ class Branch(object):
                 return obj
             elif isinstance(x,Branch):
                 '''create a new class from the Branch type'''
-                try:
-                    return x.eval_pure()
-                except KeyError:
-                    raise exception.InternalMathObjectNotFound(x)
+                return x.eval_pure()
             else:
                 print 'something strange is being passed'
 
@@ -287,20 +281,32 @@ class Branch(object):
 
         return obj
 
-def map_to_sexp(parsed, depth=0):
-    atomic = not hasattr(parsed,'__len__') or len(parsed) == 1
-
-    if not atomic:
+def map_to_sexp(parsed):
+    if isinstance(parsed,tuple):
         head = parsed[0]
         args = parsed[1]
 
-        return Branch(head, [map_to_sexp(arg, depth+1) for arg in args])
-    # arg
+        return Branch(head, [map_to_sexp(arg) for arg in args])
     else:
-        parsed = str(parsed)
+        atom = parsed
+        if is_number(atom):
+            return Branch('num',[atom])
+        elif atom == 'ph':
+            return Branch('ph',[])
+        else:
+            return Branch('var',[atom])
+
+def make_sexp(parsed):
+    if isinstance(parsed,tuple):
+        head = parsed[0]
+        args = parsed[1]
+
+        return Branch(head, [make_sexp(arg) for arg in args])
+    else:
         return parsed
 
 def ParseTree(s, parser):
+    print s
     """ Recursively maps the output of the sexp parser to
     expression tree Branch objects.
     """
@@ -338,26 +344,11 @@ def ParseTree(s, parser):
 
     if parser == 'sexp':
         parsed = sexp_parse(s)
+        return make_sexp(parsed)
 
     elif parser == 'pure':
         parsed = pure_parse(s)
-
-    arity = len(parsed[1])
-
-    if arity == 0:
-        atom = parsed[0]
-        if is_number(atom):
-            parsed = ('num',[atom])
-        elif atom == 'ph':
-            parsed = ('ph',[atom])
-        else:
-            parsed = ('var',[atom])
-
-    print parsed, arity
-    top_node = map_to_sexp(parsed)
-    top_node.atomic = arity == 0
-
-    return top_node
+        return map_to_sexp(parsed)
 
 def parse_pure_exp(expr):
     #Get the string representation of the pure expression
