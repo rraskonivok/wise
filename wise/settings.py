@@ -52,7 +52,7 @@ MEDIA_ROOT = os.path.join(SITE_ROOT, 'static')
 MEDIA_URL = '/static/'
 
 APPEND_SLASH = True
-DEBUG = False
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 LOG_FILE = 'session.log'
 

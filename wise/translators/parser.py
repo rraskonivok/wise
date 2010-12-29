@@ -10,85 +10,90 @@
 
 import token
 
-# Special thanks to fellow Arch Linux user Andrey Vlasovskikh for
-# writing this genius library, it scales wonderfully and has been
-# the one fixed point in my code for 6 months of development.
-from funcparserlib.parser import some, a, many, skip, finished, \
-maybe, forward_decl, with_forward_decls, oneplus
+import sys, os, re
+from re import VERBOSE
 
-from tokenize import generate_tokens
-from StringIO import StringIO
+from funcparserlib import util
+from funcparserlib.lexer import make_tokenizer, Spec
+from funcparserlib.parser import (maybe, many, finished, skip, forward_decl,
+    SyntaxError, with_forward_decls, oneplus)
+from funcparserlib.contrib.common import const, n, op, op_, sometok
 
-class Token(object):
-    def __init__(self, code, value, start=(0, 0), stop=(0, 0), line=''):
-        self.code = code
-        self.value = value
-        self.start = start
-        self.stop = stop
-        self.line = line
+def tokenize(str):
+    'str -> Sequence(Token)'
+    specs = [
+        Spec('space', r'[ \t\r\n]+'),
+        Spec('number', r'''
+            -?                  # Minus
+            (0|([1-9][0-9]*))   # Int
+            (\.[0-9]+)?         # Frac
+            ([Ee][+-][0-9]+)?   # Exp
+            ''', VERBOSE),
+        Spec('op', r'[()\[\]\-,:]'),
+        Spec('name', r'[A-Za-z_][A-Za-z_0-9]*'),
+    ]
+    useless = ['space']
+    t = make_tokenizer(specs)
+    return [x for x in t(str) if x.type not in useless]
 
-    @property
-    def type(self):
-        return token.tok_name[self.code]
+def pure_parse(seq):
+    'Sequence(Token) -> object'
 
-    def __unicode__(self):
-        pos = '-'.join('%d,%d' % x for x in [self.start, self.stop])
-        return "%s %s '%s'" % (pos, self.type, self.value)
+    def make_number(n):
+        try:
+            return int(n)
+        except ValueError:
+            return float(n)
 
-    def __repr__(self):
-        return 'Token(code: %r, value: %r, start: %r, stop: %r, line:%r)\n' % (
-            self.code, self.value, self.start, self.stop, self.line)
+    def make_name(s):
+        return s
 
-    def __eq__(self, other):
-        return (self.code, self.value) == (other.code, other.value)
+    number = sometok('number') >> make_number
+    var = sometok('name') >> make_name
 
-def tokenize(s):
-    'str -> [Token]'
-    return list(Token(*t)
-        for t in generate_tokens(StringIO(s).readline)
-        if t[0] not in [token.NEWLINE])
+    atom = var | number
 
-def tokval(tok):
-    'Token -> str'
-    return tok.value
+    @with_forward_decls
+    def sexp():
+        return op_('(') + atom + many(atom|sexp) + op_(')')
 
-op = lambda s: some(lambda tok: tok.type == 'OP' and tok.value == s) >> tokval
-op_ = lambda s: skip(op(s))
-const = lambda x: lambda _: x
+    @with_forward_decls
+    def funcapp():
+        return var + many(atom|sexp)
 
-number = some(lambda tok: tok.type == 'NUMBER') >> tokval
-var = some(lambda tok: tok.type == 'NAME') >> tokval
-string = some(lambda tok: tok.type == 'STRING') >> tokval
+    @with_forward_decls
+    def pure():
+        return funcapp | ( atom + skip(finished) )
 
-digits = oneplus(number)
+    primary = pure
 
-to_int = lambda ds: sum(int(d)*10**m for m,d in enumerate(reversed(ds)))
-integer = digits >> to_int
+    return primary.parse(tokenize(seq))
 
-po = op_('(')
-pc = op_(')')
+def sexp_parse(seq):
+    'Sequence(Token) -> object'
 
-atom =  string| var | integer
+    def make_number(n):
+        try:
+            return int(n)
+        except ValueError:
+            return float(n)
 
-@with_forward_decls
-def _funcapp():
-    #return atom + ( oneplus(_funcapp|(po + _funcapp + pc)|atom) )
-    return (var|string|integer) + many(var|string|integer|_sexp)
+    def make_name(s):
+        return s
 
-@with_forward_decls
-def _sexp():
-    #           HEAD       ARGS
-    return po + atom + many(atom|_sexp) + pc
+    number = sometok('number') >> make_number
+    var = sometok('name') >> make_name
 
-@with_forward_decls
-def _pure():
-    return _funcapp | ( atom + finished )
+    atom = var | number
 
-def pure_parse(str):
-	return _pure.parse(tokenize(str))
+    @with_forward_decls
+    def sexp():
+        return op_('(') + atom + many(atom|sexp) + op_(')')
 
-def sexp_parse(str):
-	return _sexp.parse(tokenize(str))
+    @with_forward_decls
+    def funcapp():
+        return var + many(atom|sexp)
 
-def funcapp_parse(str):
-	return _funcapp.parse(tokenize(str))
+    primary = sexp
+
+    return primary.parse(tokenize(seq))

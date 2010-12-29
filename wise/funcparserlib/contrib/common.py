@@ -21,24 +21,27 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-def pretty_tree(x, kids, show):
-    '''(a, (a -> list(a)), (a -> str)) -> str
+from funcparserlib.lexer import Token
+from funcparserlib.parser import a, skip, some
 
-    Returns a pseudographic tree representation of x similar to the tree command
-    in Unix.
-    '''
-    (MID, END, CONT, LAST, ROOT) = ('|-- ', '`-- ', '|   ', '    ', '')
-    def rec(x, indent, sym):
-        line = indent + sym + show(x)
-        xs = kids(x)
-        if len(xs) == 0:
-            return line
-        else:
-            next_indent = indent + (
-                CONT if sym == MID
-                     else (ROOT if sym == ROOT else LAST))
-            syms = [MID] * (len(xs) - 1) + [END]
-            lines = [rec(x, next_indent, sym) for x, sym in zip(xs, syms)]
-            return '\n'.join([line] + lines)
-    return rec(x, '', ROOT)
+__all__ = [
+    'const', 'flatten', 'unarg', 'tokval', 'mktok', 'n', 'op', 'op_', 'sometok',
+    'sometoks',
+]
+
+# Well-known functions
+const = lambda x: lambda _: x
+flatten = lambda list: sum(list, [])
+unarg = lambda f: lambda args: f(*args)
+
+# Auxiliary functions for lexers
+tokval = lambda tok: tok.value
+
+# Auxiliary functions for parsers
+mktok = lambda type: lambda s: a(Token(type, s)) >> tokval
+n = mktok('name')
+op = mktok('op')
+op_ = lambda s: skip(op(s))
+sometok = lambda type: some(lambda x: x.type == type) >> tokval
+sometoks = lambda types: some(lambda x: x.type in types) >> tokval
 
