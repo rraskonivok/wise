@@ -268,9 +268,9 @@ def ParseTree(s, parser):
     #  Which has tree form:
     #
     # head
-    #   |-- 'arg1'     # atomic
-    #   |-- 'arg2'     # atomic
-    #   `-- 'arg3'     # atomic
+    #   |-- 'arg1' 
+    #   |-- 'arg2' 
+    #   `-- 'arg3' 
     #
     # For nested sexp it looks something like:
     #
@@ -282,10 +282,10 @@ def ParseTree(s, parser):
     #
     # head
     # |-- head2
-    # |   |-- 'arg1'    # atomic
-    # |   `-- 'arg2'    # atomic
-    # |-- 'arg3'        # atomic
-    # `-- 'arg4'        # atomic
+    # |   |-- 'arg1'
+    # |   `-- 'arg2'
+    # |-- 'arg3'    
+    # `-- 'arg4'    
 
     if parser == 'sexp':
         parsed = sexp_parse(s)

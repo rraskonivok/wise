@@ -39,6 +39,8 @@ def tokenize(str):
 def pure_parse(seq):
     'Sequence(Token) -> object'
 
+    #http://pure-lang.googlecode.com/svn/docs/pure-syntax/pure-syntax.pdf&pli=1
+
     def make_number(n):
         try:
             return int(n)
