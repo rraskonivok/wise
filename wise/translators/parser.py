@@ -51,7 +51,7 @@ def pure_parse(seq):
     number = sometok('number') >> make_number
     var = sometok('name') >> make_name
 
-    atom = var | number
+    atom = var | number | ( op_('(') + number + op_(')') )
 
     @with_forward_decls
     def sexp():

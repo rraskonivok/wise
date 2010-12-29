@@ -57,24 +57,17 @@ class Branch(object):
         self.id = None
 
         self.valid = False
-        #self.hash = False
-
-        #def descend(ob):
-        #    if type(ob) is str or type(ob) is unicode:
-        #        return ob
-        #    else:
-        #        return reduce(lambda a,b: Branch(a,b), ob)
-
-        ##Allow for the possibility of argument-less/terminal Branches
-        #if args:
-        #    self.args = map(descend,args)
-        #else:
-        #    self.args = []
-
         self.args = args
+        self.arity = len(args)
+
+        self.subterms = set([child for child in self.args if
+            isinstance(child,Branch)])
+
+        self.subatoms = set([child for child in self.args if
+            not isinstance(child,Branch)])
 
     def __repr__(self):
-        return 'Branch: %s(%r)' % (self.type,self.args)
+        return '(%s,%r)' % (self.type,self.args)
 
     def __getitem__(self,n):
         return self.args[n]
@@ -124,7 +117,7 @@ class Branch(object):
         digester = HASH_ALGORITHM()
 
         # Hashing the type assures that
-        # Addition( x y ) and Multiplication( x y )
+        # Addition( x y ) and Product( x y )
         # yield different hashes
         digester.update(self.type)
 
@@ -167,13 +160,15 @@ class Branch(object):
     def json(self):
         def f(x):
             if isinstance(x,Branch):
-
-                i = x.json()
-                return i
+                return x.json()
             else:
                 return x
+
         obj = map(f,self.args)
-        return {'name': self.id, 'type': self.type , 'args': obj }
+
+        return { 'name': self.id,
+                'type': self.type,
+                'args': obj }
 
     def json_flat(self,lst=None):
         if not lst:
@@ -181,16 +176,15 @@ class Branch(object):
 
         def f(x):
             if isinstance(x,Branch):
-                i = x.json_flat(lst)
-                return i
+                return x.json_flat(lst)
             else:
                 return x
 
         lst.append({"id": self.id,
                     "type": self.type,
-                    "children": [child.id for child in self.args if isinstance(child,Branch)]})
+                    "children": [child.id for child in self.subterms]})
 
-        map(f,self.args)
+        map(f, self.args)
         return lst
 
     def eval_args(self):
