@@ -30,7 +30,7 @@ def tokenize(str):
             ([Ee][+-][0-9]+)?   # Exp
             ''', VERBOSE),
         Spec('op', r'[()\[\]\-,:]'),
-        Spec('name', r'[A-Za-z_][A-Za-z_0-9]*'),
+        Spec('name', r'[A-Za-z_][A-Za-z]*'),
     ]
     useless = ['space']
     t = make_tokenizer(specs)
@@ -59,7 +59,7 @@ def pure_parse(seq):
 
     @with_forward_decls
     def funcapp():
-        return var + many(atom|sexp)
+        return (var | number) + many(atom|sexp)
 
     @with_forward_decls
     def pure():

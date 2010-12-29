@@ -283,7 +283,7 @@ class Branch(object):
             obj.id = self.id
             obj.idgen = self.idgen
         except TypeError:
-            raise exception.ParseError("Invalid function arguments: %s, %s" % (self.args, typ))
+            raise exception.ParseError("Invalid function arguments: %s for %s" % (self.args, typ))
 
         return obj
 
@@ -338,18 +338,20 @@ def ParseTree(s, parser):
 
     if parser == 'sexp':
         parsed = sexp_parse(s)
-        arity = len(parsed[1])
 
     elif parser == 'pure':
         parsed = pure_parse(s)
-        arity = len(parsed[1])
+
+    arity = len(parsed[1])
 
     if arity == 0:
         atom = parsed[0]
         if is_number(atom):
-            parsed = ('num',[str(atom)])
+            parsed = ('num',[atom])
+        elif atom == 'ph':
+            parsed = ('ph',[atom])
         else:
-            parsed = ('var',[str(atom)])
+            parsed = ('var',[atom])
 
     print parsed, arity
     top_node = map_to_sexp(parsed)
