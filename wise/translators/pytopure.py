@@ -258,7 +258,9 @@ class Branch(object):
                 if self.idgen:
                     obj.id = self.idgen.next()
 
-                return obj
+                return x
+            elif isinstance(x,int):
+                return x
             elif isinstance(x,Branch):
                 '''create a new class from the Branch type'''
                 return x.eval_pure()
