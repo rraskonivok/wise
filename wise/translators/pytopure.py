@@ -198,39 +198,16 @@ class Branch(object):
         and pass the node's arguments ( self.args ) to the new
         instance'''
 
-        # Recursive descent
         def f(x):
             if isinstance(x,unicode) or isinstance(x,str):
-                # The two special cases where a string in the
-                # parse tree is not a string
-                if x == 'Placeholder':
-                    return Placeholder()
-                elif x == 'None':
-                    return Empty()
-                else:
-                    return x
-            elif isinstance(x,int):
+                return x
+            elif isinstance(x,int) or isinstance(x,float):
                 return x
             elif isinstance(x,Branch):
-                #create a new class from the Branch type
                 return x.eval_args()
-            else:
-                print x
-                print 'something strange is being passed'
 
-        type_key = pyobjects[str(self.type)]
-        arguments = [f(arg) for arg in self.args]
-        try:
-            obj = type_key(*arguments)
-        except TypeError:
-            raise Exception("Wrong arguments: %s" %arguments)
-
-        #obj.hash = self.gethash()
-        obj.id = self.id
-        obj.idgen = self.idgen
-
-        if hasattr(obj,'side') and (obj.side is not None):
-            obj.set_side(obj.side)
+        type = pyobjects[self.type]
+        obj = type(*(f(arg) for arg in self.args))
 
         return obj
 
@@ -243,52 +220,24 @@ class Branch(object):
         #Evalute by descent
         def f(x):
             if isinstance(x,str):
-                print 'DESCENT',x
-                if is_number(x):
-                    obj = Numeric(x)
-                elif x == 'ph':
-                    obj = Placeholder()
-                elif x in translation_table:
-                    obj = translate_pure(x)()
-                else:
-                    obj = Variable(x)
-
-                obj.idgen = self.idgen
-
-                if self.idgen:
-                    obj.id = self.idgen.next()
-
                 return x
-            elif isinstance(x,int):
+            elif isinstance(x,int) or isinstance(x,float):
                 return x
             elif isinstance(x,Branch):
-                '''create a new class from the Branch type'''
                 return x.eval_pure()
-            else:
-                print 'something strange is being passed'
 
-        typ = translate_pure(self.type)
-
-        try:
-            if self.atomic:
-                obj = typ(*self.args)
-            else:
-                args = map(f, self.args)
-                obj = typ(*args)
-
-            obj.id = self.id
-            obj.idgen = self.idgen
-        except TypeError:
-            raise exception.ParseError("Invalid function arguments: %s for %s" % (self.args, typ))
+        type = translate_pure(self.type)
+        obj = type(*(f(arg) for arg in self.args))
 
         return obj
 
-def map_to_sexp(parsed):
+def map_nullary(parsed):
+    """ Recursively convert nullary functions to prefix form"""
     if isinstance(parsed,tuple):
         head = parsed[0]
         args = parsed[1]
 
-        return Branch(head, [map_to_sexp(arg) for arg in args])
+        return Branch(head, [map_nullary(arg) for arg in args])
     else:
         atom = parsed
         if is_number(atom):
@@ -299,6 +248,7 @@ def map_to_sexp(parsed):
             return Branch('var',[atom])
 
 def make_sexp(parsed):
+    """ Convert ParseTree into Branch objects"""
     if isinstance(parsed,tuple):
         head = parsed[0]
         args = parsed[1]
@@ -308,7 +258,6 @@ def make_sexp(parsed):
         return parsed
 
 def ParseTree(s, parser):
-    print s
     """ Recursively maps the output of the sexp parser to
     expression tree Branch objects.
     """
@@ -350,9 +299,10 @@ def ParseTree(s, parser):
 
     elif parser == 'pure':
         parsed = pure_parse(s)
-        return map_to_sexp(parsed)
+        return map_nullary(parsed)
 
 def parse_pure_exp(expr):
+    'PureExpr -> Object'
     #Get the string representation of the pure expression
     parsed = ParseTree(str(expr),'pure')
 
@@ -360,14 +310,16 @@ def parse_pure_exp(expr):
     return parsed.eval_pure()
 
 def parse_sexp(sexp_str):
+    'String -> Object'
     parsed = ParseTree(sexp_str, 'sexp')
     evaled = parsed.eval_args()
     return evaled
 
 #Convenience wrappers with more obvious names...
 def pure_to_python(obj, wrap_infix=True):
-    '''Maps a set of Pure objects (as translated by the Cython
-    wrapper) into internal Python objects'''
+    """Maps a set of Pure objects (as translated by the Cython
+    wrapper) into internal Python objects
+    """
 
     if wrap_infix:
         return parse_pure_exp(i2p(obj))
