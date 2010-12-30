@@ -19,8 +19,8 @@ from wise.worksheet.utils import *
 import wise.worksheet.exceptions as exception
 from django.core.exceptions import ObjectDoesNotExist
 
-#import wise.worksheet.rules as rules
-#import wise.worksheet.transforms as transforms
+import wise.worksheet.rules as rules
+import wise.worksheet.transforms as transforms
 
 #import wise.translators.pytopure as translate
 #import wise.translators.pure_wrap as pure_wrap
@@ -102,53 +102,53 @@ def apply_def(request):
 
     namespace_index = int( request.POST.get('namespace_index') )
 
-    #if not namespace_index:
-    #    raise Exception('No namespace index given in request.')
+    if not namespace_index:
+        raise Exception('No namespace index given in request.')
 
-    ## Spawn a new generator uid generator to walk the parse tree
-    #uid = uidgen(namespace_index)
+    # Spawn a new generator uid generator to walk the parse tree
+    uid = uidgen(namespace_index)
 
-    #def_sexp = request.POST.get('def')
+    def_sexp = request.POST.get('def')
 
-    #if not def_sexp:
-    #    raise Exception('No definiton specified.')
+    if not def_sexp:
+        raise Exception('No definiton specified.')
 
-    ## Build up the Pure representation of the definition from
-    ## the sexp
-    #def_py = translate.parse_sexp(def_sexp,uid)
-    #def_pure = purify(def_py)
+    # Build up the Pure representation of the definition from
+    # the sexp
+    def_py = translate.parse_sexp(def_sexp,uid)
+    def_pure = purify(def_py)
 
-    #args = [translate.parse_sexp(sexp, uid) for sexp in sexps]
+    args = [translate.parse_sexp(sexp, uid) for sexp in sexps]
 
-    #for arg in args:
-    #    arg.idgen = uid
+    for arg in args:
+        arg.idgen = uid
 
-    ## Init a new lexical closure
-    ## >>>>>>>>>>>>>>>>>>>>>>>>>>
-    #pure_wrap.new_level()
+    # Init a new lexical closure
+    # >>>>>>>>>>>>>>>>>>>>>>>>>>
+    pure_wrap.new_level()
 
-    ## Init the local definition
-    #def_pure()
+    # Init the local definition
+    def_pure()
 
-    ## Evaluate the selection in the context of the definition
-    #pure_expr = pure_wrap.p2i(purify(args[0]))
-    #print 'Acting on', pure_expr
+    # Evaluate the selection in the context of the definition
+    pure_expr = pure_wrap.p2i(purify(args[0]))
+    print 'Acting on', pure_expr
 
-    #pure_wrap.restore_level()
-    ## <<<<<<<<<<<<<<<<<<<<<<<<<<
-    ## Close the closure and return to the main level
+    pure_wrap.restore_level()
+    # <<<<<<<<<<<<<<<<<<<<<<<<<<
+    # Close the closure and return to the main level
 
-    #new = translate.pure_to_python(pure_wrap.i2p(pure_expr),args[0].idgen)
+    new = translate.pure_to_python(pure_wrap.i2p(pure_expr),args[0].idgen)
 
-    #new.idgen = uid
-    #new.ensure_id()
+    new.idgen = uid
+    new.ensure_id()
 
-    #new_html = [html(new)]
-    #new_json = [json_flat(new)]
+    new_html = [html(new)]
+    new_json = [json_flat(new)]
 
-    #return JsonResponse({'new_html': new_html,
-    #                     'new_json': new_json,
-    #                     'namespace_index': uid.next()[3:]})
+    return JsonResponse({'new_html': new_html,
+                         'new_json': new_json,
+                         'namespace_index': uid.next()[3:]})
 
 
 @login_required
@@ -197,7 +197,7 @@ def use_infix(request):
     namespace_index = int( request.POST.get('namespace_index') )
     uid = uidgen(namespace_index)
 
-    # TODO: This is dangerous
+   # TODO: This is dangerous
    # pure_expr = pure_wrap.i2p(pure_wrap.env.eval(code))
    # new_expr_tree = translate.pure_to_python(pure_expr)
    # new_expr_tree.uid_walk(uid)
@@ -214,54 +214,47 @@ def apply_transform(request):
     transform = unencode( request.POST.get('transform') )
     namespace_index = int( request.POST.get('namespace_index') )
 
-    #uid = uidgen(namespace_index)
+    uid = uidgen(namespace_index)
 
-    #args = [translate.parse_sexp(cde) for cde in code]
+    args = [translate.parse_sexp(cde) for cde in code]
 
-    #try:
-    #    pack, fun = transform.split('/')
-    #    transform = transforms.get_transform_by_path(pack, fun)
-    #except KeyError:
-    #    raise exception.NoSuchTransform(transform)
+    try:
+        pack, fun = transform.split('/')
+        transform = transforms.get_transform_by_path(pack, fun)
+    except KeyError:
+        raise exception.NoSuchTransform(transform)
 
-    ##Ugly hack to allow us to pass the uid generator and use it
-    ## in the middle of a transformation in case we need to
-    ## generate a whole new batch of uids (like when converting
-    ## pure <-> python ).
-    #for arg in args:
-    #    arg.idgen = uid
+    image = transform(*args)
 
-    #image = transform(*args)
+    if len(image) == 0:
+        raise Exception('Resulting image of transformation cannot\
+                be empty.')
 
-    #if len(image) == 0:
-    #    raise Exception('Resulting image of transformation cannot\
-    #            be empty.')
+    actions = ['pass','delete','flash']
 
-    #actions = ['pass','delete','flash']
+    new_html = []
+    new_json = []
 
-    #new_html = []
-    #new_json = []
+    for el in image:
+        # Handle action strings
+        if isinstance(el,str):
+            if el in actions:
+                new_html.append(el)
+                new_json.append(el)
+            else:
+                # If something stranged is passed
+                raise Exception('Unknown action returned by\
+                        transform (%s, %s)' % (el, fun))
 
-    #for el in image:
-    #    # Handle action strings
-    #    if isinstance(el,str):
-    #        if el in actions:
-    #            new_html.append(el)
-    #            new_json.append(el)
-    #        else:
-    #            # If something stranged is passed
-    #            raise Exception('Unknown action returned by\
-    #                    transform (%s, %s)' % (el, fun))
+        # Handle mathematical terms
+        else:
+            el.uid_walk(uid)
+            new_html.append(html(el))
+            new_json.append(json_flat(el))
 
-    #    # Handle mathematical terms
-    #    else:
-    #        el.uid_walk(uid)
-    #        new_html.append(html(el))
-    #        new_json.append(json_flat(el))
-
-    #return JsonResponse({'new_html': new_html,
-    #                     'new_json': new_json,
-    #                     'namespace_index': uid.next()[3:]})
+    return JsonResponse({'new_html': new_html,
+                         'new_json': new_json,
+                         'namespace_index': uid.next()[3:]})
 
 
 @login_required
@@ -269,37 +262,37 @@ def apply_transform(request):
 def new_line(request):
     namespace_index = request.POST.get('namespace_index')
 
-    #if not namespace_index:
-    #    namespace_index = 0
-    #else:
-    #    namespace_index = int(namespace_index)
+    if not namespace_index:
+        namespace_index = 0
+    else:
+        namespace_index = int(namespace_index)
 
-    #cell_index = int( request.POST.get('cell_index') )
-    #newtype = request.POST.get('type')
+    cell_index = int( request.POST.get('cell_index') )
+    newtype = request.POST.get('type')
 
-    #uid = uidgen(namespace_index)
+    uid = uidgen(namespace_index)
 
-    ## TODO we should do this without parsing, this is really slow
-    ## and inefficent
-    #if newtype == u'def':
-    #    new = translate.parse_sexp('(Definition (Placeholder) (Placeholder))')
-    #    new.uid_walk(uid)
-    #elif newtype == u'func':
-    #    new = translate.parse_sexp('(Function (Placeholder) (Placeholder) (Placeholder))',uid)
-    #elif newtype == u'eq':
-    #    new = EquationPrototype()
-    #    new.uid_walk(uid)
-    #elif newtype == u'assum':
-    #    new = AssumptionPrototype()
-    #    new.uid_walk(uid)
-    #else:
-    #    new = translate.parse_sexp(newtype)
-    #    new.uid_walk(uid)
+    # TODO we should do this without parsing, this is really slow
+    # and inefficent
+    if newtype == u'def':
+        new = translate.parse_sexp('(Definition (Placeholder) (Placeholder))')
+        new.uid_walk(uid)
+    elif newtype == u'func':
+        new = translate.parse_sexp('(Function (Placeholder) (Placeholder) (Placeholder))',uid)
+    elif newtype == u'eq':
+        new = EquationPrototype()
+        new.uid_walk(uid)
+    elif newtype == u'assum':
+        new = AssumptionPrototype()
+        new.uid_walk(uid)
+    else:
+        new = translate.parse_sexp(newtype)
+        new.uid_walk(uid)
 
-    #return JsonResponse({'new_html': html(new),
-    #                     'new_json': json_flat(new),
-    #                     'namespace_index': uid.next()[3:],
-    #                     'cell_index': cell_index + 1})
+    return JsonResponse({'new_html': html(new),
+                         'new_json': json_flat(new),
+                         'namespace_index': uid.next()[3:],
+                         'cell_index': cell_index + 1})
 
 def new_cell(request):
     namespace_index = request.POST.get('namespace_index')

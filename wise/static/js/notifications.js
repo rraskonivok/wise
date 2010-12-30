@@ -1,6 +1,6 @@
 var Notifications = {
   AJAX_FAIL: {
-    message: 'Failed to connect to sever.',
+    message: 'Worker did not respond to request.',
     type: 'error'
   },
   

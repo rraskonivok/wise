@@ -25,9 +25,9 @@ from django.utils import simplejson as json
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 
-#from django.views.decorators.cache import cache_page
+from django.views.decorators.cache import cache_page
 
-#import panel
+import panel
 
 from wise.worksheet.utils import *
 from wise.worksheet.forms import WorksheetForm
@@ -36,9 +36,14 @@ Assumption
 
 from wise.base.cell import Cell as PyCell
 
-#from wise.meta_inspector import PACKAGES
+from wise.meta_inspector import PACKAGES
 
 CACHE_INTERVAL = 30*60 # 5 Minutes
+
+from wise.boot import start_python_pure
+
+# Initialize the Python <-> Pure translation bridge
+start_python_pure()
 
 #---------------------------
 # Worksheet CRUD

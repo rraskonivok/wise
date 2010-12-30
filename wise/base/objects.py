@@ -507,8 +507,8 @@ class Negate(PrefixOperation):
     cd = 'arith1'
     cd_name = 'unary_minus'
 
-    # Capitalize since "neg" already exists in the default Pure
-    # predule.
+    # Capitalized since "neg" already exists in the default Pure
+    # predule and we can't overload it :-(
     pure = 'Neg'
 
     def __init__(self,operand):

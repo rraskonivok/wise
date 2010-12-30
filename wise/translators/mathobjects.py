@@ -21,7 +21,7 @@ import wise.worksheet.exceptions as exception
 from wise.utils.module_loading import module_has_submodule
 from django.utils.importlib import import_module
 
-def all_subclasses(cls, accumulator=set(), 
+def all_subclasses(cls, accumulator=set(),
                         depth=1, 
                         max_inheritance_depth=30):
 
@@ -77,25 +77,6 @@ pure_trans   = PureTranslationTable()
 pyobjects = python_trans
 translation_table = pure_trans
 
-#def generate_translation(root, package, pure=False):
-#    # Do want to prebuild Pure ( Cython ) objects
-#    if pure:
-#        generate_pure_objects(root=root)
-#        if root.pure:
-#            translation_table[root.pure] = root
-#
-#    pyobjects[root.__name__] = root
-#    package.provided_symbols[root.__name__] = root
-#
-#    for cls in root.__subclasses__():
-#        if cls.pure:
-#            if not cls.pure in translation_table:
-#                pyobjects[cls.__name__] = cls
-#                package.provided_symbols[cls.__name__] = cls
-#                translation_table[cls.pure] = cls
-#
-#        generate_translation(cls, package, pure)
-
 def translate_pure(key):
     try:
         return pure_trans[key]
@@ -103,9 +84,6 @@ def translate_pure(key):
         raise exception.NoWrapper(key)
 
 def build_translation(pure=False):
-    if pure:
-        from wise.translators.pure_wrap import generate_pure_objects
-
     for name, package in meta_inspector.PACKAGES.iteritems():
         pack_module = import_module(name)
 
@@ -141,20 +119,33 @@ def build_translation(pure=False):
             meta_inspector.PACKAGES[name] = package
             meta_inspector.PACKAGES.sync()
 
-def build_python_lookup(rebuild=False):
-    if not python_trans.loaded or rebuild:
+def build_python_lookup(force=False):
+    if not python_trans.loaded or force:
         build_translation()
     return python_trans
 
-def build_pure_lookup(rebuild=False):
-    if not pure_trans.loaded or rebuild:
+def build_pure_lookup(force=False):
+    if not pure_trans.loaded or force:
         build_translation()
     return pure_trans
+
+def build_all_lookup(force=False):
+    if not pure_trans.loaded or not python_trans.loaded or force:
+        build_translation()
+    return python_trans, pure_trans
+
+def build_cython_objects(force=False, jit=False):
+    from wise.translators.pure_wrap import generate_pure_object, jit_compile_interp
+
+    for obj in pure_trans.table._fwd.itervalues():
+        generate_pure_object(obj)
+        print obj, (obj.po == None) or 'Success'
+
+    if settings.PRECOMPILE or jit:
+        jit_compile_interp()
 
 def get_python_lookup():
     return python_trans
 
 def get_pure_lookup():
     return pure_trans
-
-build_translation()

@@ -136,18 +136,11 @@ for pack in settings.INSTALLED_MATH_PACKAGES:
 
 print 'Done importing objects'
 
-if settings.PRECOMPILE:
-    jit_compile_interp()
-
 # Traverse the root class and process all classes that inherit from
-# it, these are stored in in the internal .po method of the class
-def generate_pure_objects(root):
-    if root.pure:
-        #print 'Building Cython symbol for ... ', root.pure
-        if root.pure not in objects:
-            root.po = PureSymbol(root.pure)
+# it, these are stored in in the internal .po attribute of the class
+def generate_pure_object(obj):
+    if obj.pure:
+        if obj.pure not in objects:
+            obj.po = PureSymbol(obj.pure)
         else:
-            print 'Namespace collision'
-
-    for cls in root.__subclasses__():
-        generate_pure_objects(cls)
+            raise Exception('Namespace collision: ' + obj.pure)
