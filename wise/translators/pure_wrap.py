@@ -2,11 +2,7 @@ from django.conf import settings
 from django.utils import importlib
 import wise.worksheet.exceptions as exception
 
-from wise.worksheet.utils import haml
-from types import ClassType, InstanceType
-from django.template import Template, Context
-
-import sys
+from types import ClassType
 
 # Spawn new Interpreter
 from pure.pure import PureEnv

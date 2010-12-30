@@ -19,15 +19,12 @@ from math import modf
 
 from wise.base.cell import Cell
 from wise.base.term import Term, Placeholder, ph
-
 from wise.base.toplevel import Relation, EquationPrototype
-
 from wise.base.operations import PrefixOperation, InfixOperation, \
 PostfixOperation, SupOperation, SubOperation, OutfixOperation, \
 Operation
 
 from wise.worksheet.utils import render_haml_to_response
-from wise.translators.pure_wrap import PureSymbol, PureInt, PureDouble, ProtoRule, p2i, i2p
 
 import worksheet.exceptions as exception
 
@@ -36,15 +33,17 @@ from worksheet.utils import *
 
 from django import template
 
+__all__ = ['cell', 'term', 'toplevel', 'operations']
+
 def initialize():
-    TOP_CLASSES = [Term, Relation]
+    super_classes = [Term, Relation]
 
-    translation_table = {'num' : Numeric,
-                         'var' : Variable,
-                         'ph' : Placeholder,
-                         '-'   : Negate}
+    nullary_types = {'num' : Numeric,
+                    'var' : Variable,
+                    'ph' : Placeholder,
+                    '-'   : Negate}
 
-    return TOP_CLASSES, translation_table
+    return super_classes, nullary_types
 
 #-------------------------------------------------------------
 # Non-mathematical Symbols
@@ -83,6 +82,7 @@ class Variable(BaseSymbol):
         self.args = [str(symbol)]
 
     def _pure_(self):
+        from wise.translators.pure_wrap import PureSymbol
         return PureSymbol(self.symbol)
 
     def _openmath_(self):
@@ -105,6 +105,7 @@ class Numeric(Term):
         self.latex = number
 
     def _pure_(self):
+        from wise.translators.pure_wrap import PureInt, PureDouble
         if self.numeric_type is 'float':
             return PureDouble(self.number)
         else:
@@ -770,6 +771,8 @@ class FreeFunction(BaseSymbol):
         self.args = str(symbol)
 
     def _pure_(self):
+        from wise.translators.pure_wrap import PureSymbol
+
         #LHS
         if self.side is 0:
             return PureSymbol(self.symbol + '@_')(PureSymbol('u'))

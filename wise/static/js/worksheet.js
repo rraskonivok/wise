@@ -80,7 +80,7 @@ function rebuild_node() {
 function stress_test() {
   while (true) {
     apply_rule('algebra_normal', ['( Addition (Variable x) (Addition (Variable x) (Variable x)))']);
-    sleep(300);
+    sleep(3000);
     console.log('done');
   }
 }

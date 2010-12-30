@@ -8,7 +8,6 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
-from wise.translators import pure_wrap
 from wise.translators.pytopure import parse_sexp
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -28,7 +27,7 @@ from django.contrib.auth.models import User
 
 #from django.views.decorators.cache import cache_page
 
-import panel
+#import panel
 
 from wise.worksheet.utils import *
 from wise.worksheet.forms import WorksheetForm
@@ -37,7 +36,7 @@ Assumption
 
 from wise.base.cell import Cell as PyCell
 
-from wise.meta_inspector import PACKAGES
+#from wise.meta_inspector import PACKAGES
 
 CACHE_INTERVAL = 30*60 # 5 Minutes
 
@@ -293,7 +292,6 @@ def log(request):
 def dict(request):
     ''' Dump the translation dictionary to a JSON object, for
     debugging purposes '''
-    from wise.translators.mathobjects import pyobjects
 
     return HttpResponse(pyobjects)
     #return JsonResponse(pure_wrap.objects)

@@ -2,7 +2,7 @@
 
 # This way we can call wise.transforms.[DesiredTransform] in
 # a very general fashion instead of dealing with individual 
-# modules 
+# modules
 
 from types import FunctionType
 from django.conf import settings
@@ -12,7 +12,6 @@ import wise.worksheet.exceptions as exception
 from wise.library_utils import is_mapping
 from wise.worksheet.utils import hashdict
 
-ROOT_MODULE = 'wise'
 packages = {}
 transforms = {}
 
@@ -21,7 +20,7 @@ transforms = {}
 
 for pack in settings.INSTALLED_MATH_PACKAGES:
 #    try:
-        path = '.'.join([ROOT_MODULE,pack,'transforms'])
+        path = '.'.join([settings.ROOT_MODULE,pack,'transforms'])
         packages[pack] = importlib.import_module(path)
         for name, symbol in packages[pack].__dict__.iteritems():
             # We short circuit in this order since is_mapping is simply a hash lookup while

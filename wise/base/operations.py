@@ -2,7 +2,7 @@
 
 # Wise
 # Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
@@ -27,15 +27,6 @@ from django import template
 #-------------------------------------------------------------
 # Operations
 #-------------------------------------------------------------
-
-infix_symbol_template = haml('''
-.ui-state-disabled.infix.sugar
-    $${{%s}}$$
-''')
-
-def infix_symbol_html(symbol):
-    return infix_symbol_template % symbol
-
 
 class Operation(Term):
     '''An generic operator acting on an arbitrary number of terms'''

@@ -1,6 +1,6 @@
 class GeneralError(Exception):
     def __init__(self,expr):
-        self.value = expr
+        self.value = 'Error', expr
 
     def __str__(self):
         return self.value
@@ -26,7 +26,7 @@ class InternalMathObjectNotFound(Exception):
 
 class PureError(Exception):
     def __init__(self,expr):
-        self.value = expr
+        self.value = 'Could not find class: ',expr.type
 
     def __str__(self):
         return self.value

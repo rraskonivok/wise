@@ -2,7 +2,7 @@
 
 # Wise
 # Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
@@ -13,11 +13,9 @@ import wise.worksheet.exceptions as exception
 
 # i2p ~ Infix to Prefix
 # p2i ~ Prefix to Infix
-from wise.pure.prelude import p2i, i2p
+#from wise.pure.prelude import p2i, i2p
 
-from wise.base.objects import Variable, Numeric
-from wise.translators.mathobjects import translation_table, \
-translate_pure, pyobjects
+from wise.translators.mathobjects import translate_pure, pyobjects
 
 from parser import sexp_parse, pure_parse
 
@@ -201,6 +199,11 @@ class Branch(object):
                 return x.eval_args()
 
         type = pyobjects[self.type]
+
+        if not type:
+            raise Exception('Could not lookup Python class', self.type)
+            return
+
         obj = type(*(f(arg) for arg in self.args))
 
         return obj
@@ -268,9 +271,9 @@ def ParseTree(s, parser):
     #  Which has tree form:
     #
     # head
-    #   |-- 'arg1' 
-    #   |-- 'arg2' 
-    #   `-- 'arg3' 
+    #   |-- 'arg1'
+    #   |-- 'arg2'
+    #   `-- 'arg3'
     #
     # For nested sexp it looks something like:
     #
@@ -284,8 +287,8 @@ def ParseTree(s, parser):
     # |-- head2
     # |   |-- 'arg1'
     # |   `-- 'arg2'
-    # |-- 'arg3'    
-    # `-- 'arg4'    
+    # |-- 'arg3'
+    # `-- 'arg4'
 
     if parser == 'sexp':
         parsed = sexp_parse(s)

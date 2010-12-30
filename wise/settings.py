@@ -38,6 +38,7 @@ CELERY_RESULT_BACKEND = "redis"
 REDIS_HOST = "localhost"
 REDIS_PORT = 6379
 REDIS_DB = "0"
+#CELERYD_POOL = "gevent"
 
 # ('base',) is the minimum needed to run
 #INSTALLED_MATH_PACKAGES = ('base','logic','calculus')
@@ -66,7 +67,7 @@ MEDIA_ROOT = os.path.join(SITE_ROOT, 'static')
 MEDIA_URL = '/static/'
 
 APPEND_SLASH = True
-DEBUG = False
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 LOG_FILE = 'session.log'
 
