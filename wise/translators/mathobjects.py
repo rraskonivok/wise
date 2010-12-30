@@ -10,6 +10,8 @@
 
 
 from wise.worksheet.utils import *
+
+from wise.utils.bidict import bidict
 from wise.utils.patterns import TranslationTable
 
 import meta_inspector
@@ -44,32 +46,59 @@ def all_subclasses(cls, accumulator=set(),
 #   'Numeric': <class 'base.objects.Numeric'>,
 #   'Addition': <class 'base.objects.Addition'>,
 # }
-pyobjects = TranslationTable()
 
-translation_table = {}
+class PythonTranslationTable(TranslationTable):
 
-def generate_translation(root, package, pure=False):
-    # Do want to prebuild Pure ( Cython ) objects
-    if pure:
-        generate_pure_objects(root=root)
-        if root.pure:
-            translation_table[root.pure] = root
+    __shared_state = dict(
+        table = bidict(),
 
-    pyobjects[root.__name__] = root
-    package.provided_symbols[root.__name__] = root
+        loaded = False,
+        locked = False,
+    )
 
-    for cls in root.__subclasses__():
-        if cls.pure:
-            if not cls.pure in translation_table:
-                pyobjects[cls.__name__] = cls
-                package.provided_symbols[cls.__name__] = cls
-                translation_table[cls.pure] = cls
+    def __init__(self, new=False):
+        self.__dict__ = self.__shared_state
 
-        generate_translation(cls, package, pure)
+class PureTranslationTable(TranslationTable):
+
+    __shared_state = dict(
+        table = bidict(),
+
+        loaded = False,
+        locked = False,
+    )
+
+    def __init__(self, new=False):
+        self.__dict__ = self.__shared_state
+
+python_trans = PythonTranslationTable()
+pure_trans   = PureTranslationTable()
+
+pyobjects = python_trans
+translation_table = pure_trans
+
+#def generate_translation(root, package, pure=False):
+#    # Do want to prebuild Pure ( Cython ) objects
+#    if pure:
+#        generate_pure_objects(root=root)
+#        if root.pure:
+#            translation_table[root.pure] = root
+#
+#    pyobjects[root.__name__] = root
+#    package.provided_symbols[root.__name__] = root
+#
+#    for cls in root.__subclasses__():
+#        if cls.pure:
+#            if not cls.pure in translation_table:
+#                pyobjects[cls.__name__] = cls
+#                package.provided_symbols[cls.__name__] = cls
+#                translation_table[cls.pure] = cls
+#
+#        generate_translation(cls, package, pure)
 
 def translate_pure(key):
     try:
-        return translation_table[key]
+        return pure_trans[key]
     except KeyError:
         raise exception.NoWrapper(key)
 
@@ -86,13 +115,14 @@ def build_translation(pure=False):
             pack_objects = import_module(path, settings.ROOT_MODULE)
 
             super_clss, nullary_types = pack_objects.initialize()
-            translation_table.update(nullary_types)
+            pure_trans.populate(nullary_types)
 
             package = meta_inspector.Package(name=name)
 
             # Use sets, so we can do interesections to check for
             # namespace collisions later
             provided_symbols = set(super_clss)
+            _pure_trans = {}
 
             # Grab all the sbuclasses for the top superclasses
             # and join to the objects store
@@ -103,20 +133,28 @@ def build_translation(pure=False):
                 package.provided_symbols[cls.__name__] = cls
 
                 if cls.pure:
-                    translation_table[cls.pure] = cls
+                    _pure_trans[cls.pure] = cls
 
-            #pyobjects.populate(provided_symbols)
-
-            from pprint import pprint
-            pprint(provided_symbols)
-
-            #generate_translation(cls, package, pure)
+            python_trans.populate(package.provided_symbols)
+            pure_trans.populate(_pure_trans)
 
             meta_inspector.PACKAGES[name] = package
             meta_inspector.PACKAGES.sync()
 
-def build_python_lookup():
-    pass
+def build_python_lookup(rebuild=False):
+    if not python_trans.loaded or rebuild:
+        build_translation()
+    return python_trans
+
+def build_pure_lookup(rebuild=False):
+    if not pure_trans.loaded or rebuild:
+        build_translation()
+    return pure_trans
+
+def get_python_lookup():
+    return python_trans
+
+def get_pure_lookup():
+    return pure_trans
 
 build_translation()
-

@@ -19,7 +19,7 @@ urlpatterns = patterns('',
      (r'^api/', include('wise.api.urls')),
 
 #     (r'^test$', 'wise.worksheet.views.test'),
-     (r'^dict$', 'wise.worksheet.views.dict'),
+     (r'dict/(?P<data>.*)$', 'wise.worksheet.views.dict'),
      (r'^translate$', 'wise.worksheet.views.translate'),
 
      # Heartbeat

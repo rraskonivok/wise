@@ -46,20 +46,6 @@ def initialize():
     return super_classes, nullary_types
 
 #-------------------------------------------------------------
-# Non-mathematical Symbols
-#-------------------------------------------------------------
-
-class Quote(PrefixOperation):
-    symbol = '!'
-    pure = 'quote'
-
-#class Text(Term):
-#    type = 'text'
-#
-#    def __init__(self,text):
-#        self.latex = '\\text{' + text + '}'
-
-#-------------------------------------------------------------
 # Nullary / Symbol Type Objects
 #-------------------------------------------------------------
 
@@ -814,5 +800,13 @@ class AssumptionPrototype(Assumption):
     @property
     def classname(self):
         return 'Assumption'
+
+#-------------------------------------------------------------
+# Non-mathematical Symbols
+#-------------------------------------------------------------
+
+class Quote(PrefixOperation):
+    symbol = '!'
+    pure = 'quote'
 
 #vim: ai ts=4 sts=4 et sw=4

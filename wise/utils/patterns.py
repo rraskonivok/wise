@@ -13,18 +13,18 @@ class Borg(object):
 class TranslationTable(object):
     """ Two way hash table with shared state across all instances """
 
-    __shared_state = dict(
-        table = bidict(),
-
-        loaded = False,
-        locked = False,
-    )
-
-    def __init__(self):
-        self.__dict__ = self.__shared_state
-
     def populate(self, trans):
+        self.loaded = True
         self.table.update(trans)
+
+    def lookup(self, key):
+        return self.table[key]
+
+    def reverse_lookup(self, key):
+        return self.table[:key]
+
+    def __getitem__(self, key):
+        return self.table[key]
 
 class Aggregator(object):
     """ Lookup table with disk persistance """

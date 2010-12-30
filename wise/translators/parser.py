@@ -99,3 +99,7 @@ def sexp_parse(seq):
     primary = sexp
 
     return primary.parse(tokenize(seq))
+
+def pretty_print_sexp(parsed):
+    from pprint import pprint
+    pprint(parsed)

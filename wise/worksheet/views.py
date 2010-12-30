@@ -289,12 +289,25 @@ def log(request):
     return render_to_response('log.html', {'log': log_html})
 
 @login_required
-def dict(request):
+def dict(request, data='pure'):
     ''' Dump the translation dictionary to a JSON object, for
     debugging purposes '''
 
-    return HttpResponse(pyobjects)
-    #return JsonResponse(pure_wrap.objects)
+    from pprint import pformat
+
+    #if not settings.DEBUG:
+    #    pretty = 'Only enabled in DEBUG'
+
+    if data == 'python':
+        from wise.translators.mathobjects import get_python_lookup
+        pretty = pformat(get_python_lookup().table._fwd)
+    elif data == 'pure':
+        from wise.translators.mathobjects import get_pure_lookup
+        pretty = pformat(get_pure_lookup().table._fwd)
+    else:
+        pretty = "unknown output " + data
+
+    return HttpResponse(pretty, mimetype="text/plain")
 
 # End Debugging Stuff
 

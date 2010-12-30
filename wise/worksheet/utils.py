@@ -9,6 +9,8 @@
 # License, or (at your option) any later version.
 
 import sys
+import logging
+
 from decorator import decorator
 from operator import xor
 from binascii import crc32
@@ -27,8 +29,8 @@ from wise.utils import shpaml
 #-------------------------------------------------------------
 
 from sentry.client.handlers import SentryHandler
-import logging
 logger = logging.getLogger()
+
 # ensure we havent already registered the handler
 if SentryHandler not in map(lambda x: x.__class__, logger.handlers):
     logger.addHandler(SentryHandler())
@@ -69,6 +71,9 @@ def fallback(fallback):
                 return f(self,*args,**kwargs)
         return wrapper
     return options
+
+import warnings
+import functools
 
 # From django-sugar project
 def ajax_request(func):
