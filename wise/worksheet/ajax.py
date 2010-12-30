@@ -40,26 +40,6 @@ def heartbeat(request):
 # Use JsonResponse
 # ------------------------------------
 
-@memoize
-def rule_reduce(rule, sexps):
-    # Reduce the passed arguments by applying them to the given
-    # rule
-
-    args = [translate.parse_sexp(sexp) for sexp in sexps]
-    pargs = map(translate.python_to_pure, args)
-
-    # >>>>>>>>>>>>>>>>>>>>>>>>>>
-    try:
-        ref = pure_wrap.rules[rule]()
-    except KeyError:
-        raise Exception('Could not find executable form of rule: %s' % rule)
-
-    pure_expr = ref.reduce_with(*pargs)
-    new_expr_tree = translate.pure_to_python(pure_expr)
-    # <<<<<<<<<<<<<<<<<<<<<<<<<<
-
-    return new_expr_tree
-
 @login_required
 @ajax_request
 def apply_rule(request):

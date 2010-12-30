@@ -4,6 +4,8 @@
 #    pass
 
 import os
+import djcelery
+djcelery.setup_loader()
 
 # A quick note about security. *WISE IS ALPHA SOFTWARE AND NOT SECURE* (yet)
 ADMINS = (
@@ -24,6 +26,18 @@ DATABASES = {
         'PORT': '',         # Set to empty string for default. Not used with sqlite3.
     }
 }
+
+# Use redis as a queue
+BROKER_BACKEND = "kombu.transport.pyredis.Transport"
+BROKER_HOST = "localhost"
+BROKER_PORT = 6379
+BROKER_VHOST = "0"
+
+## Store results in redis
+CELERY_RESULT_BACKEND = "redis"
+REDIS_HOST = "localhost"
+REDIS_PORT = 6379
+REDIS_DB = "0"
 
 # ('base',) is the minimum needed to run
 #INSTALLED_MATH_PACKAGES = ('base','logic','calculus')
@@ -126,6 +140,7 @@ INSTALLED_APPS = [
     'wise.worksheet',
 
     'gunicorn',
+    'djcelery',
 
     # In order to use admin with gunicorn you'll need to grab the
     # admin resources from your local install. Use the script
