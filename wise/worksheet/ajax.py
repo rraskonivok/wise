@@ -14,7 +14,7 @@ from django.http import HttpResponse
 from wise.worksheet.utils import JsonResponse
 from django.contrib.auth.decorators import login_required
 
-# uidgen is imported from utils
+# `uidgen` is imported from worksheet.utils
 from wise.worksheet.utils import *
 import wise.worksheet.exceptions as exception
 from django.core.exceptions import ObjectDoesNotExist
@@ -25,8 +25,8 @@ import wise.worksheet.transforms as transforms
 #import wise.translators.pytopure as translate
 #import wise.translators.pure_wrap as pure_wrap
 
-#from wise.base.cell import Cell
-#from wise.base.objects import EquationPrototype, AssumptionPrototype
+from wise.base.cell import Cell
+from wise.base.objects import EquationPrototype, AssumptionPrototype
 
 from wise.worksheet import tasks
 
@@ -52,14 +52,12 @@ def apply_rule(request):
     For example a rule to commute addition maps 1-tuples to
     1-tuples.
 
-       (Addition x y) → (Addition y x)
-            1         →        1
+    `(Addition x y) → (Addition y x)`
 
     A rule to add an element to both sides of an equation maps
     2-tuples to 2-tuples but one element of the image is null.
 
-       ( (Equation lhs rhs) , x ) →  ( (Equation lhs+x rhs+x) , pass )
-                 2                →                 2
+    `( (Equation lhs rhs) , x ) →  ( (Equation lhs+x rhs+x) , pass )`
 
     In this case the 'pass' element tells the worksheet to do
     not expect a new element in the image of the rule and leave
@@ -309,7 +307,7 @@ def new_cell(request):
     #else:
     #    cell_index = int(cell_index)
 
-    ## Create a new uid generator
+    # Create a new uid generator
     #uid = uidgen(namespace_index)
 
     #new_cell = Cell([],[])

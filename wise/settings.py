@@ -7,7 +7,8 @@ import os
 import djcelery
 djcelery.setup_loader()
 
-# A quick note about security. *WISE IS ALPHA SOFTWARE AND NOT SECURE* (yet)
+# A quick note about security. **WISE IS ALPHA SOFTWARE AND NOT
+# SECURE** (yet)
 ADMINS = (
     # ('Leonhard Euler', 'leuler@unibas.ch'),
 )
@@ -33,15 +34,14 @@ BROKER_HOST = "localhost"
 BROKER_PORT = 6379
 BROKER_VHOST = "0"
 
-## Store results in redis
+# Store results in redis
 CELERY_RESULT_BACKEND = "redis"
 REDIS_HOST = "localhost"
 REDIS_PORT = 6379
 REDIS_DB = "0"
 #CELERYD_POOL = "gevent"
 
-# ('base',) is the minimum needed to run
-#INSTALLED_MATH_PACKAGES = ('base','logic','calculus')
+# `base` is the minimum needed to run
 INSTALLED_MATH_PACKAGES = ('base',)
 
 # Change to your desired cache or disable. Initially you may need
@@ -137,25 +137,22 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.humanize',
-
     'wise.worksheet',
-
     'gunicorn',
     'djcelery',
-
     # In order to use admin with gunicorn you'll need to grab the
     # admin resources from your local install. Use the script
-    # static/copy_admin_resources.sh to do this
+    # static/copy_admin_resources.sh to do this. Or you can
+    # install the grapelli admin interface with:
+    # `pip install -E wise grappelli`
 
     # Gunicorn needs to be installed in site-packages or dropped
     # into the same directory as this file, if you can't run
     # ' import gunicorn ' form this directory then it will fail
     'piston',
     'privatebeta',
-
     'media_bundler',
     'registration',
-
     # Optional Applications - mostly for development
     #'debug_toolbar',
     #'django_extensions',
@@ -188,7 +185,7 @@ except ImportError:
 ROOT_MODULE = 'wise'
 
 # Some browsers require the Content-Type to be
-# 'application/xhtml+xml' in order to render mixed doctype HTML +
+# `application/xhtml+xml` in order to render mixed doctype HTML +
 # MathML
 FORCE_XHTML = False
 

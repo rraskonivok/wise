@@ -23,7 +23,6 @@ from django.template import RequestContext
 from django.utils import simplejson as json
 
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 
 from django.views.decorators.cache import cache_page
 

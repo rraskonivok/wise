@@ -1,32 +1,14 @@
-///////////////////////////////////////////////////////////
-// Expression Tree Handling
-///////////////////////////////////////////////////////////
+//  ------------------------
+//  Expression Tree Handling
+//  ------------------------
 //
-// These models are what make *everything* on the clientside run,
-// they all inherit from Backbone.js Models or Collections. In
-// principle most of these are your standard n-trees and most of
-// the algorithms are fairly naive, but in practice they work
-// fine
+//  These models are what make *everything* on the clientside run,
+//  they all inherit from Backbone.js Models or Collections. In
+//  principle most of these are your standard n-trees and most of
+//  the algorithms are fairly naive, but in practice they work
+//  fine
 //
-// See: http://xw2k.nist.gov/dads//HTML/tree.html
-//
-//  -----------------------------------------------------------   
-//  |                      Worksheet                          |                   
-//  |---------------------------------------------------------|   
-//  |           Cell           |             Cell             |             
-//  |                          |                              |  
-//  |---------------------------------------------------------|   
-//  |                          |                              |  
-//  |         Equation         |           Equation           |  
-//  |                          |                              |  
-//  |                          |                              |  
-//  |         Equation         |           Equation           |  
-//  |                          |                              |  
-//  |            .             |              .               |  
-//  |            .             |              .               |  
-//  |            .             |              .               |  
-//  |                          |                              |  
-//  -----------------------------------------------------------   
+//  See: http://xw2k.nist.gov/dads//HTML/tree.html:
 //
 //  As a graph the structure of the workshet looks like:                                                              
 //
@@ -161,9 +143,9 @@ var Node = Backbone.Model.extend({
 
   },
 
-  //      O           O
-  //    / | \   ->   / \
-  //   O  O  O      O   O
+  //          O           O
+  //        / | \   ->   / \
+  //       O  O  O      O   O
   delNode: function (silent) {
     // The node is about to be destroyed so fire any ui events
     // that occur when a node is unselected
@@ -190,9 +172,9 @@ var Node = Backbone.Model.extend({
     }
   },
 
-  //         O          O
-  // <O> +  / \   ->   / \
-  //       O   O      O  <O>
+  //                  O          O
+  //      <O>   +    / \   ->   / \
+  //                O   O      O  <O>
   swapNode: function (newNode, silent) {
 
     if(!this._parent) {

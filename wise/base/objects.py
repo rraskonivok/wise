@@ -54,7 +54,9 @@ class BaseSymbol(Term):
         raise Exception('Naked symbol invoked.')
 
 class Variable(BaseSymbol):
-    '''A free variable'''
+    """
+    A free variable
+    """
     pure = 'var'
 
     def __init__(self,symbol):
@@ -112,29 +114,24 @@ class Numeric(Term):
     def is_one(self):
         return self.number == 1
 
-    def negate(self):
-        #Zero is its own negation
-        if self.is_zero():
-            return self
-        else:
-            return Negate(self)
-
 #-------------------------------------------------------------
 # Complex Operations
 #-------------------------------------------------------------
 
 class Complex(Term):
-    '''General complex quantity.'''
+    """
+    General complex quantity.
+    """
     pass
 
 class ComplexCartesian(Complex):
-    '''
+    """
     This symbol represents a constructor function for complex numbers
     specified as the Cartesian coordinates of the relevant point on the
     complex plane. It takes two arguments, the first is a number x to
     denote the real part and the second a number y to denote the imaginary
     part of the complex number x + i y. (Where i is the square root of -1.)
-    '''
+    """
     html = load_haml_template('complex.tpl')
     pure = 'complex'
 
@@ -160,14 +157,14 @@ class ComplexCartesian(Complex):
         return self.po(*purify(self.terms))
 
 class ComplexPolar(Complex):
-    '''
+    """
     This symbol represents a constructor function for complex numbers
     specified as the polar coordinates of the relevant point on the complex
     plane. It takes two arguments, the first is a nonnegative number r to
     denote the magnitude and the second a number theta (given in radians)
     to denote the argument of the complex number r e^(i
     theta).
-    '''
+    """
 
     html = load_haml_template('complex.tpl')
     pure = 'complex'
@@ -231,7 +228,9 @@ class Constant(Term):
 #        self.latex = self.representation.latex
 
 class ImaginaryUnit(Constant):
-    '''This symbol represents the square root of -1.'''
+    """
+    This symbol represents the square root of -1.
+    """
 
     latex = 'i'
     symbol = 'ⅈ'
@@ -255,7 +254,9 @@ class Infinity(Constant):
 #-------------------------------------------------------------
 
 def Zero(Constant):
-    '''This symbol represents the additive identity element.'''
+    """
+    This symbol represents the additive identity element.
+    """
     cd = 'alg1'
     cd_name = 'zero'
 
@@ -265,7 +266,9 @@ def Zero(Constant):
 
 
 def One(Constant):
-    '''This symbol represents the multiplicative identity element.'''
+    """
+    This symbol represents the multiplicative identity element.
+    """""
 
     cd = 'alg1'
     cd_name = 'one'
@@ -357,22 +360,6 @@ class Addition(InfixOperation):
        else:
            pterms = map(lambda o: o._pure_() , self.terms)
            return self.po(*pterms)
-
-    def receive(self,obj,receiver_context,sender_type,sender_context,new_position):
-        #If an object is dragged between sides of the equation negate the object
-
-        if sender_context == 'LHS' or sender_context == 'RHS':
-            obj = obj.negate()
-            return obj
-        else:
-            return obj
-
-    def remove(self,obj,remove_context):
-        '''If we drag everything form this side of the equation
-        zero it out'''
-
-        if type(self.terms[0]) is Empty:
-            return Numeric(0)
 
 class Product(InfixOperation):
     symbol = '·'
@@ -520,9 +507,6 @@ class Negate(PrefixOperation):
 
     def _pure_(self):
        return self.po(self.operand._pure_())
-
-    def negate(self):
-        return self.operand
 
 class Sqrt(NRoot):
     html = load_haml_template('sqrt.tpl')
