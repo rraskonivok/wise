@@ -31,7 +31,7 @@ DATABASES = {
 # `base` is the minimum needed to run
 INSTALLED_MATH_PACKAGES = ('base',)
 
-WORKER_TYPE = 'celery' # celery-redis, celery-rabbitmq
+WORKER_TYPE = 'sync' # celery-redis, celery-rabbitmq
 
 # -----------------------
 # Redis
@@ -85,7 +85,7 @@ MEDIA_ROOT = os.path.join(SITE_ROOT, 'static')
 MEDIA_URL = '/static/'
 
 APPEND_SLASH = True
-DEBUG = False
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 DISABLE_PURE = False

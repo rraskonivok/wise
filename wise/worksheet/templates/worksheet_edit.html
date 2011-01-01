@@ -33,34 +33,13 @@
           </div>
         {% endif %}
 
-      {% if id %}
-      <form action="/worksheet_edit/{{id}}/" class="form" method="POST">
-      {% else %}
-      <form action="/worksheet_edit/" class="form" method="POST">
-      {% endif %}
-            <div class="group wat-cf">
-              <div class="left">
-                <label class="label">Worksheet Name</label>
-              </div>
-              <div class="right">
-                  {{ form.name }}
-              </div>
-            </div>
-
-            <div class="group wat-cf">
-              <div class="left">
-                <label class="label">Make Public</label>
-              </div>
-              <div class="right">
-                 {{ form.public }}
-              </div>
-            </div>
-
-            <div class="group navform wat-cf">
-              <button class="button" type="submit">
-                  <img src="/static/img/icons/disk.png" alt="Save"/> {{action}}
-              </button>
-            </div>
+      <form method="post" action="">
+        {{ form }}
+        <div class="group navform wat-cf">
+          <button class="button" type="submit">
+              <img src="/static/img/icons/disk.png" alt="Save"/> {{action}}
+          </button>
+        </div>
       </form>
 
     </div>

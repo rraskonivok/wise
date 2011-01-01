@@ -20,6 +20,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 
 from django.template import RequestContext
 
+from django.core.urlresolvers import reverse
 from django.utils import simplejson as json
 
 from django.contrib.auth.decorators import login_required
@@ -68,77 +69,102 @@ def worksheet_delete(request, ws_id):
     return HttpResponseRedirect('/')
 
 @login_required
-def worksheet_edit(request, ws_id = None):
+def worksheet_edit(request, ws_id = None,
+        form_class=WorksheetForm,
+        template_name='worksheet_edit.html',
+        extra_context=None,
+        ):
 
-    errors = []
-    id = None
+    if request.POST:
+        form = form_class(request.POST or None)
 
-    # -- Update --
-    if ws_id:
-        action = 'Update'
+        if form.is_valid():
+            worksheet = form.save(commit=False)
+            worksheet.owner = request.user
+            worksheet.save()
+            return HttpResponseRedirect('/')
 
+    elif ws_id:
         ws = get_object_or_404(Workspace,pk=ws_id)
+        form = form_class(instance=ws)
 
-        if ( ws.owner.id != request.user.id ):
-            return HttpResponse('You do not have permission to access this\
-                    worksheet.')
+        context = {'form': form}
 
-        # -- Receiveing post data from form --
-        if request.method == 'POST':
-            form = WorksheetForm(request.POST)
+        if extra_context is not None:
+            context.update(extra_context)
 
-            if not request.POST.get('name', ''):
-                errors.append('Worksheet name is invalid')
+        return render_to_response(template_name, context,
+            context_instance=RequestContext(request))
 
-            ws.name = request.POST.get('name')
-            ws.public = not request.POST.get('public')
+    #errors = []
+    #id = None
 
-            ws.save();
+    ## -- Update --
+    #if ws_id:
+    #    action = 'Update'
 
-            if not errors and form.is_valid():
-                return HttpResponseRedirect('/')
+    #    ws = get_object_or_404(Workspace,pk=ws_id)
 
-        # -- Render form --
-        else:
-            id = ws.id
+    #    if ( ws.owner.id != request.user.id ):
+    #        return HttpResponse('You do not have permission to access this\
+    #                worksheet.')
 
-            form = WorksheetForm({
-                'name': ws.name,
-                'public': ws.public,
-            })
+    #    # -- Receiveing post data from form --
+    #    if request.method == 'POST':
+    #        form = WorksheetForm(request.POST)
 
-    # -- Create --
-    else:
-        action = 'Create'
+    #        if not request.POST.get('name', ''):
+    #            errors.append('Worksheet name is invalid')
 
-        # -- Receiveing post data from form --
-        if request.method == 'POST':
-            form = WorksheetForm(request.POST)
+    #        ws.name = request.POST.get('name')
+    #        ws.public = not request.POST.get('public')
 
-            if not request.POST.get('name', ''):
-                errors.append('Worksheet name is invalid')
+    #        ws.save();
 
-            if not errors and form.is_valid():
+    #        if not errors and form.is_valid():
+    #            return HttpResponseRedirect('/')
 
-                ws = new_worksheet_prototype({
-                    'name'   : request.POST.get('name'),
-                    'public' : not request.POST.get('public'),
-                })
+    #    # -- Render form --
+    #    else:
+    #        id = ws.id
 
-                return HttpResponseRedirect('/ws/%i' % ws.id)
+    #        form = WorksheetForm({
+    #            'name': ws.name,
+    #            'public': ws.public,
+    #        })
 
-        # -- Render form --
-        else:
-            form = WorksheetForm()
+    ## -- Create --
+    #else:
+    #    action = 'Create'
 
-    return render_to_response('worksheet_edit.html',
-                              {
-                                'form': form,
-                                'errors': errors,
-                                'action': action,
-                                'id': id,
-                              },
-                              context_instance=RequestContext(request))
+    #    # -- Receiveing post data from form --
+    #    if request.method == 'POST':
+    #        form = WorksheetForm(request.POST)
+
+    #        if not request.POST.get('name', ''):
+    #            errors.append('Worksheet name is invalid')
+
+    #        if not errors and form.is_valid():
+
+    #            ws = new_worksheet_prototype({
+    #                'name'   : request.POST.get('name'),
+    #                'public' : not request.POST.get('public'),
+    #            })
+
+    #            return HttpResponseRedirect('/ws/%i' % ws.id)
+
+    #    # -- Render form --
+    #    else:
+    #        form = WorksheetForm()
+
+    #return render_to_response('worksheet_edit.html',
+    #                          {
+    #                            'form': form,
+    #                            'errors': errors,
+    #                            'action': action,
+    #                            'id': id,
+    #                          },
+    #                          context_instance=RequestContext(request))
 
 def account_logout(request):
     logout(request)
@@ -152,6 +178,33 @@ def home(request):
     return render_to_response('home.html',
                               {'workspaces': workspaces},
                               context_instance=RequestContext(request))
+
+from django.views.generic import ListView
+from django.views.generic.edit import UpdateView
+from django.views.generic import DetailView
+
+class HomeView(ListView):
+    model = Workspace
+    template_name = "home.html"
+    context_object_name = 'workspaces'
+
+    def get_queryset(self):
+        return Workspace.objects.filter(owner=self.request.user)
+
+class WorksheetDetail(DetailView):
+    queryset = Workspace.objects.all()
+    template_name = "worksheet_edit.html"
+
+class WorksheetEdit(UpdateView):
+    model = Workspace
+    queryset = Workspace.objects.all()
+
+    form = WorksheetForm
+    template_name = "worksheet_edit.html"
+    success_url = '/home'
+
+    def redirect_to(self, obj):
+        return reverse('worksheet_detail', args=[obj.id])
 
 @login_required
 def ecosystem(request):

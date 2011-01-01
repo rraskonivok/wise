@@ -1,6 +1,7 @@
 from django import forms
+from worksheet.models import Workspace
 
-class WorksheetForm(forms.Form):
-    name = forms.CharField(max_length=200,
-            widget=forms.TextInput(attrs={'class':'text_field'}))
-    public = forms.BooleanField( required=False )
+class WorksheetForm(forms.ModelForm, forms.BaseForm):
+    class Meta:
+        model = Workspace
+        fields = ['name','public']

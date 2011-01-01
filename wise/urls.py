@@ -3,18 +3,21 @@ from django.views.generic.simple import direct_to_template
 
 from django.contrib import admin
 from django.conf import settings
-
 from django.contrib.auth.views import password_change
-
 
 admin.autodiscover()
 
+from worksheet.views import (HomeView, WorksheetEdit,
+WorksheetDetail)
+
 urlpatterns = patterns('',
-     url(r'^$', 'wise.worksheet.views.home', name='index'),
-     url(r'^home$', 'wise.worksheet.views.home', name='home'),
+     #url(r'^$', 'wise.worksheet.views.home', name='index'),
+     #url(r'^$', 'wise.worksheet.views.HomeView',name='index'),
+
+     url(r'^$', HomeView.as_view(), name='index'),
+     url(r'^home$', HomeView.as_view(), name='home'),
 
      url(r'^ecosystem$', 'wise.worksheet.views.ecosystem', name='ecosystem'),
-
      # REST API  uses django-piston
      (r'^api/', include('wise.api.urls')),
 
@@ -40,9 +43,21 @@ urlpatterns = patterns('',
      (r'^rule_request/$', 'wise.worksheet.ajax.rules_request'),
 
      # Worksheet CRUD
-     (r'^worksheet_delete/(?P<ws_id>\d+)/$', 'wise.worksheet.views.worksheet_delete'),
-     (r'^worksheet_edit/(?P<ws_id>\d+)/$', 'wise.worksheet.views.worksheet_edit'),
-     (r'^worksheet_edit/$', 'wise.worksheet.views.worksheet_edit'),
+     #(r'^worksheet_delete/(?P<ws_id>\d+)/$', 'wise.worksheet.views.worksheet_delete'),
+     #(r'^worksheet_edit/(?P<ws_id>\d+)/$', 'wise.worksheet.views.worksheet_edit'),
+     #(r'^worksheet_edit/$', 'wise.worksheet.views.worksheet_edit'),
+     #url(r'^worksheet_edit/(?P<ws_id>\d+)/$', WorksheetEdit.as_view()),
+
+     url(r'^ws/detail/(?P<pk>\d+)/update/$',
+        WorksheetEdit.as_view(),
+        name='worksheet_update'),
+
+     url(r'^ws/detail/(?P<pk>\d+)/$',
+        WorksheetDetail.as_view(),
+        name='worksheet_detail'),
+
+     #url(r'^worksheet_edit/', WorksheetEdit.as_view(),
+     #    'worksheet_detail'),
 
      # Worksheet Commands
      (r'^cmds/new_line/$', 'wise.worksheet.ajax.new_line'),
