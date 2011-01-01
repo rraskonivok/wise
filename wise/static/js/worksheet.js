@@ -57,6 +57,12 @@ window.log = function () {
   }
 };
 
+if(!this.console) {
+    this.console = {
+        log : window.log
+    };
+}
+
 // Begin Debuggin' Stuff
 // ---------------------
 function showmath() {

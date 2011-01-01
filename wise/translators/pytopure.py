@@ -11,11 +11,8 @@
 from wise.worksheet.utils import *
 import wise.worksheet.exceptions as exception
 
-# i2p ~ Infix to Prefix
-# p2i ~ Prefix to Infix
-#from wise.pure.prelude import p2i, i2p
-
-from wise.translators.mathobjects import translate_pure, pyobjects
+from wise.translators.mathobjects import pyobjects
+from wise.translators.mathobjects import translate_pure
 
 from parser import sexp_parse, pure_parse
 
@@ -318,6 +315,8 @@ def pure_to_python(obj, wrap_infix=True):
     wrapper) into internal Python objects
     """
 
+    from wise.pure.prelude import i2p
+
     if wrap_infix:
         return parse_pure_exp(i2p(obj))
     else:
@@ -326,6 +325,7 @@ def pure_to_python(obj, wrap_infix=True):
 def python_to_pure(obj, wrap_infix=True):
     """Maps internal Python objects into their Pure equivelents"""
 
+    from wise.pure.prelude import p2i
     if wrap_infix:
         return p2i(obj._pure_())
     else:

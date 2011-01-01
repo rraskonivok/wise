@@ -24,7 +24,6 @@ def start_python_pure():
 
     build_all_lookup()
 
-    logger.info('Started Pure+Python Session')
 
 def start_cython():
     """ Load all Python packages and initialize the Pure-Cython
@@ -32,6 +31,6 @@ def start_cython():
 
     from wise.translators.mathobjects import build_cython_objects
 
-    build_all_lookup()
+    build_cython_objects()
 
     logger.info('Started Pure+Python Session')

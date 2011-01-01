@@ -28,25 +28,44 @@ DATABASES = {
     }
 }
 
-# Use redis as a queue
-BROKER_BACKEND = "kombu.transport.pyredis.Transport"
-BROKER_HOST = "localhost"
-BROKER_PORT = 6379
-BROKER_VHOST = "0"
-
-# Store results in redis
-CELERY_RESULT_BACKEND = "redis"
-REDIS_HOST = "localhost"
-REDIS_PORT = 6379
-REDIS_DB = "0"
-#CELERYD_POOL = "gevent"
-
 # `base` is the minimum needed to run
 INSTALLED_MATH_PACKAGES = ('base',)
 
+WORKER_TYPE = 'celery' # celery-redis, celery-rabbitmq
+
+# -----------------------
+# Redis
+# -----------------------
+
+# Use redis as a queue
+#BROKER_BACKEND = "kombu.transport.pyredis.Transport"
+#BROKER_HOST = "localhost"
+#BROKER_PORT = 6379
+#BROKER_VHOST = "0"
+
+# Store results in redis
+#CELERY_RESULT_BACKEND = "redis"
+#REDIS_HOST = "localhost"
+#REDIS_PORT = 6379
+#REDIS_DB = "0"
+
+# -----------------------
+# RabbitMQ
+# -----------------------
+BROKER_HOST = "localhost"
+BROKER_PORT = 5672
+BROKER_USER = "test"
+BROKER_PASSWORD = "test"
+BROKER_VHOST = "myvhost"
+CELERY_RESULT_BACKEND = "amqp"
+
+CELERY_DISABLE_RATE_LIMITS=True
+CELERY_DB_REUSE_MAX=100
+CELERY_ALWAYS_EAGER = WORKER_TYPE == 'sync'
+
 # Change to your desired cache or disable. Initially you may need
 # to run
-#`
+#
 #    python manage.py createcachetable
 #
 #CACHE_BACKEND = 'db://cache'
@@ -59,7 +78,6 @@ SITE_ID = 1
 
 USE_I18N = False
 USE_L10N = False
-
 USE_ETAGS = False
 
 SITE_ROOT = os.path.realpath(os.path.dirname(__file__))
@@ -69,7 +87,6 @@ MEDIA_URL = '/static/'
 APPEND_SLASH = True
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
-LOG_FILE = 'session.log'
 
 DISABLE_PURE = False
 
@@ -102,11 +119,11 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-#    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'middleware.XHTMLMiddleware',
     'middleware.ErrorMiddleware',
     'middleware.BlockedIpMiddleware',
     'privatebeta.middleware.PrivateBetaMiddleware',
+#    'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
 
 from worksheet.media import MEDIA_BUNDLES
@@ -145,10 +162,6 @@ INSTALLED_APPS = [
     # static/copy_admin_resources.sh to do this. Or you can
     # install the grapelli admin interface with:
     # `pip install -E wise grappelli`
-
-    # Gunicorn needs to be installed in site-packages or dropped
-    # into the same directory as this file, if you can't run
-    # ' import gunicorn ' form this directory then it will fail
     'piston',
     'privatebeta',
     'media_bundler',
@@ -199,4 +212,4 @@ IGNORE_PATHS = False
 # aren't any hiccups when executing Pure functions initially.
 # This is experimental and is also quite slow and breaks
 # more often then not.
-PRECOMPILE  = False
+PRECOMPILE = False

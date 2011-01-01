@@ -21,9 +21,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 import wise.worksheet.rules as rules
 import wise.worksheet.transforms as transforms
-
-#import wise.translators.pytopure as translate
-#import wise.translators.pure_wrap as pure_wrap
+import wise.translators.pytopure as translate
 
 from wise.base.cell import Cell
 from wise.base.objects import EquationPrototype, AssumptionPrototype
@@ -35,6 +33,8 @@ def heartbeat(request):
     response = HttpResponse(status=200)
     response['Cache-Control'] = 'no-cache'
     return response
+
+from wise.translators.pytopure import parse_sexp, parse_pure_exp
 
 # ------------------------------------
 # Note:
@@ -82,15 +82,12 @@ def apply_rule(request):
     uid = uidgen(namespace_index)
     rule = request.POST.get('rule')
 
-    pure_expr = tasks.rule_reduce.delay(rule, sexps).get()
-    new_expr_tree = translate.parse_pure_exp(pure_expr)
+    result = tasks.rule_reduce.delay(rule, sexps)
+    expr_tree = translate.parse_pure_exp(result.wait())
+    expr_tree.uid_walk(uid, overwrite=True)
 
-    # Overwrite all uids, in case we're working with a cached
-    # objects which has some leftover uids
-    new_expr_tree.uid_walk(uid, overwrite=True)
-
-    return JsonResponse({'new_html': [html(new_expr_tree)],
-                         'new_json': [json_flat(new_expr_tree)],
+    return JsonResponse({'new_html': [html(expr_tree)],
+                         'new_json': [json_flat(expr_tree)],
                          'namespace_index': uid.next()[3:]})
 
 @login_required

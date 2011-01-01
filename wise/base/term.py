@@ -23,7 +23,6 @@ from django.utils.safestring import SafeUnicode
 # 3) If A is an object and B is a subclass of A, if A is
 #    strictly internal ( no Pure translation ) then B should
 #    be stricly internal.
-
 class Term(object):
     '''The base class for all other math objects.'''
 

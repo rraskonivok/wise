@@ -33,7 +33,7 @@ def all_subclasses(cls, accumulator=set(),
 
     return accumulator
 
-# bidict can hash the following types: 'type', 'class', 'int', 'str'
+cython_loaded = False
 
 #-------------------------------------------------------------
 # Python Math Translation
@@ -70,12 +70,6 @@ class PureTranslationTable(TranslationTable):
 
     def __init__(self, new=False):
         self.__dict__ = self.__shared_state
-
-python_trans = PythonTranslationTable()
-pure_trans   = PureTranslationTable()
-
-pyobjects = python_trans
-translation_table = pure_trans
 
 def translate_pure(key):
     try:
@@ -131,21 +125,40 @@ def build_pure_lookup(force=False):
 
 def build_all_lookup(force=False):
     if not pure_trans.loaded or not python_trans.loaded or force:
+        #logger.info('Started Pure+Python Session')
         build_translation()
     return python_trans, pure_trans
 
 def build_cython_objects(force=False, jit=False):
+    global cython_loaded
+    if cython_loaded:
+        return
+
     from wise.translators.pure_wrap import generate_pure_object, jit_compile_interp
+    print 'Building Cython Objects'
 
     for obj in pure_trans.table._fwd.itervalues():
         generate_pure_object(obj)
-        print obj, (obj.po == None) or 'Success'
+        #print obj, (obj.po == None) or 'Success'
 
     if settings.PRECOMPILE or jit:
         jit_compile_interp()
+
+    cython_loaded = True
 
 def get_python_lookup():
     return python_trans
 
 def get_pure_lookup():
     return pure_trans
+
+# ----------------------------------------
+# Translation tables
+# ----------------------------------------
+
+python_trans = PythonTranslationTable()
+pure_trans   = PureTranslationTable()
+
+# For compatability
+pyobjects = python_trans
+translation_table = pure_trans
