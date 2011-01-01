@@ -8,42 +8,34 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
-from wise.translators.pytopure import parse_sexp
-
-from django.core.exceptions import ObjectDoesNotExist
-
-from django.http import HttpResponse, HttpResponseRedirect, \
-HttpResponseForbidden
-
-from django.shortcuts import redirect
-from django.shortcuts import render_to_response, get_object_or_404
-
 from django.template import RequestContext
-
 from django.core.urlresolvers import reverse
-from django.utils import simplejson as json
-
+from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import login_required
-
+from django.utils import simplejson as json
 from django.views.decorators.cache import cache_page
+from django.http import (HttpResponse, HttpResponseRedirect,
+HttpResponseForbidden)
 
-import panel
+from django.views.generic import ListView, DetailView
+from django.views.generic.edit import UpdateView, DeleteView
+
+import wise.base
+import wise.boot
 
 from wise.worksheet.utils import *
 from wise.worksheet.forms import WorksheetForm
-from wise.worksheet.models import Workspace, Expression, Cell, \
-Assumption
-
-from wise.base.cell import Cell as PyCell
+from wise.worksheet.models import (Workspace, Expression, Cell,
+Assumption)
+import wise.worksheet.panel
 
 from wise.meta_inspector import PACKAGES
+from wise.translators.pytopure import parse_sexp
 
 CACHE_INTERVAL = 30*60 # 5 Minutes
 
-from wise.boot import start_python_pure
-
-# Initialize the Python <-> Pure translation bridge
-start_python_pure()
+# Initialize the Python-Pure translation bridge
+wise.boot.start_python_pure()
 
 #---------------------------
 # Worksheet CRUD
@@ -68,104 +60,6 @@ def worksheet_delete(request, ws_id):
     ws.delete()
     return HttpResponseRedirect('/')
 
-@login_required
-def worksheet_edit(request, ws_id = None,
-        form_class=WorksheetForm,
-        template_name='worksheet_edit.html',
-        extra_context=None,
-        ):
-
-    if request.POST:
-        form = form_class(request.POST or None)
-
-        if form.is_valid():
-            worksheet = form.save(commit=False)
-            worksheet.owner = request.user
-            worksheet.save()
-            return HttpResponseRedirect('/')
-
-    elif ws_id:
-        ws = get_object_or_404(Workspace,pk=ws_id)
-        form = form_class(instance=ws)
-
-        context = {'form': form}
-
-        if extra_context is not None:
-            context.update(extra_context)
-
-        return render_to_response(template_name, context,
-            context_instance=RequestContext(request))
-
-    #errors = []
-    #id = None
-
-    ## -- Update --
-    #if ws_id:
-    #    action = 'Update'
-
-    #    ws = get_object_or_404(Workspace,pk=ws_id)
-
-    #    if ( ws.owner.id != request.user.id ):
-    #        return HttpResponse('You do not have permission to access this\
-    #                worksheet.')
-
-    #    # -- Receiveing post data from form --
-    #    if request.method == 'POST':
-    #        form = WorksheetForm(request.POST)
-
-    #        if not request.POST.get('name', ''):
-    #            errors.append('Worksheet name is invalid')
-
-    #        ws.name = request.POST.get('name')
-    #        ws.public = not request.POST.get('public')
-
-    #        ws.save();
-
-    #        if not errors and form.is_valid():
-    #            return HttpResponseRedirect('/')
-
-    #    # -- Render form --
-    #    else:
-    #        id = ws.id
-
-    #        form = WorksheetForm({
-    #            'name': ws.name,
-    #            'public': ws.public,
-    #        })
-
-    ## -- Create --
-    #else:
-    #    action = 'Create'
-
-    #    # -- Receiveing post data from form --
-    #    if request.method == 'POST':
-    #        form = WorksheetForm(request.POST)
-
-    #        if not request.POST.get('name', ''):
-    #            errors.append('Worksheet name is invalid')
-
-    #        if not errors and form.is_valid():
-
-    #            ws = new_worksheet_prototype({
-    #                'name'   : request.POST.get('name'),
-    #                'public' : not request.POST.get('public'),
-    #            })
-
-    #            return HttpResponseRedirect('/ws/%i' % ws.id)
-
-    #    # -- Render form --
-    #    else:
-    #        form = WorksheetForm()
-
-    #return render_to_response('worksheet_edit.html',
-    #                          {
-    #                            'form': form,
-    #                            'errors': errors,
-    #                            'action': action,
-    #                            'id': id,
-    #                          },
-    #                          context_instance=RequestContext(request))
-
 def account_logout(request):
     logout(request)
     # Redirect to a success page.
@@ -179,9 +73,6 @@ def home(request):
                               {'workspaces': workspaces},
                               context_instance=RequestContext(request))
 
-from django.views.generic import ListView
-from django.views.generic.edit import UpdateView
-from django.views.generic import DetailView
 
 class HomeView(ListView):
     model = Workspace
@@ -194,6 +85,11 @@ class HomeView(ListView):
 class WorksheetDetail(DetailView):
     queryset = Workspace.objects.all()
     template_name = "worksheet_edit.html"
+
+class WorksheetDelete(DeleteView):
+    queryset = Workspace.objects.all()
+    template_name = "worksheet_delete.html"
+    success_url = '/home'
 
 class WorksheetEdit(UpdateView):
     model = Workspace
@@ -282,7 +178,7 @@ def ws(request, ws_id):
         db_id = cell.id
 
         #TODO: overloads cell from in loop ^^^
-        cell = PyCell(top_nodes, top_asms)
+        cell = wise.base.cell.Cell(top_nodes, top_asms)
         cell.index = index;
         cell.cid = 'cell' + str(index)
 
@@ -329,8 +225,9 @@ def palette(request):
 
 def generate_palette():
     render_panels = []
+    panels = wise.worksheet.panel.panels
 
-    for pnl in panel.panels.itervalues():
+    for pnl in panels.itervalues():
         pnl.html = pnl.get_html()
         render_panels.append(pnl)
 

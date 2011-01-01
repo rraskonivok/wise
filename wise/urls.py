@@ -8,7 +8,7 @@ from django.contrib.auth.views import password_change
 admin.autodiscover()
 
 from worksheet.views import (HomeView, WorksheetEdit,
-WorksheetDetail)
+WorksheetDetail, WorksheetDelete)
 
 urlpatterns = patterns('',
      #url(r'^$', 'wise.worksheet.views.home', name='index'),
@@ -51,6 +51,10 @@ urlpatterns = patterns('',
      url(r'^ws/detail/(?P<pk>\d+)/update/$',
         WorksheetEdit.as_view(),
         name='worksheet_update'),
+
+     url(r'^ws/detail/(?P<pk>\d+)/delete/$',
+        WorksheetDelete.as_view(),
+        name='worksheet_delete'),
 
      url(r'^ws/detail/(?P<pk>\d+)/$',
         WorksheetDetail.as_view(),
