@@ -11,12 +11,12 @@ from wise.boot import start_python_pure, start_cython
 import wise.translators.pytopure as translate
 from wise.translators.pytopure import parse_pure_exp
 
+start_python_pure()
+start_cython()
+
+
 @task
 def rule_reduce(rule, sexps):
-
-    start_python_pure()
-    start_cython()
-
     from wise.translators.pure_wrap import i2p, rules
 
     args = [translate.parse_sexp(sexp) for sexp in sexps]
@@ -33,5 +33,5 @@ def rule_reduce(rule, sexps):
 def add(x,y):
     return sum([a for a in range(1,random.randint(0,25))])
 
-#print rule_reduce('algebra_normal',['(Variable x)'])
-#print rule_reduce('algebra_normal',['(Addition (Variable x) (Variable x))'])
+#print rule_reduce('algebra_normal',['(Variable x)']) == 'x'
+#print rule_reduce('algebra_normal',['(Addition (Variable x) (Variable x))']) == 'mul 2 x'

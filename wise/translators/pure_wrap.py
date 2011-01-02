@@ -2,6 +2,7 @@ from types import ClassType
 from django.conf import settings
 from django.utils import importlib
 import wise.worksheet.exceptions as exception
+from wise.utils.patterns import Borg
 from wise.utils.aggregator import Aggregator
 from wise.worksheet.rules import rulesets
 from wise.worksheet.utils import trim_docstring
@@ -20,23 +21,90 @@ rules = Aggregator(file='rules_cache')
 PURE_ACTIVE = False
 env = None
 
-def init_pure(prelude=True):
-    global PURE_ACTIVE
-    global env
+class PureInterface(Borg):
 
-    """ Spawn a new interface to Pure. """
-    from pure.pure import PureEnv
-    env = PureEnv()
+    __shared_state = dict(
+        _loaded = False,
+        _interp = None,
+        symbols = {},
+        libs = (),
+    )
 
-    # __all__ is specified in pure/pure.pyx
-    exec('from wise.pure.pure import *') in globals()
+    def __init__(self, interp=None):
+        self.__dict__ = self.__shared_state
+
+        if not self._interp:
+            from pure.pure import PureEnv
+            self._interp = PureEnv()
+            self._loaded = True
+        elif interp:
+            self._interp = interp
+            self._loaded = True
+
+    def eval(self, s):
+        return self._interp.eval(s)
+
+    def active(self):
+        return self._loaded
+
+    def libraries(self):
+        if self.active():
+            return self.libs
+        else:
+            raise Exception('No active interface.')
+
+    def use(self, package, library):
+        if self.active():
+            if (package,library) not in self.libs:
+                # Paths are relative to the /wise/ directory
+                print 'Importing library ' + '/'.join([package, library])
+                result = self.eval('using ' + '::'.join([package, library]))
+                self.libs += ((package,library),)
+
+                if not result:
+                    raise Exception('Could not import (%s,%s)' %
+                            (package, library))
+                else:
+                    return True
+        else:
+            raise Exception('No active interface.')
+
+    # Really no reason to call this, and quite a few reasons
+    # *not* to since directly interacting with the interpreter
+    # can cause segfaults.
+    def get_interp(self):
+        if self.active():
+            return self._interp
+        return self._interp or Exception('No active interface')
+
+    # Modeled after rpy2's interface
+    def __getitem__(self, key):
+        if self.active():
+            try:
+                return self.symbols[key]
+            except KeyError:
+                raise Exception('No Pure symbol: %s' % key)
+        else:
+            raise Exception('No active interface')
+
+    def jit_compile(self):
+        if self.active():
+            self._interp.compile_interp()
+        else:
+            raise Exception('No active interface')
+
+def init_pure(prelude=True, force=False):
+    interface = PureInterface()
+
+    if not interface.symbols:
+        # __all__ is specified in pure/pure.pyx
+        exec('from wise.pure.pure import *') in interface.symbols
 
     if prelude:
-        env.eval('using pure::prelude')
-        exec('from wise.pure.prelude import p2i, i2p, nargs') in globals()
+        interface.use('pure','prelude')
+        exec('from wise.pure.prelude import p2i, i2p, nargs') in interface.symbols
 
-    PURE_ACTIVE = True
-    return env
+    return interface
 
 def use(package, library):
     # Paths are relative to the /wise/ directory

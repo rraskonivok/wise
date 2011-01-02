@@ -1,9 +1,3 @@
-# Aggregate all transforms from packages into one module...
-
-# This way we can call wise.transforms.[DesiredTransform] in
-# a very general fashion instead of dealing with individual
-# modules
-
 from types import FunctionType
 from django.conf import settings
 from django.utils import importlib
