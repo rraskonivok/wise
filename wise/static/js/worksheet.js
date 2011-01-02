@@ -1,17 +1,17 @@
 /*
  Wise
  Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
- 
+
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as
  published by the Free Software Foundation, either version 3 of the
  License, or (at your option) any later version.
- 
+
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU Affero General Public License for more details.
- 
+
  You should have received a copy of the GNU Affero General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -78,8 +78,13 @@ function shownode() {
 
 function rebuild_node() {
   //Shit went down, so rebuild the sexp
-  //apply_transform('base/Rebuild',[selection.at(0)]);
   Wise.Selection.at(0).msexp();
+}
+
+function server_up() {
+  // The server is up available I assert it to be true
+  Wise.Settings.set({DISABLE_MATH: false});
+
 }
 
 // Beat on the server
@@ -262,7 +267,7 @@ function apply_rule(rule, operands, callback) {
   data.rule = rule;
   data.namespace_index = NAMESPACE_INDEX;
 
-  // If nodes are not explicitely passed then use 
+  // If nodes are not explicitely passed then use
   // the workspace's current selection
   if (!operands) {
 

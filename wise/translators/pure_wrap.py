@@ -1,18 +1,8 @@
-import sys
 from django.conf import settings
-from django.utils import importlib
+
 import wise.worksheet.exceptions as exception
 from wise.utils.patterns import Borg
-from wise.utils.aggregator import Aggregator
 from wise.translators import pureobjects
-
-ROOT_MODULE = 'wise'
-packages = {}
-
-objects = Aggregator(file='object_cache')
-
-PURE_ACTIVE = False
-env = None
 
 class PureInterface(Borg):
 
@@ -100,12 +90,6 @@ def init_pure(prelude=True, force=False):
 #        exec('from wise.pure.pure import *') in globals()
 
     return interface
-
-#def is_pure_expr(obj):
-#    return isinstance(obj, pureobjects.PureExpr)
-
-def is_rule(obj):
-    return isinstance(obj, PublicRule)
 
 # This is a statefull change in the interpreter, if this is
 # called at the root definition level it applies globally
