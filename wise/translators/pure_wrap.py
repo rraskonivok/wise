@@ -1,3 +1,4 @@
+import sys
 from types import ClassType
 from django.conf import settings
 from django.utils import importlib
@@ -5,7 +6,6 @@ import wise.worksheet.exceptions as exception
 from wise.utils.patterns import Borg
 from wise.utils.aggregator import Aggregator
 from wise.worksheet.rules import rulesets
-from wise.worksheet.utils import trim_docstring
 
 __all__ = ['PureInt', 'PureSymbol', 'PureLevel',
 'PureExpr', 'PureDouble', 'PureClosure', 'reduce_with_pure_rules',
@@ -99,10 +99,12 @@ def init_pure(prelude=True, force=False):
     if not interface.symbols:
         # __all__ is specified in pure/pure.pyx
         exec('from wise.pure.pure import *') in interface.symbols
+        exec('from wise.pure.pure import *') in globals()
 
     if prelude:
         interface.use('pure','prelude')
         exec('from wise.pure.prelude import p2i, i2p, nargs') in interface.symbols
+        exec('from wise.pure.pure import *') in globals()
 
     return interface
 

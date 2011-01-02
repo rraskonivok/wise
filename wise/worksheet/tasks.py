@@ -33,5 +33,5 @@ def rule_reduce(rule, sexps):
 def add(x,y):
     return sum([a for a in range(1,random.randint(0,25))])
 
-#print rule_reduce('algebra_normal',['(Variable x)']) == 'x'
-#print rule_reduce('algebra_normal',['(Addition (Variable x) (Variable x))']) == 'mul 2 x'
+print rule_reduce('algebra_normal',['(Variable x)']) == 'x'
+print rule_reduce('algebra_normal',['(Addition (Variable x) (Variable x))']) == 'mul 2 x'
