@@ -1,5 +1,3 @@
-
-
 from celery.decorators import task
 from wise.worksheet.utils import memoize, logger
 
@@ -14,10 +12,10 @@ from wise.translators.pytopure import parse_pure_exp
 start_python_pure()
 start_cython()
 
-
 @task
 def rule_reduce(rule, sexps):
-    from wise.translators.pure_wrap import i2p, rules
+    from wise.translators.pure_wrap import rules
+    from wise.translators.pureobjects import i2p
 
     args = [translate.parse_sexp(sexp) for sexp in sexps]
     pargs = map(translate.python_to_pure, args)

@@ -6,11 +6,7 @@ import wise.worksheet.exceptions as exception
 from wise.utils.patterns import Borg
 from wise.utils.aggregator import Aggregator
 from wise.worksheet.rules import rulesets
-
-__all__ = ['PureInt', 'PureSymbol', 'PureLevel',
-'PureExpr', 'PureDouble', 'PureClosure', 'reduce_with_pure_rules',
-'new_level', 'restore_level', 'IManager',
-'PureEnv','i2p','p2i','nargs']
+from wise.translators import pureobjects
 
 ROOT_MODULE = 'wise'
 packages = {}
@@ -99,12 +95,12 @@ def init_pure(prelude=True, force=False):
     if not interface.symbols:
         # __all__ is specified in pure/pure.pyx
         exec('from wise.pure.pure import *') in interface.symbols
-        exec('from wise.pure.pure import *') in globals()
+#        exec('from wise.pure.pure import *') in globals()
 
     if prelude:
         interface.use('pure','prelude')
         exec('from wise.pure.prelude import p2i, i2p, nargs') in interface.symbols
-        exec('from wise.pure.pure import *') in globals()
+#        exec('from wise.pure.pure import *') in globals()
 
     return interface
 
@@ -117,10 +113,10 @@ def jit_compile_interp():
     return env.compile_interp()
 
 def is_pure_expr(obj):
-    return isinstance(obj,PureExpr)
+    return isinstance(obj, pureobjects.PureExpr)
 
 def is_rule(obj):
-    return isinstance(obj,PublicRule)
+    return isinstance(obj, PublicRule)
 
 def build_symbols():
     for pack in settings.INSTALLED_MATH_PACKAGES:
@@ -174,7 +170,7 @@ class PublicRule:
         return self.__doc__
 
     def reduce_with(self, *expr):
-        po = PureClosure(self.pure)
+        po = pureobjects.PureClosure(self.pure)
         return po(*expr)
 
 #        pure_expr = po(*pexpr)
@@ -217,12 +213,3 @@ def build_rules():
 
         #except ImportError:
         #    raise exception.IncompletePackage(pack,'rules.py')
-
-# Traverse the root class and process all classes that inherit from
-# it, these are stored in in the internal .po attribute of the class
-def generate_pure_object(obj):
-    if obj.pure:
-        if obj.pure not in objects:
-            obj.po = PureSymbol(obj.pure)
-        else:
-            raise Exception('Namespace collision: ' + obj.pure)

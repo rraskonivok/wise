@@ -8,8 +8,10 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
-
 from wise.worksheet.utils import *
+from wise.translators.pure_wrap import PureInterface
+
+from wise.translators import pureobjects
 
 from wise.utils.bidict import bidict
 from wise.utils.patterns import TranslationTable, Aggregator
@@ -32,8 +34,6 @@ def all_subclasses(cls, accumulator=set(),
             all_subclasses(scls, accumulator, depth=depth+1)
 
     return accumulator
-
-cython_loaded = False
 
 #-------------------------------------------------------------
 # Python Math Translation
@@ -76,8 +76,7 @@ class PureTranslationTable(TranslationTable):
 #---------------------------
 
 rules = Aggregator(file='rules_cache')
-
-
+objects = Aggregator(file='object_cache')
 
 def translate_pure(key):
     try:
@@ -145,21 +144,20 @@ def build_all_lookup(force=False):
     return python_trans, pure_trans
 
 def build_cython_objects(force=False, jit=False):
-    global cython_loaded
-    if cython_loaded:
-        return
+    interface = PureInterface()
 
-    from wise.translators.pure_wrap import generate_pure_object, jit_compile_interp
     print 'Building Cython Objects'
 
     for obj in pure_trans.table._fwd.itervalues():
-        generate_pure_object(obj)
-        #print obj, (obj.po == None) or 'Success'
+        if obj.pure:
+            if obj.pure not in objects:
+                obj.po = pureobjects.PureSymbol(obj.pure)
+            else:
+                raise Exception('Namespace collision: ' + obj.pure)
+        print obj, (obj.po == None) or 'Success'
 
     if settings.PRECOMPILE or jit:
-        jit_compile_interp()
-
-    cython_loaded = True
+        interesections.jit_compile()
 
 def get_python_lookup():
     return python_trans
@@ -171,6 +169,7 @@ def get_pure_lookup():
 # Translation tables
 # ----------------------------------------
 
+# These are all singletons, so they can be passed around
 python_trans = PythonTranslationTable()
 pure_trans   = PureTranslationTable()
 

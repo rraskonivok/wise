@@ -3,6 +3,12 @@ import sys
 # This is a lazy module which wraps its attributes to the
 # interpreters `symbols` dictionary
 
+# Will not invoke a Pure Instance:
+# import wise.translators.pureobjects
+#
+# Will invoke a pure instance:
+# from wise.translators.pureobjects import PureSymbol
+
 # Credit goes to Alex Martelli
 # http://stackoverflow.com/questions/1462986
 class _Sneaky(object):

@@ -9,6 +9,7 @@
 # License, or (at your option) any later version.
 
 from math import modf
+from wise.translators import pureobjects
 
 # Subpackages
 # -----------
@@ -70,8 +71,7 @@ class Variable(BaseSymbol):
         self.args = [str(symbol)]
 
     def _pure_(self):
-        from wise.translators.pure_wrap import PureSymbol
-        return PureSymbol(self.symbol)
+        return pureobjects.PureSymbol(self.symbol)
 
     def _openmath_(self):
         return self.symbol
@@ -93,11 +93,10 @@ class Numeric(Term):
         self.latex = number
 
     def _pure_(self):
-        from wise.translators.pure_wrap import PureInt, PureDouble
         if self.numeric_type is 'float':
-            return PureDouble(self.number)
+            return pureobjects.PureDouble(self.number)
         else:
-            return PureInt(self.number)
+            return pureobjects.PureInt(self.number)
 
     def get_html(self):
         c = template.Context({
@@ -741,14 +740,13 @@ class FreeFunction(BaseSymbol):
         self.args = str(symbol)
 
     def _pure_(self):
-        from wise.translators.pure_wrap import PureSymbol
 
         #LHS
         if self.side is 0:
-            return PureSymbol(self.symbol + '@_')(PureSymbol('u'))
+            return pureobjects.PureSymbol(self.symbol + '@_')(pureobjects.PureSymbol('u'))
         #RHS
         else:
-            return PureSymbol(self.symbol)(PureSymbol('u'))
+            return pureobjects.PureSymbol(self.symbol)(pureobjects.PureSymbol('u'))
 
 #-------------------------------------------------------------
 # Assumptions
