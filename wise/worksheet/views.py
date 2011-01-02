@@ -32,47 +32,12 @@ import wise.worksheet.panel
 from wise.meta_inspector import PACKAGES
 from wise.translators.pytopure import parse_sexp
 
-CACHE_INTERVAL = 30*60 # 5 Minutes
-
 # Initialize the Python-Pure translation bridge
 wise.boot.start_python_pure()
 
 #---------------------------
-# Worksheet CRUD
+# Home Page
 #---------------------------
-
-def new_worksheet_prototype(attrs):
-    ws = Workspace(**attrs)
-    ws.save()
-
-    Cell(workspace=ws, index=0).save()
-
-    return ws
-
-
-def worksheet_delete(request, ws_id):
-    ws = get_object_or_404(Workspace,pk=ws_id)
-
-    if ( ws.owner.id != request.user.id ):
-        return HttpResponseForbidden('You do not have permission to access \
-                this worksheet.')
-
-    ws.delete()
-    return HttpResponseRedirect('/')
-
-def account_logout(request):
-    logout(request)
-    # Redirect to a success page.
-    return HttpResponseRedirect('/accounts/login')
-
-@login_required
-def home(request):
-    workspaces = Workspace.objects.filter(owner=request.user)
-
-    return render_to_response('home.html',
-                              {'workspaces': workspaces},
-                              context_instance=RequestContext(request))
-
 
 class HomeView(ListView):
     model = Workspace
@@ -81,6 +46,10 @@ class HomeView(ListView):
 
     def get_queryset(self):
         return Workspace.objects.filter(owner=self.request.user)
+
+#---------------------------
+# Worksheet CRUD
+#---------------------------
 
 class WorksheetDetail(DetailView):
     queryset = Workspace.objects.all()
@@ -101,6 +70,15 @@ class WorksheetEdit(UpdateView):
 
     def redirect_to(self, obj):
         return reverse('worksheet_detail', args=[obj.id])
+
+def new_worksheet_prototype(attrs):
+    nworksheet = Workspace(**attrs).save()
+    Cell(workspace=ws, index=0).save()
+    return nworksheet
+
+#---------------------------
+# Ecosystem
+#---------------------------
 
 @login_required
 def ecosystem(request):
@@ -124,9 +102,9 @@ def ecosystem(request):
                               {'packages': packages},
                               context_instance=RequestContext(request))
 
-@login_required
-def translate(request):
-    return render_to_response('translate.html')
+#---------------------------
+# Worksheet
+#---------------------------
 
 @login_required
 def ws(request, ws_id):
@@ -144,12 +122,10 @@ def ws(request, ws_id):
     py_cells = []
 
     # Process Cells
-    # -------------
     for index,cell in enumerate(cells):
         html_eq = []
 
         # Process Cell Contents
-        # ---------------------
         eqs = Expression.objects.filter(cell=cell).order_by('index')
         asms = Assumption.objects.filter(cell=cell).order_by('index')
         top_nodes = []
@@ -189,17 +165,12 @@ def ws(request, ws_id):
         json_cells = [json_flat(cell) for cell in py_cells]
 
     response = render_to_response('worksheet.html', {
-
         'title': ws.name,
         'ws_id': ws.id,
-
         'cells': [html(cell) for cell in py_cells],
-
         'namespace_index': uid.next()[3:],
         'cell_index': len(cells),
-
         'json_cells': json.dumps(json_cells,ensure_ascii=False),
-
         'xhtml': True,
         },
         context_instance = RequestContext(request),
@@ -233,14 +204,13 @@ def generate_palette():
 
     return render_haml_to_response('palette_template.tpl',{'panels': render_panels})
 
-# Debugging Stuff
+#---------------------------
+# Development Tools
+#---------------------------
 
 @login_required
-def log(request):
-    log = open('session.log').read()
-    log_html = log.replace("\n","<br />\n")
-
-    return render_to_response('log.html', {'log': log_html})
+def translate(request):
+    return render_to_response('translate.html')
 
 @login_required
 def dict(request, data='pure'):
@@ -263,7 +233,4 @@ def dict(request, data='pure'):
 
     return HttpResponse(pretty, mimetype="text/plain")
 
-# End Debugging Stuff
-
 #vim: ai ts=4 sts=4 et sw=4
-

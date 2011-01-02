@@ -52,7 +52,7 @@ def apply_rule(request):
     For example a rule to commute addition maps 1-tuples to
     1-tuples.
 
-    `(Addition x y) → (Addition y x)`
+    `(Addition x y) →  (Addition y x)`
 
     A rule to add an element to both sides of an equation maps
     2-tuples to 2-tuples but one element of the image is null.

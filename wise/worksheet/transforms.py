@@ -1,7 +1,7 @@
 # Aggregate all transforms from packages into one module...
 
 # This way we can call wise.transforms.[DesiredTransform] in
-# a very general fashion instead of dealing with individual 
+# a very general fashion instead of dealing with individual
 # modules
 
 from types import FunctionType
@@ -10,7 +10,6 @@ from django.utils import importlib
 
 import wise.worksheet.exceptions as exception
 from wise.library_utils import is_mapping
-from wise.worksheet.utils import hashdict
 
 packages = {}
 transforms = {}

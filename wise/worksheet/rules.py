@@ -40,7 +40,7 @@ def ApplyExternalRule( ref, *expr ):
     prelude'''
 
     # Working under the assumption that the external rule is
-    # of the form 
+    # of the form
     #
     # symbol X = reduce X
     # with

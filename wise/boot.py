@@ -23,14 +23,20 @@ def start_python_pure():
     from wise.translators.mathobjects import build_all_lookup
 
     build_all_lookup()
+    logger.info('Started Pure+Python Session')
 
 
 def start_cython():
     """ Load all Python packages and initialize the Pure-Cython
     wrapper. Potentially a very long operation """
 
+    from wise.translators.pure_wrap import (init_pure,
+            build_symbols, build_rules)
     from wise.translators.mathobjects import build_cython_objects
 
+    init_pure()
     build_cython_objects()
+    build_symbols()
+    build_rules()
 
-    logger.info('Started Pure+Python Session')
+    logger.info('Started Cython Interface')

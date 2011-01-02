@@ -29,7 +29,6 @@ def Mapping(x, y):
 
             codomain = func(*domain)
 
-            #TODO: Type checking is expensive, add it as optional
             #domain_check = all(isinstance(a,b) for a,b in zip(domain,x.args))
             #codomain_check =  all(isinstance(a,b) for a,b in zip((codomain,),y.args))
 
@@ -62,15 +61,6 @@ def _mapping(func, *args, **kw):
 
 def Map(f):
     return decorator(_mapping, f )
-
-#TODO this should return an iterator
-def iter_mappings(module):
-    mappings = []
-    for name, obj in module.items():
-        if hasattr(obj,'mapping'):
-            mappings.append(obj)
-
-    return tuple(mappings)
 
 def is_mapping(obj):
    return hasattr(obj,'mapping')

@@ -12,7 +12,7 @@
 from wise.worksheet.utils import *
 
 from wise.utils.bidict import bidict
-from wise.utils.patterns import TranslationTable
+from wise.utils.patterns import TranslationTable, Aggregator
 
 import meta_inspector
 from django.conf import settings
@@ -22,7 +22,7 @@ from wise.utils.module_loading import module_has_submodule
 from django.utils.importlib import import_module
 
 def all_subclasses(cls, accumulator=set(),
-                        depth=1, 
+                        depth=1,
                         max_inheritance_depth=30):
 
     accumulator.update(cls.__subclasses__())
@@ -70,6 +70,14 @@ class PureTranslationTable(TranslationTable):
 
     def __init__(self, new=False):
         self.__dict__ = self.__shared_state
+
+#---------------------------
+# Rule Translation
+#---------------------------
+
+rules = Aggregator(file='rules_cache')
+
+
 
 def translate_pure(key):
     try:
@@ -122,6 +130,13 @@ def build_pure_lookup(force=False):
     if not pure_trans.loaded or force:
         build_translation()
     return pure_trans
+
+def build_rule_lookup(force=False):
+    """
+    Build translation table for all available rules from
+    PACKAGES/rules.py
+    """
+
 
 def build_all_lookup(force=False):
     if not pure_trans.loaded or not python_trans.loaded or force:

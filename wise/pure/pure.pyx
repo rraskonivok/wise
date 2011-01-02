@@ -5,6 +5,10 @@ from libc.stdlib cimport *
 # This module only works with Python 2.7
 # I designed this after working with rpy2's Cython wrapper.
 
+__all__ = ['PureInt', 'PureSymbol', 'PureLevel',
+'PureExpr', 'PureDouble', 'PureClosure', 'reduce_with_pure_rules',
+'new_level', 'restore_level', 'IManager', 'PureEnv']
+
 class IManager:
     # Interpreter manager - a singleton / borg
     current_interp = None
@@ -37,7 +41,7 @@ cdef class PureEnv:
     def __cinit__(self):
         # This is called whenever a worker is spawned, it must be
         # light and fast.
-        print "Creating interpreter instance."
+        print "Creating interpreter instance ...",
 
         args = ['--noprelude']
 
@@ -59,13 +63,15 @@ cdef class PureEnv:
 
         if self._interp is NULL:
             cpython.PyErr_NoMemory()
+            print 'FAIL'
+            return
 
         # PureSymbol fails if this not here
         self.locals = []
         im = IManager.active()
         im.add(self)
 
-        print 'Created succesfully!'
+        print 'SUCCESS'
 
     def __dealloc__(self):
         pass
