@@ -228,6 +228,9 @@ def dict(request, data='pure'):
     elif data == 'pure':
         from wise.translators.mathobjects import get_pure_lookup
         pretty = pformat(get_pure_lookup().table._fwd)
+#    elif data == 'rules':
+#        from wise.translators.mathobjects import rules
+#        pretty = pformat(rules.iteritems())
     else:
         pretty = "unknown output " + data
 

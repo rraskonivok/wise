@@ -5,15 +5,14 @@ print 'Spawned Worker'
 
 import random
 
-from wise.boot import start_python_pure, start_cython
-import wise.translators.pytopure as translate
-from wise.translators.pytopure import parse_pure_exp
-
-start_python_pure()
-start_cython()
-
 @task
 def rule_reduce(rule, sexps):
+    from wise.boot import start_python_pure, start_cython
+    import wise.translators.pytopure as translate
+
+    start_python_pure()
+    start_cython()
+
     from wise.translators.pure_wrap import rules
     from wise.translators.pureobjects import i2p
 
@@ -31,5 +30,10 @@ def rule_reduce(rule, sexps):
 def add(x,y):
     return sum([a for a in range(1,random.randint(0,25))])
 
-print rule_reduce('algebra_normal',['(Variable x)']) == 'x'
-print rule_reduce('algebra_normal',['(Addition (Variable x) (Variable x))']) == 'mul 2 x'
+#x = rule_reduce('algebra_normal',['(Variable x)'])
+#y = rule_reduce('algebra_normal',['(Addition (Variable x) (Variable x))'])
+#z = rule_reduce('algebra_normal',['(Integral (Variable x) (Variable x))'])
+#
+#print x == 'x' or x
+#print y == 'mul 2 x' or y
+#print z == 'powr x 2' or z

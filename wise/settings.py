@@ -120,7 +120,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'middleware.XHTMLMiddleware',
-    'middleware.ErrorMiddleware',
+#    'middleware.ErrorMiddleware',
     'middleware.BlockedIpMiddleware',
     'privatebeta.middleware.PrivateBetaMiddleware',
 #    'debug_toolbar.middleware.DebugToolbarMiddleware',

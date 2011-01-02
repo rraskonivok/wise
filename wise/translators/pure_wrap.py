@@ -1,5 +1,5 @@
 import sys
-from types import ClassType
+from types import ClassType, InstanceType
 from django.conf import settings
 from django.utils import importlib
 import wise.worksheet.exceptions as exception
@@ -125,7 +125,7 @@ def build_symbols():
             packages[pack] = importlib.import_module(path)
             for name, obj in packages[pack].__dict__.iteritems():
                 if is_pure_expr(obj):
-                    #print "Importing symbol '%s' from pack %s" % (name, pack)
+                    print "Importing symbol '%s' from pack %s" % (name, pack)
                     if not name in objects:
                         objects[name] = obj
                     else:

@@ -135,7 +135,7 @@ def build_rule_lookup(force=False):
     Build translation table for all available rules from
     PACKAGES/rules.py
     """
-
+    pass
 
 def build_all_lookup(force=False):
     if not pure_trans.loaded or not python_trans.loaded or force:

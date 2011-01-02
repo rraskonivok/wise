@@ -34,9 +34,10 @@ def start_cython():
             build_symbols, build_rules)
     from wise.translators.mathobjects import build_cython_objects
 
+    # ORDER VERY IMPORTANT
     init_pure()
     build_cython_objects()
-    build_symbols()
     build_rules()
+    build_symbols()
 
     logger.info('Started Cython Interface')

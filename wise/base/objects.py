@@ -153,7 +153,7 @@ class ComplexCartesian(Complex):
         return self.html.render(c)
 
     def _pure_(self):
-        return self.po(*purify(self.terms))
+        return self.po(self.re._pure_(),self.im._pure_())
 
 class ComplexPolar(Complex):
     """
@@ -613,7 +613,7 @@ class Integral(Term):
         self.terms = [f, dx]
 
     def _pure_(self):
-        return self.po(*purify(self.terms))
+        return self.po(self.integrand._pure_(),self.variable._pure_())
 
     def get_html(self):
         objects = [o.get_html() for o in self.terms]
