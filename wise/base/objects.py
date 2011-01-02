@@ -166,7 +166,7 @@ class ComplexPolar(Complex):
     """
 
     html = load_haml_template('complex.tpl')
-    pure = 'complex'
+    pure = 'complex_polar'
 
     cd = 'complex1'
     cd_name = 'complex_cartesian'
