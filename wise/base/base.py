@@ -9,7 +9,7 @@ except ImportError:
 # Syntax is ( package , filename ). So ( 'foo', 'bar' )
 # corresponds to wise/foo/bar.pure
 
-PureInterface().use('base','base')
+# PureInterface().use('base','base')
 
 # base.pure
 

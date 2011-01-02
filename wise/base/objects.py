@@ -42,7 +42,7 @@ def initialize():
     nullary_types = {'num' : Numeric,
                     'var' : Variable,
                     'ph' : Placeholder,
-                    '-'   : Negate}
+                    }
 
     return super_classes, nullary_types
 

@@ -24,7 +24,6 @@ def start_python_pure():
             build_rule_lookup)
 
     build_all_lookup()
-    build_rule_lookup()
 
     logger.info('Started Pure+Python Session')
 
@@ -42,6 +41,5 @@ def start_cython():
     init_pure()
     build_cython_objects()
     build_rule_lookup()
-    build_symbols()
 
     logger.info('Started Cython Interface')

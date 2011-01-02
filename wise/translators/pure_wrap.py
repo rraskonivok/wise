@@ -10,7 +10,6 @@ ROOT_MODULE = 'wise'
 packages = {}
 
 objects = Aggregator(file='object_cache')
-rules = Aggregator(file='rules_cache')
 
 PURE_ACTIVE = False
 env = None
@@ -102,26 +101,11 @@ def init_pure(prelude=True, force=False):
 
     return interface
 
-def is_pure_expr(obj):
-    return isinstance(obj, pureobjects.PureExpr)
+#def is_pure_expr(obj):
+#    return isinstance(obj, pureobjects.PureExpr)
 
 def is_rule(obj):
     return isinstance(obj, PublicRule)
-
-def build_symbols():
-    for pack in settings.INSTALLED_MATH_PACKAGES:
-        try:
-            path = '.'.join([ROOT_MODULE,pack,pack])
-            packages[pack] = importlib.import_module(path)
-            for name, obj in packages[pack].__dict__.iteritems():
-                if is_pure_expr(obj):
-                    print "Importing symbol '%s' from pack %s" % (name, pack)
-                    if not name in objects:
-                        objects[name] = obj
-                    else:
-                        raise Exception("Namespace collision, tried to import '%s' from package '%s' but symbol already exists")
-        except ImportError:
-            raise exception.IncompletePackage(pack,'%s.py' % pack)
 
 # This is a statefull change in the interpreter, if this is
 # called at the root definition level it applies globally

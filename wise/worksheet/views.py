@@ -35,6 +35,9 @@ from wise.translators.pytopure import parse_sexp
 # Initialize the Python-Pure translation bridge
 wise.boot.start_python_pure()
 
+if settings.WORKER_TYPE == 'sync':
+    wise.boot.start_cython()
+
 #---------------------------
 # Home Page
 #---------------------------

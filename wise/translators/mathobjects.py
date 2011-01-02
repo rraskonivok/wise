@@ -11,7 +11,6 @@
 from types import ClassType
 from wise.worksheet.utils import *
 from wise.translators.pure_wrap import PureInterface, PublicRule
-from wise.translators.pure_wrap import rules
 
 from wise.translators import pureobjects
 
@@ -152,7 +151,7 @@ def build_rule_lookup(force=False):
             for name, symbol in pack_objects.__dict__.iteritems():
                 if type(symbol) is ClassType and issubclass(symbol, PublicRule):
                     rules[name] = symbol
-                    print name
+                    #print name
 
                 # Register the rule in the translation dictionary
                 if hasattr(symbol,'register'):
@@ -170,12 +169,15 @@ def build_cython_objects(force=False, jit=False):
     if len(cy_objects) > 0 and not force:
         return
 
+    for pack in settings.INSTALLED_MATH_PACKAGES:
+        interface.use(pack,pack)
+
     print 'Building Cython Objects'
 
     for obj in pure_trans.table._fwd.itervalues():
         if obj.pure:
             if obj.pure not in cy_objects:
-                print obj.pure
+                #print obj.pure
                 obj.po = pureobjects.PureSymbol(obj.pure)
                 cy_objects.add(obj.pure)
             else:
@@ -195,7 +197,7 @@ def get_pure_lookup():
 # Translation tables
 # ----------------------------------------
 
-#rules = {}
+rules = {}
 rulesets = Aggregator(file='rulesets_cache')
 cy_objects = set()
 
