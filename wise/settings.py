@@ -31,7 +31,7 @@ DATABASES = {
 # `base` is the minimum needed to run
 INSTALLED_MATH_PACKAGES = ('base',)
 
-WORKER_TYPE = 'sync' # celery-redis, celery-rabbitmq
+WORKER_TYPE = 'celery' # celery-redis, celery-rabbitmq
 
 # -----------------------
 # Redis

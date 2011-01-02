@@ -32,12 +32,11 @@ def start_cython():
     """ Load all Python packages and initialize the Pure-Cython
     wrapper. Potentially a very long operation """
 
-    from wise.translators.pure_wrap import (init_pure,
-            build_symbols)
+    from wise.translators.pure_wrap import init_pure
     from wise.translators.mathobjects import (build_cython_objects,
             build_rule_lookup)
 
-    # ORDER VERY IMPORTANT
+    # ORDER IS VERY IMPORTANT
     init_pure()
     build_cython_objects()
     build_rule_lookup()

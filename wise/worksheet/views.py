@@ -33,10 +33,12 @@ from wise.meta_inspector import PACKAGES
 from wise.translators.pytopure import parse_sexp
 
 # Initialize the Python-Pure translation bridge
-wise.boot.start_python_pure()
 
 if settings.WORKER_TYPE == 'sync':
+    wise.boot.start_python_pure()
     wise.boot.start_cython()
+else:
+    wise.boot.start_python_pure()
 
 #---------------------------
 # Home Page
