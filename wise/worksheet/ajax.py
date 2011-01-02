@@ -192,14 +192,13 @@ def use_infix(request):
     namespace_index = int( request.POST.get('namespace_index') )
     uid = uidgen(namespace_index)
 
-   # TODO: This is dangerous
-   # pure_expr = pure_wrap.i2p(pure_wrap.env.eval(code))
-   # new_expr_tree = translate.pure_to_python(pure_expr)
-   # new_expr_tree.uid_walk(uid)
+    result = tasks.pure_exec.delay(code)
+    expr_tree = translate.parse_pure_exp(result.wait())
+    expr_tree.uid_walk(uid, overwrite=True)
 
-   # return JsonResponse({'new_html': [html(new_expr_tree)],
-   #                      'new_json': [json_flat(new_expr_tree)],
-   #                      'namespace_index': uid.next()[3:]})
+    return JsonResponse({'new_html': [html(expr_tree)],
+                         'new_json': [json_flat(expr_tree)],
+                         'namespace_index': uid.next()[3:]})
 
 
 @login_required

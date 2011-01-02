@@ -27,6 +27,20 @@ def rule_reduce(rule, sexps):
     return str(i2p(pure_expr))
 
 @task
+def pure_exec(code):
+    from wise.boot import start_python_pure, start_cython
+    start_python_pure()
+    start_cython()
+
+    from wise.translators.pure_wrap import PureInterface
+    from wise.translators.pureobjects import i2p
+
+    interface = PureInterface()
+    pure_expr = interface.eval(code)
+
+    return str(i2p(pure_expr))
+
+@task
 def add(x,y):
     return sum([a for a in range(1,random.randint(0,25))])
 
