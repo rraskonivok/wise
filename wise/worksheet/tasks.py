@@ -1,11 +1,13 @@
 from celery.decorators import task
-from celery.signals import worker_init
+from celery.signals import worker_init, task_prerun
 from wise.worksheet.utils import logger
 
+_pure_initd = False
 
 def init(**kwargs):
-    if 'PureInterface' in globals():
-        print 'Exists'
+    global _pure_initd
+
+    if _pure_initd:
         return
 
     print 'Spawned Worker'
@@ -19,6 +21,8 @@ def init(**kwargs):
     from wise.translators.mathobjects import rules
     from wise.translators.pure_wrap import PureInterface
 
+    # Inject neccesary libarires into the workers global
+    # namespace
     globals().update(dict(
         i2p = i2p,
         translate = translate,
@@ -26,11 +30,10 @@ def init(**kwargs):
         interface = PureInterface,
     ));
 
+    _pure_initd = True
+
 @task
 def rule_reduce(rule, sexps):
-    if not 'translate' in globals():
-        init()
-
     args = map(translate.parse_sexp, sexps)
     pargs = map(translate.python_to_pure, args)
 
@@ -41,9 +44,6 @@ def rule_reduce(rule, sexps):
 
 @task
 def pure_exec(code):
-    if not 'interface' in globals():
-        init()
-
     pure_expr = interface().eval(code)
     return str(i2p(pure_expr))
 
@@ -52,3 +52,4 @@ def benchmark(x,y):
     return sum([a for a in range(1,random.randint(0,25))])
 
 worker_init.connect(init)
+task_prerun.connect(init)
