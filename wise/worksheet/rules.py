@@ -33,32 +33,3 @@ def ReduceWithRules( rules, expr ):
 
     #debug(str(pexpr) + ' ----> ' + str(pure_expr))
     return translate.pure_to_python(pure_expr,expr.idgen)
-
-def ApplyExternalRule( ref, *expr ):
-    '''Reduce the given expression with an external Pure symbol
-    which corresponds to a set of rules defined in an external
-    prelude'''
-
-    # Working under the assumption that the external rule is
-    # of the form
-    #
-    # symbol X = reduce X
-    # with
-    #     rewrite rules
-    # end;
-
-    pexpr = map(translate.python_to_pure, expr)
-
-    if settings.DEBUG:
-        print 'Applying Rule:', ref, '\n--'
-        print 'Input Sexp:', expr
-        print 'Input Pure:', pexpr
-
-    pure_expr = ref(*pexpr)
-    pyexpr = translate.pure_to_python(pure_expr,expr[0].idgen)
-
-    if settings.DEBUG:
-        print 'Reduced Sexp:', pyexpr
-        print 'Reduced Pure:', pure_expr
-
-    return pyexpr

@@ -22,6 +22,7 @@ from django.core.exceptions import ObjectDoesNotExist
 import wise.worksheet.rules as rules
 import wise.worksheet.transforms as transforms
 import wise.translators.pytopure as translate
+from wise.translators.mathobjects import rulesets
 
 from wise.base.cell import Cell
 from wise.base.objects import EquationPrototype, AssumptionPrototype
@@ -149,7 +150,7 @@ def apply_def(request):
 @login_required
 def rules_request(request):
     return render_haml_to_response('ruleslist.tpl',
-            {'rulesets':rules.rulesets})
+            {'rulesets':rulesets.as_dict()})
 
 @login_required
 @ajax_request
@@ -270,18 +271,16 @@ def new_line(request):
     # and inefficent
     if newtype == u'def':
         new = translate.parse_sexp('(Definition (Placeholder) (Placeholder))')
-        new.uid_walk(uid)
     elif newtype == u'func':
         new = translate.parse_sexp('(Function (Placeholder) (Placeholder) (Placeholder))',uid)
     elif newtype == u'eq':
         new = EquationPrototype()
-        new.uid_walk(uid)
     elif newtype == u'assum':
         new = AssumptionPrototype()
-        new.uid_walk(uid)
     else:
         new = translate.parse_sexp(newtype)
-        new.uid_walk(uid)
+
+    new.uid_walk(uid)
 
     return JsonResponse({'new_html': html(new),
                          'new_json': json_flat(new),
@@ -293,25 +292,22 @@ def new_cell(request):
     cell_index = request.POST.get('cell_index')
 
     # Map into indices if given, otherwise assume 0
-    #if not namespace_index:
-    #    namespace_index = 0
-    #else:
-    #    namespace_index = int(namespace_index)
+    if not namespace_index:
+        namespace_index = 0
+    else:
+        namespace_index = int(namespace_index)
 
-    #if not cell_index:
-    #    cell_index = 0
-    #else:
-    #    cell_index = int(cell_index)
+    if not cell_index:
+        cell_index = 0
+    else:
+        cell_index = int(cell_index)
 
-    # Create a new uid generator
-    #uid = uidgen(namespace_index)
+    new_cell = Cell([],[])
+    new_cell.index = cell_index + 1;
 
-    #new_cell = Cell([],[])
-    #new_cell.index = cell_index + 1;
-
-    #return JsonResponse({'new_html': html(new_cell),
-    #                     'new_json': json_flat(new_cell),
-    #                     'namespace_index': uid.next()[3:],
-    #                     'cell_index': cell_index + 1})
+    return JsonResponse({'new_html': html(new_cell),
+                         'new_json': json_flat(new_cell),
+                         'namespace_index': namespace_index,
+                         'cell_index': cell_index + 1})
 
 #vim: ai ts=4 sts=4 et sw=4

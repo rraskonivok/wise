@@ -1,11 +1,9 @@
 import sys
-from types import ClassType, InstanceType
 from django.conf import settings
 from django.utils import importlib
 import wise.worksheet.exceptions as exception
 from wise.utils.patterns import Borg
 from wise.utils.aggregator import Aggregator
-from wise.worksheet.rules import rulesets
 from wise.translators import pureobjects
 
 ROOT_MODULE = 'wise'
@@ -192,24 +190,35 @@ class PublicRule:
     #        pure_wrap.objects[self.pure] = self.po
 
 def build_rules():
-    for pack in settings.INSTALLED_MATH_PACKAGES:
-        #try:
-            path = '.'.join([ROOT_MODULE,pack,'rules'])
-            packages[pack] = importlib.import_module(path)
-            for name, symbol in packages[pack].__dict__.iteritems():
+    return
 
-                # Merge dictionary into main
-                if name == 'panel':
-                    rulesets.update(symbol)
+    #for name, package in meta_inspector.PACKAGES.iteritems():
+    #    pack_module = import_module(name)
+    #    if module_has_submodule(pack_module, 'rules'):
+    #        print 'Importing rules from ... ' + name
+    #        path = name + '.rules'
+    #        pack_objects = import_module(path, settings.ROOT_MODULE)
 
-                if type(symbol) is ClassType and issubclass(symbol,
-                        PublicRule):
-                    print name
-                    rules[name] = symbol
+    #        rulesets.update(symbol)
 
-                # Register the rule in the translation dictionary
-                if hasattr(symbol,'register'):
-                    symbol.register(a)
+    #for pack in settings.INSTALLED_MATH_PACKAGES:
+    #    #try:
+    #        path = '.'.join([ROOT_MODULE,pack,'rules'])
+    #        packages[pack] = importlib.import_module(path)
+
+    #        for name, symbol in packages[pack].__dict__.iteritems():
+
+    #            # Merge dictionary into main
+    #            if name == 'panel':
+    #                rulesets.update(symbol)
+
+    #            if type(symbol) is ClassType and issubclass(symbol, PublicRule):
+    #                print name
+    #                rules[name] = symbol
+
+    #            # Register the rule in the translation dictionary
+    #            if hasattr(symbol,'register'):
+    #                symbol.register(a)
 
         #except ImportError:
         #    raise exception.IncompletePackage(pack,'rules.py')

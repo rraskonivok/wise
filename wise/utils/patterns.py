@@ -65,6 +65,12 @@ class Aggregator(object):
         #else:
         #    raise OSError('No file persistance for Aggregator.')
 
+    def update(self, dct):
+        self.persistance.update(dct)
+
+    def as_dict(self):
+        return dict(self.persistance)
+
     def __setitem__(self, key, value):
         if self.locked:
             raise Exception('Cannot write key since Aggregator is locked.')

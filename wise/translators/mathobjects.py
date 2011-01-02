@@ -8,8 +8,9 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
+from types import ClassType
 from wise.worksheet.utils import *
-from wise.translators.pure_wrap import PureInterface
+from wise.translators.pure_wrap import PureInterface, PublicRule
 
 from wise.translators import pureobjects
 
@@ -77,6 +78,7 @@ class PureTranslationTable(TranslationTable):
 
 rules = Aggregator(file='rules_cache')
 objects = Aggregator(file='object_cache')
+rulesets = Aggregator(file='rulesets_cache')
 
 def translate_pure(key):
     try:
@@ -135,7 +137,27 @@ def build_rule_lookup(force=False):
     Build translation table for all available rules from
     PACKAGES/rules.py
     """
-    pass
+    if len(rulesets) > 0 and not force:
+        print 'Using Cached Rules'
+        return
+
+    for name, package in meta_inspector.PACKAGES.iteritems():
+        pack_module = import_module(name)
+        if module_has_submodule(pack_module, 'rules'):
+            print 'Importing rules from ... ' + name
+            path = name + '.rules'
+            pack_objects = import_module(path, settings.ROOT_MODULE)
+
+            rulesets.update(pack_objects.panel)
+            print pack_objects.panel
+
+        for name, symbol in pack_module.__dict__.iteritems():
+            if type(symbol) is ClassType and issubclass(symbol, PublicRule):
+                rules[name] = symbol
+
+            # Register the rule in the translation dictionary
+            if hasattr(symbol,'register'):
+                symbol.register(a)
 
 def build_all_lookup(force=False):
     if not pure_trans.loaded or not python_trans.loaded or force:
