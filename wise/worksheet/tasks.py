@@ -1,5 +1,5 @@
 from celery.decorators import task
-from celery.signals import worker_ready
+from celery.signals import worker_init
 from wise.worksheet.utils import logger
 
 
@@ -23,34 +23,32 @@ def init(**kwargs):
         i2p = i2p,
         translate = translate,
         rules = rules,
-        PureInterface = PureInterface,
+        interface = PureInterface,
     ));
 
 @task
 def rule_reduce(rule, sexps):
+    if not 'translate' in globals():
+        init()
 
-    args = [translate.parse_sexp(sexp) for sexp in sexps]
-
+    args = map(translate.parse_sexp, sexps)
     pargs = map(translate.python_to_pure, args)
+
     ref = rules[rule]()
-
-    if not ref:
-        raise Exception('No Rule Found')
-
     pure_expr = ref.reduce_with(*pargs)
 
     return str(i2p(pure_expr))
 
 @task
 def pure_exec(code):
-    init()
+    if not 'interface' in globals():
+        init()
 
-    interface = PureInterface()
-    pure_expr = interface.eval(code)
+    pure_expr = interface().eval(code)
     return str(i2p(pure_expr))
 
 @task
 def benchmark(x,y):
     return sum([a for a in range(1,random.randint(0,25))])
 
-worker_ready.connect(init)
+worker_init.connect(init)
