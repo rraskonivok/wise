@@ -11,12 +11,15 @@ def rule_reduce(rule, sexps):
     start_python_pure()
     start_cython()
 
-    from wise.translators.pure_wrap import rules
+    from wise.translators.mathobjects import rules
     from wise.translators.pureobjects import i2p
 
     args = [translate.parse_sexp(sexp) for sexp in sexps]
     pargs = map(translate.python_to_pure, args)
     ref = rules[rule]()
+
+    if not ref:
+        raise Exception('No Rule Found')
 
     pure_expr = ref.reduce_with(*pargs)
     return str(i2p(pure_expr))

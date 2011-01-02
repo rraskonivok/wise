@@ -230,10 +230,13 @@ def dict(request, data='pure'):
         pretty = pformat(get_pure_lookup().table._fwd)
     elif data == 'rules':
         from wise.translators.mathobjects import rules
-        pretty = pformat(rules.as_dict())
+        pretty = pformat(rules)
     elif data == 'rulesets':
         from wise.translators.mathobjects import rulesets
         pretty = pformat(rulesets.as_dict())
+    elif data == 'cython':
+        from wise.translators.mathobjects import cy_objects
+        pretty = pformat(cy_objects)
     else:
         pretty = "unknown output " + data
 

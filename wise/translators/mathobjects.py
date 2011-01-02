@@ -11,6 +11,7 @@
 from types import ClassType
 from wise.worksheet.utils import *
 from wise.translators.pure_wrap import PureInterface, PublicRule
+from wise.translators.pure_wrap import rules
 
 from wise.translators import pureobjects
 
@@ -76,9 +77,6 @@ class PureTranslationTable(TranslationTable):
 # Rule Translation
 #---------------------------
 
-rules = Aggregator(file='rules_cache')
-objects = Aggregator(file='object_cache')
-rulesets = Aggregator(file='rulesets_cache')
 
 def translate_pure(key):
     try:
@@ -137,9 +135,9 @@ def build_rule_lookup(force=False):
     Build translation table for all available rules from
     PACKAGES/rules.py
     """
-    if len(rulesets) > 0 and not force:
-        print 'Using Cached Rules'
-        return
+    #if len(rulesets) > 0 and not force:
+    #    print 'Using Cached Rules'
+    #    return
 
     for name, package in meta_inspector.PACKAGES.iteritems():
         pack_module = import_module(name)
@@ -149,15 +147,16 @@ def build_rule_lookup(force=False):
             pack_objects = import_module(path, settings.ROOT_MODULE)
 
             rulesets.update(pack_objects.panel)
-            print pack_objects.panel
+            #print pack_objects.panel
 
-        for name, symbol in pack_module.__dict__.iteritems():
-            if type(symbol) is ClassType and issubclass(symbol, PublicRule):
-                rules[name] = symbol
+            for name, symbol in pack_objects.__dict__.iteritems():
+                if type(symbol) is ClassType and issubclass(symbol, PublicRule):
+                    rules[name] = symbol
+                    print name
 
-            # Register the rule in the translation dictionary
-            if hasattr(symbol,'register'):
-                symbol.register(a)
+                # Register the rule in the translation dictionary
+                if hasattr(symbol,'register'):
+                    symbol.register(a)
 
 def build_all_lookup(force=False):
     if not pure_trans.loaded or not python_trans.loaded or force:
@@ -168,12 +167,17 @@ def build_all_lookup(force=False):
 def build_cython_objects(force=False, jit=False):
     interface = PureInterface()
 
+    if len(cy_objects) > 0 and not force:
+        return
+
     print 'Building Cython Objects'
 
     for obj in pure_trans.table._fwd.itervalues():
         if obj.pure:
-            if obj.pure not in objects:
+            if obj.pure not in cy_objects:
+                print obj.pure
                 obj.po = pureobjects.PureSymbol(obj.pure)
+                cy_objects.add(obj.pure)
             else:
                 raise Exception('Namespace collision: ' + obj.pure)
         #print obj, (obj.po == None) or 'Success'
@@ -190,6 +194,10 @@ def get_pure_lookup():
 # ----------------------------------------
 # Translation tables
 # ----------------------------------------
+
+#rules = {}
+rulesets = Aggregator(file='rulesets_cache')
+cy_objects = set()
 
 # These are all singletons, so they can be passed around
 python_trans = PythonTranslationTable()

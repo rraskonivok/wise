@@ -102,14 +102,6 @@ def init_pure(prelude=True, force=False):
 
     return interface
 
-def use(package, library):
-    # Paths are relative to the /wise/ directory
-    print 'Importing library ' + '/'.join([package, library])
-    env.eval('using ' + '::'.join([package, library]))
-
-def jit_compile_interp():
-    return env.compile_interp()
-
 def is_pure_expr(obj):
     return isinstance(obj, pureobjects.PureExpr)
 
@@ -188,37 +180,3 @@ class PublicRule:
 
     #        self.po = PureClosure(self.pure)
     #        pure_wrap.objects[self.pure] = self.po
-
-def build_rules():
-    return
-
-    #for name, package in meta_inspector.PACKAGES.iteritems():
-    #    pack_module = import_module(name)
-    #    if module_has_submodule(pack_module, 'rules'):
-    #        print 'Importing rules from ... ' + name
-    #        path = name + '.rules'
-    #        pack_objects = import_module(path, settings.ROOT_MODULE)
-
-    #        rulesets.update(symbol)
-
-    #for pack in settings.INSTALLED_MATH_PACKAGES:
-    #    #try:
-    #        path = '.'.join([ROOT_MODULE,pack,'rules'])
-    #        packages[pack] = importlib.import_module(path)
-
-    #        for name, symbol in packages[pack].__dict__.iteritems():
-
-    #            # Merge dictionary into main
-    #            if name == 'panel':
-    #                rulesets.update(symbol)
-
-    #            if type(symbol) is ClassType and issubclass(symbol, PublicRule):
-    #                print name
-    #                rules[name] = symbol
-
-    #            # Register the rule in the translation dictionary
-    #            if hasattr(symbol,'register'):
-    #                symbol.register(a)
-
-        #except ImportError:
-        #    raise exception.IncompletePackage(pack,'rules.py')
