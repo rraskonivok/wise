@@ -219,8 +219,8 @@ def dict(request, data='pure'):
 
     from pprint import pformat
 
-    #if not settings.DEBUG:
-    #    pretty = 'Only enabled in DEBUG'
+    if not settings.DEBUG:
+        return HttpResponseForbidden()
 
     if data == 'python':
         from wise.translators.mathobjects import get_python_lookup
@@ -228,9 +228,12 @@ def dict(request, data='pure'):
     elif data == 'pure':
         from wise.translators.mathobjects import get_pure_lookup
         pretty = pformat(get_pure_lookup().table._fwd)
-#    elif data == 'rules':
-#        from wise.translators.mathobjects import rules
-#        pretty = pformat(rules.iteritems())
+    elif data == 'rules':
+        from wise.translators.mathobjects import rules
+        pretty = pformat(rules.as_dict())
+    elif data == 'rulesets':
+        from wise.translators.mathobjects import rulesets
+        pretty = pformat(rulesets.as_dict())
     else:
         pretty = "unknown output " + data
 

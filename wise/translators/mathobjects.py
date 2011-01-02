@@ -176,7 +176,7 @@ def build_cython_objects(force=False, jit=False):
                 obj.po = pureobjects.PureSymbol(obj.pure)
             else:
                 raise Exception('Namespace collision: ' + obj.pure)
-        print obj, (obj.po == None) or 'Success'
+        #print obj, (obj.po == None) or 'Success'
 
     if settings.PRECOMPILE or jit:
         interesections.jit_compile()
