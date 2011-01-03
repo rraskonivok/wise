@@ -26,20 +26,37 @@ class TranslationTable(object):
         return self.table[key]
 
 class Aggregator(object):
-    """ Lookup table with disk persistance """
+    """
+    Lookup table with disk persistance that falls back to an
+    in singleton dictionary.
+    """
     filename = None
-    persistance = None
+    persistance = {}
     sha = None
     changed = False
     locked = False
+    fallback = False
 
     def __init__(self, **args):
+        self.filename = args['file']
+
         if self.filename:
-            self.persistance = shelve.open(self.filename)
+            try:
+                self.persistance = shelve.open(self.filename)
+            except:
+                print 'Could not load cache', self.filename
+                self.fallback = True
+
         elif 'file' in args:
-            self.persistance = shelve.open(args['file'])
+
+            try:
+                self.persistance = shelve.open(args['file'])
+            except:
+                print 'Could not load cache', self.filename
+                self.fallback = True
+
         else:
-            raise OSError('No file persistance for Aggregator.')
+                self.fallback = True
 
     def all(self):
         return [i for i in self.persistance]
@@ -61,14 +78,15 @@ class Aggregator(object):
 
     def __getitem__(self, key):
 
-        #if self.persistance:
-            try:
-                # These things don't like Unicode
-                return self.persistance[str(key)]
-            except AttributeError:
-                raise Exception('Pickled object cannot be initialized from persistance since corresponding object does not exist.')
-        #else:
-        #    raise OSError('No file persistance for Aggregator.')
+        try:
+            # These things don't like Unicode
+            return self.persistance[str(key)]
+        except AttributeError:
+            raise Exception('Pickled object cannot be\
+                    initialized from persistance since\
+                    corresponding object does not exist.')
+        except KeyError:
+            raise
 
     def update(self, dct):
         self.persistance.update(dct)
@@ -87,6 +105,9 @@ class Aggregator(object):
 #            raise OSError('No file persistance for Aggregator.')
 
     def sync(self):
+        if self.fallback:
+            return
+
         self.locked = True
         self.persistance.sync()
         self.locked = False
