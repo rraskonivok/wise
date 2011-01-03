@@ -40,7 +40,7 @@ class PureInterface(Borg):
         if self.active():
             if (package,library) not in self.libs:
                 # Paths are relative to the /wise/ directory
-                print 'Importing library ' + '/'.join([package, library])
+                print 'Importing Pure library ' + '/'.join([package, library])
                 result = self.eval('using ' + '::'.join([package, library]))
                 self.libs += ((package,library),)
 
@@ -137,6 +137,7 @@ class PublicRule:
 #        print 'Reduced Sexp:', pyexpr
 #        print 'Reduced Pure:', pure_expr
 
+    # TODO: get tooltips working again
     #@classmethodn
     #def register(self):
     #    if self.pure:

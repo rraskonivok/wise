@@ -188,6 +188,9 @@ try:
 except ImportError:
     pass
 
+# Don't use `shelve` to cache lookup tables, rebuild them
+# on every boot. Can be quite slow.
+NOCACHE = False
 
 # In case somebody wants to fork under a new name
 ROOT_MODULE = 'wise'

@@ -8,6 +8,7 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
+import os
 from types import ClassType
 from wise.worksheet.utils import *
 from wise.translators.pure_wrap import PureInterface, PublicRule
@@ -89,13 +90,12 @@ def build_translation(pure=False):
 
         if module_has_submodule(pack_module, 'objects'):
             print 'Importing objects from ... ' + name
+
             path = name + '.objects'
             pack_objects = import_module(path, settings.ROOT_MODULE)
 
             super_clss, nullary_types = pack_objects.initialize()
             pure_trans.populate(nullary_types)
-
-            package = meta_inspector.PACKAGES[name]
 
             # Use sets, so we can do interesections to check for
             # namespace collisions later
@@ -107,7 +107,6 @@ def build_translation(pure=False):
             for cls in super_clss:
                 provided_symbols.update(all_subclasses(cls))
 
-            #TODO: clean this up
             symbol_dict = {}
             for cls in provided_symbols:
                 symbol_dict[cls.__name__] = cls
@@ -115,15 +114,22 @@ def build_translation(pure=False):
                 if cls.pure:
                     _pure_trans[cls.pure] = cls
 
-            # Give the package a list of strings containing the
-            # classnames of the provided symbols and update the
-            # persistence in memory value and sync to the disk
-            package.provided_symbols = [sym for sym in symbol_dict.iterkeys()]
-            meta_inspector.PACKAGES[name] = package
-            meta_inspector.PACKAGES.sync()
-
             python_trans.populate(symbol_dict)
             pure_trans.populate(_pure_trans)
+
+            package = meta_inspector.PACKAGES[name]
+            if not package.provided_symbols:
+                meta_inspector.PACKAGES.make_writable()
+
+                # Give the package a list of strings containing the
+                # classnames of the provided symbols and update the
+                # persistence in memory value and sync to the disk
+                package.provided_symbols = [sym for sym in symbol_dict.iterkeys()]
+                meta_inspector.PACKAGES[name] = package
+                meta_inspector.PACKAGES.sync()
+            else:
+                if settings.DEBUG:
+                    print 'Not rebuilding symbol table for:', name
 
 def build_python_lookup(force=False):
     if not python_trans.loaded or force:
@@ -140,28 +146,58 @@ def build_rule_lookup(force=False):
     Build translation table for all available rules from
     PACKAGES/rules.py
     """
-    #if len(rulesets) > 0 and not force:
-    #    print 'Using Cached Rules'
-    #    return
+
+    if rulesets and not settings.NOCACHE:
+        print 'Using cached rulesets file.'
+        BUILD_RULESETS = False
+    else:
+        BUILD_RULESETS = True
+
+    if rules and not settings.NOCACHE:
+        print 'Using cached rules file.'
+        BUILD_RULES = False
+    else:
+        BUILD_RULES = True
+
+    if not (BUILD_RULESETS and BUILD_RULES):
+        return
 
     for name in settings.INSTALLED_MATH_PACKAGES:
         pack_module = import_module(name)
+
+        # Load PACKAGE/rules.py
         if module_has_submodule(pack_module, 'rules'):
             print 'Importing rules from ... ' + name
+
             path = name + '.rules'
             pack_objects = import_module(path, settings.ROOT_MODULE)
 
-            rulesets.update(pack_objects.panel)
-            #print pack_objects.panel
+            # Build mathobjects.rulesets:
+            # ------------------------
+            # get PACKAGE.rules.panel ( a dictionary object )
+            # which contains the hierarchy of rules to use in the
+            # worksheet panels. Looks something like:
+            # {'Commutative Algebra': ['algebra_normal
+            if BUILD_RULESETS:
+                rulesets.make_writable()
+                rulesets.update(pack_objects.panel)
+                rulesets.sync()
 
-            for name, symbol in pack_objects.__dict__.iteritems():
-                if type(symbol) is ClassType and issubclass(symbol, PublicRule):
-                    rules[name] = symbol
-                    #print name
+            # Build mathobjects.rules:
+            # ------------------------
+            # Scrape all classes of type `PublicRule` from teh
+            # module and load into the
+            if BUILD_RULES:
+                rules.make_writable()
+                for name, symbol in pack_objects.__dict__.iteritems():
+                    if type(symbol) is ClassType and issubclass(symbol, PublicRule):
+                        rules[name] = symbol
+                        #print name
 
-                # Register the rule in the translation dictionary
-                if hasattr(symbol,'register'):
-                    symbol.register(a)
+                        # Register the rule in the translation dictionary
+                        if hasattr(symbol,'register'):
+                            symbol.register(a)
+                rules.sync()
 
 def build_all_lookup(force=False):
     if not pure_trans.loaded or not python_trans.loaded or force:
@@ -203,7 +239,7 @@ def get_pure_lookup():
 # Translation tables
 # ----------------------------------------
 
-rules = {}
+rules = Aggregator(file='rules_cache')
 rulesets = Aggregator(file='rulesets_cache')
 cy_objects = set()
 

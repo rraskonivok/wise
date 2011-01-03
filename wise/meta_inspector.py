@@ -37,6 +37,7 @@ def str2list(s):
 
 def rebuild_modules(packages):
     print 'Rebuilding package database.'
+    PACKAGES.make_writable()
 
     for package in packages:
         kwargs = {}
@@ -60,18 +61,13 @@ def rebuild_modules(packages):
                 key, val = option
                 kwargs[key] = val
 
-            print kwargs
             PACKAGES[package] = Package(**kwargs)
 
         except:
             print 'Invalid Config for Package:', package
             raise
 
-        PACKAGES.sync()
-        print PACKAGES['base'].__dict__
-
-    #for installed in settings.INSTALLED_MATH_PACKAGES:
-    #    PACKAGES[installed] = Package(name=installed)
+    PACKAGES.sync()
 
 # Upon initial import of this module check to see if we have a
 # package cache, if not then build it

@@ -33,7 +33,6 @@ import wise.worksheet.panel
 from wise.translators.pytopure import parse_sexp
 
 # Initialize the Python-Pure translation bridge
-
 if settings.WORKER_TYPE == 'sync':
     wise.boot.start_python_pure()
     wise.boot.start_cython()

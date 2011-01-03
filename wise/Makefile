@@ -10,4 +10,4 @@ clean:
 	-rm -f *.o *.pyc *.pyo *.html *.markdown *.out *.aux *.log *.pdf tags
 
 clearcache:
-	rm rules_cache object_cache rulesets_cache packages_cache
+	rm rules_cache rulesets_cache packages_cache

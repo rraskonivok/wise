@@ -1,3 +1,4 @@
+import os
 import shelve
 
 class Borg(object):
@@ -25,38 +26,34 @@ class TranslationTable(object):
     def __getitem__(self, key):
         return self.table[key]
 
+# This is threadsafe iff iff it is in read-only mode.
 class Aggregator(object):
     """
     Lookup table with disk persistance that falls back to an
-    in singleton dictionary.
+    in memory dictionary.
     """
+
     filename = None
-    persistance = {}
     sha = None
     changed = False
     locked = False
+
     fallback = False
+    fallback_dict = dict()
 
-    def __init__(self, **args):
-        self.filename = args['file']
+    def __init__(self,file=None, flag=None):
+        try:
+            self.filename = file
 
-        if self.filename:
-            try:
-                self.persistance = shelve.open(self.filename)
-            except:
-                print 'Could not load cache', self.filename
-                self.fallback = True
+            # If the cache doesn't exist then create it
+            if not os.path.exists(file):
+                flag = 'c'
 
-        elif 'file' in args:
-
-            try:
-                self.persistance = shelve.open(args['file'])
-            except:
-                print 'Could not load cache', self.filename
-                self.fallback = True
-
-        else:
-                self.fallback = True
+            self.persistance = shelve.open(self.filename, flag or 'r')
+        except:
+            print 'Could not load cache', self.filename
+            self.persistance = self.fallback_dict
+            self.fallback = True
 
     def all(self):
         return [i for i in self.persistance]
@@ -75,6 +72,17 @@ class Aggregator(object):
 
     def iterkeys(self):
         return self.persistance.iterkeys()
+
+    def make_writable(self):
+        if self.fallback:
+            return
+
+        self.persistance.close()
+        self.persistance = shelve.open(self.filename,'w')
+
+    def make_readonly(self):
+        self.persistance.close()
+        self.persistance = shelve.open(self.filename,'r')
 
     def __getitem__(self, key):
 
@@ -99,10 +107,7 @@ class Aggregator(object):
             raise Exception('Cannot write key since Aggregator is locked.')
             return
 
-#        if self.persistance:
         self.persistance[key] = value
-#        else:
-#            raise OSError('No file persistance for Aggregator.')
 
     def sync(self):
         if self.fallback:
