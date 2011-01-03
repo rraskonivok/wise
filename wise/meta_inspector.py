@@ -3,7 +3,7 @@ import sys
 
 from optparse import OptionParser
 import settings
-from utils.aggregator import Aggregator
+from utils.patterns import Aggregator
 
 PACKAGES = Aggregator(file='packages_cache')
 
@@ -30,18 +30,23 @@ class Package(object):
         self.provided_symbols.append(symbol)
 
 def rebuild_modules():
+    print 'Rebuilding package database.'
     for installed in settings.INSTALLED_MATH_PACKAGES:
         PACKAGES[installed] = Package(name=installed)
 
 # Upon initial import of this module check to see if we have a
 # package cache, if not then build it
 if len(PACKAGES) == 0:
+    print 'Building initial Package database',
     rebuild_modules()
+    print 'Done'
+
 else:
     if settings.DEBUG:
+        pass
         #for name, package in PACKAGES.iteritems():
         #    print package.provided_symbols
-        print 'Using cached Package directory.'
+        #print 'Using cached Package directory.'
 
 def main():
     parser = OptionParser()

@@ -1,5 +1,4 @@
 import shelve
-from wise.utils.bidict import bidict
 
 class Borg(object):
     """ Object with shared state across all instances """
@@ -53,6 +52,12 @@ class Aggregator(object):
 
     def iteritems(self):
         return self.persistance.iteritems()
+
+    def itervalues(self):
+        return self.persistance.itervalues()
+
+    def iterkeys(self):
+        return self.persistance.iterkeys()
 
     def __getitem__(self, key):
 

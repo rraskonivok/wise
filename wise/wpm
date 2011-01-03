@@ -1,0 +1,126 @@
+#!/usr/bin/env python
+#---------------------------
+# Wise Package Manager
+#---------------------------
+
+import os
+import sys
+import shutil
+from optparse import OptionParser, OptionGroup
+
+try:
+    import settings
+    import meta_inspector
+except:
+    pass
+
+def optional_arg(arg_default):
+    def func(option,opt_str,value,parser):
+        if parser.rargs and not parser.rargs[0].startswith('-'):
+            val=parser.rargs[0]
+            parser.rargs.pop(0)
+        else:
+            val=arg_default
+        setattr(parser.values,option.dest,val)
+    return func
+
+def main():
+    parser = OptionParser()
+    qgroup = OptionGroup(parser, 'Query options')
+
+    qgroup.add_option("-Q",
+                      "--query",
+                      action='callback',
+                      callback=optional_arg('empty'),
+                      dest="query",
+                      help="Query package database.")
+
+    qgroup.add_option("--shell",
+                      action="store_true",
+                      dest="shell",
+                      help="Print command for interactive Pure\
+                      interpreter with installed libraries.")
+
+    qgroup.add_option("--info",
+                      action="store_true",
+                      dest="info",
+                      help="Print metadata for packages")
+
+    qgroup.add_option("--active",
+                      action="store_true",
+                      dest="active",
+                      help="Filter query to active packages")
+
+    qgroup.add_option("--inactive",
+                      action="store_true",
+                      dest="inactive",
+                      help="Filter query to inactive packages")
+
+    parser.add_option_group(qgroup)
+
+    cgroup = OptionGroup(parser, 'Create options')
+
+    cgroup.add_option("-N",
+                      "--add",
+                      dest="create",
+                      help="Create new package")
+
+    parser.add_option_group(cgroup)
+
+    parser.add_option("-R",
+                      "--remove",
+                      dest="remove",
+                      help="Remove package.")
+
+    parser.add_option( "--rebuild",
+                      action="store_true",
+                      dest="rebuild",
+                      help="Rebuild package database.")
+
+    (options, args) = parser.parse_args()
+
+    if options.rebuild:
+        meta_inspector.rebuild_modules()
+
+    #---------------------------
+    # Query Actions
+    #---------------------------
+    if options.query:
+        query = meta_inspector.PACKAGES.iteritems()
+
+        if options.active:
+            query = [x for x in query if x[0] in settings.INSTALLED_MATH_PACKAGES]
+
+        if options.inactive:
+            query = [x for x in query if x[0] not in settings.INSTALLED_MATH_PACKAGES]
+
+        # Output of query
+        if options.shell:
+            line = ['%s/%s.pure' % (lib[0],lib[0]) for lib in query]
+            line += ['pure/prelude.pure']
+            sys.stdout.write('pure -i -q ' + ' '.join(line) + "\n")
+
+        elif options.info:
+            for name, package in query:
+                print 'Name:', name
+                print 'Version:', package.version
+                print 'Author:', package.author
+                print 'Path:', package.path
+                print 'Active:', name in settings.INSTALLED_MATH_PACKAGES
+                print '\n',
+        else:
+            for name, package in query:
+                print name, package.version
+
+    #---------------------------
+    # Create Actions
+    #---------------------------
+    if options.create:
+        if os.path.exists(options.create):
+            print 'Cannot overwrite existing folder'
+            sys.exit(0)
+
+        shutil.copytree('pkgtemplate', options.create)
+
+if __name__ == "__main__":
+   main()
