@@ -9,7 +9,6 @@ import shutil
 from optparse import OptionParser, OptionGroup
 
 blacklist = set(['pkgtemplate'])
-blacklist = set()
 required_files = ['desc', 'files', 'depends']
 
 try:

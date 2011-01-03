@@ -115,12 +115,15 @@ def build_translation(pure=False):
                 if cls.pure:
                     _pure_trans[cls.pure] = cls
 
+            # Give the package a list of strings containing the
+            # classnames of the provided symbols and update the
+            # persistence in memory value and sync to the disk
             package.provided_symbols = [sym for sym in symbol_dict.iterkeys()]
             meta_inspector.PACKAGES[name] = package
+            meta_inspector.PACKAGES.sync()
 
             python_trans.populate(symbol_dict)
             pure_trans.populate(_pure_trans)
-            meta_inspector.PACKAGES.sync()
 
 def build_python_lookup(force=False):
     if not python_trans.loaded or force:
