@@ -127,11 +127,6 @@ MIDDLEWARE_CLASSES = (
 )
 
 from worksheet.media import MEDIA_BUNDLES
-MEDIA_GENERATORS = (
-    'mediagenerator.generators.copyfiles.CopyFiles',
-    'mediagenerator.generators.bundles.Bundles',
-    'mediagenerator.generators.manifest.Manifest',
-)
 
 ROOT_URLCONF = 'wise.urls'
 ROOTDIR = os.path.abspath(os.path.dirname(__file__))

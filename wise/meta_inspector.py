@@ -1,9 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/env ipython
 import sys
+import os
+from string import strip
 
 from optparse import OptionParser
 import settings
 from utils.patterns import Aggregator
+import ConfigParser
 
 PACKAGES = Aggregator(file='packages_cache')
 
@@ -14,61 +17,63 @@ class Package(object):
     path = 'unknown'
     date = 'unknown'
     cached_date = 'unknown'
+    depends = []
+    files = []
 
-    module_string = None
-
-    provided_symbols = {}
     provided_rules = []
     provided_transforms = []
     provided_panels = []
     translation_table = []
 
     def __init__(self, **kwargs):
-        self.name = kwargs['name']
+        self.provided_symbols = {}
+        self.__dict__.update(kwargs)
 
     def provides(self, symbol):
         self.provided_symbols.append(symbol)
 
-def rebuild_modules():
+def str2list(s):
+    return map(strip,s.split(','))
+
+def rebuild_modules(packages):
     print 'Rebuilding package database.'
-    for installed in settings.INSTALLED_MATH_PACKAGES:
-        PACKAGES[installed] = Package(name=installed)
+
+    for package in packages:
+        kwargs = {}
+        kwargs['name'] = package
+        try:
+            config = ConfigParser.ConfigParser()
+            config.read(os.path.join(package, 'files'))
+            files = str2list(config.get('files','pure'))
+            kwargs['files'] = files
+
+            config = ConfigParser.ConfigParser()
+            config.read(os.path.join(package, 'depends'))
+            depends = str2list(config.get('depends','depends'))
+            kwargs['depends'] = depends
+
+            config = ConfigParser.ConfigParser()
+            config.read(os.path.join(package, 'desc'))
+
+            # Find all keys in the desc section
+            for option in config.items('desc'):
+                key, val = option
+                kwargs[key] = val
+
+            print kwargs
+            PACKAGES[package] = Package(**kwargs)
+
+        except:
+            print 'Invalid Config for Package:', package
+            raise
+
+        PACKAGES.sync()
+        print PACKAGES['base'].__dict__
+
+    #for installed in settings.INSTALLED_MATH_PACKAGES:
+    #    PACKAGES[installed] = Package(name=installed)
 
 # Upon initial import of this module check to see if we have a
 # package cache, if not then build it
 if len(PACKAGES) == 0:
-    print 'Building initial Package database',
-    rebuild_modules()
-    print 'Done'
-
-else:
-    if settings.DEBUG:
-        pass
-        #for name, package in PACKAGES.iteritems():
-        #    print package.provided_symbols
-        #print 'Using cached Package directory.'
-
-def main():
-    parser = OptionParser()
-    parser.add_option("-p",
-                      "--packages",
-                      dest="packages",
-                      action="store_true",
-                      help="Return installed Pure libraries to stdout")
-
-    parser.add_option("-s",
-                      "--shell",
-                      dest="packages",
-                      action="store_true",
-                      help="Pure shell with installed libraries")
-
-    (options, args) = parser.parse_args()
-
-    if options.packages:
-        libraries = settings.INSTALLED_MATH_PACKAGES
-        line = ['%s/%s.pure' % (lib,lib) for lib in libraries]
-        line += ['pure/prelude.pure']
-        sys.stdout.write('pure -i -q ' + ' '.join(line) + "\n")
-
-if __name__ == "__main__":
-   main()
+    print 'Package database is blank. Run wpm --rebuild'

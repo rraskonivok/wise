@@ -22,6 +22,7 @@ from django.views.generic.edit import UpdateView, DeleteView
 
 import wise.base
 import wise.boot
+import wise.meta_inspector
 
 from wise.worksheet.utils import *
 from wise.worksheet.forms import WorksheetForm
@@ -29,7 +30,6 @@ from wise.worksheet.models import (Workspace, Expression, Cell,
 Assumption)
 import wise.worksheet.panel
 
-from wise.meta_inspector import PACKAGES
 from wise.translators.pytopure import parse_sexp
 
 # Initialize the Python-Pure translation bridge
@@ -88,20 +88,20 @@ def new_worksheet_prototype(attrs):
 @login_required
 def ecosystem(request):
 
+    # Wrap up the packages into 'pack' objects so aren't passing
+    # pointers to our disk persistence to the template
     context = RequestContext(request)
     context['workspaces'] = Workspace.objects.filter(owner=request.user)
 
     packages = []
 
-    for name, pack in PACKAGES.iteritems():
+    for name, pack in wise.meta_inspector.PACKAGES.iteritems():
         pack.symbols = []
         packages.append(pack)
 
-        for symbol in pack.provided_symbols.itervalues():
-            symbol_desc = {}
-            symbol_desc['description'] = symbol.__doc__
-            symbol_desc['name'] = symbol.__name__
-            pack.symbols.append(symbol_desc)
+        if pack.provided_symbols:
+            for symbol in pack.provided_symbols:
+                pack.symbols.append(symbol)
 
     return render_to_response('ecosystem.html',
                               {'packages': packages},

@@ -2,5 +2,5 @@
 # Execute an interactive Pure shell with all active Wise
 # libraries
 
-shell=`python meta_inspector.py -s`
+shell=`./wpm -Q --active --shell`
 ${shell}

@@ -31,9 +31,9 @@
           <h3 onclick="toggle_next(this)">{{package.name}}</h3>
           <span>
               <hr/>
-              <p>Date: {{package.date}}</p>
-              <p>Author: {{package.author}}</p>
-              <p>Version: {{package.version}}</p>
+              <p>Date: {{ package.date }}</p>
+              <p>Author: {{ package.author }}</p>
+              <p>Version: {{ package.version }}</p>
               <p>
                   <a href="#">Export GraphViz</a> |
                   <a href="#">Export XML</a> |
@@ -42,13 +42,15 @@
                   <a href="#" onclick="toggle_next(this)">Provides</a>
                   <table style="display: none">
                   <tr>
-                      {% for symbol in package.symbols %}
-                      <td>{{symbol.name}}</td>
-                      {% if forloop.counter|divisibleby:"5" %}
-                        </tr><tr>
+                      {% if package.symbols %}
+                          {% for symbol in package.symbols %}
+                          <td>{{ symbol }}</td>
+                          {% if forloop.counter|divisibleby:"5" %}
+                            </tr><tr>
+                          {% endif %}
+                          </td>
+                          {% endfor %}
                       {% endif %}
-                      </td>
-                      {% endfor %}
                   </tr>
                   </table>
           </span>

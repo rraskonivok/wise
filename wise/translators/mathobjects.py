@@ -84,7 +84,7 @@ def translate_pure(key):
         raise exception.NoWrapper(key)
 
 def build_translation(pure=False):
-    for name, package in meta_inspector.PACKAGES.iteritems():
+    for name in settings.INSTALLED_MATH_PACKAGES:
         pack_module = import_module(name)
 
         if module_has_submodule(pack_module, 'objects'):
@@ -95,7 +95,7 @@ def build_translation(pure=False):
             super_clss, nullary_types = pack_objects.initialize()
             pure_trans.populate(nullary_types)
 
-            package = meta_inspector.Package(name=name)
+            package = meta_inspector.PACKAGES[name]
 
             # Use sets, so we can do interesections to check for
             # namespace collisions later
@@ -107,16 +107,19 @@ def build_translation(pure=False):
             for cls in super_clss:
                 provided_symbols.update(all_subclasses(cls))
 
+            #TODO: clean this up
+            symbol_dict = {}
             for cls in provided_symbols:
-                package.provided_symbols[cls.__name__] = cls
+                symbol_dict[cls.__name__] = cls
 
                 if cls.pure:
                     _pure_trans[cls.pure] = cls
 
-            python_trans.populate(package.provided_symbols)
-            pure_trans.populate(_pure_trans)
-
+            package.provided_symbols = [sym for sym in symbol_dict.iterkeys()]
             meta_inspector.PACKAGES[name] = package
+
+            python_trans.populate(symbol_dict)
+            pure_trans.populate(_pure_trans)
             meta_inspector.PACKAGES.sync()
 
 def build_python_lookup(force=False):
@@ -138,7 +141,7 @@ def build_rule_lookup(force=False):
     #    print 'Using Cached Rules'
     #    return
 
-    for name, package in meta_inspector.PACKAGES.iteritems():
+    for name in settings.INSTALLED_MATH_PACKAGES:
         pack_module = import_module(name)
         if module_has_submodule(pack_module, 'rules'):
             print 'Importing rules from ... ' + name
