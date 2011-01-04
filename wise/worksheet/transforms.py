@@ -3,7 +3,7 @@ from django.conf import settings
 from django.utils import importlib
 
 import wise.worksheet.exceptions as exception
-from wise.library_utils import is_mapping
+from wise.utils.library_utils import is_mapping
 
 packages = {}
 transforms = {}

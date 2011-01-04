@@ -1,4 +1,3 @@
-#from wise.translators.pure_wrap import PureLevel, PureSymbol, reduce_with_pure_rules, PureClosure
 from wise.translators.pure_wrap import PublicRule
 
 # Toplevel Panel dictionary, must be called 'panel'
@@ -94,7 +93,7 @@ panel['Commutative Algebra'] = [
     ]
 
 # -------------------
-# Rational 
+# Rational
 # -------------------
 
 class split_rational(PublicRule):

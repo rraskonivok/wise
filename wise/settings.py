@@ -16,7 +16,7 @@ ADMINS = (
 )
 
 # Debug=True then static files will be served by Django/Gunicorn
-DEBUG = False
+DEBUG = True
 
 MANAGERS = ADMINS
 

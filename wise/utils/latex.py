@@ -39,6 +39,7 @@ greek_unicode = {
          'Omega'  :          'Ω',
          }
 
+#TODO: change this to zip(iterkeys, itervalues)
 greek_unicode_list = [
          ('alpha'  ,          'α'),
          ('beta'   ,          'β'),
