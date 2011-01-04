@@ -1,6 +1,5 @@
-import reversion
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
 
 class Workspace(models.Model):
     name = models.CharField(max_length=200)
@@ -29,8 +28,7 @@ class Expression(models.Model):
     index = models.IntegerField(blank=False,null=False)
 
     def __unicode__(self):
-        return self.cell.workspace.name + ('[%s] -- %s' %
-                (self.cell.index, self.sexp[0:25]))
+        return self.sexp[0:25]
 
 class Assumption(models.Model):
     """Bindings on local variables inside the lexical closure of
@@ -44,5 +42,4 @@ class Assumption(models.Model):
     index = models.IntegerField(blank=False,null=False)
 
     def __unicode__(self):
-        return self.cell.workspace.name + ('[%s] -- %s' %
-                (self.cell.index, self.sexp[0:25]))
+        return self.sexp[0:25]

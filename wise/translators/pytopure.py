@@ -7,17 +7,13 @@
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-
+from wise.translators.mathobjects import pyobjects, translate_pure
 from wise.worksheet.utils import *
-import wise.worksheet.exceptions as exception
-
-from wise.translators.mathobjects import pyobjects
-from wise.translators.mathobjects import translate_pure
 
 from parser import sexp_parse, pure_parse
 
+
 #Used for hashing trees
-from hashlib import sha1
 
 #-------------------------------------------------------------
 # Parse Tree

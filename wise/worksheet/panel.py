@@ -1,13 +1,11 @@
-from django.conf import settings
-from django.utils import importlib
-
-import wise.worksheet.exceptions as exception
-from wise.worksheet.utils import haml
-from wise.base.objects import Term, Placeholder
-
-from types import ClassType, InstanceType, TypeType
 from inspect import getargspec
+from types import TypeType
+
+from django.conf import settings
 from django.template import Template, Context
+from django.utils import importlib
+from wise.base.objects import Placeholder
+import wise.worksheet.exceptions as exception
 
 ROOT_MODULE = 'wise'
 packages = {}

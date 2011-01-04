@@ -7,29 +7,25 @@
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-
-import sys
 import logging
-import functools
-
-from wise.utils.decorator import decorator
-from operator import xor
+import sys
 from binascii import crc32
+from operator import xor
 
 from django import template
-from django.template import loader
 from django.conf import settings
 from django.http import HttpResponse
-from django.utils.html import strip_spaces_between_tags as strip_whitespace
+from django.template import loader
 from django.utils import simplejson as json
-
+from django.utils.html import strip_spaces_between_tags as strip_whitespace
+from sentry.client.handlers import SentryHandler
 from wise.utils import shpaml
+from wise.utils.decorator import decorator
 
 #-------------------------------------------------------------
 # Logging
 #-------------------------------------------------------------
 
-from sentry.client.handlers import SentryHandler
 logger = logging.getLogger()
 
 # ensure we havent already registered the handler

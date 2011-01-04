@@ -1,8 +1,6 @@
-from django.conf import settings
-
-import wise.worksheet.exceptions as exception
-from wise.utils.patterns import Borg
 from wise.translators import pureobjects
+from wise.utils.patterns import Borg
+
 
 class PureInterface(Borg):
 

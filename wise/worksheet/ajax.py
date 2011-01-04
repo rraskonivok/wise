@@ -8,34 +8,23 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
-import logging
-
-from django.http import HttpResponse
-from wise.worksheet.utils import JsonResponse
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
 
-# `uidgen` is imported from worksheet.utils
-from wise.worksheet.utils import *
-import wise.worksheet.exceptions as exception
-from django.core.exceptions import ObjectDoesNotExist
-
-import wise.worksheet.rules as rules
-import wise.worksheet.transforms as transforms
 import wise.translators.pytopure as translate
-from wise.translators.mathobjects import rulesets
-
+import wise.worksheet.exceptions as exception
+import wise.worksheet.transforms as transforms
 from wise.base.cell import Cell
-from wise.base.objects import EquationPrototype, AssumptionPrototype
-
+from wise.base.toplevel import EquationPrototype
+from wise.translators.mathobjects import rulesets
 from wise.worksheet import tasks
+from wise.worksheet.utils import *
 
 def heartbeat(request):
     # Server is up and life is good
     response = HttpResponse(status=200)
     response['Cache-Control'] = 'no-cache'
     return response
-
-from wise.translators.pytopure import parse_sexp, parse_pure_exp
 
 # ------------------------------------
 # Note:

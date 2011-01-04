@@ -1,6 +1,5 @@
-import worksheet.js as js
-import worksheet.exceptions as exception
 from worksheet.utils import *
+from worksheet.exceptions import PureError, PlaceholderInExpression
 
 from django import template
 from django.utils.safestring import SafeUnicode
@@ -23,6 +22,7 @@ from django.utils.safestring import SafeUnicode
 # 3) If A is an object and B is a subclass of A, if A is
 #    strictly internal ( no Pure translation ) then B should
 #    be stricly internal.
+
 class Term(object):
     '''The base class for all other math objects.'''
 
@@ -91,21 +91,21 @@ class Term(object):
         # the method to generate a Pure object will often result in very
         # unexpected consequences if not well thought out. Just define
         # one for every object you create
-        raise exception.PureError('No Pure representation of %s.' % self.classname)
+        raise PureError('No Pure representation of %s.' % self.classname)
 
     # These may be defined as needed depending on which packages
     # you want to integrate with
     def _latex_(self):
-        raise exception.PureError('No LaTeX representation of %s.' % self.classname)
+        raise PureError('No LaTeX representation of %s.' % self.classname)
 
     def _sage_(self):
-        raise exception.PureError('No Sage representation of %s.' % self.classname)
+        raise PureError('No Sage representation of %s.' % self.classname)
 
     def _isabelle_(self):
-        raise exception.PureError('No Isabelle representation of %s.' % self.classname)
+        raise PureError('No Isabelle representation of %s.' % self.classname)
 
     def _openmath_(self):
-        raise exception.PureError('No OpenMath representation of %s.' % self.classname)
+        raise PureError('No OpenMath representation of %s.' % self.classname)
 
     def get_html(self):
         c = template.Context({
@@ -123,16 +123,13 @@ class Term(object):
     def classname(self):
         return self.__class__.__name__
 
-    @property
-    def math(self):
-        return self.get_math()
-
     def get_math(self):
-        '''Generates the sexp representation of the object
+        """
+        Generates the sexp representation of the object
 
         The sexp is the universal storage format from which Wise can
         build any object up from scratch.
-        '''
+        """
 
         # Container-type Objects:
         # Examples:
@@ -168,10 +165,11 @@ class Term(object):
 
         return lst
 
-    def __repr__(self):
-         return self.get_math()
-
     #############################################################
+
+    @property
+    def math(self):
+        return self.get_math()
 
     def set_side(self, side):
         for term in self.terms:
@@ -208,6 +206,9 @@ class Term(object):
             term.uid_walk(uid, overwrite)
         return self
 
+    def __repr__(self):
+         return self.get_math()
+
 class Placeholder(Term):
     '''A placeholder for substitution'''
 
@@ -222,16 +223,9 @@ class Placeholder(Term):
     def _pure_(self):
         # If there is a placeholder left in an expression throw
         # an error and abort the pure translation.
-        raise exception.PlaceholderInExpression()
+        raise PlaceholderInExpression()
 
     def get_math(self):
         return '(Placeholder )'
 
-class ph(Placeholder):
-    """Placeholder prototype"""
-    def __init__(self):
-        Placeholder.__init__(self)
-
-    @property
-    def classname(self):
-        return 'Placeholder'
+ph = Placeholder

@@ -7,9 +7,16 @@
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-
 from math import modf
+from django import template
+from wise.base.operations import (PrefixOperation, InfixOperation,
+PostfixOperation, SupOperation, SubOperation, OutfixOperation,
+Operation)
+from wise.base.term import Term, Placeholder
+from wise.base.toplevel import Relation
 from wise.translators import pureobjects
+from wise.worksheet.utils import *
+from wise.utils import latex
 
 # Subpackages
 # -----------
@@ -18,31 +25,16 @@ from wise.translators import pureobjects
 # * toplevel.py
 # * operations.py
 
-from wise.base.cell import Cell
-from wise.base.term import Term, Placeholder, ph
-from wise.base.toplevel import Relation, EquationPrototype
-from wise.base.operations import PrefixOperation, InfixOperation, \
-PostfixOperation, SupOperation, SubOperation, OutfixOperation, \
-Operation
-
-from wise.worksheet.utils import render_haml_to_response
-
-import worksheet.exceptions as exception
-
-from utils import latex
-from worksheet.utils import *
-
-from django import template
-
 __all__ = ['cell', 'term', 'toplevel', 'operations']
 
 def initialize():
     super_classes = [Term, Relation]
 
-    nullary_types = {'num' : Numeric,
-                    'var' : Variable,
-                    'ph' : Placeholder,
-                    }
+    nullary_types = {
+        'num' : Numeric,
+        'var' : Variable,
+        'ph' : Placeholder,
+    }
 
     return super_classes, nullary_types
 
@@ -50,11 +42,7 @@ def initialize():
 # Nullary / Symbol Type Objects
 #-------------------------------------------------------------
 
-class BaseSymbol(Term):
-    def __init__(self,*args):
-        raise Exception('Naked symbol invoked.')
-
-class Variable(BaseSymbol):
+class Variable(Term):
     """
     A free variable
     """
@@ -732,7 +720,7 @@ class FunctionAppl(PrefixOperation):
         self.operand = args
 
 #Free abstract function (of a single variable at this time)
-class FreeFunction(BaseSymbol):
+class FreeFunction(Term):
 
     def __init__(self,symbol):
         self.symbol = symbol
@@ -752,36 +740,36 @@ class FreeFunction(BaseSymbol):
 # Assumptions
 #-------------------------------------------------------------
 
-class Assumption(PrefixOperation):
-    html = load_haml_template('assumption.tpl')
-    symbol = '?'
-    pure = 'assum'
-    toplevel = True
-
-    def json_flat(self,lst=None):
-        if not lst:
-            lst = []
-
-        lst.append({'id': self.id,
-                    'type': self.classname,
-                    'toplevel': self.toplevel,
-                    'sid': self.sid,
-                    'children': [term.id for term in self.terms]})
-
-        for term in self.terms:
-            term.json_flat(lst)
-
-        return lst
-
-class AssumptionPrototype(Assumption):
-    pure = None
-
-    def __init__(self):
-        Assumption.__init__(self, ph())
-
-    @property
-    def classname(self):
-        return 'Assumption'
+#class Assumption(PrefixOperation):
+#    html = load_haml_template('assumption.tpl')
+#    symbol = '?'
+#    pure = 'assum'
+#    toplevel = True
+#
+#    def json_flat(self,lst=None):
+#        if not lst:
+#            lst = []
+#
+#        lst.append({'id': self.id,
+#                    'type': self.classname,
+#                    'toplevel': self.toplevel,
+#                    'sid': self.sid,
+#                    'children': [term.id for term in self.terms]})
+#
+#        for term in self.terms:
+#            term.json_flat(lst)
+#
+#        return lst
+#
+#class AssumptionPrototype(Assumption):
+#    pure = None
+#
+#    def __init__(self):
+#        Assumption.__init__(self, ph())
+#
+#    @property
+#    def classname(self):
+#        return 'Assumption'
 
 #-------------------------------------------------------------
 # Non-mathematical Symbols

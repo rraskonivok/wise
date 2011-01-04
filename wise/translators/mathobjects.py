@@ -10,20 +10,20 @@
 
 import os
 from types import ClassType
+
+from django.conf import settings
+from django.utils.importlib import import_module
+
+import wise.meta_inspector
+import wise.worksheet.exceptions as exception
+
 from wise.worksheet.utils import *
 from wise.translators.pure_wrap import PureInterface, PublicRule
-
 from wise.translators import pureobjects
-
 from wise.utils.bidict import bidict
 from wise.utils.patterns import TranslationTable, Aggregator
-
-import meta_inspector
-from django.conf import settings
-
-import wise.worksheet.exceptions as exception
 from wise.utils.module_loading import module_has_submodule
-from django.utils.importlib import import_module
+
 
 def all_subclasses(cls, accumulator=set(),
                         depth=1,
@@ -117,16 +117,16 @@ def build_translation(pure=False):
             python_trans.populate(symbol_dict)
             pure_trans.populate(_pure_trans)
 
-            package = meta_inspector.PACKAGES[name]
+            package = wise.meta_inspector.PACKAGES[name]
             if not package.provided_symbols:
-                meta_inspector.PACKAGES.make_writable()
+                wise.meta_inspector.PACKAGES.make_writable()
 
                 # Give the package a list of strings containing the
                 # classnames of the provided symbols and update the
                 # persistence in memory value and sync to the disk
                 package.provided_symbols = [sym for sym in symbol_dict.iterkeys()]
-                meta_inspector.PACKAGES[name] = package
-                meta_inspector.PACKAGES.sync()
+                wise.meta_inspector.PACKAGES[name] = package
+                wise.meta_inspector.PACKAGES.sync()
             else:
                 if settings.DEBUG:
                     print 'Not rebuilding symbol table for:', name

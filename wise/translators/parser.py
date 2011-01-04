@@ -7,17 +7,12 @@
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-
-import token
-
-import sys, os, re
 from re import VERBOSE
 
-from funcparserlib import util
+from funcparserlib.contrib.common import op_, sometok
 from funcparserlib.lexer import make_tokenizer, Spec
-from funcparserlib.parser import (maybe, many, finished, skip, forward_decl,
-    SyntaxError, with_forward_decls, oneplus)
-from funcparserlib.contrib.common import const, n, op, op_, sometok
+from funcparserlib.parser import many, finished, skip, with_forward_decls
+
 
 def tokenize(str):
     'str -> Sequence(Token)'

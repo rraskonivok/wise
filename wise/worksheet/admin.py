@@ -1,7 +1,7 @@
-from wise.worksheet.models import Expression, Workspace, Cell, \
-Assumption
-
 from django.contrib import admin
+from wise.worksheet.models import (Expression, Workspace, Cell,
+Assumption)
+
 
 class ExpressionsInline(admin.StackedInline):
     extra = 1

@@ -34,14 +34,14 @@ class eq_sub(PublicRule):
     pure = 'eq_sub'
 
 
-panel['Relational'] = [
+panel['Relational'] = (
 
         ('Add To Both Sides'        , eq_add),
         ('Subtract From Both Sides' , eq_sub),
         ('Multiply To Both Sides'   , eq_mul),
         ('Divide Both Sides'        , eq_div),
 
-    ]
+)
 
 # -------------------
 # Commutative Algebra
@@ -79,7 +79,7 @@ class iter_left(PublicRule):
 
     pure = 'iter_left'
 
-panel['Commutative Algebra'] = [
+panel['Commutative Algebra'] = (
 
         ('Algebraic Normal Form'     , algebra_normal),
         ('Commute Elementary'        , commute_elementary),
@@ -90,7 +90,7 @@ panel['Commutative Algebra'] = [
         ('Pull Constants Right'      , pull_numeric_right),
         ('Iterate Left'              , iter_left),
 
-    ]
+)
 
 # -------------------
 # Rational
@@ -118,10 +118,10 @@ class seperate_rational(PublicRule):
    """
     pure = 'seperate_rational'
 
-panel['Rational'] = [
+panel['Rational'] = (
 
         ('Split Rational'            , split_rational),
         ('Combine Ratiional'         , combine_rational),
         ('Seperate Ratiional'        , seperate_rational),
 
-    ]
+)

@@ -1,14 +1,7 @@
-from wise.base.cell import Cell
-from wise.base.term import Term, Placeholder, ph
-
-from math import modf
-
-from wise.worksheet.utils import render_haml_to_response
-
-import worksheet.exceptions as exception
-from worksheet.utils import *
-
 from django import template
+from worksheet.utils import *
+from wise.base.term import ph
+
 
 #-------------------------------------------------------------
 # Top Level Elements
@@ -141,16 +134,8 @@ class Equation(Relation):
     def _pure_(self):
         return self.po(self.lhs._pure_(),self.rhs._pure_())
 
-class EquationPrototype(Equation):
-    pure = None
-    po = None
-
-    def __init__(self):
-        Equation.__init__(self, ph(), ph())
-
-    @property
-    def classname(self):
-        return 'Equation'
+def EquationPrototype():
+    return Equation(ph(), ph())
 
 class Lt(Relation):
     symbol = '<'

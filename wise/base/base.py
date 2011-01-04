@@ -4,17 +4,3 @@ try:
     from wise.translators.pure_wrap import PureInterface
 except ImportError:
     raise Exception('Could not load Cython Pure module, perhaps it needs to be built?')
-
-# Include any .pure files you want to use here.
-# Syntax is ( package , filename ). So ( 'foo', 'bar' )
-# corresponds to wise/foo/bar.pure
-
-# PureInterface().use('base','base')
-
-# base.pure
-
-# Define any references you want to use in Python as PureSymbol
-# objects. They will get scraped out and added to the symbol
-# table in worksheet.pure_wrap
-#
-# Add = PureSymbol('add')

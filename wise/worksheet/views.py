@@ -7,30 +7,24 @@
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-
-from django.template import RequestContext
-from django.core.urlresolvers import reverse
-from django.shortcuts import render_to_response, get_object_or_404
+import wise.boot
+import wise.base.cell
+import wise.meta_inspector
+import wise.worksheet.panel
 from django.contrib.auth.decorators import login_required
+from django.core.urlresolvers import reverse
+from django.http import HttpResponse, HttpResponseForbidden
+from django.shortcuts import render_to_response, get_object_or_404
+from django.template import RequestContext
 from django.utils import simplejson as json
-from django.views.decorators.cache import cache_page
-from django.http import (HttpResponse, HttpResponseRedirect,
-HttpResponseForbidden)
-
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import UpdateView, DeleteView
-
-import wise.base
-import wise.boot
-import wise.meta_inspector
-
-from wise.worksheet.utils import *
+from wise.translators.pytopure import parse_sexp
 from wise.worksheet.forms import WorksheetForm
 from wise.worksheet.models import (Workspace, Expression, Cell,
 Assumption)
-import wise.worksheet.panel
+from wise.worksheet.utils import *
 
-from wise.translators.pytopure import parse_sexp
 
 # Initialize the Python-Pure translation bridge
 if settings.WORKER_TYPE == 'sync':

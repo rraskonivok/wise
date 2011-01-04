@@ -1,11 +1,7 @@
-import worksheet.js as js
+from django import template
+
 import worksheet.exceptions as exception
 from worksheet.utils import load_haml_template
-
-from django import template
-from django.utils.safestring import SafeUnicode
-
-from worksheet.utils import *
 
 class Cell(object):
     html = load_haml_template('cell.tpl')
