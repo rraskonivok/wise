@@ -1,3 +1,5 @@
+# If you are using gevent workers with gunicorn then unhighlight
+# the next two lines:
 #try:
 #    from gevent import monkey; monkey.patch_all()
 #except:
@@ -13,10 +15,14 @@ ADMINS = (
     # ('Leonhard Euler', 'leuler@unibas.ch'),
 )
 
+# Debug=True then static files will be served by Django/Gunicorn
+DEBUG = False
+
 MANAGERS = ADMINS
 
-# Set your database information here
-
+# Set your database information here. If left as is then it will
+# create a sqlite database which should work with no
+# configuration.
 DATABASES = {
     'default': {
         'ENGINE': 'sqlite3',# Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
@@ -31,12 +37,23 @@ DATABASES = {
 # `base` is the minimum needed to run
 INSTALLED_MATH_PACKAGES = ('base',)
 
+#---------------------------
+# Message Queues
+#---------------------------
+
 WORKER_TYPE = 'sync' # celery-redis, celery-rabbitmq
 
-# -----------------------
-# Redis
-# -----------------------
+# Note:
+# Celery is installed by default, BUT if you set
+# WORKER_TYPE=sync then you do not need to set up a message queue
+# or broker. All tasks will execute in the Django main event loop
+# additional configuration is needed.
 
+# Set one of these up if you so desire. RabbitMQ is faster, Redis
+# is simpler.
+
+# Redis
+# =====
 # Use redis as a queue
 #BROKER_BACKEND = "kombu.transport.pyredis.Transport"
 #BROKER_HOST = "localhost"
@@ -49,64 +66,39 @@ WORKER_TYPE = 'sync' # celery-redis, celery-rabbitmq
 #REDIS_PORT = 6379
 #REDIS_DB = "0"
 
-# -----------------------
-# RabbitMQ
-# -----------------------
-BROKER_HOST = "localhost"
-BROKER_PORT = 5672
-BROKER_USER = "test"
-BROKER_PASSWORD = "test"
-BROKER_VHOST = "myvhost"
-CELERY_RESULT_BACKEND = "amqp"
 
-CELERY_DISABLE_RATE_LIMITS=True
-CELERY_DB_REUSE_MAX=100
+# RabbitMQ
+# ========
+#BROKER_HOST = "localhost"
+#BROKER_PORT = 5672
+#BROKER_USER = "user"
+#BROKER_PASSWORD = "pass"
+#BROKER_VHOST = "myvhost"
+#CELERY_RESULT_BACKEND = "amqp"
+
+#CELERY_DISABLE_RATE_LIMITS=True
+#CELERY_DB_REUSE_MAX=100
 CELERY_ALWAYS_EAGER = WORKER_TYPE == 'sync'
 
-# Change to your desired cache or disable. Initially you may need
-# to run
-#
-#    python manage.py createcachetable
-#
+#---------------------------
+# Caches
+#---------------------------
+
+# Change to your desired cache or disable. If you use a database
+# then Initially you may need to run: manage.py createcachetable
 #CACHE_BACKEND = 'db://cache'
 
-APPEND_SLASH = True
-DEBUG = False
-TEMPLATE_DEBUG = DEBUG
+#---------------------------
+# Django Enviroment
+#---------------------------
 
 TIME_ZONE = 'America/Chicago'
-
 LANGUAGE_CODE = 'en-us'
 
 SITE_ID = 1
-
 USE_I18N = False
 USE_L10N = False
 USE_ETAGS = False
-
-SITE_ROOT = os.path.realpath(os.path.dirname(__file__))
-
-if DEBUG == True:
-    # In development mode serve static content out of static
-    # using django.contrib.staticfiles
-    MEDIA_ROOT = os.path.join(SITE_ROOT, 'static')
-    MEDIA_URL = '/static/'
-    STATIC_ROOT = "static/"
-    STATIC_URL = '/static/'
-
-elif DEBUG == False:
-    # In production mode serve static content out of static
-    # using nginx. Use manage.py collectstatic to aggregate
-    MEDIA_ROOT = os.path.join(SITE_ROOT, 'media')
-    MEDIA_URL = '/media/'
-    STATIC_ROOT = "media/"
-    STATIC_URL = '/media/'
-
-STATICFILES_DIRS = (
-    MEDIA_ROOT,
-)
-
-DISABLE_PURE = False
 
 # In order to use the Django admin interface with gunicorn you'll
 # need to grab the admin resources from your local install. Use
@@ -114,11 +106,15 @@ DISABLE_PURE = False
 # script will build /static/admin
 ADMIN_MEDIA_PREFIX = '/static/admin/'
 
-# Change this to something special, Django uses this to salt
-# password hashes
+# Change this to something special and don't share it with
+# anyone, Django uses this to salt password hashes
 SECRET_KEY = 'changeme'
 
+# If DEBUG = True, then only addresses in INTERNAL_IPS will be
+# able to access the admin interface
 INTERNAL_IPS = ('127.0.0.1',)
+
+# Globally block an IP address
 BLOCKED_IPS = []
 
 TEMPLATE_LOADERS = (
@@ -145,7 +141,33 @@ MIDDLEWARE_CLASSES = (
 #    'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
 
-from worksheet.media import MEDIA_BUNDLES
+#---------------------------
+# Static Media
+#---------------------------
+
+APPEND_SLASH = True
+SITE_ROOT = os.path.realpath(os.path.dirname(__file__))
+MEDIA_ROOT = os.path.join(SITE_ROOT, 'static')
+
+# MEDIA_URL is what media_bundler prefixes it's path with when it
+# compiles bundles of static files ( see worksheet/media.py )
+if DEBUG == True:
+    # In development mode serve static content out of static
+    # using django.contrib.staticfiles
+    MEDIA_URL = '/static/'
+    STATIC_ROOT = "static/"
+    STATIC_URL = '/static/'
+
+elif DEBUG == False:
+    # In production mode serve static content out of static
+    # using nginx. Use manage.py collectstatic to aggregate
+    MEDIA_URL = '/'
+    STATIC_ROOT = "media/"
+    STATIC_URL = '/'
+
+STATICFILES_DIRS = (
+    MEDIA_ROOT,
+)
 
 ROOT_URLCONF = 'wise.urls'
 ROOTDIR = os.path.abspath(os.path.dirname(__file__))
@@ -158,9 +180,15 @@ TEMPLATE_DIRS = tuple(
     [ROOTDIR +'/templates'] +
     [ROOTDIR + ('/%s/templates' % pack) for pack in INSTALLED_MATH_PACKAGES]
 )
-
+TEMPLATE_DEBUG = DEBUG
 USE_BUNDLES = False
 DEFER_JAVASCRIPT = False
+
+from worksheet.media import MEDIA_BUNDLES
+
+#---------------------------
+# Apps
+#---------------------------
 
 INSTALLED_APPS = [
     'django.contrib.auth',
@@ -186,7 +214,9 @@ INSTALLED_APPS = [
     #'django_extensions',
 ]
 
+#---------------------------
 # Optional Apps
+#---------------------------
 
 # django-sentry - Real-time logging
 try:
@@ -201,6 +231,13 @@ try:
     INSTALLED_APPS += ['grappelli','django.contrib.admin']
 except ImportError:
     INSTALLED_APPS += ['django.contrib.admin']
+
+#---------------------------
+# Debug Options
+#---------------------------
+
+# Disable Pure from staring entirely
+DISABLE_PURE = False
 
 # Don't use `shelve` to cache lookup tables, rebuild them
 # on every boot. Can be quite slow.

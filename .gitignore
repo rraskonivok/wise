@@ -10,4 +10,6 @@
 *.log
 *.backup
 wise/static/img/icons/*.png
+wise/static/admin
+wise/media/*
 wise/pure/pure.c
