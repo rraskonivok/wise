@@ -70,6 +70,10 @@ CELERY_ALWAYS_EAGER = WORKER_TYPE == 'sync'
 #
 #CACHE_BACKEND = 'db://cache'
 
+APPEND_SLASH = True
+DEBUG = False
+TEMPLATE_DEBUG = DEBUG
+
 TIME_ZONE = 'America/Chicago'
 
 LANGUAGE_CODE = 'en-us'
@@ -81,15 +85,26 @@ USE_L10N = False
 USE_ETAGS = False
 
 SITE_ROOT = os.path.realpath(os.path.dirname(__file__))
-MEDIA_ROOT = os.path.join(SITE_ROOT, 'static')
 
-MEDIA_URL = '/static/'
-STATIC_ROOT = "/media/"
-STATIC_URL = MEDIA_URL
+if DEBUG == True:
+    # In development mode serve static content out of static
+    # using django.contrib.staticfiles
+    MEDIA_ROOT = os.path.join(SITE_ROOT, 'static')
+    MEDIA_URL = '/static/'
+    STATIC_ROOT = "static/"
+    STATIC_URL = '/static/'
 
-APPEND_SLASH = True
-DEBUG = False
-TEMPLATE_DEBUG = DEBUG
+elif DEBUG == False:
+    # In production mode serve static content out of static
+    # using nginx. Use manage.py collectstatic to aggregate
+    MEDIA_ROOT = os.path.join(SITE_ROOT, 'media')
+    MEDIA_URL = '/media/'
+    STATIC_ROOT = "media/"
+    STATIC_URL = '/media/'
+
+STATICFILES_DIRS = (
+    MEDIA_ROOT,
+)
 
 DISABLE_PURE = False
 
@@ -115,7 +130,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.contrib.auth.context_processors.auth",
     "django.core.context_processors.debug",
     "django.core.context_processors.media",
-    "django.contrib.messages.context_processors.messages"
+    'django.core.context_processors.static',
+    "django.contrib.messages.context_processors.messages",
 )
 
 MIDDLEWARE_CLASSES = (

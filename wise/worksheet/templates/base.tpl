@@ -42,7 +42,6 @@
       <div id="user-navigation">
         <ul class="wat-cf">
           <li><b><a href="{% url profile %}">{{ user.username }}</a></b></li>
-          <li><a href="{% url docs None %}">Docs</a></li>
           {% if user.is_staff %}
           <li><a href="/admin">Admin</a></li>
           {% endif %}

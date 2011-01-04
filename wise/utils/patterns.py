@@ -62,11 +62,12 @@ class Aggregator(object):
         return key in self.persistance
 
     def __del__(self):
-        self.persistance.close()
+        if self.persistance:
+            self.persistance.close()
+            del self.persistance
 
     def all(self):
         return [i for i in self.persistance]
-
 
     def iteritems(self):
         return self.persistance.iteritems()

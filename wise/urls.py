@@ -5,6 +5,8 @@ from django.contrib import admin
 from django.conf import settings
 from django.contrib.auth.views import password_change
 
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+
 admin.autodiscover()
 
 from worksheet.views import (HomeView, WorksheetEdit,
@@ -75,29 +77,21 @@ urlpatterns = patterns('',
      url(r'^admin/', include(admin.site.urls), name='admin'),
 
      # Sphinx documentation
-     url(r'^docs/(?P<path>.*)$', 'django.views.static.serve',
-         {'document_root': 'docs/_build/html','show_indexes': True},
-         name='docs'),
+#     url(r'^docs/(?P<path>.*)$', 'django.views.static.serve',
+#         {'document_root': 'docs/_build/html','show_indexes': True},
+#         name='docs'),
 
      # TODO: Firefox 4 has some issue with OpenType fonts being loaded
      # from /static when the current page is /ws since it is one level
      # up which violates it's same origin policy
-     (r'^ws/mathjax/(?P<path>.*)$', 'django.views.static.serve',
-             {'document_root': settings.MEDIA_ROOT + '/mathjax'}),
-
-     # Static Media
-     (r'^img/(?P<path>.*)$', 'django.views.static.serve',
-             {'document_root': settings.MEDIA_ROOT + '/img'}),
-
-     (r'^media/(?P<path>.*)$', 'django.views.static.serve',
-             {'document_root': settings.MEDIA_ROOT + '/admin'}),
-
-     (r'^static/(?P<path>.*)$', 'django.views.static.serve',
-             {'document_root': settings.MEDIA_ROOT}),
-
-     (r'^favicon\.ico$', 'django.views.generic.simple.redirect_to', 
-             {'url': '/static/img/favicon.ico'}),
+#     (r'^ws/mathjax/(?P<path>.*)$', 'django.views.static.serve',
+#             {'document_root': settings.MEDIA_ROOT + '/mathjax'}),
+#
+#     (r'^favicon\.ico$', 'django.views.generic.simple.redirect_to', 
+#             {'url': '/static/img/favicon.ico'}),
 )
+
+urlpatterns += staticfiles_urlpatterns()
 
 if settings.DEBUG:
     urlpatterns += patterns('',
