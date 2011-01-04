@@ -1,4 +1,4 @@
-from decorator import decorator
+from wise.utils.decorator import decorator
 from itertools import islice
 
 # This isn't a static typing wrapper (though there is support

@@ -12,7 +12,7 @@ import sys
 import logging
 import functools
 
-from decorator import decorator
+from wise.utils.decorator import decorator
 from operator import xor
 from binascii import crc32
 
