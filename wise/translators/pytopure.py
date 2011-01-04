@@ -28,6 +28,7 @@ from hashlib import sha1
 # objects
 
 
+# TODO: change this to Node(object)
 class Branch(object):
     #
     #         O            The hash of a non-terminal node is
@@ -41,8 +42,7 @@ class Branch(object):
     #          /   \       string 'type' which is hashed
     #         #     #      into the node.
 
-    # We use the SHA1 algorithm, since it likely to have
-    # collisions than CRC32.
+    # SHA1 and CRC32 are available to hash trees
 
     atomic = False
     idgen = None
@@ -60,6 +60,51 @@ class Branch(object):
 
         self.subatoms = set([child for child in self.args if
             not isinstance(child,Branch)])
+
+    # TODO: this documentation is severly lacking
+    def eval_args(self):
+        '''Create an instance of the node's type ( self.type )
+        and pass the node's arguments ( self.args ) to the new
+        instance'''
+
+        def f(x):
+            if isinstance(x,unicode) or isinstance(x,str):
+                return x
+            elif isinstance(x,int) or isinstance(x,float):
+                return x
+            elif isinstance(x,Branch):
+                return x.eval_args()
+
+        type = pyobjects[self.type]
+
+        if not type:
+            raise Exception('Could not lookup Python class', self.type)
+            return
+
+        obj = type(*(f(arg) for arg in self.args))
+
+        return obj
+
+    # TODO: this documentation is severly lacking
+    def eval_pure(self):
+        '''Like pure_eval but instead of mapping into internal
+        python objects it maps into Pure Objects. This is used
+        for when we run an expression through Pure and want to
+        map the result into something to use in Python.'''
+
+        #Evalute by descent
+        def f(x):
+            if isinstance(x,str):
+                return x
+            elif isinstance(x,int) or isinstance(x,float):
+                return x
+            elif isinstance(x,Branch):
+                return x.eval_pure()
+
+        type = translate_pure(self.type)
+        obj = type(*(f(arg) for arg in self.args))
+
+        return obj
 
     def __repr__(self):
         return '(%s,%r)' % (self.type,self.args)
@@ -182,49 +227,6 @@ class Branch(object):
         map(f, self.args)
         return lst
 
-    def eval_args(self):
-        '''Create an instance of the node's type ( self.type )
-        and pass the node's arguments ( self.args ) to the new
-        instance'''
-
-        def f(x):
-            if isinstance(x,unicode) or isinstance(x,str):
-                return x
-            elif isinstance(x,int) or isinstance(x,float):
-                return x
-            elif isinstance(x,Branch):
-                return x.eval_args()
-
-        type = pyobjects[self.type]
-
-        if not type:
-            raise Exception('Could not lookup Python class', self.type)
-            return
-
-        obj = type(*(f(arg) for arg in self.args))
-
-        return obj
-
-    def eval_pure(self):
-        '''Like pure_eval but instead of mapping into internal
-        python objects it maps into Pure Objects. This is used
-        for when we run an expression through Pure and want to
-        map the result into something to use in Python.'''
-
-        #Evalute by descent
-        def f(x):
-            if isinstance(x,str):
-                return x
-            elif isinstance(x,int) or isinstance(x,float):
-                return x
-            elif isinstance(x,Branch):
-                return x.eval_pure()
-
-        type = translate_pure(self.type)
-        obj = type(*(f(arg) for arg in self.args))
-
-        return obj
-
 def map_nullary(parsed):
     """ Recursively convert nullary functions to prefix form"""
     if isinstance(parsed,tuple):
@@ -344,3 +346,5 @@ def is_valid_pure(code):
     except ParseError:
         return False
     return True
+
+#vim: ai ts=4 sts=4 et sw=4

@@ -34,6 +34,11 @@ DATABASES = {
     }
 }
 
+# The root module for wise
+ROOT_MODULE = 'wise'
+# Module contianing packages
+PACK_MODULE = ROOT_MODULE + '.packages'
+
 # `base` is the minimum needed to run
 INSTALLED_MATH_PACKAGES = ('base',)
 
@@ -243,8 +248,6 @@ DISABLE_PURE = False
 # on every boot. Can be quite slow.
 NOCACHE = False
 
-# In case somebody wants to fork under a new name
-ROOT_MODULE = 'wise'
 
 # Some browsers require the Content-Type to be
 # `application/xhtml+xml` in order to render mixed doctype HTML +

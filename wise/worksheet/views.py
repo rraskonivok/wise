@@ -110,6 +110,8 @@ def ecosystem(request):
 # Worksheet
 #---------------------------
 
+#TODO: change the name of this to something more illuminating
+# i.e. WorksheetView
 @login_required
 def ws(request, ws_id):
 
@@ -188,7 +190,7 @@ def ws(request, ws_id):
     return response
 
 #---------------------------
-# Palette
+# Palettes
 #---------------------------
 
 @login_required
