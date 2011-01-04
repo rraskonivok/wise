@@ -1,7 +1,6 @@
 from wise.worksheet.models import Expression, Workspace, Cell, \
 Assumption
 
-from reversion.admin import VersionAdmin
 from django.contrib import admin
 
 class ExpressionsInline(admin.StackedInline):
@@ -20,16 +19,7 @@ class WorkspaceAdmin(admin.ModelAdmin):
 class CellAdmin(admin.ModelAdmin):
     inlines = [ExpressionsInline, AssumptionsInline]
 
-class VersionedWorkspace(VersionAdmin):
-    pass
-
-class VersionedExpression(VersionAdmin):
-    pass
-
-class VersionedAssumption(VersionAdmin):
-    pass
-
-admin.site.register(Workspace, VersionedWorkspace)
-admin.site.register(Expression, VersionedExpression)
-admin.site.register(Assumption, VersionedAssumption)
+admin.site.register(Workspace)
+admin.site.register(Expression)
+admin.site.register(Assumption)
 admin.site.register(Cell, CellAdmin)

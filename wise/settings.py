@@ -82,10 +82,13 @@ USE_ETAGS = False
 
 SITE_ROOT = os.path.realpath(os.path.dirname(__file__))
 MEDIA_ROOT = os.path.join(SITE_ROOT, 'static')
+
 MEDIA_URL = '/static/'
+STATIC_ROOT = "/media/"
+STATIC_URL = MEDIA_URL
 
 APPEND_SLASH = True
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
 DISABLE_PURE = False
@@ -120,9 +123,9 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'middleware.XHTMLMiddleware',
-#    'middleware.ErrorMiddleware',
     'middleware.BlockedIpMiddleware',
     'privatebeta.middleware.PrivateBetaMiddleware',
+#    'middleware.ErrorMiddleware',
 #    'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
 
@@ -149,6 +152,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.humanize',
+    'django.contrib.staticfiles',
     'wise.worksheet',
     'gunicorn',
     'djcelery',
@@ -166,27 +170,21 @@ INSTALLED_APPS = [
     #'django_extensions',
 ]
 
-# Check if we have any optional apps
+# Optional Apps
 
-# Logging with django-sentry
+# django-sentry - Real-time logging
 try:
     import indexer, paging, sentry, sentry.client
     INSTALLED_APPS  += ['indexer', 'paging', 'sentry', 'sentry.client']
 except ImportError:
     pass
 
-# Prettier admin interface
+# Grapelli - prettier admin interface
 try:
     import grappelli
     INSTALLED_APPS += ['grappelli','django.contrib.admin']
 except ImportError:
     INSTALLED_APPS += ['django.contrib.admin']
-
-# Version control on Models
-try:
-    INSTALLED_APPS += ['reversion']
-except ImportError:
-    pass
 
 # Don't use `shelve` to cache lookup tables, rebuild them
 # on every boot. Can be quite slow.

@@ -26,7 +26,7 @@ class TranslationTable(object):
     def __getitem__(self, key):
         return self.table[key]
 
-# This is threadsafe iff iff it is in read-only mode.
+# This is threadsafe iff it is in read-only mode.
 class Aggregator(object):
     """
     Lookup table with disk persistance that falls back to an
@@ -55,14 +55,18 @@ class Aggregator(object):
             self.persistance = self.fallback_dict
             self.fallback = True
 
-    def all(self):
-        return [i for i in self.persistance]
-
     def __len__(self):
         return len(self.persistance)
 
     def __contains__(self, key):
         return key in self.persistance
+
+    def __del__(self):
+        self.persistance.close()
+
+    def all(self):
+        return [i for i in self.persistance]
+
 
     def iteritems(self):
         return self.persistance.iteritems()

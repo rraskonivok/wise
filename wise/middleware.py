@@ -19,15 +19,15 @@ class XHTMLMiddleware(object):
                 response["Content-Type"] = "application/xhtml+xml; charset=utf-8"
         return response
 
-class ErrorMiddleware(object):
-    def process_exception(self, request, exception):
-        # Make sure the exception signal is fired for Sentry
-
-        if has_sentry:
-            sentry_exception_handler(request=request)
-
-        raise exception
-        return HttpResponse('500')
+#class ErrorMiddleware(object):
+#    def process_exception(self, request, exception):
+#        # Make sure the exception signal is fired for Sentry
+#
+#        if has_sentry:
+#            sentry_exception_handler(request=request)
+#
+#        raise exception
+#        return HttpResponse('500')
 
 class BlockedIpMiddleware(object):
     def process_request(self, request):
