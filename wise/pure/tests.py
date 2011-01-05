@@ -1,14 +1,29 @@
-from pure import PureEnv, PureSymbol
+import unittest
 
+from pure import PureEnv, PureSymbol, PureInt, PureDouble
 env = PureEnv()
 
-assert env != None
-assert env.eval('1') != None
-assert str(PureSymbol('x')) == 'x'
+class TestPureCythonModule(unittest.TestCase):
 
-env.eval('using prelude')
+    def setUp(self):
+        pass
 
-assert str(env.eval('i2p $ x + y')) == 'add x y'
-assert str(env.eval('3+1+4')) == '8'
+    def test_interp(self):
+        self.failIfEqual(env, None)
+        self.failIfEqual(env.eval('1'),None)
 
-print 'Passed all tests!'
+    def test_primitives(self):
+        self.assertEqual(str(env.eval('1+1')),'2')
+        self.assertEqual(str(PureSymbol('x')),'x')
+        self.assertEqual(str(PureInt(1)),'1')
+        self.assertEqual(str(PureDouble(3.14)),'3.14')
+
+    def test_prelude(self):
+        env.eval('using prelude')
+        self.assertEqual(str(env.eval('i2p $ x + y')),'add x y')
+        self.assertEqual(str(env.eval('p2i $ add x y')),'x+y')
+
+if __name__ == '__main__':
+    unittest.main()
+
+#vim: ai ts=4 sts=4 et sw=4

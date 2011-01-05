@@ -1,6 +1,3 @@
-doc:
-	pycco -p worksheet/*.py -d docs
-
 all: cython
 
 cython:
@@ -11,3 +8,6 @@ clean:
 
 clearcache:
 	rm rules_cache rulesets_cache packages_cache
+
+doc:
+	pycco -p worksheet/*.py -d docs

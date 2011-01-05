@@ -141,7 +141,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'middleware.XHTMLMiddleware',
     'middleware.BlockedIpMiddleware',
-    'privatebeta.middleware.PrivateBetaMiddleware',
+#    'privatebeta.middleware.PrivateBetaMiddleware',
 #    'middleware.ErrorMiddleware',
 #    'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
@@ -211,7 +211,7 @@ INSTALLED_APPS = [
     # install the grapelli admin interface with:
     # `pip install -E wise grappelli`
     'piston',
-    'privatebeta',
+    #'privatebeta',
     'media_bundler',
     'registration',
     # Optional Applications - mostly for development
@@ -233,8 +233,8 @@ except ImportError:
 # Grapelli - prettier admin interface
 try:
     import grappelli
-    INSTALLED_APPS += ['grappelli','django.contrib.admin']
-except ImportError:
+    INSTALLED_APPS += ['grappelli']
+except:
     INSTALLED_APPS += ['django.contrib.admin']
 
 #---------------------------
