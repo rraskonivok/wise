@@ -7,10 +7,11 @@
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
+
+import panel
 import wise.boot
 import wise.base.cell
 import wise.meta_inspector
-import wise.worksheet.panel
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseForbidden
@@ -25,7 +26,7 @@ from wise.worksheet.forms import WorksheetForm
 from wise.worksheet.models import (Workspace, Expression, Cell,
 Assumption)
 from wise.worksheet.utils import *
-
+from operator import itemgetter
 
 # Initialize the Python-Pure translation bridge
 if settings.WORKER_TYPE == 'sync':
@@ -33,6 +34,8 @@ if settings.WORKER_TYPE == 'sync':
     wise.boot.start_cython()
 else:
     wise.boot.start_python_pure()
+
+panel.build_panels()
 
 #---------------------------
 # Home Page
@@ -207,9 +210,9 @@ def palette(request):
 
 def generate_palette():
     render_panels = []
-    panels = wise.worksheet.panel.panels
+    panels = sorted(panel.panels.iteritems(), key=itemgetter(0))
 
-    for pnl in panels.itervalues():
+    for name, pnl in panels:
         pnl.html = pnl.get_html()
         render_panels.append(pnl)
 

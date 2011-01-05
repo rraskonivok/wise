@@ -3,13 +3,16 @@ from types import TypeType
 
 from django.conf import settings
 from django.template import Template, Context
-from django.utils import importlib
 from wise.base.objects import Placeholder
-import wise.worksheet.exceptions as exception
+
+from wise.utils.patterns import Aggregator
+from django.utils.importlib import import_module
+from wise.utils.module_loading import module_has_submodule
 
 ROOT_MODULE = 'wise'
 packages = {}
-panels = {}
+
+panels = Aggregator(file='panels_cache')
 
 def _map_panel_types(obj):
     if isinstance(obj, TypeType):
@@ -89,17 +92,25 @@ class MathMLPanel(Panel):
 def is_panel(obj):
     return isinstance(obj,Panel)
 
-for pack in settings.INSTALLED_MATH_PACKAGES:
-    try:
-        path = '.'.join([ROOT_MODULE,pack,'panel'])
-        packages[pack] = importlib.import_module(path)
-        for name, symbol in packages[pack].__dict__.iteritems():
-            if is_panel(symbol):
-                symbol.package = pack
-                if settings.DEBUG:
-                    pass
-                    #print "Importing panel ... %s/%s" % (pack, name)
+def build_panels(force=False):
 
-                panels[name] = symbol
-    except ImportError:
-        raise exception.IncompletePackage(pack,'panel.py')
+    if panels and not settings.NOCACHE:
+        print 'Using cached panels file.'
+        return
+
+    for pack_name in settings.INSTALLED_MATH_PACKAGES:
+        print 'Importing panels from ... ' + pack_name
+        pack_module = import_module(pack_name)
+
+        # Load PACKAGE/rules.py
+        if module_has_submodule(pack_module, 'panel'):
+            path = pack_name + '.panel'
+            pack_rules = import_module(path, settings.ROOT_MODULE)
+
+            panels.make_writable()
+            for panel_name, symbol in pack_rules.__dict__.iteritems():
+                if is_panel(symbol):
+                    symbol.package = pack_name
+                    panels[panel_name] = symbol
+
+            panels.sync()

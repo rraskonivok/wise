@@ -20,8 +20,7 @@ def start_python_pure():
     """ Load all Python packages and initialize the Pure-Cython
     wrapper. Potentially a very long operation """
 
-    from wise.translators.mathobjects import (build_all_lookup,
-            build_rule_lookup)
+    from wise.translators.mathobjects import build_all_lookup
 
     build_all_lookup()
 

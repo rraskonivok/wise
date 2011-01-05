@@ -1,12 +1,12 @@
 Sooo, you want to hack on Wise. Right now its sorted up ugly
 twisted spaghetti code that I'm untangeling but it it fairly
-well documented. 
+well documented.
 
 Feel free to fork the project Github at
-https://github.com/sdiehl/wise
 
-I can also be reached at:
-sdiehl@clarku.edu
+    https://github.com/sdiehl/wise
+
+I'm always happy to receive feedback!
 
 Most of the code is Django boilerplate stuff and can be skimmed
 but the big program logic files are:
@@ -14,36 +14,34 @@ but the big program logic files are:
 Worksheet Stuff:
 ----------------
 
-* static/js/tree.js  ( this is the *big* one, contains models for all
-the expression handeling )
+    Worksheet:
 
-* static/js/worksheet.js
-* static/js/worksheet_managers.js
-* static/js/worksheet_views.js
+    * static/js/tree.js
+    * static/js/worksheet.js
+    * static/js/worksheet_managers.js
+    * static/js/worksheet_views.js
 
-To understand all the ajax that goes on read
+    To understand all the ajax that goes on read
 
-* urls.py
-* worksheet/ajax.py
+    * urls.py
+    * worksheet/ajax.py
 
-And the rest API is written with Django Piston
+    And the REST API is written with Django Piston
 
-* api/handlers.py
+    * api/handlers.py
 
 Pure Stuff:
 ----------------
 
-pure/pure.pyx ( this is the Cython module that makes Python and
-Pure play nice )
+    * pure/cpure.pyx
+    * translators/pure_wrap.py
+    * translators/pytopure.py
 
-* translators/pure_wrap.py
-* translators/pytopure.py
-
-Mathy Stuff:
+Maths Stuff:
 ----------------
 
-* base/term.py
-* base/objects.py
+    * base/term.py
+    * base/objects.py
 
 If you want to make your own package then take a look at
 /pkgtemplate as a starting point.

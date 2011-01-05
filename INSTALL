@@ -1,30 +1,37 @@
 General Installation on Linux / OSX:
 -------------------------------------
 
-1) You'll need Python 2.6-2.7 (but not Python 3) and distribution
+1) You'll need Python 2.6+ (but not Python 3) and distribution
     tools: On Ubuntu:
 
-    $ sudo apt-get install python-setuptools python-dev build-essential
-    $ sudo easy_install -U pip
-    $ sudo pip install -U virtualenv
+        $ sudo apt-get install python-setuptools python-dev build-essential
+        $ sudo easy_install -U pip
+        $ sudo pip install -U virtualenv
+
 
 2) Install Pure and LLVM:
 
-   a) There are packages are source code available for Fedora, Arch,
+   If you are on Ubuntu/Debian you can use the included build
+   script
+
+        $ ./dist/build_pure.sh
+
+   If you are not on Ubuntu then, it is highly likely that your
+   distribution has a package for LLVM, but if you need to
+   compile from source you can find directions on the pure site:
+
+        http://pure-lang.googlecode.com/hg/pure/INSTALL
+
+   There are packages are source code available for Fedora, Arch,
    OS X and a few other package managers available here:
 
         http://code.google.com/p/pure-lang
 
    If your distribution does not carry Pure then you can find
-   directions for compiling from source here:
+   directions for compiling LLVM from source here:
 
         http://pure-lang.googlecode.com/hg/pure/INSTALL
 
-   b) It is highly likely that your distribution has a package for
-   LLVM, but if you need to compile from source you can find
-   directions on the pure site:
-
-        http://pure-lang.googlecode.com/hg/pure/INSTALL
 
 3) Set up a new virtualenv, if you aren't using virtualenv then
    start today! If this is your first virtualenv then run the
@@ -58,9 +65,10 @@ General Installation on Linux / OSX:
 
        (wise)$ pip install -r /path/to/wise/dir/optional.txt
 
+
 4) Get the wise source code
 
-    Stable releases:
+    Stable releases can be downloaded from Github:
 
         https://github.com/sdiehl/wise/archives/master
 
@@ -68,10 +76,12 @@ General Installation on Linux / OSX:
 
         git clone git://github.com/sdiehl/wise
 
+
 5) Build the Pure module
 
         $ cd wise
         $ make
+
 
 6) Create the database:
 
@@ -80,6 +90,7 @@ General Installation on Linux / OSX:
 
     This will prompt you to create a admin user and create
     the local database in wise.db
+
 
 7) Run Wise:
 
