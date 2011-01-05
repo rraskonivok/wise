@@ -5,10 +5,6 @@ General Installation on Linux / OSX:
     tools: On Ubuntu:
 
     $ sudo apt-get install python-setuptools python-dev build-essential
-
-    *Note, if you are using Python2.7 then you will need to
-    adjust the Makefile in (4) to use '/usr/include/python2.7'.
-
     $ sudo easy_install -U pip
     $ sudo pip install -U virtualenv
 
@@ -17,7 +13,7 @@ General Installation on Linux / OSX:
    a) There are packages are source code available for Fedora, Arch,
    OS X and a few other package managers available here:
 
-       http://code.google.com/p/pure-lang
+        http://code.google.com/p/pure-lang
 
    If your distribution does not carry Pure then you can find
    directions for compiling from source here:
@@ -31,60 +27,67 @@ General Installation on Linux / OSX:
         http://pure-lang.googlecode.com/hg/pure/INSTALL
 
 3) Set up a new virtualenv, if you aren't using virtualenv then
-   start. If this is your first virtualenv then run the following
-   two commands:
+   start today! If this is your first virtualenv then run the
+   following two commands:
 
-   $ mkdir -p ~/.virtualenvs
-   $ cd ~/.virtualenvs
+        $ mkdir -p ~/.virtualenvs
+        $ cd ~/.virtualenvs
 
    Create a Wise virtualenv:
 
-   $ virtualenv --no-site-packages --distribute wise
+        $ virtualenv --no-site-packages --distribute wise
 
-   Activate the new enviroment which gives you a shell where
-   all commands run in python are run in your local virtualenv.
- 
-   $ source wise/bin/activate
+   To Activate the new enviroment run:
 
-   Comamnds marked with 
-   
-        $(wise) 
-   
+        $ source wise/bin/activate
+
+   which gives you a shell where all commands run in python are
+   run in your local virtualenv. From here on comamnds prefixed
+   with:
+
+        $(wise)
+
    refer to commands that should be
    run in the wise virtualenv shell.
 
    Install python libraries:
 
-   (wise)$ pip install -r /path/to/wise/dir/requirements.txt
+       (wise)$ pip install -r /path/to/wise/dir/requirements.txt
 
    If you are a developer you may want the optional packages
 
-   (wise)$ pip install -r /path/to/wise/dir/optional.txt
+       (wise)$ pip install -r /path/to/wise/dir/optional.txt
 
-4) Build the Pure module
+4) Get the wise source code
 
-    $ cd wise/pure
-    $ make
+    Stable releases:
 
-    You may need to adjust the the include directory in Makefile
-    if you have a nonstandard install of Python 2.6, the default
-    search path is '/usr/include/python2.6'
+        https://github.com/sdiehl/wise/archives/master
 
-5) Create the database:
+    Development version can be obtained by git:
 
-    (wise)$ cd wise/
-    (wise)$ python mange.py syncdb
+        git clone git://github.com/sdiehl/wise
+
+5) Build the Pure module
+
+        $ cd wise
+        $ make
+
+6) Create the database:
+
+        (wise)$ cd wise/
+        (wise)$ python mange.py syncdb
 
     This will prompt you to create a admin user and create
     the local database in wise.db
 
-6) Run Wise:
+7) Run Wise:
 
-    (wise)$ gunicorn_django
+        (wise)$ gunicorn_django
 
     This will run the Wise worksheet at 'localhost:8000' by
     default. To use a different address or port use the -b switch
 
     Example:
 
-    (wise)$ gunicorn_django -b 192.168.0.1:1234
+        (wise)$ gunicorn_django -b 192.168.0.1:1234

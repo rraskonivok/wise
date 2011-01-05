@@ -21,10 +21,15 @@ class _Sneaky(object):
         self.interface = None
 
     def __getattr__(self, name):
+        from wise import settings
         from wise.translators.pure_wrap import init_pure
 
         if not self.interface:
             self.interface = init_pure()
+
+            if settings.DEBUG:
+                print 'Creating new interpreter instance because\
+ pureobjects.py requested object.'
 
         return self.interface[name]
 

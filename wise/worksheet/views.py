@@ -219,7 +219,6 @@ def generate_palette():
 # Development Tools
 #---------------------------
 
-
 def objectgraph(request, package='base'):
     from worksheet.viz import package_to_graph
 
@@ -228,7 +227,7 @@ def objectgraph(request, package='base'):
     except ImportError:
         return HttpResponse('Invalid class.')
 
-    graph.layout(prog='dot')
+    graph.layout(prog='fdp')
     png=graph.draw(format='png')
     return HttpResponse(png, mimetype='image/png')
 

@@ -4,31 +4,7 @@ from libc.stdlib cimport *
 
 __all__ = ['PureInt', 'PureSymbol', 'PureLevel',
 'PureExpr', 'PureDouble', 'PureClosure', 'reduce_with_pure_rules',
-'new_level', 'restore_level', 'IManager', 'PureEnv']
-
-class IManager:
-    # Interpreter manager - a singleton / borg
-    current_interp = None
-
-    def __cinit__(self):
-        self.__dict__ = self.__shared_state
-
-    def add(self, interp):
-        self.current_interp = interp
-
-    def get(self):
-        if self.current_interp:
-            return self.current_interp
-        else:
-            raise Exception('No active interpreter')
-
-    @classmethod
-    def exists(self):
-        return not self.current_interp
-
-    @classmethod
-    def active(self):
-        return self()
+'new_level', 'restore_level', 'PureEnv']
 
 cdef class PureEnv:
     cdef pure_interp *_interp
@@ -40,7 +16,7 @@ cdef class PureEnv:
         # light and fast.
         print "Creating interpreter instance ...",
 
-        args = ['--noprelude']
+#        args = ['--noprelude']
 
         #cdef char *xp
         #cdef char *xps[5]
@@ -65,8 +41,6 @@ cdef class PureEnv:
 
         # PureSymbol fails if this not here
         self.locals = []
-        im = IManager.active()
-        im.add(self)
 
         print 'SUCCESS'
 
@@ -200,15 +174,10 @@ cdef class PureSymbol(PureExpr):
     cdef public _psym
 
     def __cinit__(self,sym):
-       if not IManager.exists():
-           print 'No active interpreter'
-       else:
-           self._sym = sym
-           self._psym = sym
-           self._expr = cpure.pure_symbol(cpure.pure_sym(sym))
-           self._tag = self._expr.tag
-           #self._interp = IManager.active().current_interp
-           #self._interp.locals.append(self)
+       self._sym = sym
+       self._psym = sym
+       self._expr = cpure.pure_symbol(cpure.pure_sym(sym))
+       self._tag = self._expr.tag
 
     def update(self):
        '''Called if the we need to change what the symbol refers to'''
