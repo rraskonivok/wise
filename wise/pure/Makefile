@@ -1,5 +1,5 @@
-TARGET  := pure.so
-PYSRC  := pure.pyx
+TARGET  := cpure.so
+PYSRC  := cpure.pyx
 CSRC    := ${PYSRC:.pyx=.c} 
 OBJS   := ${PYSRC:.pyx=.o} 
 

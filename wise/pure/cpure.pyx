@@ -1,9 +1,6 @@
-cimport pure
+cimport cpure
 cimport cpython
 from libc.stdlib cimport *
-
-# This module only works with Python 2.7
-# I designed this after working with rpy2's Cython wrapper.
 
 __all__ = ['PureInt', 'PureSymbol', 'PureLevel',
 'PureExpr', 'PureDouble', 'PureClosure', 'reduce_with_pure_rules',
@@ -54,7 +51,7 @@ cdef class PureEnv:
         #    xp = 'h'
         #    strcpy(xps[i],xp)
 
-        self._interp = pure.pure_create_interp(0,NULL)
+        self._interp = cpure.pure_create_interp(0,NULL)
         #try:
         #    print 'Created succesfully!'
         #finally:
@@ -78,14 +75,14 @@ cdef class PureEnv:
 
     cpdef eval(self, s):
         cdef pure_expr *y
-        y = pure.pure_eval(s)
+        y = cpure.pure_eval(s)
         if y == NULL:
             print "Could not evaluate:", s
         else:
             return PureExpr().se(y)
 
     cpdef cmd(self, s):
-        print pure.pure_evalcmd(s)
+        print cpure.pure_evalcmd(s)
 
     def using(self, lib):
         self.eval("using %s" % lib)
@@ -94,7 +91,7 @@ cdef class PureEnv:
 
     def compile_interp(self, fnp=0):
         print 'JIT compiling symbols.'
-        pure.pure_interp_compile(self._interp,fnp)
+        cpure.pure_interp_compile(self._interp,fnp)
 
 cdef class PureExpr:
     cdef pure_expr *_expr
@@ -121,7 +118,7 @@ cdef class PureExpr:
         return self._tag
 
     def refresh(self):
-        self._expr = pure.eval(self._expr)
+        self._expr = cpure.eval(self._expr)
 
     @property
     def refc(self):
@@ -133,10 +130,10 @@ cdef class PureExpr:
         return self._type
 
     def __del__(self):
-        pure.pure_free(self._expr)
+        cpure.pure_free(self._expr)
 
     def __repr__(self):
-        return pure.str(self._expr)
+        return cpure.str(self._expr)
 
     def __call__(self,*args):
         cdef pure_expr *xp
@@ -145,12 +142,12 @@ cdef class PureExpr:
 
         for i in range(0,len(args)):
             xp = g(args[i])
-            pure.pure_ref(xp)
+            cpure.pure_ref(xp)
             xps[i] = xp
 
         cdef pure_expr *nexp
-        pure.pure_ref(self._expr)
-        nexp = pure.pure_appv(self._expr, len(args), xps)
+        cpure.pure_ref(self._expr)
+        nexp = cpure.pure_appv(self._expr, len(args), xps)
         nex = (PureApp().se(nexp))
         nex.set_head(self)
         return nex
@@ -162,7 +159,7 @@ cdef class PureExpr:
     #        return False
 
     #cpdef __richcmp__(self, PureExpr other):
-    #    return pure.same(self._expr, other._expr)
+    #    return cpure.same(self._expr, other._expr)
 
     #def __add__(self,other):
     #    return operator.add(self,other)
@@ -208,14 +205,14 @@ cdef class PureSymbol(PureExpr):
        else:
            self._sym = sym
            self._psym = sym
-           self._expr = pure.pure_symbol(pure.pure_sym(sym))
+           self._expr = cpure.pure_symbol(cpure.pure_sym(sym))
            self._tag = self._expr.tag
            #self._interp = IManager.active().current_interp
            #self._interp.locals.append(self)
 
     def update(self):
        '''Called if the we need to change what the symbol refers to'''
-       self._expr = pure.pure_symbol(pure.pure_sym(self._sym))
+       self._expr = cpure.pure_symbol(cpure.pure_sym(self._sym))
        self._tag = self._expr.tag
 
     def __invert__(self):
@@ -226,7 +223,7 @@ cdef class PureQuotedSymbol(PureExpr):
 
     def __cinit__(self,sym):
        self._sym = sym
-       self._expr = pure.pure_quoted_symbol(pure.pure_sym(sym))
+       self._expr = cpure.pure_quoted_symbol(cpure.pure_sym(sym))
        self._tag = self._expr.tag
 
 cdef class PureClosure(PureSymbol):
@@ -240,12 +237,12 @@ cdef class PureRule(PureExpr):
         if isinstance(lhs,type("")):
             slhs = lhs
         else:
-            slhs = pure.str(g(lhs))
+            slhs = cpure.str(g(lhs))
 
         if isinstance(rhs,type("")):
             srhs = rhs
         else:
-            srhs = pure.str(g(rhs))
+            srhs = cpure.str(g(rhs))
 
         stmt = "=".join([slhs,srhs])
         self._stmt = stmt
@@ -268,7 +265,7 @@ cdef class PureInt(PureExpr):
             raise TypeError('Integer is larger than 32-bits.')
             return
 
-        self._expr = pure.pure_int(i)
+        self._expr = cpure.pure_int(i)
         self._tag = self._expr.tag
 
 cdef class PureDouble(PureExpr):
@@ -276,7 +273,7 @@ cdef class PureDouble(PureExpr):
     number = None
 
     def __cinit__(self,i):
-        self._expr = pure.pure_double(i)
+        self._expr = cpure.pure_double(i)
         self._tag = self._expr.tag
 
 cdef class PureList(PureExpr):
@@ -288,7 +285,7 @@ cdef class PureList(PureExpr):
         for i in range(0,len(args)):
             xp = g(args[i])
             xps[i] = xp
-        self._expr = pure.pure_listv(len(args),xps)
+        self._expr = cpure.pure_listv(len(args),xps)
 
 #    def __getitem__(a,b):
 #        return operator.__getitem__(a,PureInt(b))
@@ -305,7 +302,7 @@ cdef class PureTuple(PureExpr):
         for i in range(0,len(args)):
             xp = g(args[i])
             xps[i] = xp
-        self._expr = pure.pure_tuplev(len(args),xps)
+        self._expr = cpure.pure_tuplev(len(args),xps)
 
 cdef class PureLevel(PureExpr):
     _type = 'level'
@@ -318,8 +315,8 @@ cdef class PureLevel(PureExpr):
 
         rls = '; '.join(rules)
         cmd = ' '.join(['__locals__ with', rls, 'end;'])
-        self._expr = pure.pure_eval(cmd)
-        self._hash = pure.hash(self._expr)
+        self._expr = cpure.pure_eval(cmd)
+        self._hash = cpure.hash(self._expr)
 
     def hash(self):
         return self._hash
@@ -335,11 +332,11 @@ def reduce_with_pure_rules(PureExpr level, PureExpr expr):
     # reduce_with expr __locals__ with rule1; rule2; end;
 
     cdef pure_expr *rexp
-    rexp = pure.reduce(level._expr, expr._expr)
+    rexp = cpure.reduce(level._expr, expr._expr)
     return PureExpr().se(rexp)
 
 def new_level():
-    pure.pure_save()
+    cpure.pure_save()
 
 def restore_level():
-    pure.pure_restore()
+    cpure.pure_restore()

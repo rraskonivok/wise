@@ -15,7 +15,7 @@ class PureInterface(Borg):
         self.__dict__ = self.__shared_state
 
         if not self._interp:
-            from pure.pure import PureEnv
+            from pure.cpure import PureEnv
             self._interp = PureEnv()
             self._loaded = True
         elif interp:
@@ -78,36 +78,16 @@ def init_pure(prelude=True, force=False):
     interface = PureInterface()
 
     if not interface.symbols:
-        # __all__ is specified in pure/pure.pyx
-        exec('from wise.pure.pure import *') in interface.symbols
-#        exec('from wise.pure.pure import *') in globals()
+        # __all__ is specified in cpure/pure.pyx
+        exec('from wise.pure.cpure import *') in interface.symbols
+#        exec('from wise.pure.cpure import *') in globals()
 
     if prelude:
         interface.use('pure','prelude')
         exec('from wise.pure.prelude import p2i, i2p, nargs') in interface.symbols
-#        exec('from wise.pure.pure import *') in globals()
+#        exec('from wise.pure.cpure import *') in globals()
 
     return interface
-
-# This is a statefull change in the interpreter, if this is
-# called at the root definition level it applies globally
-#class ProtoRule:
-#    _proto = None
-#    lhs = None
-#    rhs = None
-#
-#    def __init__(self, lhs, rhs, guards=None):
-#        self.lhs = lhs
-#        self.rhs = rhs
-#
-#    def __call__(self):
-#        self._proto = proto_op(p2i(self.lhs), p2i(self.rhsj)
-#        #print 'Init rule:', self._proto
-#        # instance ( lhs --> rhs )1/
-#        instance(self._proto)
-#
-#    def __repr__(self):
-#        return str(self._proto)
 
 class PublicRule:
     po = None
@@ -147,3 +127,23 @@ class PublicRule:
 
     #        self.po = PureClosure(self.pure)
     #        pure_wrap.objects[self.pure] = self.po
+
+# This is a statefull change in the interpreter, if this is
+# called at the root definition level it applies globally
+#class ProtoRule:
+#    _proto = None
+#    lhs = None
+#    rhs = None
+#
+#    def __init__(self, lhs, rhs, guards=None):
+#        self.lhs = lhs
+#        self.rhs = rhs
+#
+#    def __call__(self):
+#        self._proto = proto_op(p2i(self.lhs), p2i(self.rhsj)
+#        #print 'Init rule:', self._proto
+#        # instance ( lhs --> rhs )1/
+#        instance(self._proto)
+#
+#    def __repr__(self):
+#        return str(self._proto)
