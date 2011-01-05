@@ -34,15 +34,15 @@
               <td>{{ workspace.tags|escape }}</td>
 
               <td class="last">
-                <a href="/ws/detail/{{ workspace.id }}/update">edit</a> |
-                <a href="/ws/detail/{{ workspace.id }}/delete">delete</a>
+                <a href="{% url worksheet_update workspace.id %}">edit</a> |
+                <a href="{% url worksheet_delete workspace.id %}">delete</a>
               </td>
           </tr>
           {% endfor %}
         </table>
         <div class="actions-bar wat-cf">
           <div class="actions">
-              <a href="/worksheet_edit">
+              <a href="{% url worksheet_create %}">
                 <button class="button" type="submit">
                   <img src="/static/img/icons/add.png" alt="Add" /> Add
                 </button>

@@ -24,23 +24,43 @@
         <h1>{{ object }}</h1>
 
         {% if errors %}
-          <div class="flash">
-                <div class="message notice">
-                    {% for error in errors %}
-                    <li>{{ error }}</li>
-                    {% endfor %}
-                </div>
-          </div>
+        <div class="flash">
+              <div class="message notice">
+                  {% for error in errors %}
+                  <li>{{ error }}</li>
+                  {% endfor %}
+              </div>
+        </div>
         {% endif %}
 
-      <form method="post" action="">
-        {{ form }}
+      <form method="post" action="" class="form">
+        <div class="group">
+          <label class="label">Name</label>
+          {{ form.name }}
+          {{ form.owner }}
+        </div>
+
+        <div class="group">
+          {{ form.public.label_tag }} : {{ form.public }}
+        </div>
+        <div class="group navform wat-cf">
+          <button class="button" type="submit">
+              <img src="{{ STATIC_URL }}img/icons/tick.png" alt="Save"> Save
+          </button>
+          <a href="#header" class="button">
+              <img src="{{ STATIC_URL }}img/icons/cross.png" alt="Cancel"> Cancel
+          </a>
+        </div>
+      </form>
+
+        <!--
         <div class="group navform wat-cf">
           <button class="button" type="submit">
               <img src="/static/img/icons/disk.png" alt="Save"/> {{action}}
           </button>
         </div>
       </form>
+      -->
 
     </div>
   </div>

@@ -6,6 +6,14 @@ Term
     :members:
     :undoc-members:
 
+Cell
+------
+
+.. module:: base.cell
+.. autoclass:: Cell
+    :members:
+    :undoc-members:
+
 Relational
 ------
 
@@ -24,7 +32,7 @@ Operations
 Subclasses
 ------
 
-.. automodule:: base.objects
+.. automodule:: worksheet.tasks
     :members:
     :undoc-members:
     :show-inheritance:

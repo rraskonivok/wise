@@ -174,9 +174,6 @@ class Operation(Term):
     def get_symbol(self):
         return self.symbol
 
-    def receive(self,obj,receiver_context,sender_type,sender_context,new_position):
-        return obj
-
     def has_single_term(self):
         if len(self.terms) == 1:
             return True

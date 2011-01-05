@@ -10,7 +10,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 admin.autodiscover()
 
 from worksheet.views import (HomeView, WorksheetEdit,
-WorksheetDetail, WorksheetDelete)
+WorksheetDetail, WorksheetDelete, WorksheetCreate)
 
 urlpatterns = patterns('',
      #url(r'^$', 'wise.worksheet.views.home', name='index'),
@@ -26,6 +26,7 @@ urlpatterns = patterns('',
 #     (r'^test$', 'wise.worksheet.views.test'),
      (r'dict/(?P<data>.*)$', 'wise.worksheet.views.dict'),
      (r'^translate$', 'wise.worksheet.views.translate'),
+     (r'graph/(?P<cls>.*)$', 'wise.worksheet.views.objectgraph'),
 
      # Heartbeat
      (r'^hb$', 'wise.worksheet.ajax.heartbeat'),
@@ -44,23 +45,17 @@ urlpatterns = patterns('',
      (r'^palette/$', 'wise.worksheet.views.palette'),
      (r'^rule_request/$', 'wise.worksheet.ajax.rules_request'),
 
-     # Worksheet CRUD
-     #(r'^worksheet_delete/(?P<ws_id>\d+)/$', 'wise.worksheet.views.worksheet_delete'),
-     #(r'^worksheet_edit/(?P<ws_id>\d+)/$', 'wise.worksheet.views.worksheet_edit'),
-     #(r'^worksheet_edit/$', 'wise.worksheet.views.worksheet_edit'),
-     #url(r'^worksheet_edit/(?P<ws_id>\d+)/$', WorksheetEdit.as_view()),
+     url(r'^ws/create/$',
+        WorksheetCreate.as_view(),
+        name='worksheet_create'),
 
-     url(r'^ws/detail/(?P<pk>\d+)/update/$',
+     url(r'^ws/(?P<pk>\d+)/update/$',
         WorksheetEdit.as_view(),
         name='worksheet_update'),
 
-     url(r'^ws/detail/(?P<pk>\d+)/delete/$',
+     url(r'^ws/(?P<pk>\d+)/delete/$',
         WorksheetDelete.as_view(),
         name='worksheet_delete'),
-
-     url(r'^ws/detail/(?P<pk>\d+)/$',
-        WorksheetDetail.as_view(),
-        name='worksheet_detail'),
 
      #url(r'^worksheet_edit/', WorksheetEdit.as_view(),
      #    'worksheet_detail'),
@@ -72,6 +67,7 @@ urlpatterns = patterns('',
      (r'^cmds/apply_def/$', 'wise.worksheet.ajax.apply_def'),
      (r'^cmds/apply_transform/$', 'wise.worksheet.ajax.apply_transform'),
      (r'^cmds/use_infix/$', 'wise.worksheet.ajax.use_infix'),
+     (r'^cmds/draw_graph/$', 'wise.worksheet.ajax.use_infix'),
 
      # Uncomment the next line to enable the admin:
      url(r'^admin/', include(admin.site.urls), name='admin'),

@@ -132,7 +132,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.debug",
     "django.core.context_processors.media",
     'django.core.context_processors.static',
-    "django.contrib.messages.context_processors.messages",
+#    "django.contrib.messages.context_processors.messages",
 )
 
 MIDDLEWARE_CLASSES = (
@@ -233,7 +233,7 @@ except ImportError:
 # Grapelli - prettier admin interface
 try:
     import grappelli
-    INSTALLED_APPS += ['grappelli']
+    INSTALLED_APPS += ['grappelli','django.contrib.admin']
 except:
     INSTALLED_APPS += ['django.contrib.admin']
 

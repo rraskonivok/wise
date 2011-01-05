@@ -18,7 +18,8 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.utils import simplejson as json
 from django.views.generic import ListView, DetailView
-from django.views.generic.edit import UpdateView, DeleteView
+from django.views.generic.edit import (UpdateView, DeleteView,
+CreateView)
 from wise.translators.pytopure import parse_sexp
 from wise.worksheet.forms import WorksheetForm
 from wise.worksheet.models import (Workspace, Expression, Cell,
@@ -68,6 +69,15 @@ class WorksheetEdit(UpdateView):
 
     def redirect_to(self, obj):
         return reverse('worksheet_detail', args=[obj.id])
+
+class WorksheetCreate(CreateView):
+    model = Workspace
+    form = WorksheetForm
+    template_name = "worksheet_edit.html"
+    success_url = '/home'
+
+    def redirect_to(self, obj):
+        return reverse('authors_list')
 
 def new_worksheet_prototype(attrs):
     nworksheet = Workspace(**attrs).save()
@@ -119,6 +129,7 @@ def ws(request, ws_id):
     uid = uidgen()
 
     html_cells = []
+    json_cells = []
     py_cells = []
 
     # Process Cells
@@ -207,6 +218,28 @@ def generate_palette():
 #---------------------------
 # Development Tools
 #---------------------------
+
+
+def objectgraph(request, cls):
+    import wise.base.objects
+    from worksheet.uml import pycls2graph
+
+    if cls:
+        try:
+            tops = wise.base.objects.__dict__[cls],
+        except:
+            return HttpResponse('Invalid class.')
+    else:
+        tops = wise.base.objects.Term, wise.base.objects.Relation
+
+    try:
+        graph = pycls2graph(*tops)
+    except:
+        return HttpResponse('pygraphviz not installed or accessible')
+
+    graph.layout(prog='dot')
+    png=graph.draw(format='png')
+    return HttpResponse(png, mimetype='image/png')
 
 @login_required
 def translate(request):
