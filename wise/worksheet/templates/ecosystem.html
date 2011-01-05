@@ -35,20 +35,19 @@
               <p>Author: {{ package.author }}</p>
               <p>Version: {{ package.version }}</p>
               <p>
-                  <a href="#">Export GraphViz</a> |
-                  <a href="#">Export XML</a> |
+                  <a href="/graph/{{ package.name }}">Visualize Structure</a> |
                   <a href="#">Export JSON</a>
               </p>
                   <a href="#" onclick="toggle_next(this)">Provides</a>
                   <table style="display: none">
                   <tr>
-                          {% for symbol in package.symbols %}
-                          <td>{{ symbol }}</td>
-                          {% if forloop.counter|divisibleby:"5" %}
-                            </tr><tr>
-                          {% endif %}
-                          </td>
-                          {% endfor %}
+                      {% for symbol in package.symbols %}
+                      <td>{{ symbol }}</td>
+                      {% if forloop.counter|divisibleby:"5" %}
+                        </tr><tr>
+                      {% endif %}
+                      </td>
+                      {% endfor %}
                   </tr>
                   </table>
           </span>

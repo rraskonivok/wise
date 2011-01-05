@@ -220,22 +220,13 @@ def generate_palette():
 #---------------------------
 
 
-def objectgraph(request, cls):
-    import wise.base.objects
-    from worksheet.uml import pycls2graph
-
-    if cls:
-        try:
-            tops = wise.base.objects.__dict__[cls],
-        except:
-            return HttpResponse('Invalid class.')
-    else:
-        tops = wise.base.objects.Term, wise.base.objects.Relation
+def objectgraph(request, package='base'):
+    from worksheet.viz import package_to_graph
 
     try:
-        graph = pycls2graph(*tops)
-    except:
-        return HttpResponse('pygraphviz not installed or accessible')
+        graph = package_to_graph(package)
+    except ImportError:
+        return HttpResponse('Invalid class.')
 
     graph.layout(prog='dot')
     png=graph.draw(format='png')

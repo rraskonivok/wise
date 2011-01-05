@@ -26,7 +26,7 @@ urlpatterns = patterns('',
 #     (r'^test$', 'wise.worksheet.views.test'),
      (r'dict/(?P<data>.*)$', 'wise.worksheet.views.dict'),
      (r'^translate$', 'wise.worksheet.views.translate'),
-     (r'graph/(?P<cls>.*)$', 'wise.worksheet.views.objectgraph'),
+     (r'graph/(?P<package>.*)$', 'wise.worksheet.views.objectgraph'),
 
      # Heartbeat
      (r'^hb$', 'wise.worksheet.ajax.heartbeat'),

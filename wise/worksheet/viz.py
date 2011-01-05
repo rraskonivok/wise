@@ -1,26 +1,15 @@
 # General function to recursively consume the math hierarchy and
 # output some form of structured data (UML , dotviz, ...)
 
-# This generates data which can be consumed by http://www.yuml.me 
+import settings
+from wise.utils.module_loading import module_has_submodule
+from django.utils.importlib import import_module
 
 try:
     from pygraphviz import AGraph
     GRAPHVIZ = True
 except:
     GRAPHVIZ = False
-
-#def generate(icls):
-#
-#    strs = []
-#    def descend(cl):
-#        for cls in cl.__subclasses__():
-#            strs.append('[%s]^[%s|%s]' % (cl.__name__,cls.__name__, ';'.join(cls.__dict__.keys())))
-#            descend(cls)
-#
-#    descend(icls)
-#
-#    for st in strs:
-#        print st
 
 def all_subclasses(cls, accumulator=set(),
                         depth=1,
@@ -42,6 +31,7 @@ def pycls2graph(*tcls):
     G = AGraph()
 
     def descend(cls):
+        G.add_node(cls.__name__)
         for scls in cls.__subclasses__():
             G.add_node(scls.__name__)
             G.add_edge(cls.__name__,scls.__name__)
@@ -51,3 +41,11 @@ def pycls2graph(*tcls):
         descend(cls)
 
     return G
+
+def package_to_graph(package):
+    pack_module = import_module(package)
+    if module_has_submodule(pack_module, 'objects'):
+        path = package + '.objects'
+        pack_objects = import_module(path, settings.ROOT_MODULE)
+    tops, nullary = pack_objects.initialize()
+    return pycls2graph(*tops)

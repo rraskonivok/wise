@@ -1,12 +1,22 @@
-from wise.worksheet.mathobjects import Base_Symbol, InfixOperation, PrefixOperation
+from wise.base.objects import Term
 
-class LogicTrue(Base_Symbol):
+def initialize():
+    super_classes = [LogicalOperator,LogicTrue,LogicFalse]
+
+    nullary_types = {
+        'true' : LogicTrue,
+        'false' : LogicFalse,
+    }
+
+    return super_classes, nullary_types
+
+class LogicTrue(Term):
     latex = '\\text{True}'
     symbol = 'true'
     pure = 'True'
     args = "'true'"
 
-class LogicFalse(Base_Symbol):
+class LogicFalse(Term):
     latex = '\\text{False}'
     symbol = 'false'
     pure = 'False'
@@ -15,7 +25,10 @@ class LogicFalse(Base_Symbol):
     def __pure__(self):
         return self.po()
 
-class And(InfixOperation):
+class LogicalOperator(Term):
+    pass
+
+class And(LogicalOperator):
     symbol = '\\wedge'
     show_parenthesis = True
     pure = 'And'
@@ -23,7 +36,7 @@ class And(InfixOperation):
     def __init__(self,fst,snd):
         self.terms = list([fst,snd])
 
-class Or(InfixOperation):
+class Or(LogicalOperator):
     symbol = '\\vee'
     show_parenthesis = True
     pure = 'Or'
@@ -31,7 +44,7 @@ class Or(InfixOperation):
     def __init__(self,fst,snd):
         self.terms = list([fst,snd])
 
-class LogicNeg(PrefixOperation):
+class LogicNeg(LogicalOperator):
     symbol = '\\neg'
     show_parenthesis = False
     pure = 'LogicNeg'
