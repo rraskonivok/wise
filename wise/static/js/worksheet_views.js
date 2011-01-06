@@ -249,8 +249,6 @@ var CellView = Backbone.View.extend({
     if(!HAS_BROWSER) {
         return;
     }
-    $(this.el).append(this.menu());
-    $(this.el).append(this.equations());
     return this;
   },
 
@@ -303,60 +301,6 @@ var CellView = Backbone.View.extend({
 
 });
 
-// Cell selection buttons which appear in the top of the
-// workspace 
-var CellSelection = Backbone.View.extend({
-
-  tagName: "a",
-
-  className: 'active',
-
-  events: {
-    "mousedown": "toggle_visible",
-  },
-
-  initialize: function () {
-    _.bindAll(this, 'render', 'make', 'handle_active');
-    this.model.bind('change:active', this.handle_active);
-  },
-
-  render: function () {
-    if(!HAS_BROWSER) {
-        return;
-    }
-    $(this.el).html(this.model.cid);
-    $(this.el).bind("contextmenu", function (e) {
-      return false;
-    });
-    return this;
-  },
-
-  toggle_visible: function (e) {
-    //Right click - Toggle visibility of the cell
-    if (e.button == 2) {
-      this.model.dom().toggle();
-      //        $(this.el).toggleClass('active');
-      e.preventDefault();
-      return false;
-      //Left click - Select cell
-    } else {
-      activate_cell(this.model);
-      //       this.model.dom().toggleClass('active');
-    }
-  },
-
-  handle_active: function (cell, is_active) {
-    active_cell = cell;
-    if (is_active) {
-      // Acts on the CellView object of the model
-      this.model.view.set_active(true);
-    } else {
-      this.model.view.set_active(false);
-    }
-  }
-
-});
-
 // Node Views as manifest as manipulative LaTeX in the worksheet
 var NodeView = Backbone.View.extend({
 
@@ -404,7 +348,7 @@ var NodeView = Backbone.View.extend({
 
   onHoverOut: function (e) {
     $(this.el).removeClass('preselect');
-    //        e.stopPropagation();
+    //e.stopPropagation();
   },
 
 });

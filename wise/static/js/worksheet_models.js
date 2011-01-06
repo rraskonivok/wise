@@ -1,9 +1,4 @@
 var WorksheetModel = Backbone.Collection.extend({
-  url: '/ws',
-
-//  url: function(){
-//     return this.get('resource_uri') || this.collection.url;
-//  }
 
   initialize: function () {
 //   this.url = '/ws/' + Wise.Worksheet.get('id');
@@ -445,10 +440,6 @@ function highlight_orphans() {
             $(node.view.el).css('background-color','red');
         }
     });
-}
-
-function check() {
-    return shownode()._parent.children[shownode().index].cid == shownode().cid;
 }
 
 function garbage_collect() {

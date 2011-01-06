@@ -163,7 +163,7 @@ function sleep(milliseconds) {
 // Initialize the Term DB
 ///////////////////////////////////////////////////////////
 // Takes the inital JSON that Django injects into the page in the
-// variable JSON_TREE and calls build_tree_from_json to initialize 
+// variable JSON_TREE and calls build_tree_from_json to initialize
 // the term database
 
 function init_nodes() {
@@ -179,13 +179,6 @@ function init_nodes() {
     _.each(JSON_TREE, function (cell_json) {
         var new_cell = build_cell_from_json(cell_json);
         Wise.Worksheet.add(new_cell);
-
-        var cs = new CellSelection({
-          model: new_cell,
-        });
-        cs.render();
-
-        $('#cell_selection').append(cs.el);
     });
 }
 
@@ -286,7 +279,7 @@ function apply_rule(rule, operands, callback) {
     operands = Wise.Selection.toArray();
 
   } else {
-    // Operands can a mix of Expression objects or literal string 
+    // Operands can a mix of Expression objects or literal string
     // sexp in either case we pass the sexp to the sever
     data.operands = _.map(operands, function (obj) {
       if (obj.constructor == String) {
@@ -299,7 +292,7 @@ function apply_rule(rule, operands, callback) {
 
   // Fade elements while we wait for the server's response
   //_.each(operands, function(elem) {
-  //    elem.dom().fadeTo('fast',0.5); 
+  //    elem.view.el.fadeTo('fast',0.5);
   //});
   var image = [];
 
@@ -318,6 +311,7 @@ function apply_rule(rule, operands, callback) {
         Wise.Log.error('Null namespace index');
         return;
     }
+
     NAMESPACE_INDEX = response.namespace_index;
 
     //Iterate over the elements in the image of the
@@ -602,7 +596,7 @@ function apply_transform(transform, operands) {
     }
     // Get the sexps of the selected nodes
     postdata.selections = Wise.Selection.sexps();
-  } 
+  }
   else {
     // Let the user pass mixed Node and String type objects to
     // maximize flexibility and map everything into some form of
@@ -807,25 +801,22 @@ function new_cell() {
 
       $("#worksheet").append(response.new_html);
 
+      console.log($("#"+cell.cid));
+
       // Make the cell workspace object
       var view = new CellView({
-        model: cell,
-        id: cell.cid,
         el: $("#"+cell.cid),
+        model: cell,
       });
 
-      view.render();
       cell.view = view;
 
       // Make the cell selction object
-      var cs = new CellSelection({
-        model: cell,
-      });
+      //var cs = new CellSelection({
+      //  model: cell,
+      //});
 
-      cs.render();
-
-      // TODO: Wtf?
-      $('#cell_selection').append(cs.el);
+      //cs.render();
 
       Wise.last_cell = cell;
 
