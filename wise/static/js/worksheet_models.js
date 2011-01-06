@@ -21,7 +21,7 @@ var WorksheetModel = Backbone.Collection.extend({
 var Cell = Backbone.Model.extend({
 
   url: function(){
-     return this.get('resource_uri') || '/api/cell';
+     return this.get('resource_uri') || '/api/cell/';
   },
 
   initialize: function (exs) {
@@ -68,7 +68,7 @@ var Cell = Backbone.Model.extend({
         // some visual feedback on what was just
         // committed
         
-        //expr.root.view.effect("highlight", {}, 1500);
+        expr.root.view.el.effect("highlight", {}, 1500);
 
         expr.set({
           sexp: expr.sexp()
@@ -365,6 +365,7 @@ function build_cell_from_json(json_input) {
 //by replacement) onto a existing expression tree.
 
 function graft_toplevel_from_json(old_node, json_input, transformation) {
+  // old_node -> old_tree
   var cell = old_node.tree.cell;
 
   // cell index
@@ -374,20 +375,24 @@ function graft_toplevel_from_json(old_node, json_input, transformation) {
 //  newtree.root.transformed_by = transformation;
 //  newtree.root.prev_state = old_node.sexp();
 
+  //Pluck off the root of the new expression tree and attach
   old_node.swapNode(newtree.root);
   old_node.tree.root = newtree.root;
-  newtree.set(old_node.attributes);
 
-  //TODO: this is causing assumption grafted at the toplevel to
-  //break
-  cell._expressions[old_index] = newtree;
   newtree.set({
-    index: old_index
+    index: old_index,
+    id: old_node.tree.id,
+    resource_uri: old_node.tree.get('resource_uri'),
   });
 
-  newtree.cell = old_node.cell;
+  newtree.cell = cell;
 
   return newtree;
+}
+
+function check_cell() {
+   obj = shownode();
+   return obj.tree.cell._expressions[obj.tree.get('index')].cid == obj.tree.cid;
 }
 
 //       E  (Expression Tree)        E  ( Same Expression Tree)

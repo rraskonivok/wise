@@ -339,7 +339,7 @@ function apply_rule(rule, operands, callback) {
         preimage.remove();
       }
       else {
-        // Is the image a toplevel element (i.e. Equation ) 
+        // Is the image a toplevel element (i.e. Equation )
         var is_toplevel = (response.new_json[i][0].toplevel);
 
         if (is_toplevel) {
@@ -390,7 +390,7 @@ function apply_rule(rule, operands, callback) {
 
         }
 
-        if(callback) { 
+        if(callback) {
             callback(image);
         }
         Wise.Selection.clear();
@@ -681,7 +681,7 @@ function apply_transform(transform, operands) {
 function new_line(type, cell) {
 
   // If we aren't given an explicit cell and the number of cells
-  // and there is not a single 
+  // and there is not a single
   if(!cell) {
 
       if(Wise.Worksheet.length == 1) {
