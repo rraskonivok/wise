@@ -8,7 +8,6 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
-import os
 from types import ClassType
 
 from django.conf import settings
@@ -84,7 +83,7 @@ def translate_pure(key):
     except KeyError:
         raise exception.NoWrapper(key)
 
-def build_translation(pure=False):
+def build_translation(python=True, pure=True, force=False):
     for name in settings.INSTALLED_MATH_PACKAGES:
         pack_module = import_module(name)
 
@@ -199,12 +198,6 @@ def build_rule_lookup(force=False):
                             symbol.register(a)
                 rules.sync()
 
-def build_all_lookup(force=False):
-    if not pure_trans.loaded or not python_trans.loaded or force:
-        #logger.info('Started Pure+Python Session')
-        build_translation()
-    return python_trans, pure_trans
-
 def build_cython_objects(force=False, jit=False):
     interface = PureInterface()
 
@@ -229,6 +222,35 @@ def build_cython_objects(force=False, jit=False):
     if settings.PRECOMPILE or jit:
         interesections.jit_compile()
 
+def is_mapping(obj):
+   return hasattr(obj,'mapping')
+
+def build_transform_lookup(force=False):
+    """
+    Build translation table for all available transforms from
+    PACKAGES/transforms.py
+    """
+    if transforms and not settings.NOCACHE:
+        print 'Using cached transforms file.'
+        return
+
+    for pack_name in settings.INSTALLED_MATH_PACKAGES:
+        print 'Importing transforms from ... ' + pack_name
+        pack_module = import_module(pack_name)
+
+        # Load PACKAGE/rules.py
+        if module_has_submodule(pack_module, 'transforms'):
+            path = pack_name + '.transforms'
+            pack_transforms = import_module(path, settings.ROOT_MODULE)
+
+            transforms.make_writable()
+            for name, symbol in pack_transforms.__dict__.iteritems():
+                if is_mapping(symbol):
+                    symbol.package = pack_name
+                    transforms[name] = symbol
+
+            transforms.sync()
+
 def get_python_lookup():
     return python_trans
 
@@ -239,6 +261,7 @@ def get_pure_lookup():
 # Translation tables
 # ----------------------------------------
 
+transforms = Aggregator(file='transforms_cache')
 rules = Aggregator(file='rules_cache')
 rulesets = Aggregator(file='rulesets_cache')
 cy_objects = set()

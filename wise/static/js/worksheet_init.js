@@ -1,33 +1,46 @@
+function test_mathml() {
+    // Check whether the users browser support MathML
+    var mml_namespace = "http://www.w3.org/1998/Math/MathML";
+    var test1 = document.createElementNS;
+    var test2 = document.createElementNS(mml_namespace, "mn");
+    var test3 = test2.isDefaultNamespace(document.namespaceURI);
+    return !!test1 && !!test2 && !!test3;
+}
+
 function init() {
 
-    // Warn the user if the browser doesn't support MathML
-    if(!($.browser.mozilla)) {
+    if(test_mathml()) {
+        boot();
+    } else {
 
-        $("#worksheet").hide();
-
-        $( "#dialog" ).dialog({
-            resizable: false,
-            height:300,
-            width: 350,
-            modal: true,
-            position: 'center',
-            buttons: {
-                "Proceed Anyways": function() {
-                    $( this ).dialog( "close" );
-                    $("#worksheet").show();
-                },
-                "Go Back": function() {
-                    javascript:history.go(-1);
+        if(!($.browser.mozilla)) {
+            $( "#dialog" ).dialog({
+                resizable: false,
+                height:300,
+                width: 350,
+                modal: true,
+                position: 'center',
+                buttons: {
+                    "Proceed Anyways": function() {
+                        $( this ).dialog( "close" );
+                        $("#worksheet").show();
+                        boot();
+                    },
+                    "Go Back": function() {
+                        history.go(-1);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
+
+}
+
+function boot() {
     //TODO: move this into its own worker thread
     init_nodes();
-
     init_keyboard_shortcuts();
-
     load_math_palette();
     load_rules_palette();
 
@@ -50,7 +63,6 @@ function init() {
     new CmdLineView({
         el: $("#cmdline"),
     });
-
 }
 
 function init_keyboard_shortcuts() {
@@ -68,18 +80,18 @@ function init_keyboard_shortcuts() {
     Wise.Accelerators.each(function(shortcut) {
 
         keys = shortcut.get('keys');
-        doc.bind('keydown', 
-            shortcut.get('keys'), 
+        doc.bind('keydown',
+            shortcut.get('keys'),
             shortcut.get('action')
         );
         var key_strokes = shortcut.get('keys').split('+');
 
-        var accel = _.map(key_strokes, function(kstr){ 
+        var accel = _.map(key_strokes, function(kstr){
             return key_template({kstr: kstr});
         }).join('+');
 
         var list_item = accel_template({
-            label: shortcut.get('name'), 
+            label: shortcut.get('name'),
             keys: accel,
         });
 

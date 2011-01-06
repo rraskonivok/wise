@@ -4,6 +4,10 @@ from wise.worksheet.panel import MathMLPanel
 import objects
 from utils import latex
 
+# The instance of the panels is completely irrelevant, you can
+# name them whatever you want. worksheet/panels.py extracts all
+# instances of any sublcass of wise.worksheet.panel.Panel
+
 #--------------------
 # Elementary Operations
 #--------------------
@@ -64,14 +68,10 @@ numtheory = (
 NumTheory = MathMLPanel(name='Number Theory', objects=numtheory)
 
 #--------------------
-# Letter Variables
+# Variables
 #--------------------
 
-#--------------------
-# Greek Variables
-#--------------------
-
-greek_template = Template('''
+variable_template = Template('''
 <math display="block" xmlns="http://www.w3.org/1998/Math/MathML">
     <mrow>
         <mn>{{symbol}}</mn>
@@ -79,11 +79,25 @@ greek_template = Template('''
 </math>
 ''')
 
-greeks = []
+def mml_var(symbol):
+    return variable_template.render(
+        Context({'symbol': symbol})
+    )
 
-for letter, symbol in latex.greek_unicode_list:
-    mml = greek_template.render(Context({'symbol':symbol}))
-    greeks.append( (mml, objects.Variable(letter)) )
+def make_letters():
+    letters = ['x','y','z','u','v','w','t','a','b','c']
 
-Greeks = MathMLPanel(name="Greeks", objects=greeks,
-        use_template=True)
+    return [ (mml_var(symbol), objects.Variable(symbol)) for symbol in letters]
+
+def make_greeks():
+    return [ (mml_var(symbol), objects.Variable(letter)) for letter,
+            symbol in latex.greek_unicode_list ]
+
+Letters = MathMLPanel(name="Letters",
+                      objects=make_letters(),
+                      use_template=True)
+
+
+Greeks = MathMLPanel(name="Greeks",
+                     objects=make_greeks(),
+                     use_template=True)
