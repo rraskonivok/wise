@@ -136,6 +136,7 @@ var Node = Backbone.Model.extend({
     this.tree.nodes[node.cid] = node;
 
     if(!silent) {
+        this.tree._changed = true;
         this.trigger('struct_change');
     }
 
@@ -166,6 +167,7 @@ var Node = Backbone.Model.extend({
     delete this;
 
     if(!silent) {
+        this.tree._changed = true;
         this.trigger('struct_change');
     }
   },
@@ -203,6 +205,7 @@ var Node = Backbone.Model.extend({
     newNode.register();
 
     if(!silent) {
+        this.tree._changed = true;
         this.trigger('struct_change');
     }
   },

@@ -151,9 +151,12 @@ class Term(object):
         else:
             return sexp(self.classname, *self.args)
 
+    # Be very careful if your overload this, large parts of the
+    # Backbone code assume the JSON scheme is exactly this
     def json_flat(self,lst=None):
         if not lst:
             lst = []
+
         lst.append({"id": self.id,
                     "type": self.classname,
                     "toplevel": self.toplevel,

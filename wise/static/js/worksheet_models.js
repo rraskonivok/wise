@@ -20,17 +20,9 @@ var WorksheetModel = Backbone.Collection.extend({
 
 var Cell = Backbone.Model.extend({
 
-  url: function () {
-    if (this.id) {
-      return '/api/cell/' + this.id;
-    } else {
-      return '/api/cell/';
-    }
+  url: function(){
+     return this.get('resource_uri') || '/api/cell';
   },
-
-//  url: function(){
-//     return this.get('resource_uri') || this.collection.url;
-//  }
 
   initialize: function (exs) {
     this.set({
@@ -75,7 +67,8 @@ var Cell = Backbone.Model.extend({
         // Highlight the expression to give the user
         // some visual feedback on what was just
         // committed
-        //expr.root.dom().effect("highlight", {}, 1500);
+        
+        //expr.root.view.effect("highlight", {}, 1500);
 
         expr.set({
           sexp: expr.sexp()
@@ -190,17 +183,9 @@ var Expression = Node.extend({
 
 ExpressionTree = RootedTree.extend({
 
-  url: function () {
-    if (this.id) {
-      return '/api/exp/' + this.id;
-    } else {
-      return '/api/exp/';
-    }
+  url: function(){
+     return this.get('resource_uri') || '/api/exp/';
   },
-
-//  url: function(){
-//     return this.get('resource_uri') || this.collection.url;
-//  }
 
   sexp: function () {
     this.root.msexp();
@@ -260,7 +245,8 @@ function build_tree_from_json(json_input, top_class) {
       type: term.type,
       toplevel: term.toplevel,
       args: term.args,
-      id: term.sid
+      id: term.sid,
+      resource_uri: term.resource_uri,
     });
 
     node.cid = term.id;

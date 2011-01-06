@@ -94,9 +94,15 @@ class Relation(object):
         if not lst:
             lst = []
 
+        if self.sid:
+            resource_uri = '/api/exp/' + str(self.sid)
+        else:
+            resource_uri = None
+
         lst.append({'id': self.id,
                     'type': self.classname,
                     'toplevel': self.toplevel,
+                    'resource_uri': resource_uri,
                     'sid': self.sid,
                     'children': [term.id for term in self.terms]})
 

@@ -1,6 +1,5 @@
 Cython==0.13
 http://www.djangoproject.com/download/1.3-beta-1/tarball/
-https://github.com/sdiehl/django-piston/tarball/master
 amqplib==0.6.1
 anyjson==0.3
 carrot==0.10.7
