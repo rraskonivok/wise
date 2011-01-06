@@ -9,7 +9,7 @@ from wise.utils.patterns import Aggregator
 from django.utils.importlib import import_module
 from wise.utils.module_loading import module_has_submodule
 
-panels = Aggregator(file='panels_cache')
+panels = Aggregator(file='cache/panels_cache')
 
 def _map_panel_types(obj):
     if isinstance(obj, TypeType):

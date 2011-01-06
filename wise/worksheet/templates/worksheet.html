@@ -129,8 +129,8 @@ Equations
 
 
 <div id="dialog" class="hidden">
-    It appears that you aren't using Firefox 3+. If the
-    mathematics displayed on the right does not match the image
+    It appears that your browser doesn't support MathML. To make
+    sure, if mathematics displayed on the right does not match the image
     on the left then your browser does not support enough MathML to
     use the worksheet.
 
@@ -172,7 +172,7 @@ Equations
     </form>
 </div>
 
-<div id="worksheet">
+<div id="worksheet" class="hidden">
     {% for cell in cells %}
         {{cell|safe}} 
     {% endfor %}

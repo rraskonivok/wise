@@ -261,9 +261,9 @@ def get_pure_lookup():
 # Translation tables
 # ----------------------------------------
 
-transforms = Aggregator(file='transforms_cache')
-rules = Aggregator(file='rules_cache')
-rulesets = Aggregator(file='rulesets_cache')
+transforms = Aggregator(file='cache/transforms_cache')
+rules = Aggregator(file='cache/rules_cache')
+rulesets = Aggregator(file='cache/rulesets_cache')
 cy_objects = set()
 
 # These are all singletons, so they can be passed around

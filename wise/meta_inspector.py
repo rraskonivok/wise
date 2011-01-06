@@ -8,7 +8,7 @@ import settings
 from utils.patterns import Aggregator
 import ConfigParser
 
-PACKAGES = Aggregator(file='packages_cache')
+PACKAGES = Aggregator(file='cache/packages_cache')
 
 class Package(object):
     name = 'unknown'

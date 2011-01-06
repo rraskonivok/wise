@@ -10,11 +10,14 @@ function test_mathml() {
 function init() {
 
     if(test_mathml()) {
+
         boot();
+
     } else {
 
         if(!($.browser.mozilla)) {
-            $( "#dialog" ).dialog({
+            $("#dialog").removeClass('hidden');
+            $("#dialog").dialog({
                 resizable: false,
                 height:300,
                 width: 350,
@@ -23,7 +26,6 @@ function init() {
                 buttons: {
                     "Proceed Anyways": function() {
                         $( this ).dialog( "close" );
-                        $("#worksheet").show();
                         boot();
                     },
                     "Go Back": function() {
@@ -63,6 +65,7 @@ function boot() {
     new CmdLineView({
         el: $("#cmdline"),
     });
+    $("#worksheet").show();
 }
 
 function init_keyboard_shortcuts() {

@@ -90,7 +90,8 @@ function server_up() {
 // Beat on the server
 function stress_test() {
   while (true) {
-    apply_rule('algebra_normal', ['( Addition (Variable x) (Addition (Variable x) (Variable x)))']);
+    apply_rule('algebra_normal', ['( Addition (Variable x) (Addition (Variable x)\
+                    (Variable x)))']);
     sleep(3000);
     console.log('done');
   }
@@ -907,7 +908,7 @@ function load_math_palette() {
 
   $.ajax({
     url: '/palette/',
-    dataType: "html", 
+    dataType: "html",
     success: function (data) {
       $("#math_palette").replaceWith($(data))
 

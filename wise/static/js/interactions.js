@@ -299,7 +299,9 @@ function subs(obj) {
     if(Wise.Selection.length > 0) {
         apply_transform('base/PlaceholderSubstitute',[Wise.Selection.at(0), obj]);
     } else {
-        error('Select an object to substitute into.');
+       $('#selectionlist').effect("highlight", {
+         color: '#E6867A'
+       }, 500);
     }
 }
 

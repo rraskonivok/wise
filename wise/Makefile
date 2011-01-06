@@ -6,9 +6,7 @@ cython:
 clean: 
 #	-rm -f *.o *.pyc *.pyo *.html *.markdown *.out *.aux *.log *.pdf tags gunicorn.log
 	$(MAKE) -C pure clean
-
-clearcache:
-	rm rules_cache rulesets_cache packages_cache
+	$(MAKE) -C cache clean
 
 doc:
 	pycco -p worksheet/*.py -d docs

@@ -172,6 +172,7 @@ def use_infix(request):
     code = request.POST.get('code')
     namespace_index = int( request.POST.get('namespace_index') )
     uid = uidgen(namespace_index)
+    quotify = False
 
     result = tasks.pure_exec.delay(code)
     expr_tree = translate.parse_pure_exp(result.wait())
