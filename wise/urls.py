@@ -42,8 +42,8 @@ urlpatterns = patterns('',
 
      # Worksheet
      (r'^ws/(?P<ws_id>\d+)/$', 'wise.worksheet.views.ws'),
-     (r'^palette/$', 'wise.worksheet.views.palette'),
-     (r'^rule_request/$', 'wise.worksheet.ajax.rules_request'),
+     (r'^ws/(?P<ws_id>\d+)/readonly$', 'wise.worksheet.views.ws'),
+
 
      url(r'^ws/create/$',
         WorksheetCreate.as_view(),
@@ -59,6 +59,10 @@ urlpatterns = patterns('',
 
      #url(r'^worksheet_edit/', WorksheetEdit.as_view(),
      #    'worksheet_detail'),
+
+     # Math Palettes
+     (r'^palette/$', 'wise.worksheet.views.palette'),
+     (r'^rule_request/$', 'wise.worksheet.ajax.rules_request'),
 
      # Worksheet Commands
      (r'^cmds/new_line/$', 'wise.worksheet.ajax.new_line'),

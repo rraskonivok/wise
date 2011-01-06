@@ -62,7 +62,7 @@ var Cell = Backbone.Model.extend({
         success: Notifications.raise('COMMIT_SUCCESS'),
       });
     }
-    this.saveAssumptions();
+//    this.saveAssumptions();
     this.saveExpressions();
   },
 
@@ -83,10 +83,12 @@ var Cell = Backbone.Model.extend({
         expr.save({
           success: Notifications.raise('COMMIT_SUCCESS'),
         });
+
       }
     });
   },
 
+  /*
   saveAssumptions: function () {
     _.each(this._assumptions, function (asm) {
       if (asm.hasChanged()) {
@@ -101,9 +103,11 @@ var Cell = Backbone.Model.extend({
         asm.save({
           success: Notifications.raise('COMMIT_SUCCESS'),
         });
+
       }
     });
   },
+  */
 
   sexps: function () {
     return _.invoke(this._expressions, 'sexp');

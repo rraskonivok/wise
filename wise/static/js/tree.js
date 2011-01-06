@@ -10,7 +10,7 @@
 //
 //  See: http://xw2k.nist.gov/dads//HTML/tree.html:
 //
-//  As a graph the structure of the workshet looks like:                                                              
+//  As a graph the structure of the workshet looks like:
 //
 //               Worksheet
 //                   |
@@ -74,10 +74,9 @@ var Node = Backbone.Model.extend({
   tree: null,
   depth: null,
 
-  url: '/eq',
-//  url: function(){
-//     return this.get('resource_uri') || this.collection.url;
-//  }
+  url: function(){
+     return this.get('resource_uri') || this.collection.url;
+  },
 
   initialize: function () {
     this.children = [];
@@ -97,7 +96,6 @@ var Node = Backbone.Model.extend({
     //        this.children[child].register();
     //    }
     //}
-
   },
 
   hasChildren: function () {
@@ -116,9 +114,9 @@ var Node = Backbone.Model.extend({
     }
   },
 
-  //     O           O
-  //    / \   ->   / | \
-  //   O   O      O  O  O
+  //          O           O
+  //         / \   ->   / | \
+  //        O   O      O  O <O>
   addNode: function (node, silent) {
     if (!this.tree) {
         throw 'Cannot attached to orphan node, attach parent to tree first.';
@@ -143,9 +141,9 @@ var Node = Backbone.Model.extend({
 
   },
 
-  //          O           O
+  //          o           O
   //        / | \   ->   / \
-  //       O  O  O      O   O
+  //       o <O> o      O   O
   delNode: function (silent) {
     // The node is about to be destroyed so fire any ui events
     // that occur when a node is unselected

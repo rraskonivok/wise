@@ -121,29 +121,37 @@ def ecosystem(request):
 # i.e. WorksheetView
 @login_required
 def ws(request, ws_id):
-
     ws = get_object_or_404(Workspace, pk=ws_id)
 
-    if ( ws.owner.id != request.user.id ) and not ws.public:
-        return HttpResponse('You do not have permission to access this worksheet.')
+    if ( ws.owner.id != request.user.id ):
+        return HttpResponseForbidden()
 
+    # Start a uid generator at cid0
+    uid = uidgen()
     cells = Cell.objects.filter(workspace=ws_id)
 
-    uid = uidgen()
+    # If the worksheet is empty give it an empty cell
+    if not cells:
+        ncell = Cell(workspace=ws, index=0)
+        ncell.save()
 
+        cells = []
+        cells.append(ncell)
+
+    # HTML elements to inject into the #workspace div
     html_cells = []
+
+    # inline javascript global variable `JSON_TREE`
     json_cells = []
-    py_cells = []
 
-    # Process Cells
+    # Populate the Cell
     for index,cell in enumerate(cells):
-        html_eq = []
-
-        # Process Cell Contents
+        # Load toplevel expressions
         eqs = Expression.objects.filter(cell=cell).order_by('index')
-        asms = Assumption.objects.filter(cell=cell).order_by('index')
-        top_nodes = []
-        top_asms = []
+        top_exprs = []
+
+        #asms = Assumption.objects.filter(cell=cell).order_by('index')
+        #top_asms = []
 
         for eq in eqs:
             # Build up the object from the sexp in the database
@@ -152,39 +160,37 @@ def ws(request, ws_id):
 
             etree.sid = eq.id
             etree.annotation = eq.annotation
-            top_nodes.append(etree)
+            top_exprs.append(etree)
 
-        for asm in asms:
-            # Build up the object from the sexp in the database
-            etree = parse_sexp(asm.sexp)
-            etree.uid_walk(uid)
+        #for asm in asms:
+        #    # Build up the object from the sexp in the database
+        #    etree = parse_sexp(asm.sexp)
+        #    etree.uid_walk(uid)
 
-            etree.sid = asm.id
-            etree.annotation = asm.annotation
-            top_asms.append(etree)
+        #    etree.sid = asm.id
+        #    etree.annotation = asm.annotation
+        #    top_asms.append(etree)
 
-        # Build the cell and link it to the top nodes of the
-        # expressions inside it.
-        db_id = cell.id
+        # Initialize the new Cell instance
+        ncell = wise.base.cell.Cell(top_exprs, [],
+           index = index,
+           cid = 'cell'+str(index),
+           id = cell.id
+        )
+        #ncell.index = index;
+        #ncell.cid = 'cell' + str(index)
+        #ncell.id = cell.id
 
-        #TODO: overloads cell from in loop ^^^
-        cell = wise.base.cell.Cell(top_nodes, top_asms)
-        cell.index = index;
-        cell.cid = 'cell' + str(index)
-
-        # Initialize the Cell
-        cell.id = db_id
-        py_cells.append(cell)
-
-        json_cells = [json_flat(cell) for cell in py_cells]
+        html_cells.append(html(ncell))
+        json_cells.append(json_flat(ncell))
 
     response = render_to_response('worksheet.html', {
         'title': ws.name,
         'ws_id': ws.id,
-        'cells': [html(cell) for cell in py_cells],
+        'cells': html_cells,
         'namespace_index': uid.next()[3:],
         'cell_index': len(cells),
-        'json_cells': json.dumps(json_cells,ensure_ascii=False),
+        'json_cells': json.dumps(json_cells),
         'xhtml': True,
         },
         context_instance = RequestContext(request),

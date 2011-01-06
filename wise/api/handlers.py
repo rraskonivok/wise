@@ -1,4 +1,4 @@
-from piston.handler import BaseHandler, AnonymousBaseHandler
+from piston.handler import BaseHandler
 from piston.utils import rc, require_mime, require_extended
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -15,14 +15,14 @@ class CellHandeler(BaseHandler):
 
     # Example output:
     # {
-    #     "index": 0, 
-    #     "id": 1, 
+    #     "index": 0,
+    #     "id": 1,
     #     "workspace": {
-    #         "id": 1, 
+    #         "id": 1,
     #         "resource_uri": "/api/ws/1"
-    #     }, 
+    #     },
     #     "resource_uri": "/api/cell/1"
-    # }, 
+    # },
 
     def read(self, request, id=None):
         cells = Cell.objects
@@ -66,7 +66,7 @@ class CellHandeler(BaseHandler):
         return rc.DELETED
 
     @classmethod
-    def resource_uri(self):
+    def resource_uri(self,**args):
         return ('cells', [ 'id', ])
 
 class ExpressionHandeler(BaseHandler):

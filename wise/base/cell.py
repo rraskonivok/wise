@@ -11,9 +11,10 @@ class Cell(object):
     cid = None
     css_class = None
 
-    def __init__(self, eqs, asms):
+    def __init__(self, eqs, asms, **kwargs):
         self.expressions = eqs
         self.assumptions = asms
+        self.__dict__.update(kwargs)
 
     def _pure_(self):
         # This is not defeind explicityly for the reason that inheriting
@@ -48,7 +49,8 @@ class Cell(object):
                     'assumptions': [asm.id for asm in self.assumptions],
                     'id' : self.id,
                     'cid': 'cell'+str(self.index),
-                    'eqs': [eq.id for eq in self.expressions]})
+                    'eqs': [eq.id for eq in self.expressions]
+                    })
 
         lst.append([eq.json_flat() for eq in self.expressions])
         lst.append([asm.json_flat() for asm in self.assumptions])
