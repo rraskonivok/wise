@@ -1,15 +1,12 @@
 #!/usr/bin/env python
+
+#from gevent import monkey; monkey.patch_all()
+
 import sys
 import os
 
-#Uuuuuh
-sys.path.append('/usr/lib/python2.6/site-packages')
-#os.environ['PYTHONHOME'] += ':/usr/lib/python2.6/site-packages'
-
-#Yah, so apparently the sage has to be in the main thread otherwise it goes crazy
-#from sage.all import *
-
 from django.core.management import execute_manager
+
 try:
     import settings # Assumed to be in the same directory.
 except ImportError:

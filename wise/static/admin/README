@@ -1,0 +1,4 @@
+Django's development server seems to be able to resolve admin
+resources so if you end up needing to use the admin interface
+then you should run the script copy_admin_resources.sh to pull
+the resources from your local install.

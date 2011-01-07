@@ -1,40 +1,135 @@
 from django.conf.urls.defaults import *
-
 from django.contrib import admin
+from django.conf import settings
+from django.contrib.auth.views import password_change
+from django.contrib.auth.decorators import login_required as secure
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.views.generic.simple import direct_to_template
+
+# Generic Class Views
+from worksheet.views import (HomeView, WorksheetDelete,
+        WorksheetEdit, WorksheetCreate)
+
 admin.autodiscover()
 
 urlpatterns = patterns('',
-     (r'^$', 'wise.worksheet.views.home'),
-     (r'^home$', 'wise.worksheet.views.home'),
-     (r'^test$', 'wise.worksheet.views.test'),
+     url(r'^$',
+         secure(
+             HomeView.as_view()
+         ),
+         name='index'
+     ),
 
-     #Authentication
-     (r'^accounts/login/$', 'wise.worksheet.views.account_login'),
-     (r'^accounts/logout/$', 'wise.worksheet.views.account_logout'),
+     url(r'^home$',
+         secure(
+             HomeView.as_view()
+         ),
+         name='home'
+     ),
 
-     (r'^ws/(?P<eq_id>\d+)/$', 'wise.worksheet.views.ws'),
+
+     # REST API  uses django-piston
+     (r'^api/', include('wise.api.urls')),
+
+     #(r'^test$', 'wise.worksheet.views.test'),
+     (r'dict/(?P<data>.*)$', 'wise.worksheet.views.dict'),
+     (r'^translate$', 'wise.worksheet.views.translate'),
+     (r'graph/(?P<package>.*)$', 'wise.worksheet.views.objectgraph'),
+     url(r'^ecosystem$',
+         'wise.worksheet.views.ecosystem',
+         name='ecosystem'
+     ),
+
+     # Heartbeat
+     (r'^hb$', 'wise.worksheet.ajax.heartbeat'),
+
+     # Authentication & User Profiles
+     (r'^accounts/', include('registration.backends.default.urls')),
+     (r'^invite/', include('privatebeta.urls')),
+     url(r'^/accounts/password/change/$',
+         password_change,
+         {'template_name':
+             'registration/password_reset_form.html'},
+         name='password_change'
+     ),
+     url(r'^accounts/profile/$',
+         direct_to_template,
+         {'template': 'registration/profile.html'},
+         name='profile'
+     ),
+
+     # Worksheet CRUD
+
+         # CREATE
+         url(r'^ws/create/$',
+            secure(
+                WorksheetCreate.as_view()
+            ),
+            name='worksheet_create'
+         ),
+
+         # READ
+         (r'^ws/(?P<ws_id>\d+)/$', 'wise.worksheet.views.ws'),
+         (r'^ws/(?P<ws_id>\d+)/readonly$', 'wise.worksheet.views.ws'),
+
+         # UPDATE
+         url(r'^ws/(?P<pk>\d+)/update/$',
+            secure(
+                WorksheetEdit.as_view()
+            ),
+            name='worksheet_update'
+         ),
+
+         # DELETE
+         url(r'^ws/(?P<pk>\d+)/delete/$',
+            secure(
+                WorksheetDelete.as_view()
+            ),
+            name='worksheet_delete'
+         ),
+
+     # Math Palettes
      (r'^palette/$', 'wise.worksheet.views.palette'),
-     (r'^ws/(?P<eq_id>\d+)/receive/$', 'wise.worksheet.views.receive'),
-     (r'^ws/(?P<eq_id>\d+)/remove/$', 'wise.worksheet.views.remove'),
-     (r'^ws/(?P<eq_id>\d+)/lookup_transform/$', 'wise.worksheet.views.lookup_transform'),
-     (r'^ws/(?P<eq_id>\d+)/apply_transform/$', 'wise.worksheet.views.apply_transform'),
-     (r'^ws/(?P<eq_id>\d+)/save_workspace/$', 'wise.worksheet.views.save_workspace'),
-     (r'^ws/(?P<eq_id>\d+)/sage_parse/$', 'wise.worksheet.views.sage_parse'),
-     (r'^ws/(?P<eq_id>\d+)/sage_inline/$', 'wise.worksheet.views.sage_inline'),
-     (r'^ws/(?P<eq_id>\d+)/new_inline/$', 'wise.worksheet.views.new_inline'),
-     (r'^ws/(?P<eq_id>\d+)/json_tree/$', 'wise.worksheet.views.json_tree'),
-     (r'^new_workspace/$', 'wise.worksheet.views.new_workspace'),
-     (r'^del_workspace/$', 'wise.worksheet.views.del_workspace'),
-     (r'^ws/(?P<eq_id>\d+)/combine/$', 'wise.worksheet.views.combine'),
-     (r'^new/$', 'wise.worksheet.views.new'),
+     (r'^rule_request/$', 'wise.worksheet.ajax.rules_request'),
 
-     #Uncomment the next line to enable the admin:
-     (r'^admin/', include(admin.site.urls)),
+     # Worksheet Commands
+     (r'^cmds/new_line/$', 'wise.worksheet.ajax.new_line'),
+     (r'^cmds/new_cell/$', 'wise.worksheet.ajax.new_cell'),
+     (r'^cmds/apply_rule/$', 'wise.worksheet.ajax.apply_rule'),
+     (r'^cmds/apply_def/$', 'wise.worksheet.ajax.apply_def'),
+     (r'^cmds/apply_transform/$', 'wise.worksheet.ajax.apply_transform'),
+     (r'^cmds/use_infix/$', 'wise.worksheet.ajax.use_infix'),
+     (r'^cmds/draw_graph/$', 'wise.worksheet.ajax.use_infix'),
+
+     # Uncomment the next line to enable the admin:
+     url(r'^admin/', include(admin.site.urls), name='admin'),
+
+     # TODO: Firefox 4 has some issue with OpenType fonts being loaded
+     # from /static when the current page is /ws since it is one level
+     # up which violates it's same origin policy
+     #(r'^ws/mathjax/(?P<path>.*)$', 'django.views.static.serve',
+     #        {'document_root': settings.MEDIA_ROOT + '/mathjax'}),
+
+     #(r'^favicon\.ico$', 'django.views.generic.simple.redirect_to', 
+     #        {'url': '/static/img/favicon.ico'}),
 )
 
-from django.conf import settings
+# Static Files
+urlpatterns += staticfiles_urlpatterns()
 
 if settings.DEBUG:
     urlpatterns += patterns('',
-        (r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
+        (r'^tests/(?P<path>.*)$', 'django.views.static.serve',
+                {'document_root': settings.MEDIA_ROOT + '/js/tests'}),
+    )
+
+
+if 'grappelli' in settings.INSTALLED_APPS:
+    urlpatterns += patterns('',
+        (r'^grappelli/', include('grappelli.urls')),
+    )
+
+if 'sentry' in settings.INSTALLED_APPS:
+    urlpatterns += patterns('',
+     url(r'^sentry/', include('sentry.urls'), name='sentry'),
     )

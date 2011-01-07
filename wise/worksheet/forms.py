@@ -1,5 +1,13 @@
-from django import forms
+from worksheet.models import Workspace
+from django.forms import ModelForm, Textarea, BaseForm
 
-class LoginForm(forms.Form):
-    email = forms.EmailField(label="Email", max_length=30)
-    password = forms.CharField(label="Password", widget=forms.PasswordInput)
+class WorksheetForm(ModelForm):
+
+    class Meta:
+        model = Workspace
+        fields = ['name','public']
+
+        widgets = {
+            'name': Textarea(),
+            'public': Textarea(),
+        }

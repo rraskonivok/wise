@@ -1,0 +1,65 @@
+/* CSS to render math elements */
+
+::selection { background: transparent; }
+::-moz-selection { background: transparent; }
+
+.MathJax_Display {
+    margin-top: 0px !important;
+    margin-bottom: 0px !important;
+}
+
+#worksheet math {
+    font-size: 200%;
+}
+
+/* -------------------
+   Toplevel Elements
+   ----------------- */
+
+.toplevel {
+    position: relative;
+    margin-bottom: 10px;
+}
+
+.assumption {
+    clear: right;
+    padding-right: 25px;
+}
+
+/* -------------------
+   Node Styling
+   ----------------- */
+
+.placeholder {
+    border: 1px dashed #d4a5a5 !important;
+    padding-left: 10px;
+    padding-right: 10px;
+    vertical-align: middle;
+    height: 10px !important;
+    max-height: 10px;
+}
+
+.cell {
+    /* Frame around cell */
+    border-right: 5px solid #ccc;
+    border-top: 5px solid #ccc;
+
+    /* Collapsed height */
+    min-height: 50px;
+
+    position: relative;
+    padding-top: 10px;
+    padding-bottom: 5px;
+}
+
+.cell .assumptions {
+    min-height: 20px;
+    border-bottom: 1px dashed black;
+}
+
+.cell .equations {
+    min-height: 50px;
+}
+
+.cell .cellbuttons {
+}

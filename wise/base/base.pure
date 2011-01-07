@@ -1,0 +1,681 @@
+/*
+  Wise
+  Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+  
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as
+  published by the Free Software Foundation, either version 3 of the
+  License, or (at your option) any later version.
+*/
+
+// Order of operations is defined by the fixity of the operators
+// defined in prelude.pure
+
+//using math;
+using ask;
+
+/* Evaluation */
+
+prefix 1000 evalb; // Evaluation to boolean
+prefix 1000 evali; // Evaluation to integer
+prefix 1000 evalf; // Evaluation to float
+prefix 1000 evals; // Evaluation to symbolic value
+
+def a::int/b::int = (rational a b);
+
+/* ..
+   Algebraic Ordering
+   --------------
+*/
+
+/* :Name: ``cmp`` x y - Lexicographic ordering on algebraic terms
+   :Arguments:
+   :x: Arbitrary expression
+   :y: Arbitrary expression
+   :Description: Returns 1 if ``x`` > ``y``
+   :Python: None (Internal)
+   :See Also:
+    ------------ 
+*/
+cmp x y = x < y if numberp x && numberp y ;
+cmp x y = 1 if numberp x && ~(numberp y) ;
+cmp (a^b) (c^d) = if a === c then cmp b d else cmp a c ;
+cmp a (b^c) = if a === b then cmp 1 c else cmp a b ;
+cmp (a^b) c = if a === b then cmp b 1 else cmp a c ;
+cmp (x1@_ y1) (x2@_ y2) = if x1===x2 then cmp y1 y2 else cmp x1 x2;
+cmp (x1@_ y1) x2 = if x1===x2 then 0 else cmp x1 x2;
+cmp x1 (x2@_ y2) = if x1===x2 then 1 else cmp x1 x2;
+cmp x y = str x < str y if atomp x && atomp y ;
+cmp x y = ~(cmp y x) otherwise ;
+
+/* ..
+   Deconstructors
+   --------------
+*/
+
+/* :Name: ``sump`` x
+   :Arguments:
+   :x: Arbitrary expression
+   :Description: Returns 1 if ``x`` is an addition expression, 0 otherwise
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+
+//sump x+y = 1 ; 
+sump x = 0 ;
+
+/* :Name: ``base`` x
+   :Arguments:
+   :x: Arbitrary expression
+   :Description: Returns the base of a exponential expression.  For all other expression returns the given expression.
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+base x^y = x;
+base x = x;
+
+/* :Name: ``exponent`` x
+   :Arguments:
+   :x: Arbitrary expression
+   :Description: Returns the exponent of a exponential expression. For all other expression returns the given expression.
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+exponent x^y = y ;
+exponent x = 1;
+
+/* :Name: ``term`` x
+   :Arguments:
+   :x: Arbitrary expression
+   :Description: Returns the a non-numeric element of a multiplication expression, otherwise returns the expression.
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+term (n*x) = x if numberp n ;
+term ((x*y)*z) = (term (x*y)) * z ;
+term (-x) = x;
+term x = x ;
+
+/* :Name: ``constant`` x
+   :Arguments:
+   :x: Arbitrary expression
+   :Description: Returns numeric element of a multiplication expression, otherwise returns the expression.
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+constant (n*x) = n if numberp n ;
+constant ((x*y)*z) = (constant (x*y)) ;
+constant (-x) = -1;
+constant x = 1 ;
+
+/*  ..
+    Equation Manipulation
+    ------------ 
+*/
+
+/* :Name: ``eq_add`` x y
+   :Arguments:
+   :x: Equation
+   :y: Arbitrary expression
+   :Description: Adds y to both sides of x.
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+eq_add (eq lhs rhs) x = eq (lhs+x) (rhs+x);
+eq_add x y = x y;
+
+/* :Name: ``eq_sub`` x y
+   :Arguments:
+   :x: Equation
+   :y: Arbitrary expression
+   :Description: Subtracts y from both sides of x.
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+eq_sub (eq lhs rhs) x = eq (lhs+(-x)) (rhs+(-x));
+
+/* :Name: ``eq_mul`` x y
+   :Arguments:
+   :x: Equation
+   :y: Arbitrary expression
+   :Description: Multiplites y to both sides of x.
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+eq_mul (eq lhs rhs) x = eq (lhs*x) (rhs*x);
+
+/* :Name: ``eq_div`` x y
+   :Arguments:
+   :x: Equation
+   :y: Arbitrary expression
+   :Description: Divides both sides of x by y.
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+eq_div (eq lhs rhs) x = eq (lhs/x) (rhs/x);
+
+
+/*  ..
+    Trigonometric Manipulation
+    ------------ 
+*/
+
+/*  ..
+    Trigonometric Simplification
+    ------------ 
+*/
+
+/* :Name: ``atan2`` y x
+   :Arguments:
+   :x: Arbitrary expression
+   :y: Arbitrary expression
+   :Description: Return atan(y / x), in radians. The result is between -pi and pi. 
+   .. math::
+        \operatorname{atan2}(y, x) = \begin{cases} \arctan(\frac y x) & \qquad x > 0 \\ \pi + \arctan(\frac y x) & \qquad y \ge 0 , x < 0 \\ -\pi + \arctan(\frac y x) & \qquad y < 0 , x < 0 \\ \frac{\pi}{2} & \qquad y > 0 , x = 0 \\ -\frac{\pi}{2} & \qquad y < 0 , x = 0 \\ \frac{0}{0} & \qquad y = 0, x = 0 \end{cases} 
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+atan2 y x = atan (rational y x) if numberp x && x > 0;
+          = Pi + atan (rational y x) if all numberp [y x] && y >= 0 && x < 0;
+          = -Pi + atan (rational y x ) if all numberp [y,x] && y < 0 && x < 0;
+          = Pi/2 if all numberp [y,x] && y > 0 && x == 0;
+          = -(Pi/2) if all numberp [y,x] && y < 0 && x == 0;
+          = rational 0 0 if all numberp [y,x] && y == 0 && x == 0;
+          = atan (rational y x) otherwise;
+
+/*  ..
+    Absolute Value Manipulation
+    ------------ 
+*/
+
+expand_abs = reduce with
+    abs (mul x*y) = abs(x) * abs(y);
+end;
+
+/*  ..
+    Complex Manipulation
+    ------------ 
+*/
+
+/* :Name: ``Re`` x
+   :Arguments:
+   :x: Complex number
+   :Description: Return the real part of a complex number x.
+   .. math::
+        \text{Re}(x+iy) = x
+
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+evals (real (complex x y)) = x; 
+evals (real x) = (Re x);
+
+/* :Name: ``Im`` x
+   :Arguments:
+   :x: Complex number
+   :Description: Return the imaginary part of a complex number x.
+   .. math::
+        \text{Re}(x+iy) = y
+
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+evals (imag (complex x y)) = x; 
+evals (imag x) = (Re x);
+
+// Modulus 
+abs (complex x y) = Sqrt (x^2+y^2);
+
+/* :Name: ``conj`` x
+   :Arguments:
+   :x: Complex number
+   :Description: Return the complex conjugate of a complex number x.
+   .. math::
+        \text{Re}(x+iy) = x-iy
+
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+conj (complex x y) = complex x (-y);
+conj x = conj x;
+
+/* :Name: ``simplify_complex`` x
+   :Arguments:
+   :x: Complex number
+   :Description: Simplifies a complex expression with the following rules:
+   .. math::
+        (u+iv) + (x+iy) = (u+x)+i(v+y)\\
+        (u+iv) - (x+iy) = (u-x)+i(v-y)\\
+        (a+ib) \times (c+id) = (ac-bd) + i (bc+ad)\\
+        \frac{a + bi}{c + di} = \left({ac + bd \over c^2 + d^2}\right) + \left( {bc - ad \over c^2 + d^2} \right)i
+
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+simplify_complex X = reduce X
+with
+    // Complex Addition
+    (complex x y) + (complex u v) = complex (x+u) (y+v);
+    - (complex x y) = complex (-x) (-y);
+
+    // Complex Multiplication
+    (complex a b) * (complex c d) = complex (a*c-b*d) (b*c+a*d);
+
+    // Complex Division
+    (complex a b) / (complex c d) = (complex ((a*c+b*d) / (c^2 + d^2)) ((b*c-a*d) / (c^2 + d^2)) )
+end;
+
+/* :Name: ``rect_to_polar`` x
+   :Arguments:
+   :x: Complex number
+   :Description: Returns the polar form of a complex number as a complex exponential.
+   .. math::
+        (x+iy) \mapsto \sqrt{x^2+y^2} e^{i \theta}
+
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+rect_to_polar X = reduce X
+with
+    (complex 0 0) = 0;
+    (complex x y) = (Sqrt (x*x+y*y)) * exp( I * (atan2 y x));
+end;
+
+//complex_sqrt X = reduce X
+//with
+//    Sqrt (complex x y) = ( Sqrt (x*x+y*y) ) * Exp ( (Arg () );
+//end;
+
+/* :Name: ``complex_trig_expand`` x
+   :Arguments:
+   :x: Arbitrary expression
+   :Description: Reduces the given expression with the following rules:
+   .. math::
+        \sin(x+iy) = \sin(x) \cosh(y) + \cos(x) \sinh(y) i\\
+        \cos(x+iy) = \cos(x) \cosh(y) - \sin(x) \sinh(y) i\\
+        \tan(x+iy) = \sin(2x) + \frac{\sin(2y) i}{\cos(2x)+\cosh(2y)}\\
+
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+complex_trig_expand X = reduce X
+with
+    Sin (complex x y)  = complex (Sin x*Cosh y) (Cos x*Sinh y);
+    Cos (complex x y)  = complex (Cos x*Cosh y) (-Sin x*Sinh y);
+    Tan (complex x y)  = (complex (Sin (2*x)) (Sinh (2*y))) / (Cos (2*x)+Cosh (2*y));
+end;
+
+/* :Name: ``complex_polar_to_rect`` x
+   :Arguments:
+   :x: Multiplication expression
+   :Description: Converts a complex exponential into a rectangular complex number
+   .. math::
+        r e^{i \theta} = r \cos(\theta)+i r \sin(\theta)
+
+   :Python: None (Internal)
+   :See Also:
+   ------------ ;
+*/
+
+complex_polar_to_rect X = reduce X
+with
+    mul r (exp (mul I theta)) = complex;
+end;
+
+/* :Name: ``complex_split`` x
+   :Arguments:
+   :x: Complex expression
+   :Description: Converts a atomic complex value into a addition of the real part and the product of the imaginary part and the imaginary unit
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+complex_split (complex x y) = x + (I * y);
+//complex_rect (Complex x y) = (Complex r*cos t +: r*sin t;
+
+/*
+    Automatic Simplification
+   ------------ 
+*/
+
+algebra_normal X = (simplify_multiplication . 
+                    simplify_addition .
+                    simplify_power .
+                    simplify_rational) X;
+
+/* :Name: ``simplify_multiplication`` x
+   :Arguments:
+   :x: Arbitrary expression
+   :Description: Reduces the given expression with the following rules
+   .. math::
+        0x = 0\\
+        a^x a^y = a^{x+y}\\
+        (a b^x) b^y = a b^{x+y}\\
+        x(yz) = (xy)z\\
+        x(-y) = (-x)y\\
+
+   Multiplication is is associated to the left.
+
+   Multiplication of numeric quantities is reduced to a
+   single numeric quantitiy.
+
+   Multiplication of algebraic terms is sorted alphabetically by
+   variable as defined by ``cmp`` rule.
+
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+simplify_multiplication = reduce
+with
+    0*x = 0 ;
+    1*x = x ;
+    x*y = (base x) ^ ((exponent x) + (exponent y)) if (base x) === (base y) ;
+    a*x*y = a * ( (base x) ^ ((exponent x) + (exponent y)) ) if (base x) === (base y) ;
+    x*y = y*x if cmp y x ;
+    x*y*z = x*z*y if cmp z y ;
+    x*(y*z) = x*y*z ;
+    x*(-y) = (-x)*y ;
+    -(k*x) = (-k)*x if numberp k;
+end;
+
+/* :Name: ``simplify_addition`` x
+   :Arguments:
+   :x: Arbitrary expression
+   :Description: Reduces the given expression with the following rules
+   .. math::
+        0+x = x\\
+        (qx)+(rx) = (q+r)(x)\\
+        (qx)+(qy) = (q)(x+y)\\
+        x+(y+z) = (x+y)+z\\
+        -x+-y = -(x+y)\\
+
+   Addition is is associated to the left.
+
+   Addition of numeric quantities is reduced to a
+   single numeric quantitiy.
+
+   Addition of algebraic terms is sorted alphabetically by
+   variable as defined by ``cmp`` rule.
+
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+simplify_addition X = reduce X
+with
+    -(a*x) = (-a) * x if numberp a;
+    0+x = x ;
+    x+0 = x ;
+    a+b = ( (constant a) + (constant b) ) * (term a) if ((term a) === (term b)) and (~numberp a && ~numberp b) ;
+    a+b+c = a + ((constant b) + (constant c)) * (term b) if (term b) === (term c) ;
+//    a+b = b+a if (cmp b a) && ~(sump a) ;
+    a+b+c = a+c+b if cmp c b ;
+    a+(b+c) = a+b+c ;
+    x-x = 0;
+    (-x)+x = 0;
+    (-x) + (-y) = -(x+y);
+end;
+
+/* :Name: ``simplify_power`` x
+   :Arguments:
+   :x: Arbitrary expression
+   :Description: Reduces the given expression with the following rules
+   .. math::
+        x^0 = 1\\
+        x^1 = x\\
+        0^x = 0\\
+        1^x = 1\\
+        (x^y)^z = x^{yz}\\
+        (xy)^z = x^y x^z\\
+
+   Powers of numeric quantities is reduced to a
+   single numeric quantitiy.
+
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+simplify_power = reduce
+with
+    0^x = 0 if `(x ~= 0);
+    1^x = 1 ;
+    x^0 = 1 if `(x ~= 0);
+    x^1 = x ;
+    (r^s)^w = r^(s*w) if numberp w ;
+    (x*y)^w = (x^w)*(y^w) if numberp w ;
+end;
+
+/* :Name: ``rational_to_power`` x
+   :Arguments:
+   :x: Arbitrary expression
+   :Description: Reduces the given expression with the following rules
+   .. math::
+        \frac{x}{y} = x y^{-1}\\
+
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+rational_to_power = reduce with
+    x/y = x*(y^(-1));
+end;
+
+/*
+   Rationals
+   ------------ 
+*/
+
+/* :Name: ``simplify_rational`` x
+   :Arguments:
+   :x: Arbitrary expression
+   :Description: Reduces the given expression with the following rules
+   .. math::
+        \frac{x}{y} = x y^{-1}\\
+
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+simplify_rational = reduce with
+    x/x = 1;
+    0/x = 0;
+    x/1 = x;
+    (-x)/y = -(x/y);
+end;
+
+/* :Name: ``combine_rational`` x
+   :Arguments:
+   :x: Complex number
+   :Description: Combines rational expressions according to the rules:
+   .. math::
+        -\frac{a}{b} = \frac{-a}{b}\\
+        \frac{a}{b} + \frac{c}{d} = \frac{ad+bc}{bd}\\
+        \frac{a}{b} \cdot \frac{c}{d} = \frac{ac}{bd}\\
+        \frac{a}{b} \div \frac{c}{d} = \frac{ad}{bc}
+
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+combine_rational X = reduce X
+with
+    // Pull the negation outside of the fraction
+    -(a/b) = (-a)/b;
+    (a/c) + (b/c) = (a+b)/c;
+    (a/b) + (c/d) = (a*d+b*c)/(b*d);
+    (a/b) / (c/d) = (a*c)/(b*d);
+end;
+
+/* :Name: ``split_rational`` x
+   :Arguments:
+   :x: Complex number
+   :Description: Seperates rational expressions according to the rules:
+   .. math::
+        \frac{a+b}{c} = \frac{a}{c} + \frac{b}{c}
+
+   :Python: None (Internal)
+   :See Also:
+   ------------ 
+*/
+
+split_rational X = reduce X
+with
+        // Push the negation inside the fraction
+        (-a)/b = -(a/b);
+        (a+b)/c = (a/c) + (b/c);
+        (a*b)/(c*d) = (a/c)*(b/d);
+end;
+
+seperate_rational X = reduce X
+with
+    a/b = a*(1/b) if ~(a === 1);
+end;
+
+replace_heads f g X = replf X
+with
+    replf (func@_ a) = (replf func) (replf a);
+    replf x = if x === f then g else x;
+end;
+
+associate_add_left = reduce with
+    x+(y+z) = (x+y) + z;
+end;
+
+associate_mul_left = reduce with
+    x*(y*z) = (x*y) * z;
+end;
+
+associate_add_right = reduce with
+    (x+y)+z = x+(y+z);
+end;
+
+associate_mul_right = reduce with
+    (x*y)*z = x*(y*z);
+end;
+
+// a+(b+(c+d))
+ileft X x = iter_left (associate_add_right X) x;
+
+iter_left (a + b) x = b + a if b === x;
+iter_left (a+(b+c)) x = b + (a+c) if b === x;
+iter_left (a + b) x = a + (iter_left b x);
+iter_left b x = b;
+
+pull_left X a = reduce 
+    (associate_add_left . associate_mul_left $ X) 
+with
+    (y+x) = (x+y) if x === a && ~( x === y ); 
+    (y*x) = (x*y) if x === a && ~( x === y );
+    (x/y) = x*(1/y) if x === a;
+    //(y/x) = (1/x)*y if x === a;
+end if varp a;
+
+pull_left X a = reduce X a with
+    (y+x) = (x+y) if x === a && ~( x === y ); 
+    (y*x) = (x*y) if x === a && ~( x === y );
+    (x/y) = x*(1/y) if x === a;
+    //(y/x) = (1/x)*y if x === a;
+end;
+
+pull_right X a = reduce 
+    (associate_add_right . associate_mul_right $ X) 
+with
+    (y+x) = (x+y) if y === a && ~( x === y ); 
+    (y*x) = (x*y) if y === a && ~( x === y );
+    (x/y) = x*(1/y) if y === a;
+    //(y/x) = (1/x)*y if y === a;
+end;
+
+pull_left_prop X prop = reduce 
+    (associate_add_left . associate_mul_left $ X) 
+with
+    (y+x) = (x+y) if `(prop x) && ~( x === y ); 
+    (y*x) = (x*y) if `(prop x) && ~( x === y );
+//    (x/y) = x*(1/y) if `(prop x);
+end;
+
+pull_right_prop X prop = reduce 
+    (associate_add_right . associate_mul_right $ X) 
+with
+    (y+x) = (x+y) if `(prop y) && ~( x === y ); 
+    (y*x) = (x*y) if `(prop y) && ~( x === y );
+//    (x/y) = x*(1/y) if `(prop y);
+end;
+
+pull_numeric_left X = pull_left_prop X numberp;
+pull_numeric_right X = pull_right_prop X numberp;
+
+division_theorem a b = add (mul b (a div b)) (a mod b);
+
+//TODO: Use longs
+fact n = loop 1 n with
+  loop p n = if n>0 then loop (p*n) (n-1) else p;
+end;
+
+algebra_expand X = reduce X
+with
+    -(a+b)  = (-a) + (-b);
+    (a+b)*k = (a * k) + (b * k);
+    k*(a+b) = (k * a) + (k * b);
+    (a+b)^2 = a^2+2*a*b+b^2;
+end;
+
+commute_elementary (x+y) = y+x;
+commute_elementary (x-y) = (-y)+x;
+commute_elementary (x*y) = y*x;
+commute_elementary x = x;
+
+nfunc f n p = nfunc (f p) (n-1) p if n > 1;
+            = f p otherwise;
+
+ntuple n p = nfunc Tuple n p;
+
+integrate (1/Sqrt(1+x^2)) x = Asinh x;
+integrate (1/Sqrt(x^2+1)) x = Asinh x;
+integrate x x = x^2;
+integrate (x^(n::int)) x = x^(n+1)/(n+1) if n ~= -1;
+integrate (x^(-1)) x = ln x;
+integrate (f+g) x = integrate f x + integrate g x;
+
+GammaF(1/2) = Sqrt pi;
+GammaF(0.5) = Sqrt pi;

@@ -1,0 +1,12 @@
+#!/usr/bin/env ipython
+
+from django.core.management import setup_environ
+import settings
+setup_environ(settings)
+settings.DEBUG = True
+
+from wise import boot
+from wise import *
+
+boot.start_python_pure()
+boot.start_cython()

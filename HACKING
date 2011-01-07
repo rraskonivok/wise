@@ -1,0 +1,47 @@
+Sooo, you want to hack on Wise. Right now its sorted up ugly
+twisted spaghetti code that I'm untangeling but it it fairly
+well documented.
+
+Feel free to fork the project Github at
+
+    https://github.com/sdiehl/wise
+
+I'm always happy to receive feedback!
+
+Most of the code is Django boilerplate stuff and can be skimmed
+but the big program logic files are:
+
+Worksheet Stuff:
+----------------
+
+    Worksheet:
+
+    * static/js/tree.js
+    * static/js/worksheet.js
+    * static/js/worksheet_managers.js
+    * static/js/worksheet_views.js
+
+    To understand all the ajax that goes on read
+
+    * urls.py
+    * worksheet/ajax.py
+
+    And the REST API is written with Django Piston
+
+    * api/handlers.py
+
+Pure Stuff:
+----------------
+
+    * pure/cpure.pyx
+    * translators/pure_wrap.py
+    * translators/pytopure.py
+
+Maths Stuff:
+----------------
+
+    * base/term.py
+    * base/objects.py
+
+If you want to make your own package then take a look at
+/pkgtemplate as a starting point.

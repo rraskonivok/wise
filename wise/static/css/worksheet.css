@@ -1,0 +1,336 @@
+/* Always show the scrollbar */
+html {
+    overflow-y: scroll;
+}
+
+.hidden {
+    display: none;
+}
+
+.modal {
+    opacity: 0.2;
+}
+
+/* -------------------- 
+    Main Palette
+ -------------------- */
+
+#worksheet {
+    background: white;
+    margin: 0 20px 0 50px;
+    position: relative;
+}
+
+/* -------------------- 
+    Insertion Menu
+ -------------------- */
+
+.cell.add {
+    float: left;
+}
+
+.insertion_toolbar {
+    text-align: center;
+}
+
+/* -------------------- 
+    Outline Sidebar
+ -------------------- */
+
+.node-outline {
+  bottom: 0;
+  top: 0;
+  position: absolute;
+  width: 10px;
+  z-index: 1;
+}
+
+.toplevel > .node-outline {
+  left: -40px;
+  border-bottom: 2px solid #888;
+  border-left: 2px solid #888;
+  border-top: 2px solid #888;
+}
+
+.cell > .node-outline {
+  left: -50px;
+  border-bottom: 2px solid #555;
+  border-left: 2px solid #555;
+  border-top: 2px solid #555;
+}
+
+.toplevel.selected > .node-outline {
+  border-bottom: 2px solid red;
+  border-left: 2px solid red;
+  border-top: 2px solid red;
+}
+
+/* -------------------- 
+    Sidebar Palettes
+ -------------------- */
+
+
+#worksheet_sidebar {
+    float: right;
+    left: 75%;
+    width: 25%;
+}
+
+#terminal_palette textarea {
+    width: 100%; 
+}
+
+#terminal_palette .history {
+    position: relative;
+    height: 95%; 
+}
+
+#worksheet_sidebar .palette {
+    min-width: 100px;
+    padding: 10px;
+    height: 500px;
+}
+
+#worksheet_sidebar .buttons {
+   float: right; 
+   height: 100%;
+}
+
+#worksheet_sidebar .buttons button {
+    float: right;
+    clear: right; 
+    padding: 5px;
+}
+
+#keys_palette dd {
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.uniform_button {
+    vertical-align: middle;
+    text-align: center;
+}
+
+.uniform_button:hover {
+}
+
+.palette {
+  border-left: 1px solid #ddd;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  background: #fff;
+  min-height: 300px;
+  overflow-y: scroll;
+}
+
+.panel_category { 
+    clear: both;
+    display: block;
+    margin: 0;
+    font-size: 13px;
+    text-align: center;
+    background-color: #f5f5f5;
+}
+
+.panel_frame {
+    height: 100%;
+    list-style-type: none;
+}
+
+.panel_frame table {
+    width: 100%;
+}
+
+.panel_frame table td {
+    text-align: center;
+}
+
+/* -------------------- 
+   Keyboard Buttons
+ -------------------- */
+
+kbd {
+    background: #EEE;
+    border-color: #CCC #AAA #888 #BBB;
+    border-style: solid;
+    border-width: 1px 3px 3px 1px;
+    color: black;
+    padding: 2px 4px;
+    white-space: nowrap;
+}
+
+/* -------------------- 
+   Selection Styles
+ -------------------- */
+
+.highlight {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin: 5px;
+}
+
+.shadow {
+	-moz-box-shadow: 3px 3px 4px #000;
+	-webkit-box-shadow: 3px 3px 4px #000;
+	box-shadow: 3px 3px 4px #000;
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin: 5px;
+}
+
+math .selected {
+    border: 5px solid #d4a5a5;
+    margin: -5px;
+}
+
+.selected < .placeholder {
+    background-color: #d4a5a5;
+}
+
+#cell_selection {
+    margin: 10px 0px 5px;
+    padding: 5px 5px 5px 15px;
+    float: right;
+}
+
+/* Applied to containers when we expand them */
+.preselect {
+    border: 5px solid #d4a5a5;
+    margin: -5px !important;
+}
+
+.lines.preselect {
+    border-left: 5px solid #f00;
+}
+
+/* -------------------- 
+   Commandline
+ -------------------- */
+
+.cmd {
+    position: fixed;
+    bottom: 50px;
+    /* 70% of 960px */
+    width: 70%;
+    min-width: 672px;
+    min-height: 20px;
+    text-align: center;
+}
+
+.cmd input {
+    height: 50px;
+    font-size: 15pt;
+    font-family: Monaco, sans-serif;
+    border-style: solid;
+    border-color: #000000;
+    border-width: 1px;
+    background-color: #f2f2f2;
+}
+
+.cmd button {
+    height: 50px;
+}
+
+#selectionlist {
+    border-top-left-radius: 4px 4px;
+    border-top-right-radius: 4px 4px;
+    background: #262626;
+    color: white;
+    position: fixed;
+    bottom: 1px;
+    width: 65%;
+    /* 70% of 960px */
+    min-width: 672px;
+    min-height: 20px;
+}
+
+.nodeselectbutton {
+    padding: 5px;
+    margin-right: 3px;
+}
+
+body div.qtip div.content{
+   padding: 0;
+   margin: 0;
+   height: auto; min-height: auto;
+   width: auto; min-width: auto;
+}
+
+/* IE Sucks */
+button span.ui-icon {
+    display: inline;
+    float: left;
+    margin-right: 2px;
+}
+
+/* Notices from pnotify.js
+----------------------------------*/
+.ui-pnotify {
+	top: 18px;
+	right: 18px;
+	position: absolute;
+	height: auto;
+	/* Ensure that the notices are on top of everything else. */
+	z-index: 9999;
+}
+
+html > body .ui-pnotify {
+	position: fixed;
+}
+.ui-pnotify .ui-pnotify-shadow {
+	margin: 0;
+	position: absolute;
+	top: .1em;
+	left: .1em;
+	bottom: -.2em;
+	right: -.2em;
+	z-index: -1;
+}
+.ui-pnotify-container {
+	background-position: 0 0;
+	padding: .8em;
+	height: 100%;
+}
+.ui-pnotify-closer {
+	float: right;
+	margin-left: .2em;
+}
+.ui-pnotify-title {
+	display: block;
+	font-size: 1.2em;
+	font-weight: bold;
+	margin-bottom: .4em;
+}
+.ui-pnotify-text {
+	display: block;
+}
+.ui-pnotify-icon, .ui-pnotify-icon span {
+	display: block;
+	float: left;
+	margin-right: .2em;
+}
+
+/* History Pulldown
+----------------------------------*/
+.ui-pnotify-history-container {
+	position: absolute;
+	top: 0;
+	right: 18px;
+	width: 70px;
+	border-top: none;
+	z-index: 10000;
+}
+.ui-pnotify-history-container .ui-pnotify-history-header {
+	padding: 2px;
+}
+.ui-pnotify-history-container button {
+	cursor: pointer;
+	display: block;
+	width: 100%;
+}
+.ui-pnotify-history-container .ui-pnotify-history-pulldown {
+	display: block;
+	margin: 0 auto;
+}

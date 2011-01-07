@@ -1,2039 +1,929 @@
 /*
-Wise
-Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+ Wise
+ Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as
-published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version.
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as
+ published by the Free Software Foundation, either version 3 of the
+ License, or (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Affero General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
 
-You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ You should have received a copy of the GNU Affero General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-//Optimization Tips:
-//http://net.tutsplus.com/tutorials/javascript-ajax/10-ways-to-instantly-increase-your-jquery-performance/
-//http://www.codenothing.com/archives/2010/8-jquery-micro-optimization-tips/
+///////////////////////////////////////////////////////////
+// Initalization
+///////////////////////////////////////////////////////////
+$(document).ajaxError(function () {
+    Notifications.raise('AJAX_FAIL');
+
+    // Disable math operations until we restablish a connection
+    Wise.Settings.set({DISABLE_MATH: true});
+    Wise.Log.warn('Operation failed, since server did not respond');
+});
+
+$(document).ready(function () {
+  init();
+});
+
+$(document).ajaxStart(function () {
+  $('#ajax_loading').show();
+});
+
+$(document).ajaxStop(function () {
+  $('#ajax_loading').hide();
+});
 
 ///////////////////////////////////////////////////////////
 // Utilities
 ///////////////////////////////////////////////////////////
+// Nerf the console.log function so that it doesn't accidently
+// break if Firebug / JS Consle is turned off.
+// Source: http://paulirish.com/2009/log-a-lightweight-wrapper-for-consolelog/
 
-$.fn.exists = function(){return jQuery(this).length>0;}
+// Disable any animations on the worksheet
+jQuery.fx.off = false;
 
-$.fn.replace = function(htmls){
-      var replacer = $(htmls);
-        $(this).replaceWith(replacer);
-          return replacer;
+window.log = function () {
+  log.history = log.history || [];
+  log.history.push(arguments);
+  if (this.console) {
+    console.log(Array.prototype.slice.call(arguments));
+  }
 };
 
-$.fn.swap = function(b) {
-    b = jQuery(b)[0];
-    var a = this[0];
+if(!this.console) {
+    this.console = {
+        log : window.log
+    };
+}
 
-    var t = a.parentNode.insertBefore(document.createTextNode(''), a);
-    b.parentNode.insertBefore(a, b);
-    t.parentNode.insertBefore(b, t);
-    t.parentNode.removeChild(t);
+// Begin Debuggin' Stuff
+// ---------------------
+function showmath() {
+  return Wise.Selection.at(0).sexp();
+}
 
-    return this;
+function shownode() {
+  if (Wise.Selection.isEmpty()) {
+    window.log('Select something idiot!');
+  }
+  return Wise.Selection.at(0);
+}
+
+function rebuild_node() {
+  //Shit went down, so rebuild the sexp
+  Wise.Selection.at(0).msexp();
+}
+
+function server_up() {
+  // The server is up available I assert it to be true
+  Wise.Settings.set({DISABLE_MATH: false});
+
+}
+
+// Beat on the server
+function stress_test() {
+  while (true) {
+    apply_rule('algebra_normal', ['( Addition (Variable x) (Addition (Variable x)\
+                    (Variable x)))']);
+    sleep(3000);
+    console.log('done');
+  }
+}
+
+DISABLE_SIDEBAR = false;
+
+// End Debuggin' Stuff
+//----------------------
+
+//Some JQuery Extensions
+//----------------------
+
+$.fn.exists = function () {
+  return $(this).length > 0;
+}
+
+$.fn.replace = function (htmlstr) {
+  return $(this).replaceWith(htmlstr);
 };
 
-$.fn.id = function()
-{
-    return $(this).attr('id')
-}
+//TODO: This is here for compatability reasons, move to fn.cid
+$.fn.id = function () {
+  return $(this).attr('id');
+};
 
-$.fn.math = function()
-{
-    return $(this).attr('math')
-}
+$.fn.cid = function () {
+  return $(this).attr('id');
+};
 
-$.fn.group = function()
-{
-    return $(this).attr('group')
-}
+// Extract the id of an object and lookup its node
+$.fn.node = function () {
+  var node = Wise.Nodes.getByCid($(this).id());
+  if (!node) {
+    error("The term you selected is 'broken', try refreshing its corresponding equation.");
+    window.log($(this).id(), 'not initalized in term db.');
+    return;
+  }
+  return node;
+};
 
-$.fn.mathtype = function()
-{
-    return $(this).attr('math-type')
-}
-
-$.extend($.fn.disableTextSelect = function() {
-        return this.each(function(){
-                if($.browser.mozilla){//Firefox
-                        $(this).css('MozUserSelect','none');
-                }else if($.browser.msie){//IE
-                        $(this).bind('selectstart',function(){return false;});
-                }else{//Opera, etc.
-                        (this).mousedown(function(){return false;});
-                }
-        });
-});
-
-function whatisit(object)
-{
-    return $(object).id() +', '+$(object).mathtype() +', '+$(object).math()
-}
+// Prevent selections from being dragged on the specifed elements
+$.fn.disableTextSelect = function () {
+  return this.each(function () {
+    if ($.browser.mozilla) { //Firefox
+      $(this).css('MozUserSelect', 'none');
+    } else if ($.browser.msie) { //IE
+      $(this).bind('selectstart', function () {
+        return false;
+      });
+    } else { //Opera, etc.
+      (this).mousedown(function () {
+        return false;
+      });
+    }
+  });
+};
 
 function sleep(milliseconds) {
   var start = new Date().getTime();
   for (var i = 0; i < 1e7; i++) {
-    if ((new Date().getTime() - start) > milliseconds){
+    if ((new Date().getTime() - start) > milliseconds) {
       break;
     }
   }
 }
 
-//I miss Lisp
-function zip(listA, listB)
-{
-    var lst = []
-    if( listA.length == listB.length ) {
-        for(var i = 0; i < listA.length; i++) {
-            lst.push([listA[i],listB[i]])
-        }
-        return lst
-    }
-}
-
-//Cycle through all pairs of an array
-function cycle(listA)
-{
-    var listB = listA.slice(0);
-    listB.push(listB.shift())
-    return zip(listA, listB)
-}
-
 ///////////////////////////////////////////////////////////
-// Expression Tree Handling
+// Initialize the Term DB
 ///////////////////////////////////////////////////////////
+// Takes the inital JSON that Django injects into the page in the
+// variable JSON_TREE and calls build_tree_from_json to initialize
+// the term database
 
-function Cell() {
-    this.equations = []; 
-    this.length = 0;
-    this.dom = null;
+function init_nodes() {
+    Wise.Worksheet = new WorksheetModel();
+    Wise.Selection = new NodeSelectionManager();
+    Wise.Nodes = new Backbone.Collection();
+
+    _.each(JSON_TREE, function (cell_json) {
+        var new_cell = build_cell_from_json(cell_json);
+        Wise.Worksheet.add(new_cell);
+    });
 }
-
-function Equation() {
-    this.tree = null;
-    this.cell = null;
-    this.next = null;
-    this.prev = null;
-    this.index = null;
-}
-
-function RootedTree(root) {
-    root.tree = this;
-    root.depth = 1;
-    root._parent = this;
-    this.root = root;
-    this.levels[0] = [root];
-}
-
-function build_tree_from_json(json_input) {
-    //Our Expression tree
-    var T;
-
-    //Lookup table which establishes a correspondance between the DOM
-    //ids (i.e. uid314 ) and the Node objects in the expression tree.
-
-    //Craete a hash table: { 'uid3': Node of uid3 }
-    for(var term in json_input) {
-       term = json_input[term];
-       var node = new Expression();
-       NODES[term.id] = node; 
-       node.id = term.id;
-       node.name = term.type;
-       node.dom = $('#' + node.id);
-    }
-
-    //Iterate through the children and lookup their corresponding
-    //nodes and attach to tree
-    for(term in json_input) {
-       index = term;
-       term = json_input[term];
-       prent = NODES[term.id]
-       if(index == 0) { T = new RootedTree(prent) };
-       for(var child in term.children) {
-           child = term.children[child];
-           //console.log(nodes[child]);
-           prent.addNode(NODES[child]);
-       }
-    }
-
-    return T;
-}
-
-//Nested JSON Tree (InfoVis requires this)
-function recurse(node) {
-   var json = {};
-   json.id = 'node' + node.id;
-   json.data = node;
-   json.name = node.name;
-   json.children = []
-
-   for(child in node.children) {
-        child = node.children[child];
-        json.children.push(recurse(child));
-   }
-
-   return json
-}
-
-function nested_json(T) {
-    //Returns the nested JSON form a (sub)tree.
-    //
-    // The nested JSON is of the form:
-    //  var json = {  
-    //      "id": "aUniqueIdentifier",  
-    //      "name": "usually a nodes name",  
-    //      "data": {
-    //          "some key": "some value",
-    //          "some other key": "some other value"
-    //       },  
-    //      "children": [ 'other nodes or empty' ]  
-    //  };  
-    return recurse(T.root);
-}
-
-function merge_json_to_tree(old_node, json_input) {
-   var newtree = build_tree_from_json(json_input); 
-   old_node.swapNode(newtree.root);
-
-    //Swap out a node in a tree with an expression created from
-    //JSON 
-
-    //js doesn't have proper iterators *grumble, grumble*
-    //if(json_input.length == 1) {
-    //   var node = new Expression();
-    //   var term = json_input[0];
-
-    //   old_node.swapNode(node);
-    //   //console.log("old_node: %s",old_node.id());
-
-    //   NODES[term.id] = node; 
-    //   node.id = term.id;
-    //   node.name = term.type;
-    //   node.dom = $('#' + term.id);
-
-    //   //delete NODES[old_node.id()];
-    //} else {
-    //    for(var term in json_input) {
-    //       var index = term;
-    //       var term = json_input[term];
-    //       var node = new Expression();
-    //       if(index == 0) {
-    //            old_node.swapNode(node);
-    //            //console.log("old_node: %s",old_node.id());
-    //            //delete NODES[old_node.id()];
-    //       }
-    //       NODES[term.id] = node; 
-    //       node.id = term.id;
-    //       node.name = term.type;
-    //       node.dom = $('#' + node.id);
-    //    }
-    //}
-}
-
-function append_to_tree(root, json_input) {
-   var newtree = build_tree_from_json(json_input); 
-   root.addNode(newtree.root);
-
-    //for(var term in json_input) {
-    //   var index = term;
-    //   var term = json_input[term];
-    //   node = new Expression();
-    //   if(index == 0) {
-    //        root.addNode(node);
-    //     //   console.log("root_node: %s",root.id());
-    //   }
-    //   NODES[term.id] = node; 
-    //   node.id = term.id;
-    //   node.name = term.type;
-    //   node.dom = $('#' + term.id);
-    //}
-}
-
-///////////////////////////////////////////////////////////
-// Term Handling
-///////////////////////////////////////////////////////////
-
-//This is the key algorithm that makes everything run, the
-//properties and methods are .prototyped for speed since they are
-//likely called thousands of times.
-
-// This is a hash trie, see http://en.wikipedia.org/wiki/Trie
-
-EQUATION_TREE = null;
-
-function RootedTree(root) {
-    root.tree = this;
-    root.depth = 1;
-    root._parent = this;
-    this.root = root;
-    this.levels[0] = [root];
-}
-
-RootedTree.prototype.walk = function(node) {
-    if (!node) {
-        node = this.root;
-    }
-    if (node.hasChildren())
-    {
-        for (child in node.children) {
-            this.walk(node.children[child])
-        }
-    }
-}
-
-RootedTree.prototype.tree = this;
-RootedTree.prototype.nodes = [];
-RootedTree.prototype.levels = [];
-RootedTree.prototype.depth = 0;
-
-function Node() {
-    this.children = [];
-    this._parent = null;
-}
-this.equations = [];
-Node.prototype.tree = null;
-Node.prototype.hasChildren = function() {return this.children.length > 0}
-Node.prototype.depth = null;
-
-Node.prototype.addNode = function(node)
-{
-    if(this.tree.depth < this.depth + 1) {
-        this.tree.depth = this.depth + 1;
-        this.tree.levels[this.depth] = [];
-    }
-    node.tree = this.tree;
-    node.depth = this.depth + 1;
-    node._parent = this
-    node.index = this.children.length;
-    this.children.push(node);
-    (this.tree.levels[node.depth-1]).push(node);
-}
-
-Node.prototype.delNode = function(node)
-{
-    this._parent.children.splice(this.index,1);
-
-    //Regenerate the indices
-    for(var i=0; i < this._parent.children.length; i++)
-    {
-        this._parent.children[i].index = i;
-    }
-}
-
-Node.prototype.swapNode = function(newNode) {
-
-   console.log('newNode');
-   console.log(newNode);
-
-   newNode._parent = this._parent;
-   newNode.index = this.index;
-   newNode.depth = this.depth;
-   newNode.tree = this.tree;
-   this._parent.children[this.index] = newNode;
-}
-
-function Expression() {
-    /* Javascript is much faster at manipulating
-    arrays than strings */
-
-    this.children = [];
-    this._parent = null;
-    this._math = [];
-    this.dom = null;
-    this.hash = null;
-}
-
-Expression.prototype = new Node();
-Expression.prototype.smath = function() { return this._math.join(' ') }
-
-/*
-// O(n) , n = nodes in tree
-for (level in T.levels.reverse()) {
-    var terms = T.levels[level];
-    for(term in terms) {
-       term = terms[term]; 
-       var _parent = term._parent
-       if(!term.hasChildren())
-       {
-            term.math = term._math
-       }
-       else
-       {
-           term.math = ['(',term.mathtype,' ',term._math.join(' '),')'].join('')
-       }
-       _parent._math.push(term.math)
-    }
-}
-*/
 
 ///////////////////////////////////////////////////////////
 // Selection Handling
 ///////////////////////////////////////////////////////////
 
-// Out global selection container
-var selection = {};
-selection.count = 0;
-selection.objs = {};
-selection.__lst = [];
-
-selection.add = function (obj) {
-    this.objs[obj.id()] = obj;
-    this.count += 1; 
-}
-
-selection.del = function (key) {
-    delete this.objs[key]
-    this.count -= 1; 
-}
-
-selection.get = function (key) {
-    return this.objs[key];
-}
-
-selection.list = function() {
-    var lst = [];
-    for (i in this.objs) {
-       lst.push(this.objs[i]);
-    }
-    this.__lst = lst;
-    return lst;
-}
-
-//Return a list of the given property of the elements
-//Ex: selection.list_prop('math')
-selection.list_prop = function(prop) {
-    var lst = [];
-    for (i in this.objs) {
-       lst.push(this.objs[i].attr(prop));
-    }
-    return lst;
-}
-
-selection.nth = function(n) {
-    if(this.__lst.length == 0) {
-        this.list();
-    }
-    var nth = this.__lst[n];
-
-    //We do this so that selection.nth(0).exists will return
-    //false if the value is not in the array
-    if (nth == undefined) {
-        return $();
-    } else {
-        return nth;
-    }
-}
-
-selection.clear = function() {
-    this.objs = {};
-    this.__lst = [];
-    this.count = 0;
-}
-
-function clear_selection()
-{
-    //TODO: Remove $.each
-    $.each($("#selectionlist button"),function() {
-                $(this).remove(); 
-        });
-    $('.selected').removeClass('selected');
-    $('#options').hide();
-    $('#selectionlist').fadeIn();
-    selection.clear()
-}
-
-function select_term(object)
-{
-    //Since the selections have changed clear any looked-up (is that even a word?) actions
-    clear_lookups();
-    $("#selectionlist").fadeIn();
-
-    clickedon = $(object);
-
-    //We shouldn't be able to click on the "invisible" addition
-    //container we add to each of the RHS or LHS
-
-    container = get_container(clickedon);
-
-    if(container != undefined)
-    {
-        if(container.attr('math-type') == 'RHS' || container.attr('math-type') == 'LHS')
-        {
-            return
-        }
-    }
-
-    if(clickedon.hasClass('selected'))
-    {
-        clickedon.removeClass('selected');
-        id = clickedon.attr("id");
-        //TODO: Remove $.each
-        $.each($("#selectionlist button"),function()
-        {
-            if($(this).attr('index') === id)
-            {
-                $(this).remove(); 
-            }
-        });
-        selection.del(id)
-    }
-    else
-    {
-        clickedon.addClass('selected');
-        typ = clickedon.attr('math-type');
-        li = $(document.createElement('button')).html(typ)
-        li.button()
-
-        cancel = $(document.createElement('div'))
-        cancel.addClass('ui-icon')
-        cancel.addClass('ui-icon-close')
-        cancel.css('float','left')
-        cancel.css('cursor','pointer')
-
-        li.prepend(cancel)
-        index = clickedon.attr('id')
-
-        selection.add(clickedon);
-
-        li.attr('index',index)
-
-        //li.attr('math',clickedon.attr('math'))
-        //li.attr('math-type',clickedon.attr('math-type'))
-
-        cancel.attr('index',index)
-
-        li.bind('mouseover',function()
-            {
-                index = $(this).attr('index') 
-                obj = selection.get(index)
-                obj.css('background','#DD9090'); 
-            });
-        li.bind('mouseout',function()
-            {
-                index = $(this).attr('index') 
-                obj = selection.get(index)
-                obj.css('background','inherit'); 
-            });
-        li.bind('click',function()
-            {
-                index = $(this).attr('index') 
-
-                obj = selection.get(index)
-                obj.removeClass('selected');
-                obj.css('background','inherit'); 
-
-                selection.del(index)
-
-                $(this).remove()
-                format_selection()
-            });
-
-        $("#selectionlist").append(li);
-
-        //clickedon.effect('transfer',{ to: li, className: 'ui-effects-transfer' },400)
-        format_selection();
-    //Bind to select object command
-    }
-    
-    if(selection.count == 2 && (selection.nth(0)).attr('math-type') == 'Placeholder')
-    {
-        apply_transform('PlaceholderSubstitute')
-    }
-}
-
-function format_selection()
-{
-    $($("#selectionlist").children()).css('background-color','#9CBD86');
-    $($("#selectionlist").children()[0]).css('border','2px solid #DD9090');
-    $($("#selectionlist").children()[1]).css('border','2px solid #989cd7');
+function selection_matches_pattern(pattern) {
+  // [Equation, Addition] , [Equation, Multiplication]
+  // _.isEqual(Equation, Equation) = true
+  // _.isEqual(Addition, Multiplication) = false
+  // _.all( [true, false] ) = false => does not match pattern
+  //TODO add support for matching by toplevel or number of
+  //children
+  var zipped = _.zip(Wise.Selection, pattern);
+  return _.map(zipped, _.isEqual);
 }
 
 ///////////////////////////////////////////////////////////
 // UI Handling
 ///////////////////////////////////////////////////////////
 
-$(document).ajaxStart(function(){$('#ajax_loading').show()})
-$(document).ajaxStop(function(){$('#ajax_loading').hide()})
-
-function error(text)
-{
-    $.pnotify({ 'Error': 'Regular Notice', pnotify_text: text, pnotify_delay: 5000 });
-   //$('#error_dialog').text(text);
-   //$('#error_dialog').dialog({modal:true,dialogClass:'alert'});
-}
-
-function notify(text)
-{
-    $.pnotify({ '': 'Regular Notice', pnotify_text: text, pnotify_delay: 5000 });
-}
-
-function dialog(text)
-{
-   $('#error_dialog').text(text);
-   $('#error_dialog').dialog({modal:true,dialogClass:'alert'});
-}
-
-function clear_lookups()
-{
-    $('#options').fadeOut()
-}
-
-function show_debug_menu()
-{
-    $('#debug_menu').dialog();
-    $('#horizslider').slider({
-        slide:
-        function(e,ui)
-        {
-            term_spacing(ui.value,null)
-        }}
-    );
-    $('#vertslider').slider({
-        slide:
-        function(e,ui)
-        {
-            term_spacing(null,ui.value)
-        }}
-    );
-}
-
-function resize_parentheses()
-{
-    //Scale parentheses
-    //TODO: Remove $.each
-    $.each($('.pnths'), function(obj)
-        {
-            parent_height = $(this).parent().height();
-            $(this).height(parent_height)
-            $(this).css('margin-top',-parent_height/3)
-            $(this).css('font-size',String(parent_height/3) + 'px')
-        });
-}
-
-/*
-function connect_to_every_sortable(object)
-{
-    $(object).children().draggable({
-        connectToSortable: $('.ui-sortable'),
-        helper: 'clone',
-        appendTo: 'body',
-    });
-}
-*/
-
-function reset_selections()
-{
-    $().live('li[math-meta-class=term]',function(object){select_term(this)});
-}
-
-function fade_and_destroy(object)
-{
-    $(object).fadeOut('fast',function(){
-        $(object).remove();
-    });
-}
-
-function fade_old_new(old,news)
-{
-    $(old).hide('slow',function() {
-        $(news).show(function() {
-            $(old).remove();
-        });
-    });
-}
-
-function term_spacing(x,y)
-{
-    if(x)
-    {
-        $('.term').css('padding-right',x)
-        $('.term').css('padding-left',x)
+function ask(message, yescallback, nocallack) {
+  $("#dialog-ask").dialog({
+    closeOnEscape: true,
+    modal: true,
+    resizable: false,
+    buttons: {
+      Ok: yescallback,
     }
-
-    if(y)
-    {
-        $('.term').css('padding-top',y)
-        $('.term').css('padding-bottom',y)
-    }
+  });
 }
 
-function toggle_spacing()
-{
-    $('.container').css('vertical-align','baseline')
+function error(text) {
+  $.pnotify({
+    'Error': 'Regular Notice',
+    pnotify_text: text,
+    pnotify_delay: 5000
+  });
 }
 
-function toggle_units()
-{
-    $("body .unit").fadeOut();    
+function notify(text) {
+  $.pnotify({
+    '': 'Regular Notice',
+    pnotify_text: text,
+    pnotify_delay: 5000
+  });
 }
 
-function cleanup_ajax_scripts()
-{
-    //The ensures that any <script> tags inserted via ajax don't get executed more than once
-    $("script[data-type=ajax]").remove()
-}
-
-function debug_math()
-{
-    //TODO: Remove $.each
-    $.each($('[math]'),function() {
-        $(this).attr('title',$(this).attr('math'));
-    });
-}
-
-function bind_hover_toggle(){
-    $('#hovertoggle').toggle(
-        function()
-        {
-            $('#workspace .term[math]').hover(
-                function()
-                {
-                    $(this).addClass('term_hover')
-                }
-                ,
-                function()
-                {
-                    $(this).removeClass('term_hover')
-                }
-            )
-
-            $('#workspace .container[math]').hover(
-                function()
-                {
-                    $(this).addClass('container_hover')
-                }
-                ,
-                function()
-                {
-                    $(this).removeClass('container_hover')
-                }
-            )
-        }
-        ,
-        function()
-        {
-            $('#workspace .term[math]').hover(
-                function()
-                {
-                    $(this).removeClass('term_hover')
-                }
-            )
-            $('#workspace .container[math]').hover(
-                function()
-                {
-                    $(this).removeClass('container_hover')
-                }
-            )
-        })
-}
-
-function toggle_sageinput()
-{
-    $('#sage_input').dialog();
-}
-
-function show_cmd()
-{
-   if(selection.count > 0)
-   {
-       $('#cmd_input').toggle();
-       $("#sage_cmd").focus()
-   }
-}
-
-function exec_cmd()
-{
-    sage_inline($('#sage_cmd').val())
-}
-
-function debug_colors(object)
-{
-    $('li[math-meta-class=term]').css('border-bottom','5px solid red');
-    $('ul[math-type]').css('border-bottom','5px solid blue');
-    $('.rhs').css('border-bottom','none');
-    $('.lhs').css('border-bottom','none');
-    $('.equation').css('background-color','#CCCCCC');
-    $('.rhs').css('background-color','#FFCCCC');
-    $('.lhs').css('background-color','#CCFF00');
+function dialog(text) {
+  $('#error_dialog').text(text);
+  $('#error_dialog').dialog({
+    modal: true,
+    dialogClass: 'alert'
+  });
 }
 
 ///////////////////////////////////////////////////////////
 // Server Queries
 ///////////////////////////////////////////////////////////
 
-function lookup_transform()
-{
-    data = {}
-
-    //Get the types of the values we have selected
-    data.selections = selection.list_prop('math-type')
-
-    //Iterate through all elements
-    //if(get_nested(first,second) != null)
-    //{
-    //    data.nested = true
-    //}
-    //else
-    //{
-    //    data.nested = false
-    //}
-
-    //context = get_common_context(first,second)
-    //if(context != null)
-    //{
-    //    context = context.attr('math-type') 
-    //}
-
-    //data.context = context
-
-    $.post("lookup_transform/",data, function(data)
-        {
-            if (data.empty) {
-                notify('No transforms found for given objects');
-                return;
-            }
-
-            //Generate buttons which invoke the transformations
-            $('#options').empty();
-
-            for(var mapping in data)
-            {
-                var pretty = data[mapping][0]
-                var internal = data[mapping][1]
-                button = $( document.createElement('button') ).html(pretty)
-                button.attr('internal',internal)
-
-                button.bind('click',function() { apply_transform($(this).attr('internal'))} )
-
-                $('#selectionlist').hide();
-                $('#options').prepend(button);
-                $('#options').show();
-                $('#options button').button();
-            } 
-        } ,'json')
+// Heartbeat to check to see whether the server is alive
+function heartbeat() {
+  $.ajax({
+    url: '/hb',
+    dataType: 'html',
+    type: 'GET',
+    success: function (response) {},
+    timeout: function () {
+      error("Not responding");
+    },
+    error: function () {
+      error("Not responding");
+    },
+  });
 }
 
-function apply_transform(transform,selections)
-{
-    var data = {}
-    data.transform = transform
-    data.namespace_index = NAMESPACE_INDEX;
+function apply_rule(rule, operands, callback) {
+  var data = {};
+  data.rule = rule;
+  data.namespace_index = NAMESPACE_INDEX;
 
-    if(selections == null) {
-        //Fetch the math for each of the selections
-        data.selections = selection.list_prop('math')
+  // If nodes are not explicitely passed then use
+  // the workspace's current selection
+  if (!operands) {
+
+    if (Wise.Selection.isEmpty()) {
+      //error("Selection is empty.");
+      $('#selectionlist').effect("highlight", {
+        color: '#E6867A'
+      }, 500);
+
+      return;
     }
-    else { 
-        data.selections = selections
-    }
-
-    $.post("apply_transform/", data,
-        function(data){
-
-            if(data.error)
-            {
-                error(data.error)
-                $('#selectionlist').fadeIn();
-                clear_selection()
-                return
-            }
-
-            //Iterate over the elements in the image of the
-            //transformation, attempt to map them 1:1 with the
-            //elements in the domain. Elements mapped to 'null'
-            //are deleted.
-            for(var i=0; i<data.new_html.length; i++)
-            {
-                obj = selection.nth(i)
-                group_id = obj.attr('group');
-                group_id_cache = String(group_id)
-
-                if (data.new_html[i] == null)
-                {
-                    obj.remove()
-                }
-                else
-                {
-                    merge_json_to_tree(NODES[obj.id()],data.new_json[i]);
-                    nsym = obj.replace(data.new_html[i]);
-                    nsym.attr('group',group_id_cache);
-                    refresh_jsmath($(nsym))
-                }
-            }
-            
-            NAMESPACE_INDEX = data.namespace_index;
-
-            clear_selection()
-            traverse_lines();
-            update(get_container(obj))
-        },
-        "json");
-
-    cleanup_ajax_scripts()
-    clear_lookups()
-}
-
-function receive(ui,receiver,group_id)
-{
-    group_id = receiver.attr('id')
-
-    obj = ui.item
-    //If we drop an element in make sure we associate it with the group immediately
-    obj.attr('group',group_id);
-
-    //If we drag from a jquery draggable then the ui.item doesn't exist here yet
-    //so just remap all the children with the group... this should be safe (right?)
-    receiver.children('[math]').attr('group',group_id)
-
-    //Make sure nothing is changed while we process the request
-    receiver.attr('locked','true')
-
-    data = {
-        //The math of the dragged object 
-        obj: ui.item.attr('math'),
-        obj_type: ui.item.attr('math-type'),
-
-        //The math of the receiving object
-        receiver: receiver.attr('math'),
-        receiver_type: receiver.attr('math-type'),
-        receiver_context: get_container(receiver).attr('math-type'),
-
-        //The math of the sender objec
-        sender: ui.sender.attr('math'),
-        sender_type: ui.sender.attr('math-type'),
-        sender_context: get_container(ui.sender).attr('math-type'),
-        
-        //The new position of the dragged obect inside receiver
-        new_position: ui.item.parent().children("[math]").index(ui.item),
-
-        namespace_index: NAMESPACE_INDEX
-    }
-
-    $.post("receive/", data,
-           function(data){
-
-            if(data.error) {
-                error(data.error);
-                return
-            }
-
-            nsym = obj.replace(data.new_html);
-            nsym.attr('group',group_id);
-
-            refresh_jsmath($(nsym));
-            receiver.attr('locked','false');
-
-            update(get_container(nsym))
-
-            //append_json_to_tree(NODES[receiver.id()],data.new_json);
-            append_to_tree(NODES[receiver.id()],data.new_json);
-
-            //Remove the old element from the tree
-            NODES[obj.id()].delNode();
-
-            NAMESPACE_INDEX = data.namespace_index;
-          },
-        "json");
-
-    cleanup_ajax_scripts();
-}
-
-function remove(ui,removed)
-{
-    //Rather unintuitivly this handles transformations that are
-    //induced after a object is removed from a container. The
-    //best example is when the last element from a equation side
-    //(i.e. LHS) is removed, this induces the remove method on
-    //LHS and appends a zero.
-
-    group_id = removed.attr('id')
-    obj = ui.item
-    removed.attr('locked','true')
-
-    data = {
-        //The math of the dragged object 
-        obj: ui.item.attr('math'),
-        obj_type: ui.item.attr('math-type'),
-
-        //The math of the sender object
-        sender: removed.attr('math'),
-        sender_type: removed.attr('math-type'),
-        sender_context: get_container(removed).attr('math-type'),
-
-        namespace_index: NAMESPACE_INDEX
-    }
-
-    $.post("remove/", data,
-           function(data){
-                if(data.error) {
-                    error(data.error)
-                    return
-                }
-
-                if(data.new_html) {
-                    nsym = $(data.new_html).appendTo(removed);
-                    nsym.attr('group',group_id);
-
-                    refresh_jsmath(nsym);
-                    append_to_tree(NODES[removed.id()],data.new_json);
-
-                    removed.attr('locked','false')
-                    update_math(removed);
-                    NAMESPACE_INDEX = data.namespace_index;
-                }
-          },
-        "json");
-    cleanup_ajax_scripts()
-}
-
-function combine(first,second,context)
-{
-    data = {};
-    data.context = context
-    data.first = $(first).attr('math');
-    data.second = $(second).attr('math');
-    data.namespace_index = NAMESPACE_INDEX;
-
-    if($(first).attr('group') != $(second).attr('group'))
-    {
-        alert('Mismatched group ids in same context')
-        return null
-    } else { 
-        group_id = $(first).attr('group')
-    }
-
-    container = get_container(first)
-    group_id = container.attr('id')
-    group_id_cache = String(group_id)
-
-    $.post("combine/", data,
-           function(data){
-
-                if(data.error)
-                {
-                    error(data.error)
-                    return
-                }
-
-                nsym = first.after(data.new_html).next();
-
-                //Render the TeX
-                refresh_jsmath(container);
-
-                //Find the root node and associate it with the
-                //new container, the root node should be the only
-                //one which the server didn't automatically
-                //assign a new id to.
-                container.find('[group=None]').attr('group',group_id_cache)
-
-                first.remove();
-                second.remove();
-
-                var first_node = NODES[first.id()];
-                var second_node = NODES[second.id()];
-
-                //Make appropriate changes to the tree
-                if(!data.new_json[0]) {
-                    first_node.delNode(); 
-                } else {
-                    merge_json_to_tree(first_node,data.new_json[0]);
-                }
-
-                if(!data.new_json[1]) {
-                    second_node.delNode(); 
-                } else {
-                    merge_json_to_tree(second_node,data.new_json[1]);
-                }
-
-                update(container);
-
-                traverse_lines();
-                cleanup_ajax_scripts();
-
-                NAMESPACE_INDEX = data.namespace_index;
-          },
-        "json");
-}
-
-function new_inline(){
-    data = {}
-    data.namespace_index = NAMESPACE_INDEX;
-    data.cell_index = CELL_INDEX;
-
-    $.post("new_inline/", data ,
-        function(data){
-            if(data.error) {
-                error(data.error)
-            }
-
-            if(data.new_html) {
-                //TOOD Simplify this mess
-                
-                new_cell_html = $(data.new_html);
-                $("#workspace").append(new_cell_html);
-                $('.lines').show();
-                refresh_jsmath(new_cell_html);
-                traverse_lines();
-
-                var new_cell = new Cell();
-                new_cell.dom = new_cell_html;
-                var eq = build_tree_from_json(data.new_json);
-                new_cell.equations.push(eq);
-
-                CELLS.push(new_cell);
-                CELL_INDEX = data.cell_index;
-
-            }
-
-            NAMESPACE_INDEX = data.namespace_index;
-        }
-    ,'json')
-    cleanup_ajax_scripts();
-}
-
-function save_workspace()
-{
-    data = {}
-    i = 0
-
-    //TODO: Remove $.each
-    $.each($("tr.equation"),
-        function(obj)
-        { 
-                data[i] = $(this).attr('math')
-                i += 1
-        })
-
-    //Flash the border to indicate we've saved.
-    $('#workspace').animate({ border: "5px solid red" }, 300);
-    $('#workspace').animate({ border: "0px solid black" }, 300);
-
-    $.post("save_workspace/", data ,
-        function(data){
-            if(data.error) {
-                error(data.error)
-            }
-            if(data.success) {
-                error('Succesfully saved workspace.')
-            }
-        } ,'json')
-}
-
-function parse_sage(text)
-{
-    var data = {}
-//    data.sage = $('#sage_text').val()
-    data.sage = text
-    $.post("sage_parse/", data ,
-        function(data){
-            if(data.error) {
-                error(data.error)
-                return
-            }
-
-            if(data.newline) {
-                $('#lines').append(data.newline)
-                refresh_jsmath($(data.newline))
-            }
-            traverse_lines();
-        }
-        ,'json')
-}
-
-function sage_inline(text)
-{
-    var data = {}
-//    data.sage = $('#sage_text').val()
-    data.sage = text
-
-    $.post("sage_inline/", data ,
-        function(data) {
-            if(data.error) {
-                error(data.error)
-                $("#sage_cmd").focus()
-                return
-            }
-            
-            obj = selection.nth(0);
-
-            group_id = obj.attr('group');
-            group_id_cache = String(group_id)
-
-            nsym = obj.replace(data);
-            nsym.attr('group',group_id_cache);
-            refresh_jsmath($(nsym))
-
-            $('body').focus()
-            $('#cmd_input').hide();
-            clear_selection();
-        }
-        ,'json')
-}
-
-///////////////////////////////////////////////////////////
-// Tree Traversal
-///////////////////////////////////////////////////////////
-
-function get_common_parent(first,second)
-{
-    /*
-       This traverses the tree upwards until it finds the branch that each element having in common
-
-                         A
-                       /   \
-                      B     C
-                     / \   / \
-                    D   E F   G
-
-     get_common_parent(D,E) = B
-     get_common_parent(F,E) = A
-
-     */
-
-    //** Check to see if our elements are in disjoint branches **//
-
-    //Yah, apparently the .find command can't strip the selector off a jquery() argument passed to it, lame
-    if($(first).find(second.selector).exists()) {
-        return first 
-    }
-
-    if($(second).find(first.selector).exists()) {
-        return second  
-    }
-
-    //** Our elements are disjoint so ascend upwards recursively until we find the common parent**//
-    first_container = get_container(first);
-    return get_common_parent(first_container,second) 
-
-}
-
-function get_common_context(first,second)
-{
-    /*
-       This traverses the tree upwards a maximum one one level to see if two nodes share the same parent
-       aka they are siblings
-
-                         A
-                       /   \
-                      B     C
-                     / \   / \
-                    D   E F   G
-
-     get_common_context(D,E) = B
-     get_common_context(F,E) = null
-
-     */
-    first_container = get_container(first)
-
-    if(!first_container)
-    {
-        return null
-    }
-
-    if(first_container.attr('id') == get_container(second).attr('id')) {
-       return first_container 
-    } else {
-       return null 
-    }
-}
-
-function get_nested(first,second)
-{
-
-    /*
-       This traverses the tree upwards to see if two elements are nested
-
-                         A
-                       /   \
-                      B     C
-                     / \   / \
-                    D   E F   G
-
-     get_nested(D,B) = B
-     get_nested(D,A) = A
-     get_nested(D,E) = null
-
-     */
-    if($(first).find(second.selector).exists()) {
-        return first 
-    }
-
-    if($(second).find(first.selector).exists()) {
-        return second  
-    }
-
-    return null
-}
-
-function are_siblings(first,second)
-{
-    //Convenience wrapper for checking if two elements are siblings
-    return (get_common_context(first,second) != null)
-}
-
-function traverse_lines()
-{
-    //All elements with a [title] attribute show tooltips
-    //containing their math-type
-    //$('#workspace *[title]').tooltip({track:true});
-    $('#workspace *[math-meta-class=term]').unbind('click');
-
-    /*$('#workspace *[title]').simpletip(
-            {fixed:false,
-            content: $(this).attr('title'),
-            position: });*/
-
-    $('#workspace *[math-meta-class=term]').click(
-            function(event) {
-                select_term(this); event.stopPropagation() 
-            });
-
-    $('#palette *[math-meta-class=term]').click(
-            function(event) {
-                select_term(this); event.stopPropagation() 
-            });
-    
-    resize_parentheses()
-    //Webkit requires that we run this twice
-    resize_parentheses()
-
-    $('.equation button').parent().buttonset();
-}
-
-function handle_palette()
-{
-
-    $('#palette *[title]').tooltip({track:true});
-    $('#palette *[math-meta-class=term]').not('.drag_placeholder').click(
-            function(event) {
-                select_term(this); event.stopPropagation() 
-            });
-
-    //Prevent subelements of math elements in the palette from
-    //being selected
-    
-    resize_parentheses()
-}
-
-///////////////////////////////////////////////////////////
-// Drag & Drop
-///////////////////////////////////////////////////////////
-
-function make_sortable(object,connector,options)
-{
-    //TODO: Add an option to disable all dragging and hover
-    //states in the worksheet
-
-    //console.log([$(object),$(connector)]);
-    group_id = $(object).attr('id');
-    $(object).sortable(options)
-    //console.log(object,options)
-}
-
-function dragging(sort_object,ui)
-{
-    drag_x = ui.offset.left
-    drag_y = ui.offset.top
-    container = get_container(ui.item);
-    if(container == null)
-    {
-        return false;
-    }
-    container_x = container.offset().left
-    container_y = container.offset().top
-    difference_y = Math.abs(container_y - drag_y)
-    if(difference_y > 120)
-    {
-        $(sort_object).sortable('disable');
-        $(sort_object).sortable('destroy');
-        down(container,ui.item);
-    }
-}
-
-///////////////////////////////////////////////////////////
-// Math Parsing & Generating
-///////////////////////////////////////////////////////////
-
-function check_container(object)
-{
-    //This handles stupid checks that are too expensive to do via Ajax, ie removing infix sugar 
-    //TODO: Remove $.each
-    $.each(object.children(), function()
-        {
-           var prev = $(this).prev();
-           var cur = $(this);
-           var next = $(this).next();
-           var last = $(object).children(':last-child');
-           var first = $(object).children(':first-child');
-           var group = $(this).attr('group');
-           if(group != "")
-           {
-               
-               // -- Rules for handling parenthesis --
-
-               //This forces left parenthesis over to the left
-               if(cur.hasClass('term') && next.hasClass('pnths') && next.hasClass('left'))
-               {
-                   cur.swap(next);
-               }
-
-               //This forces left parenthesis over to the left
-               if(cur.hasClass('pnths') && next.hasClass('term') && cur.hasClass('right'))
-               {
-                   cur.swap(next);
-               }
-
-               // -- Rules for cleaning up infix sugar --
-
-               group_type = $('#'+group).attr('math-type');
-
-               //  A + + B  --> A  + B
-               if(cur.hasClass('infix') && next.hasClass('infix'))
-               {
-                    cur.remove();
-               }
-
-               // A + - B  --> A - B
-               if(cur.hasClass('infix') && next.attr('math-type') == 'Negate')
-               {
-                    cur.remove();
-               }
-               
-               //  ( + A  --> ( A
-               if(cur.hasClass('pnths') && next.hasClass('infix'))
-               {
-                    next.remove();
-               }
-
-               //  + ) --> )
-               if(cur.hasClass('infix') && next.hasClass('pnths'))
-               {
-                    cur.remove();
-               }
-                
-               // + A + B --> A + B
-               if(first.hasClass('infix'))
-               {
-                   first.remove();
-               }
-
-               // A + B + --> A + B
-               if(last.hasClass('infix'))
-               {
-                   last.remove();
-               }
-
-           }
-        });
-}
-
-function check_combinations(object){
-    //Check to see if two terms are explicitly dragged next to each other and 
-    //query the server to see if we can combine them into something
-
-    if($(object).attr('locked') == 'true')
-    {
-       return 
-    }
-    //TODO: Remove $.each
-    $.each(object.children(), function()
-        {
-           prev = $(this).prev();
-           cur = $(this);
-           next = $(this).next();
-           group = $(this).attr('group');
-           if(group != "")
-           {
-               group_type = $('#'+group).attr('math-type');
-
-               // A + B C + D -> A + combine(B,C) + D
-               if(cur.attr('math-meta-class')=='term' && next.attr('math-meta-class')=='term')
-               {
-                   //The one exception (i.e. filthy hack) is that
-                   //dragging a negated term next to any other
-                   //doesn't induce the combine command since the
-                   //negation sign on the negated term pretends
-                   //it is sugar, long story short it looks
-                   //prettier
-                   
-                   if(next.attr('math-type') != 'Negate')
-                   {
-                       combine(cur,next,group_type);
-                       check_container(object)
-                   }
-               }
-           }
-        });
-}
-
-function get_container(object)
-{
-    if(object.attr('group') == object.attr('id'))
-    {
-        //console.log('Object: '+$(object).attr('math')+' is own parent.');
-    }
-    if(object.attr('group') != undefined && object.attr('math-type') != 'Equation')
-    {
-        return $('#'+object.attr('group'))
-    }
-    else
-    {
-        //console.log('Object: '+$(object).attr('math')+' is orphaned.');
-    }
-}
-
-function is_toplevel(object)
-{
-    //If container is RHS or LHS we consider it toplevel
-    context = get_container($(object)).attr('math-type');
-    if(context == 'LHS' || context == 'RHS') 
-    {
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-
-//This should be called after each change to the workspace
-function update(object)
-{
-    if(object != undefined)
-    {
-        if(object.attr('locked') != 'true')
-        {
-            check_combinations(object);
-            check_container(object);
-            //check_combinations(object);
-            update_math(object);
-        }
-    }
-}
-
-function refresh_jsmath(element)
-{
-    //Refresh math for a specific element
-    if(element)
-    {
-        //Toggling visiblity prevents the underlying TeX from
-        //showing
-        element.css('visibility','hidden')
-        jsMath.ConvertTeX(element[0])
-        jsMath.ProcessBeforeShowing(element[0])
-        $(function() { element.css('visibility','visible') })
-    }
-    //Refresh math Globally, shouldn't be called too much because
-    //it bogs down the browser
-    else
-    {
-        jsMath.ConvertTeX()
-        jsMath.ProcessBeforeShowing()
-    }
-}
-
-function update_math(object,stack_depth)
-{
-    /*Take a CONTAINER object iterate over all elements 
-      that point to it and then incorporate their math
-      strings into ours, then ascend upwards doing the same*/
-
-    if(!stack_depth)
-    {
-        stack_depth = 1
-    } else {
-        stack_depth += 1
-    }
-
-    if(stack_depth > 25)
-    {
-        alert('fuck, maximum recursion depth reached' + $(object).attr('id') + ',group:' + $(object).attr('group')  )
-        return null
-    }
-
-    var mst = new String;
-
-    self_id = object.attr('id');
-
-    members = $('#' + self_id + ' *[group='+object.attr('id')+']');
-
-    //If we have an empty container
-    if(members.length == 0)
-    {
-        mst = 'None';
-    }
-
-    //TODO: Remove $.each
-    $.each(members,function()
-    {
-        if($(this).attr("math") != undefined)
-        {
-            mst += $(this).attr("math") + ' ';
-        }
+    //Fetch the sexps for each of the selections and pass it
+    //as a JSON array
+    data.operands = Wise.Selection.sexps();
+    operands = Wise.Selection.toArray();
+
+  } else {
+    // Operands can a mix of Expression objects or literal string
+    // sexp in either case we pass the sexp to the sever
+    data.operands = _.map(operands, function (obj) {
+      if (obj.constructor == String) {
+        return obj;
+      } else {
+        return obj.sexp();
+      }
     });
+  }
 
-    mst = '(' + object.mathtype() + ' ' +  mst + ')';
+  // Fade elements while we wait for the server's response
+  //_.each(operands, function(elem) {
+  //    elem.view.el.fadeTo('fast',0.5);
+  //});
+  var image = [];
 
-    object.attr('math',mst); 
-    object.attr('num_children',members.length)
-
-    if(object.attr('group') != undefined)
-    {
-        group = $('#'+object.attr('group'));
-        update_math(group,stack_depth)
-    }
-}
-
-function build_tree()
-{
-    teq = $('[math-type=Equation]');
-    eq = new Expression();
-    eq.math = teq.math();
-    eq.math = teq.math();
-    T = new RootedTree(eq);
-    $('#tree').empty();
-
-    $.getJSON("json_tree",
-        function(data){
-          //console.log(data)
-          jsn = data
-          //TODO: Remove $.each
-          $.each(data.items, function(i,item){
-              //console.log(item.name)
-          });
-        });
-
-    function descend(obj, tree) {
-        children = $('[group='+obj.id()+']')
-        //TODO: Remove $.each
-        $.each(children,function() {
-            var child = $(this);
-            var node = new Expression();
-            node.math = child.math();
-            tree.addNode(node);
-            a = $('<a>')
-            a.bind('mouseover',function() { child.css('background-color', 'red') } )
-            a.bind('mouseout',function() { child.css('background-color', 'inherit') } )
-            a.html(node.math + '<br/>')
-
-            $('#tree').append(a);
-            descend(child,node)
-        });
-    }
-    descend(teq,eq)
-}
-
-function visualize_tree(tree) {
-
-    if(!tree) {
-        tree = NODES[selection.nth(0).id()].tree; 
+  $.post("/cmds/apply_rule/", data, function (response) {
+    if (!response) {
+      error('Server did not repsond to request.');
+      return;
     }
 
-    var json = nested_json(tree);
+    if (response.error) {
+      Wise.Log.error(response.error);
+      return;
+    }
 
-    if(active_graph) {
-        st = active_graph;
-        st.canvas.clear();
-
-        var lbs = st.fx.labels;
-        for (var label in lbs) {
-            if (lbs[label]) {
-             lbs[label].parentNode.removeChild(lbs[label]);
-            }
-        }
-
-        st.fx.labels = {};
-
-        st.loadJSON(json);
-        st.compute();
-        st.onClick(st.root);
-        active_graph = st;
-
-        //active_graph.op.morph(json, {  
-        //      type: 'replot',  
-        //      duration: 1500, 
-        //      hideLabels: false
-        //});   
+    if(!response.namespace_index) {
+        Wise.Log.error('Null namespace index');
         return;
     }
-    
-    var canvas = __CANVAS__;
-    canvas.clear();
 
-    var st = new ST(canvas, {
-        duration: 100,
-        transition: Trans.Quart.easeInOut,
-        levelDistance: 50,
-        orientation: 'top', 
-        clearCanvas: true,
+    NAMESPACE_INDEX = response.namespace_index;
 
-        Node: {
-            height: 20,
-            width: 60,
-            type: 'rectangle',
-            color: '#F7FBFF',
-            overridable: true,
-        },
-        
-        Edge: {
-            type: 'bezier',
-            overridable: true,
-            lineWidth: 2,
-            color: '#ccc',
-        },
-        
-        onCreateLabel: function(label, node){
-            label.id = node.id;            
-            label.innerHTML = node.name;
+    //Iterate over the elements in the image of the
+    //transformation, attempt to map them 1:1 with the
+    //elements in the domain. Elements mapped to 'null'
+    //are deleted.
+    for (var i = 0; i < response.new_html.length; i++) {
+      var preimage = operands[i];
 
-            label.onclick = function(){
-                st.onClick(node.id);
-            };
+      if (response.new_html[i] === undefined) {
+        //Desroy the preimage
+        preimage.remove();
+      }
+      else if (response.new_html[i] == 'pass') {
+        //Do nothing, map the preimage to itself
+      }
+      else if (response.new_html[i] == 'delete') {
+        //Desroy the preimage
+        preimage.remove();
+      }
+      else {
+        // Is the image a toplevel element (i.e. Equation )
+        var is_toplevel = (response.new_json[i][0].toplevel);
 
-            $(label).bind('mouseover', function() {
-                node.data.dom.css('background-color','blue');
-            })
-            $(label).bind('mouseout', function() {
-                node.data.dom.css('background-color','inherit');
-            })
-            var style = label.style;
-            style.width = 60 + 'px';
-            style.height = 17 + 'px';
-            style.cursor = 'pointer';
-            style.color = '#333';
-            style.fontSize = '0.8em';
-            style.textAlign= 'center';
-            style.paddingTop = '3px';
-        },
-        
-        onBeforePlotNode: function(node){
-            if (node.selected) {
-                node.data.$color = "#ff7";
-            }
-            else {
-                delete node.data.$color;
-                var GUtil = Graph.Util;
-                if(!GUtil.anySubnode(node, "exist")) {
-                    depth = node._depth
-                    node.data.$color = ['#F7FBFF', '#DEEBF7', '#C6DBEF', '#9ECAE1', '#6BAED6', '#4292C6'][depth];
-                }
-            }
-        },
-        
-        onBeforePlotLine: function(adj){
-            if (adj.nodeFrom.selected && adj.nodeTo.selected) {
-                adj.data.$color = '#000';
-                adj.data.$lineWidth = 3;
-            }
-            else {
-                delete adj.data.$color;
-                delete adj.data.$lineWidth;
-            }
+        if (is_toplevel) {
+
+          nsym = preimage.view.el.replace(response.new_html[i]);
+
+          // !!!!!!!!!!!!!!!!
+          // Swap the nodes reference in its Cell so
+          // the cell isn't reference something that
+          // doesn't exist anymore
+          // !!!!!!!!!!!!!!!!
+          newnode = graft_toplevel_from_json(
+              // Graft on top of the old node
+              Wise.Nodes.getByCid(preimage.cid),
+
+              // Build the new node from the response JSON
+              response.new_json[i],
+
+              // Optionally tell the new node what is
+              // was before and which transform created
+              // it
+              data.rule
+          );
+
+          image.push(newnode);
+          Wise.last_expr = newnode.root;
+
         }
+        else {
+
+          nsym = preimage.view.el.replace(response.new_html[i]);
+
+          newnode = graft_fragment_from_json(
+              // Graft on top of the old node
+              Wise.Nodes.getByCid(preimage.cid),
+
+              // Build the new node from the response JSON
+              response.new_json[i],
+
+              // Optionally tell the new node what is
+              // was before and which transform created
+              // it
+              data.rule
+          );
+
+          image.push(newnode);
+          Wise.last_expr = newnode.root;
+
+        }
+
+        if(callback) {
+            callback(image);
+        }
+        Wise.Selection.clear();
+
+      }
+    }
+
+  }, "json");
+}
+
+function apply_def(def, selections) {
+  var data = {};
+
+  data.def = def.sexp();
+  data.namespace_index = NAMESPACE_INDEX;
+
+  if (selections) {
+
+    //Fetch the math for each of the selections
+    if (Wise.Selection.count == 0) {
+      //error("Selection is empty.");
+      $('#selectionlist').effect("highlight", {
+        color: '#E6867A'
+      }, 500);
+      return;
+    }
+
+    //TODO: This is vestigal
+    data.selections = Wise.Selection.list_attr('math');
+
+  }
+  else {
+    data.selections = _.invoke(selections, 'math');
+  }
+
+  window.log(data);
+
+  $.post("/cmds/apply_def/", data, function (data) {
+
+    if (data.error) {
+      error(data.error);
+      base_mode();
+      return;
+    }
+
+    //Iterate over the elements in the image of the
+    //transformation, attempt to map them 1:1 with the
+    //elements in the domain. Elements mapped to 'null'
+    //are deleted.
+    for (var i = 0; i < data.new_html.length; i++) {
+      obj = selections[i];
+
+      obj.queue(function () {
+        $(this).fadeTo('slow', 1);
+        $(this).dequeue();
+      });
+
+      if (data.new_html[i] == null) {
+        obj.remove();
+      }
+      else if (data.new_html[i] == 'pass') {
+        //console.log("Doing nothing");
+      }
+      else if (data.new_html[i] == 'delete') {
+        //console.log("Deleting - at some point in the future");
+      }
+      else {
+
+        //changed this
+        toplevel = (data.new_json[i][0].toplevel)
+
+        if (toplevel) {
+          build_tree_from_json(data.new_json[i])
+
+          graft_tree_from_json(
+          Wise.Nodes.getByCid(obj.id()), data.new_json[i], 'apply_def');
+
+        } else {
+
+          graft_tree_from_json(
+          Wise.Nodes.getByCid(obj.id()), data.new_json[i], 'apply_def');
+
+        }
+
+        var nsym = obj.replace(data.new_html[i]);
+      }
+    }
+
+    NAMESPACE_INDEX = data.namespace_index;
+
+    base_mode();
+  }, "json");
+}
+
+function use_infix(code) {
+  // Sends raw Pure code to the server and attempts to create
+  // new nodes from the result, this function is *NOT* secure
+  // since Pure can execute arbitrary shell commands
+  if (Wise.Selection.isEmpty()) {
+    $('#selectionlist').effect("highlight", {
+      color: '#E6867A'
+    }, 500);
+    return;
+  }
+
+  if (Wise.Selection.at(0).get('toplevel')) {
+    //error('Cannot rewrite toplevel element');
+    Wise.Selection.at(0).errorFlash();
+    return;
+  }
+
+  selections = Wise.Selection.toArray();
+
+  postdata = {};
+  postdata.namespace_index = NAMESPACE_INDEX;
+  postdata.code = code;
+
+  $.ajax({
+    type: 'POST',
+    url: "/cmds/use_infix/",
+    data: postdata,
+    datatype: 'json',
+    success: function (response) {
+      if (!response) {
+        error('Server did not repsond to request.');
+        return;
+      }
+
+      if (response.error) {
+        Wise.Log.error(response.error);
+        return;
+      }
+
+      if(!response.namespace_index) {
+          Wise.Log.error('Null namespace index');
+          return;
+      }
+      NAMESPACE_INDEX = response.namespace_index;
+
+      //if (!data.new_html) {
+      //  error("Statement is not well-formed");
+      //  $("#cmdinput").css('background-color', '#D4A5A5');
+      //  return;
+      //} else {
+      //  hide_cmdline();
+      //}
+
+      //Iterate over the elements in the image of the
+      //transformation, attempt to map them 1:1 with the
+      //elements in the domain. Elements mapped to 'null'
+      //are deleted.
+      for (var i = 0; i < response.new_html.length; i++) {
+        obj = selections[i];
+
+        if (response.new_html[i] === null) {
+          obj.remove();
+        }
+        else if (response.new_html[i] == 'pass') {
+          //console.log("Doing nothing");
+        }
+        else if (response.new_html[i] == 'delete') {
+          //console.log("Deleting - at some point in the future");
+        }
+        else {
+          var is_toplevel = (response.new_json[i][0].toplevel);
+
+          if (is_toplevel) {
+            if (!obj.toplevel) {
+              //error('Cannot replace toplevel node with non-toplevel node');
+              obj.errorFlash();
+              //return;
+            }
+            obj.view.el.replace(response.new_html[i]);
+
+            var newtree = graft_tree_from_json(
+                Wise.Nodes.getByCid(obj.cid), response.new_json[i]
+            );
+
+            Wise.last_expr = newtree.root;
+
+          } else {
+            nsym = obj.view.el.replace(response.new_html[i]);
+
+            var newtree = graft_fragment_from_json(
+                Wise.Nodes.getByCid(obj.cid), response.new_json[i]
+            );
+
+            Wise.last_expr = newtree.root;
+
+          }
+        }
+      }
+
+      Wise.Selection.clear();
+    }
+  });
+}
+
+function apply_transform(transform, operands) {
+  var postdata = {};
+  postdata.transform = transform;
+  postdata.namespace_index = NAMESPACE_INDEX;
+
+  if (!operands) {
+    //Fetch the math for each of the selections
+    if (Wise.Selection.isEmpty()) {
+      error("No selection to apply transform to");
+      return;
+    }
+    // Get the sexps of the selected nodes
+    postdata.selections = Wise.Selection.sexps();
+  }
+  else {
+    // Let the user pass mixed Node and String type objects to
+    // maximize flexibility and map everything into some form of
+    // sexp
+    postdata.selections = _.map(operands, function (obj) {
+      if (obj.constructor == String) {
+        return obj;
+      } else {
+        return obj.sexp();
+      }
     });
-    st.loadJSON(json);
-    st.compute();
-    st.onClick(st.root);
+  }
 
-    active_graph = st;
-}
+  $.ajax({
+    type: 'POST',
+    url: "/cmds/apply_transform/",
+    data: postdata,
+    datatype: 'json',
+    success: function (response) {
 
-function dropin(old,nwr)
-{
-    //Drop an element in place of another, preserving group linkings
-    group_id = old.attr('group');
-    nwr.attr('group',group_id);
-    nwr.hide();
-    old.fadeOut(function() {
-        nsym = old.after(nwr);
-    });
-}
+      if (!response) {
+        error('Server side error in processing apply_transform.');
+        return;
+      }
 
-function get_equation(object) {
-    eq = $(object).parents("tr");
-    return(eq)
-}
-
-function get_lhs(object) {
-    return $(get_equation(object).find('[math-type=LHS]'));
-}
-
-function get_rhs(object) {
-    return $(get_equation(object).find('[math-type=RHS]'));
-}
-
-
-function duplicate_placeholder(placeholder)
-{
-   //This is used for duplicating placeholders in container type
-   //objects i.e. (Addition, Multiplication)
-   //placeholder = get_selection(0)
-   if(placeholder.attr('math-type') == 'Placeholder')
-   {
-       nsym = placeholder.clone()
-       nsym.unbind()
-       nsym.attr('id','destroyme')
-       placeholder.after(nsym)
-       check_combinations(get_container(placeholder))
-   }
-}
-
-function next_placeholder(start)
-{
-    last = $('.lines .drag_placeholder:last')
-    first = $('.lines .drag_placeholder:first')
-
-    if(!start)
-    {
-        if(selection.nth(0).exists())
-        {
-            start = selection.nth(0)
-        }
-        else
-        {
-            start = first
-        }
-    }
-
-
-    if($(last).attr('id') == $(start).attr('id'))
-    {
-        clear_selection()
-        select_term(first)
+      if (response.error) {
+        error(response.error);
         return
-    }
+      }
 
-    placeholders= $('.lines .drag_placeholder')
+      //Iterate over the elements in the image of the
+      //transformation, attempt to map them 1:1 with the
+      //elements in the domain. Elements mapped to 'null'
+      //are deleted.
+      for (var i = 0; i < response.new_html.length; i++) {
+        obj = operands[i];
 
-    var i=0;
-    for (i=0;i<=placeholders.length;i++)
-    {
-        if($(placeholders[i]).attr('id') == $(start).attr('id'))
-        {
-            if(i === placeholders.length)
-            {
-                clear_selection()
-                select_term($(placeholders[1]))
-            }
-            else
-            {
-                clear_selection()
-                select_term($(placeholders[i+1]))
-            }
+        if (response.new_html[i] == null) {
+          obj.remove();
         }
-    }
+        else if (response.new_html[i] == 'pass') {
+          //console.log("Doing nothing");
+        }
+        else if (response.new_html[i] == 'delete') {
+          //console.log("Deleting - at some point in the future");
+        }
+        else {
+          var is_toplevel = (response.new_json[i][0].toplevel);
+          if (is_toplevel) {
+            nsym = obj.dom().replace(response.new_html[i]);
 
-    /*
-    if(get_container(start) != undefined)
-    {
-        console.log('Jumping up')
-        next_placeholder(get_container(start))
+            var newtree = graft_toplevel_from_json(
+                Wise.Nodes.getByCid(obj.cid), response.new_json[i],
+                postdata.transform
+            );
+
+            Wise.last_expr = newtree.root;
+
+          } else {
+            nsym = obj.dom().replace(response.new_html[i]);
+
+            var newtree = graft_fragment_from_json(
+                Wise.Nodes.getByCid(obj.cid), response.new_json[i],
+                postdata.transform
+            );
+
+            Wise.last_expr = newtree.root;
+          }
+        }
+      }
+      NAMESPACE_INDEX = response.namespace_index;
     }
-    */
+  });
 }
 
+function new_line(type, cell) {
 
-function substite_addition()
-{
-    placeholder = get_selection(0)
-    if(placeholder.attr('math-type') == 'Placeholder')
-    {
-        if(get_container(placeholder).attr('math-type') == 'Addition')
-        {
-            add_after(placeholder, '(Placeholder )')
-        }
-        else
-        {
-            replace_manually(placeholder, '(Addition (Placeholder ) (Placeholder ))')
-        }
-    }
-    else
-    {
-        if(get_container(placeholder).attr('math-type') == 'Addition')
-        {
-            add_after(placeholder, '(Placeholder )')
-        }
+  // If we aren't given an explicit cell and the number of cells
+  // and there is not a single
+  if(!cell) {
+
+      if(Wise.Worksheet.length == 1) {
+        cell = Wise.Worksheet.at(0);
+      } else if ( Wise.last_cell ) {
+        cell = Wise.last_cell;
+      } else {
+        error('Dont know where to insert');
+        return;
+      }
+  }
+
+  if(!type) {
+    type = 'eq';
+  }
+
+  var data = {};
+  data.namespace_index = NAMESPACE_INDEX;
+  data.cell_index = CELL_INDEX;
+  data.type = type;
+
+  // If the cell new then commit it to the database before we
+  // so that all foreign keys on expression objects will
+  // resolve properly
+  if (cell.isNew()) {
+    cell.save();
+  }
+
+  $.post("/cmds/new_line/", data, function (data) {
+
+    if (data.error) {
+      Wise.Log.error(data.error);
     }
 
+    if (data.new_html) {
+      var new_expr_html = $(data.new_html);
+      cell.view.addExpression(new_expr_html);
+
+      // Initiale the new expression in the term db
+      var eq = build_tree_from_json(data.new_json);
+
+      eq.cell = cell;
+      eq.set({
+        cell: cell.id
+      });
+      cell.addExpression(eq);
+    }
+
+    NAMESPACE_INDEX = data.namespace_index;
+  }, 'json')
 }
 
-function substite_multiplication()
-{
-    placeholder = get_selection(0)
-    if(placeholder.attr('math-type') == 'Placeholder')
-    {
-        if(get_container(placeholder).attr('math-type') == 'Product')
-        {
-            add_after(placeholder, '(Placeholder )')
-        }
-        else
-        {
-            replace_manually(placeholder, '(Product (Placeholder ) (Placeholder ))')
-        }
+//function new_assum(type, index) {
+//  var data = {};
+//  data.namespace_index = NAMESPACE_INDEX;
+//  data.cell_index = CELL_INDEX;
+//  data.type = type;
+//
+//  if (index != undefined) {
+//    active_cell = Wise.Worksheet.getByCid(index);
+//  }
+//
+//  if (!active_cell) {
+//    if (Wise.Worksheet.length == 1) {
+//      active_cell = Wise.Worksheet.at(0);
+//    } else {
+//      error("Select a cell to insert into");
+//      return;
+//    }
+//  }
+//
+//  // If the cell new then commit it to the database before we
+//  // so that all foreign keys on expression objects will
+//  // resolve properly
+//  if (active_cell.isNew()) {
+//    active_cell.save();
+//  }
+//
+//  $.post("/cmds/new_line/", data, function (data) {
+//
+//    if (data.error) {
+//      error(data.error);
+//    }
+//
+//    if (data.new_html) {
+//      new_expr_html = $(data.new_html);
+//      active_cell.view.addAssumption(new_expr_html);
+//
+//      // Initiale the new expression in the term db
+//      var expr = build_tree_from_json(data.new_json, AssumptionTree);
+//
+//      expr.cell = active_cell;
+//      expr.set({
+//        cell: active_cell.id
+//      });
+//      active_cell.addAssumption(expr);
+//
+//    }
+//
+//    NAMESPACE_INDEX = data.namespace_index;
+//  }, 'json')
+//}
+
+function new_cell() {
+  data = {};
+  data.namespace_index = NAMESPACE_INDEX;
+  data.cell_index = CELL_INDEX;
+
+  $.post("/cmds/new_cell/", data, function (response) {
+
+    if (response.error) {
+      Wise.Log.error(response.error);
     }
-    else
-    {
-        if(get_container(placeholder).attr('math-type') == 'Product')
-        {
-            add_after(placeholder, '(Placeholder )')
-        }
+
+    if (response.new_html) {
+
+      var cell = build_cell_from_json(response.new_json);
+      Wise.last_cell = cell;
+
+      Wise.Worksheet.add(cell);
+      CELL_INDEX = response.cell_index;
+      NAMESPACE_INDEX = response.namespace_index;
+
+      $("#worksheet").append(response.new_html);
+
+      console.log($("#"+cell.cid));
+
+      // Make the cell workspace object
+      var view = new CellView({
+        el: $("#"+cell.cid),
+        model: cell,
+      });
+
+      cell.view = view;
+
+      // Make the cell selction object
+      //var cs = new CellSelection({
+      //  model: cell,
+      //});
+
+      //cs.render();
+
+      Wise.last_cell = cell;
+
     }
+  });
 }
 
-function remove_element()
-{
-    placeholder = selection.nth(0)
-    container = get_container(placeholder)
+///////////////////////////////////////////////////////////
+// Typesetting
+///////////////////////////////////////////////////////////
 
-    if(placeholder.attr('math-type') == 'Equation')
-    {
-        placeholder.remove()
-        clear_selection()
-        return
-    }
+//Typeset a DOM element when passed, if no element is passed
+//then typeset the entire page
+function mathjax_typeset(element) {
+  if(Worksheet.Settings.get('DISABLE_TYPESETTING')) {
+      return;
+  }
 
-    if(placeholder.attr('math-type') == 'RHS' || placeholder.attr('math-type') == 'LHS')
-    {
-        return
-    }
-    
-    if(container.attr('math-type') == 'RHS' || container.attr('math-type') == 'LHS')
-    {
-        return
-    }
-
-    if(container.attr('math-type') == 'Addition' || container.attr('math-type') == 'Product')
-    {
-        if( parseInt(container.attr('num_children')) > 1 )
-        {
-            container = get_container(placeholder)
-            container_cache = String(container.selector)
-            placeholder.remove()
-            clear_selection()
-            update($(container_cache))
-        }
-        else
-        {
-            apply_transform('Replace', [ placeholder.math() , '(Placeholder )' ])
-            //replace_manually(placeholder, '(Placeholder )')
-        }
-    }
-    else
-    {
-        apply_transform('Replace', [ placeholder.math() , '(Placeholder )' ])
-        //replace_manually(placeholder, '(Placeholder )')
-    }
+  //Refresh math for a specific element
+  if (element) {
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, element[0]]);
+    MathJax.Hub.Queue();
+  }
+  //Refresh math Globally, shouldn't be called too much because
+  //it bogs down the browser
+  else {
+    MathJax.Hub.Process();
+  }
 }
 
-function substite_subtraction()
-{
-    placeholder = get_selection(0)
-    if(get_container(placeholder).attr('math-type') == 'Addition')
-    {
-        add_after(placeholder,'(Negate (Placeholder ))')
-    }
-    else
-    {
-        replace_manually(placeholder, '(Addition (Negate (Placeholder )))')
-    }
-}
+///////////////////////////////////////////////////////////
+// Palette Loading / Handeling
+///////////////////////////////////////////////////////////
 
-function substite_division()
-{
-    placeholder = get_selection(0)
-    replace_manually(placeholder, '(Fraction (Placeholder ) (Placeholder ) )')
-}
+function load_rules_palette() {
+  if (DISABLE_SIDEBAR) {
+    return;
+  }
 
-function replace_manually(obj, code)
-{
-    data = {}
-    data.first = selection.nth(0).attr('math')
-    data.second = code
-    data.transform = 'Replace'
+  $.ajax({
+    url: '/rule_request/',
+    dataType: "html", 
+    success: function (data) {
+      $("#rules_palette").replaceWith($(data));
+      $("#rules_palette").hide();
 
-    $.post("apply_transform/", data,
-        function(data){
+      $(".panel_category", "#rules_palette").bind('click', function () {
+        $(this).next().toggle();
+        return false
+      }).next().hide();
 
-            if(data.error)
-            {
-                error(data.error)
-                clear_selection()
-                return
-            }
-            
-            //Remove terms (if needed)
-            if(data.remove == 'first')
-            {
-                obj.remove();
-            }
-
-            //Swap the first term
-            if(data.first)
-            {
-                group_id = obj.attr('group');
-                group_id_cache = String(group_id)
-
-
-                nsym = obj.replace(data.first);
-                nsym.attr('group',group_id_cache);
-
-                refresh_jsmath($(nsym))
-
-            }
-
-            clear_selection()
-            traverse_lines();
-            update(get_container(obj))
+      // Ugliness to make Tooltips appear properly
+      $('a[title]').qtip({
+        style: {
+          name: 'cream',
+          tip: true
         },
-        "json");
-    cleanup_ajax_scripts()
-    clear_lookups()
-}
-
-function add_after(obj, code)
-{
-    // Apply PlaceholderSubstitute with the given code argument
-    data = {}
-    data.first = '(Placeholder )'
-    data.second = code
-    data.transform = 'Replace'
-
-    $.post("apply_transform/", data,
-        function(data){
-
-            if(data.error)
-            {
-                error(data.error)
-                clear_selection()
-                return
-            }
-
-            if(data.first)
-            {
-                group_id = obj.attr('group');
-                group_id_cache = String(group_id)
-
-                nsym = obj.after(data.first).next();
-                nsym.attr('group',group_id_cache);
-
-                refresh_jsmath($(nsym))
-            }
-
-            traverse_lines();
-            update(get_container(obj))
+        container: $('#rules_palette'),
+        position: {
+          corner: {
+            target: 'topRight',
+            tooltip: 'bottomLeft',
+          },
+          adjust: {
+            x: 0,
+            y: 0,
+            screen: true,
+          },
         },
-        "json");
-    cleanup_ajax_scripts()
-    clear_lookups()
+      });
+      // End Ugliness
+    }
+  });
 }
 
+function load_math_palette() {
+  if (DISABLE_SIDEBAR) {
+    return;
+  }
+
+  $.ajax({
+    url: '/palette/',
+    dataType: "html",
+    success: function (data) {
+      $("#math_palette").replaceWith($(data))
+
+      //Make the palette sections collapsable
+      $(".panel_category", "#math_palette").bind('click', function () {
+        $(this).next().toggle();
+        return false;
+      }).next().hide();
+
+      //Typeset the panel
+      //MathJax.Hub.Typeset($(this).next()[0]);
+
+      $("#math_palette").resizable({
+        handles: 's'
+      });
+
+      $('#math_palette td').button();
+    }
+  });
+
+
+}
+
+///////////////////////////////////////////////////////////
+// Command Line
+///////////////////////////////////////////////////////////
+$('#cmdline').submit(function () {
+  use_infix($("#cmdinput").val());
+  $("#cmdinput").blur();
+  // Inject into scratchpad
+  return false;
+});

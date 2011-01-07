@@ -1,0 +1,181 @@
+{% extends "base.tpl" %}
+{% load bundler_tags %}
+
+{% block main-navigation %}
+<ul class="wat-cf">
+  <li class="first"><a href="/">Main Page</a></li>
+  <li class=""><a href="/ecosystem">Ecosystem</a></li>
+  <li class="active"><a>Worksheet</a></li>
+  <li class=""><a href="/share">Share</a></li>
+</ul>
+{% endblock %}
+
+{# --------------------------
+Worksheet specific javascript
+-------------------------- #}
+{% block includes %}
+
+ <!-- Using /ws/mathjax/ ( which is just a url rewrite to
+ /static/js/mathjax ) avoids Firefox strange same-origin
+ policy for otf web fonts -->
+<!-- <script type="text/javascript"
+    src="/ws/mathjax/MathJax.js"></script>-->
+
+{% load_bundle "worksheet_js" %}
+{% load_bundle "worksheet_css" %}
+
+{% endblock %}
+
+{# --------------------------
+Worksheet Palettes
+-------------------------- #}
+{% block sidebar %}
+
+<div id="worksheet_sidebar">
+
+    <div class="buttons">
+        <button class='math'>
+            <img src="/static/img/icons/sigma.png"/>
+        </button>
+
+        <button class='rules'>
+            <img src="/static/img/icons/transform.png"/>
+        </button>
+
+        <button class='notebook'>
+            <img src="/static/img/icons/notebook.png"/>
+        </button>
+
+        <button class='settings'>
+            <img src="/static/img/icons/settings.png"/>
+        </button>
+
+        <button class='keys'>
+            <img src="/static/img/icons/keys.png"/>
+        </button>
+
+        <button id="log_indicator" class='terminal'>
+            <img src="/static/img/icons/terminal.png"/>
+        </button>
+
+        <button class='snapshot'>
+            <img src="/static/img/icons/snapshot.png"/>
+        </button>
+    </div>
+
+    <div id="assum_palette" class="palette hidden"></div>
+    <div id="math_palette" class="palette hidden"></div>
+    <div id="rules_palette" class="palette hidden"></div>
+    <div id="settings_palette" class="palette hidden"></div>
+
+    <div id="keys_palette" class="palette hidden">
+        <h3>Keyboard Shortcuts</h3>
+        <dl class="list">
+        </dl>
+    </div>
+
+    <div id="terminal_palette" class="palette hidden">
+        <h3>Error Log</h3>
+        <div class="history"></div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{# --------------------------
+Init Function + Global Vars
+-------------------------- #}
+{% block globals %}
+<script>
+    // The id of the Worksheet corresponding to its index in the
+    // database
+    var WORKSHEET_ID = {{ ws_id }};
+    
+    // Count of how many "nodes"/cid tagged elements there are in the
+    // DOM
+    var NAMESPACE_INDEX = {{ namespace_index }};
+    
+    // Count of how many cells are in the workspace
+    var CELL_INDEX = {{ cell_index }};
+    
+    // Raw json sent from the server when the page
+    // initializes
+    var JSON_TREE = $.parseJSON('{{ json_cells|safe }}');
+    
+    // Lookup table of active equations which maps uid -> internal
+    // tree object
+    //var NODES = {};
+
+    // Array of cells, index corresponds to order on page. Each
+    // element contains another array of equations in that cell.
+    var CELLS = [];
+
+    // If we have a UI to render too, false if we are running
+    // unit tests
+    var HAS_BROWSER = true;
+</script>
+
+{% endblock %}
+
+{% block inline-script %}
+{% endblock %}
+
+{# --------------------------
+Equations
+-------------------------- #}
+
+{% block main %}
+
+
+<div id="dialog" class="hidden">
+    It appears that your browser doesn't support MathML. To make
+    sure, if mathematics displayed on the right does not match the image
+    on the left then your browser does not support enough MathML to
+    use the worksheet.
+
+    <table style="width: 100%; text-align: center;">
+        <tr>
+        <td>
+            <img src="/static/img/mathml_test.png"/>
+        </td>
+        <td>
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mrow>
+                <msup>
+                  <mi>x</mi>
+                  <mn>2</mn>
+                </msup>
+                <msup>
+                  <mi>y</mi>
+                  <mn>2</mn>
+                </msup>
+              </mrow>
+            </math>
+        </td>
+        </tr>
+    </table>
+
+    <p>
+    <!--
+    <input type="checkbox"> Don't show me this message again.</input>
+    -->
+    </p>
+</div>
+
+<div id="selectionlist">
+</div>
+
+<div class="cmd hidden">
+    <form id="cmdline" action="#">
+        <input id="cmdinput" type="text"></input>
+    </form>
+</div>
+
+<div id="worksheet" class="hidden">
+    {% for cell in cells %}
+        {{cell|safe}} 
+    {% endfor %}
+</div>
+
+{% endblock %}

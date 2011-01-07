@@ -1,0 +1,23 @@
+{% extends "base.tpl" %}
+
+{% block box %}
+<div class="block" id="block-login">
+    <div class="content login">
+    <h3>Login</h3>
+
+    <form method="post" action=".">
+      {{ form.as_p }}
+
+      <input type="submit" value="Log in" />
+      <input type="hidden" name="next" value="{{ next }}" />
+      {% csrf_token %}
+    </form>
+
+<!--    <p><a href="{% url auth_password_reset %}">Forgot
+    Password</a> | -->
+
+    <p>Don't have an account? <a href="{% url registration_register %}">Register</a></p>
+    {% endblock %}
+
+    </div>
+</div>

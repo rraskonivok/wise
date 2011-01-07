@@ -1,0 +1,150 @@
+/* TODO: fix these patsh */
+@font-face {
+font-family:STIX;
+font-weight:bold;
+src: url(/static/fonts/STIX/STIXGeneralBol.ttf) format("truetype");
+}
+@font-face {
+font-family:STIX;
+font-style:italic;
+src: url(/static/fonts/STIX/STIXGeneralItalic.ttf) format("truetype");
+}
+@font-face {
+font-family:STIX;
+font-style:italic;
+font-weight:bold;
+src: url(/static/fonts/STIX/STIXGeneralBolIta.ttf) format("truetype");
+}
+@font-face {
+font-family:STIX;
+src: url(/static/fonts/STIX/STIXGeneral.ttf) format("truetype");
+}
+@font-face {
+font-family:STIXIntDis;
+src: url(/static/fonts/STIX/STIXIntDis.ttf) format("truetype");
+}
+@font-face {
+font-family:STIXIntDis;
+font-weight:bold;
+src: url(/static/fonts/STIX/STIXIntDisBol.ttf) format("truetype");
+}
+ 
+@font-face {
+font-family:STIXIntSma;
+src: url(/static/fonts/STIX/STIXIntSma.ttf) format("truetype");
+}
+@font-face {
+font-family:STIXIntSma;
+font-weight:bold;
+src: url(/static/fonts/STIX/STIXIntSmaBol.ttf) format("truetype");
+}
+ 
+@font-face {
+font-family:STIXIntUp;
+src: url(/static/fonts/STIX/STIXIntUp.ttf) format("truetype");
+}
+@font-face {
+font-family:STIXIntUp;
+font-weight:bold;
+src: url(/static/fonts/STIX/STIXIntUpBol.ttf) format("truetype");
+}
+ 
+@font-face {
+font-family:STIXIntUpDis;
+src: url(/static/fonts/STIX/STIXIntUpDis.ttf) format("truetype");
+}
+@font-face {
+font-family:STIXIntUpDis;
+font-weight:bold;
+src: url(/static/fonts/STIX/STIXIntUpDisBol.ttf) format("truetype");
+}
+ 
+@font-face {
+font-family:STIXIntUpSma;
+src: url(/static/fonts/STIX/STIXIntUpSma.ttf) format("truetype");
+}
+@font-face {
+font-family:STIXIntUpSma;
+font-weight:bold;
+src: url(/static/fonts/STIX/STIXIntUpSmaBol.ttf) format("truetype");
+}
+ 
+@font-face {
+font-family:STIXNonUni;
+src: url(/static/fonts/STIX/STIXNonUni.ttf) format("truetype");
+}
+@font-face {
+font-family:STIXNonUni;
+font-weight:bold;
+src: url(/static/fonts/STIX/STIXNonUniBol.ttf) format("truetype");
+}
+@font-face {
+font-family:STIXNonUni;
+font-style:italic;
+src: url(/static/fonts/STIX/STIXNonUniIta.ttf) format("truetype");
+}
+@font-face {
+font-family:STIXNonUni;
+font-style:italic;
+font-weight:bold;
+src: url(/static/fonts/STIX/STIXNonUniBolIta.ttf) format("truetype");
+}
+ 
+@font-face {
+font-family:STIXSiz1Sym;
+src: url(/static/fonts/STIX/STIXSiz1Sym.ttf) format("truetype");
+}
+@font-face {
+font-family:STIXSiz1Sym;
+font-weight:bold;
+src: url(/static/fonts/STIX/STIXSiz1SymBol.ttf) format("truetype");
+}
+ 
+@font-face {
+font-family:STIXSiz2Sym;
+src: url(/static/fonts/STIX/STIXSiz2Sym.ttf) format("truetype");
+}
+@font-face {
+font-family:STIXSiz2Sym;
+font-weight:bold;
+src: url(/static/fonts/STIX/STIXSiz2SymBol.ttf) format("truetype");
+}
+ 
+@font-face {
+font-family:STIXSiz3Sym;
+src: url(/static/fonts/STIX/STIXSiz3Sym.ttf) format("truetype");
+}
+@font-face {
+font-family:STIXSiz3Sym;
+font-weight:bold;
+src: url(/static/fonts/STIX/STIXSiz3SymBol.ttf) format("truetype");
+}
+ 
+@font-face {
+font-family:STIXSiz4Sym;
+src: url(/static/fonts/STIX/STIXSiz4Sym.ttf) format("truetype");
+}
+@font-face {
+font-family:STIXSiz4Sym;
+font-weight:bold;
+src: url(/static/fonts/STIX/STIXSiz4SymBol.ttf) format("truetype");
+}
+@font-face {
+font-family:STIXSiz5Sym;
+src: url(/static/fonts/STIX/STIXSiz5Sym.ttf) format("truetype");
+}
+@font-face {
+font-family:STIXSiz5Sym;
+font-weight:bold;
+src: url(/static/fonts/STIX/STIXSiz5SymBol.ttf) format("truetype");
+}
+ 
+@font-face {
+font-family:STIXVar;
+src: url(/static/fonts/STIX/STIXVar.ttf) format("truetype");
+}
+@font-face {
+font-family:STIXVar;
+font-weight:bold;
+src: url(/static/fonts/STIX/STIXVarBol.ttf) format("truetype");
+}

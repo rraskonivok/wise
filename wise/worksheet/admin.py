@@ -1,19 +1,25 @@
-from wise.worksheet.models import MathematicalEquation, Workspace, Cell
-
 from django.contrib import admin
+from wise.worksheet.models import (Expression, Workspace, Cell,
+Assumption)
 
-#class EquationInline(admin.StackedInline):
-#    extra = 3
-#    inlines = [MathematicalEquation]
+
+class ExpressionsInline(admin.StackedInline):
+    extra = 1
+    model = Expression
+
+class AssumptionsInline(admin.StackedInline):
+    extra = 1
+    model = Assumption
 
 class WorkspaceAdmin(admin.ModelAdmin):
     fieldsets = [
         (None,               {'fields': ['name']}),
-#        ('Date information', {'fields': ['pub_date'], 'classes': ['collapse']}),
     ]
-    #inlines = [EquationInline]
+
+class CellAdmin(admin.ModelAdmin):
+    inlines = [ExpressionsInline, AssumptionsInline]
 
 admin.site.register(Workspace)
-admin.site.register(MathematicalEquation)
-admin.site.register(Cell)
-#admin.site.register(MathematicalIdentity)
+admin.site.register(Expression)
+admin.site.register(Assumption)
+admin.site.register(Cell, CellAdmin)

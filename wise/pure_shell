@@ -1,0 +1,6 @@
+#!/bin/bash
+# Execute an interactive Pure shell with all active Wise
+# libraries
+
+shell=`./wpm -Q --active --shell`
+${shell}

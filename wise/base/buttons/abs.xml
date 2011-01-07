@@ -1,0 +1,7 @@
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML">
+    <mfenced open="|" close="|" separators=",">
+        <mrow>
+            <mi>x</mi>
+        </mrow>
+    </mfenced>
+</math>

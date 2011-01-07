@@ -1,0 +1,22 @@
+math {
+    /* Nice looking math fonts See:
+     * developer.mozilla.org/en/Mozilla_MathML_Project/Fonts
+    font-family: STIXGeneral,
+                 DejaVu Serif,
+                 DejaVu Sans,
+                 Cambria,
+                 Cambria Math,Times,
+                 Lucida Sans Unicode,
+                 OpenSymbol,
+                 Standard Symbols L,
+                 serif;
+     */
+    font-family: STIX;
+}
+
+mfrac>*{
+  line-height:1.5em;
+  /* Some browsers like to shrink nested fractions down, this
+   * makes it impossible to select elements */
+  font-size: 100% !important;
+}

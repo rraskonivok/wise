@@ -1,0 +1,2 @@
+#/bin/bash
+echo "show -fg *" | pure -i -q $1 | grep reduce_with | grep -v extern | cut -f1 -d ' '
