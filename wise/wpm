@@ -9,9 +9,6 @@ import sys
 import shutil
 from optparse import OptionParser, OptionGroup
 
-blacklist = set(['pkgtemplate'])
-required_files = ['desc', 'files', 'depends']
-
 try:
     import settings
     import meta_inspector
@@ -27,16 +24,6 @@ def optional_arg(arg_default):
             val=arg_default
         setattr(parser.values,option.dest,val)
     return func
-
-def is_package(top):
-    return all(f in os.listdir(top) for f in required_files)
-
-def lsdirs(top):
-    return (path for path in os.listdir(top) if
-            os.path.isdir(path))
-
-def lspackages(top='.'):
-    return set([d for d in lsdirs(top) if is_package(d)]) - blacklist
 
 def main():
     parser = OptionParser()
@@ -94,7 +81,8 @@ def main():
     (options, args) = parser.parse_args()
 
     if options.rebuild:
-        meta_inspector.rebuild_modules(lspackages('.'))
+        packages_in_dir = meta_inspector.lspackages('.')
+        meta_inspector.rebuild_modules(packages_in_dir)
 
     #---------------------------
     # Query Actions

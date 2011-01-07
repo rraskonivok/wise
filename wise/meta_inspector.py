@@ -9,6 +9,8 @@ from utils.patterns import Aggregator
 import ConfigParser
 
 PACKAGES = Aggregator(file='cache/packages_cache')
+blacklist = set(['pkgtemplate'])
+required_files = ['desc', 'files', 'depends']
 
 class Package(object):
     name = 'unknown'
@@ -34,6 +36,16 @@ class Package(object):
 
 def str2list(s):
     return map(strip,s.split(','))
+
+def is_package(top):
+    return all(f in os.listdir(top) for f in required_files)
+
+def lsdirs(top):
+    return (path for path in os.listdir(top) if
+            os.path.isdir(path))
+
+def lspackages(top='.'):
+    return set([d for d in lsdirs(top) if is_package(d)]) - blacklist
 
 def rebuild_modules(packages):
     print 'Rebuilding package database.'
@@ -72,4 +84,5 @@ def rebuild_modules(packages):
 # Upon initial import of this module check to see if we have a
 # package cache, if not then build it
 if len(PACKAGES) == 0:
-    print 'Package database is blank. Run wpm --rebuild'
+    rebuild_modules(lspackages('.'))
+    print 'Package database is blank. Rebuilding'
