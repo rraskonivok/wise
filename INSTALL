@@ -2,11 +2,11 @@ General Installation on Linux / OSX:
 -------------------------------------
 
 1) You'll need Python 2.6+ (but not Python 3) and the Python
-   header (for Cython) files On Ubuntu:
+   header files On Ubuntu:
 
         $ sudo python install python python-dev
 
-   And the Python package managmenent tools:
+   and the Python package managmenent tools:
 
         $ sudo apt-get install python-setuptools python-dev build-essential
         $ sudo easy_install -U pip
@@ -15,9 +15,9 @@ General Installation on Linux / OSX:
 
 2) Install Pure and LLVM:
 
-   If you are on Ubuntu/Debian you can use the included build
-   script. Which should install the packages (llvm, libgmp3-dev,
-   and g++) and fetch and compile Pure:
+   If you are on Ubuntu/Debian you can use the build script
+   included with Wise which should install the packages 
+   llvm, libgmp3-dev, g++, and build Pure from source:
 
         $ ./dist/build_pure.sh
 
@@ -33,7 +33,7 @@ General Installation on Linux / OSX:
         http://code.google.com/p/pure-lang
 
    If your distribution does not carry Pure then you can find
-   directions for compiling LLVM from source here:
+   directions for compiling it from source here:
 
         http://pure-lang.googlecode.com/hg/pure/INSTALL
 
@@ -49,13 +49,12 @@ General Installation on Linux / OSX:
 
         $ virtualenv --no-site-packages --distribute wise
 
-   To Activate the new enviroment run:
+   To activate the new virtualenv shell run:
 
-        $ source wise/bin/activate
+        $ source ~/.virtualenvs/wise/bin/activate
 
-   which gives you a shell where all commands run in python are
-   run in your local virtualenv. From here on comamnds prefixed
-   with:
+   which gives you a shell where all commands are run run in your
+   local virtualenv. From here on commands prefixed with:
 
         $(wise)
 
