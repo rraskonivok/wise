@@ -1,8 +1,12 @@
 General Installation on Linux / OSX:
 -------------------------------------
 
-1) You'll need Python 2.6+ (but not Python 3) and distribution
-    tools: On Ubuntu:
+1) You'll need Python 2.6+ (but not Python 3) and the Python
+   header (for Cython) files On Ubuntu:
+
+        $ sudo python install python python-dev
+
+   And the Python package managmenent tools:
 
         $ sudo apt-get install python-setuptools python-dev build-essential
         $ sudo easy_install -U pip
@@ -12,7 +16,8 @@ General Installation on Linux / OSX:
 2) Install Pure and LLVM:
 
    If you are on Ubuntu/Debian you can use the included build
-   script
+   script. Which should install the packages (llvm, libgmp3-dev,
+   and g++) and fetch and compile Pure:
 
         $ ./dist/build_pure.sh
 
