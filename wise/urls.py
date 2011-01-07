@@ -1,64 +1,92 @@
 from django.conf.urls.defaults import *
-from django.views.generic.simple import direct_to_template
-
 from django.contrib import admin
 from django.conf import settings
 from django.contrib.auth.views import password_change
-
+from django.contrib.auth.decorators import login_required as secure
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.views.generic.simple import direct_to_template
+
+# Generic Class Views
+from worksheet.views import (HomeView, WorksheetDelete,
+        WorksheetEdit, WorksheetCreate)
 
 admin.autodiscover()
 
-from worksheet.views import (HomeView, WorksheetEdit,
-WorksheetDetail, WorksheetDelete, WorksheetCreate)
-
 urlpatterns = patterns('',
-     #url(r'^$', 'wise.worksheet.views.home', name='index'),
-     #url(r'^$', 'wise.worksheet.views.HomeView',name='index'),
+     url(r'^$',
+         secure(
+             HomeView.as_view()
+         ),
+         name='index'
+     ),
 
-     url(r'^$', HomeView.as_view(), name='index'),
-     url(r'^home$', HomeView.as_view(), name='home'),
+     url(r'^home$',
+         secure(
+             HomeView.as_view()
+         ),
+         name='home'
+     ),
 
-     url(r'^ecosystem$', 'wise.worksheet.views.ecosystem', name='ecosystem'),
+
      # REST API  uses django-piston
      (r'^api/', include('wise.api.urls')),
 
-#     (r'^test$', 'wise.worksheet.views.test'),
+     #(r'^test$', 'wise.worksheet.views.test'),
      (r'dict/(?P<data>.*)$', 'wise.worksheet.views.dict'),
      (r'^translate$', 'wise.worksheet.views.translate'),
      (r'graph/(?P<package>.*)$', 'wise.worksheet.views.objectgraph'),
+     url(r'^ecosystem$',
+         'wise.worksheet.views.ecosystem',
+         name='ecosystem'
+     ),
 
      # Heartbeat
      (r'^hb$', 'wise.worksheet.ajax.heartbeat'),
 
-     # Authentication
+     # Authentication & User Profiles
      (r'^accounts/', include('registration.backends.default.urls')),
      (r'^invite/', include('privatebeta.urls')),
-     (r'^/accounts/password/change/$', password_change,
-         {'template_name': 'registration/password_reset_form.html'}),
+     url(r'^/accounts/password/change/$',
+         password_change,
+         {'template_name':
+             'registration/password_reset_form.html'},
+         name='password_change'
+     ),
+     url(r'^accounts/profile/$',
+         direct_to_template,
+         {'template': 'registration/profile.html'},
+         name='profile'
+     ),
 
-     url(r'^accounts/profile/$', direct_to_template,
-         {'template': 'registration/profile.html'}, name='profile'),
+     # Worksheet CRUD
 
-     # Worksheet
-     (r'^ws/(?P<ws_id>\d+)/$', 'wise.worksheet.views.ws'),
-     (r'^ws/(?P<ws_id>\d+)/readonly$', 'wise.worksheet.views.ws'),
+         # CREATE
+         url(r'^ws/create/$',
+            secure(
+                WorksheetCreate.as_view()
+            ),
+            name='worksheet_create'
+         ),
 
+         # READ
+         (r'^ws/(?P<ws_id>\d+)/$', 'wise.worksheet.views.ws'),
+         (r'^ws/(?P<ws_id>\d+)/readonly$', 'wise.worksheet.views.ws'),
 
-     url(r'^ws/create/$',
-        WorksheetCreate.as_view(),
-        name='worksheet_create'),
+         # UPDATE
+         url(r'^ws/(?P<pk>\d+)/update/$',
+            secure(
+                WorksheetEdit.as_view()
+            ),
+            name='worksheet_update'
+         ),
 
-     url(r'^ws/(?P<pk>\d+)/update/$',
-        WorksheetEdit.as_view(),
-        name='worksheet_update'),
-
-     url(r'^ws/(?P<pk>\d+)/delete/$',
-        WorksheetDelete.as_view(),
-        name='worksheet_delete'),
-
-     #url(r'^worksheet_edit/', WorksheetEdit.as_view(),
-     #    'worksheet_detail'),
+         # DELETE
+         url(r'^ws/(?P<pk>\d+)/delete/$',
+            secure(
+                WorksheetDelete.as_view()
+            ),
+            name='worksheet_delete'
+         ),
 
      # Math Palettes
      (r'^palette/$', 'wise.worksheet.views.palette'),
@@ -76,21 +104,17 @@ urlpatterns = patterns('',
      # Uncomment the next line to enable the admin:
      url(r'^admin/', include(admin.site.urls), name='admin'),
 
-     # Sphinx documentation
-#     url(r'^docs/(?P<path>.*)$', 'django.views.static.serve',
-#         {'document_root': 'docs/_build/html','show_indexes': True},
-#         name='docs'),
-
      # TODO: Firefox 4 has some issue with OpenType fonts being loaded
      # from /static when the current page is /ws since it is one level
      # up which violates it's same origin policy
-#     (r'^ws/mathjax/(?P<path>.*)$', 'django.views.static.serve',
-#             {'document_root': settings.MEDIA_ROOT + '/mathjax'}),
-#
-#     (r'^favicon\.ico$', 'django.views.generic.simple.redirect_to', 
-#             {'url': '/static/img/favicon.ico'}),
+     #(r'^ws/mathjax/(?P<path>.*)$', 'django.views.static.serve',
+     #        {'document_root': settings.MEDIA_ROOT + '/mathjax'}),
+
+     #(r'^favicon\.ico$', 'django.views.generic.simple.redirect_to', 
+     #        {'url': '/static/img/favicon.ico'}),
 )
 
+# Static Files
 urlpatterns += staticfiles_urlpatterns()
 
 if settings.DEBUG:

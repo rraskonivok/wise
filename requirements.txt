@@ -9,7 +9,6 @@ django-celery==2.1.4
 django-indexer==0.2.1
 django-paging==0.2.2
 django-picklefield==0.1.9
-django-piston==0.2.2
 django-registration==0.7
 django-sentry==1.5.3
 django-templatetag-sugar==0.1

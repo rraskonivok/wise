@@ -1,7 +1,12 @@
-{% extends "base.html" %}
+{% extends "base.tpl" %}
 {% load i18n %}
 
-{% block content %}
+{% block box %}
+<div class="block" id="block-login">
+    <div class="content login">
+    <h3>Login</h3>
+
+
 <form method="post" action=".">
   {{ form.as_p }}
 

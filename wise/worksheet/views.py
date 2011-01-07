@@ -12,6 +12,7 @@ import panel
 import wise.boot
 import wise.base.cell
 import wise.meta_inspector
+from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseForbidden
@@ -30,11 +31,9 @@ from operator import itemgetter
 
 # Initialize the Python-Pure translation bridge
 if settings.WORKER_TYPE == 'sync':
-    wise.boot.start_python_pure()
     wise.boot.start_cython()
-else:
-    wise.boot.start_python_pure()
 
+wise.boot.start_python_pure()
 panel.build_panels()
 
 #---------------------------

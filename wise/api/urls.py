@@ -8,10 +8,10 @@ WorkspaceHandeler, AssumptionHandeler
 #TODO: add authentication on per user basis
 
 auth = HttpBasicAuthentication(realm='Wise API')
-cells = Resource(handler=CellHandeler)
-exps = Resource(handler=ExpressionHandeler)
-asms = Resource(handler=AssumptionHandeler)
-workspaces = Resource(handler=WorkspaceHandeler)
+cells = Resource(handler=CellHandeler, authentication=auth)
+exps = Resource(handler=ExpressionHandeler, authentication=auth)
+asms = Resource(handler=AssumptionHandeler, authentication=auth)
+workspaces = Resource(handler=WorkspaceHandeler, authentication=auth)
 
 urlpatterns = patterns('',
 

@@ -167,11 +167,6 @@ function sleep(milliseconds) {
 // the term database
 
 function init_nodes() {
-//  Wise.Nodes = new Backbone.Collection();
-//  Wise.Worksheet = new Worksheet();
-
-//    Wise.Worksheet = Wise.worksheet;
-
     Wise.Worksheet = new WorksheetModel();
     Wise.Selection = new NodeSelectionManager();
     Wise.Nodes = new Backbone.Collection();

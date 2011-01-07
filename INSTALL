@@ -57,16 +57,8 @@ General Installation on Linux / OSX:
    refer to commands that should be
    run in the wise virtualenv shell.
 
-   Install python libraries:
-
-       (wise)$ pip install -r /path/to/wise/dir/requirements.txt
-
-   If you are a developer you may want the optional packages
-
-       (wise)$ pip install -r /path/to/wise/dir/optional.txt
-
-
-4) Get the wise source code
+4) Get the wise source code and install to a directory of your
+   choice.
 
     Stable releases can be downloaded from Github:
 
@@ -77,13 +69,22 @@ General Installation on Linux / OSX:
         git clone git://github.com/sdiehl/wise
 
 
-5) Build the Pure module
+5) Install python libraries:
+
+       (wise)$ pip install -r /path/to/wise/dir/requirements.txt
+
+   If you are a developer you may want the optional packages
+
+       (wise)$ pip install -r /path/to/wise/dir/optional.txt
+
+
+6) Build the Pure module
 
         $ cd wise
         $ make
 
 
-6) Create the database:
+7) Create the database:
 
         (wise)$ cd wise/
         (wise)$ python mange.py syncdb
