@@ -1,6 +1,6 @@
 import unittest
 
-from pure import PureEnv, PureSymbol, PureInt, PureDouble
+from cpure import PureEnv, PureSymbol, PureInt, PureDouble
 env = PureEnv()
 
 class TestPureCythonModule(unittest.TestCase):

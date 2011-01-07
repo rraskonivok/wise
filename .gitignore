@@ -8,6 +8,7 @@
 *.tmp
 *.json
 *.log
+*.pid
 *.backup
 wise/static/img/icons/*.png
 wise/static/admin
