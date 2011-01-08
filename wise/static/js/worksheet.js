@@ -14,7 +14,7 @@
 
  You should have received a copy of the GNU Affero General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+*/
 
 ///////////////////////////////////////////////////////////
 // Initalization
@@ -42,13 +42,10 @@ $(document).ajaxStop(function () {
 ///////////////////////////////////////////////////////////
 // Utilities
 ///////////////////////////////////////////////////////////
+
 // Nerf the console.log function so that it doesn't accidently
 // break if Firebug / JS Consle is turned off.
 // Source: http://paulirish.com/2009/log-a-lightweight-wrapper-for-consolelog/
-
-// Disable any animations on the worksheet
-jQuery.fx.off = false;
-
 window.log = function () {
   log.history = log.history || [];
   log.history.push(arguments);
@@ -63,7 +60,7 @@ if(!this.console) {
     };
 }
 
-// Begin Debuggin' Stuff
+// Begin Debugging Stuff
 // ---------------------
 function showmath() {
   return Wise.Selection.at(0).sexp();
@@ -82,28 +79,28 @@ function rebuild_node() {
 }
 
 function server_up() {
-  // The server is up available I assert it to be true
+  // The server is up because I assert it to be true
   Wise.Settings.set({DISABLE_MATH: false});
 
 }
 
-// Beat on the server
-function stress_test() {
-  while (true) {
-    apply_rule('algebra_normal', ['( Addition (Variable x) (Addition (Variable x)\
-                    (Variable x)))']);
-    sleep(3000);
-    console.log('done');
+function sleep(milliseconds) {
+  var start = new Date().getTime();
+  for (var i = 0; i < 1e7; i++) {
+    if ((new Date().getTime() - start) > milliseconds) {
+      break;
+    }
   }
 }
 
-DISABLE_SIDEBAR = false;
-
-// End Debuggin' Stuff
+// End Debugging Stuff
 //----------------------
 
 //Some JQuery Extensions
 //----------------------
+
+// Disable any animations on the worksheet
+jQuery.fx.off = false;
 
 $.fn.exists = function () {
   return $(this).length > 0;
@@ -113,24 +110,12 @@ $.fn.replace = function (htmlstr) {
   return $(this).replaceWith(htmlstr);
 };
 
-//TODO: This is here for compatability reasons, move to fn.cid
 $.fn.id = function () {
   return $(this).attr('id');
 };
 
 $.fn.cid = function () {
   return $(this).attr('id');
-};
-
-// Extract the id of an object and lookup its node
-$.fn.node = function () {
-  var node = Wise.Nodes.getByCid($(this).id());
-  if (!node) {
-    error("The term you selected is 'broken', try refreshing its corresponding equation.");
-    window.log($(this).id(), 'not initalized in term db.');
-    return;
-  }
-  return node;
 };
 
 // Prevent selections from being dragged on the specifed elements
@@ -150,22 +135,13 @@ $.fn.disableTextSelect = function () {
   });
 };
 
-function sleep(milliseconds) {
-  var start = new Date().getTime();
-  for (var i = 0; i < 1e7; i++) {
-    if ((new Date().getTime() - start) > milliseconds) {
-      break;
-    }
-  }
-}
-
 ///////////////////////////////////////////////////////////
 // Initialize the Term DB
 ///////////////////////////////////////////////////////////
+
 // Takes the inital JSON that Django injects into the page in the
 // variable JSON_TREE and calls build_tree_from_json to initialize
 // the term database
-
 function init_nodes() {
     Wise.Worksheet = new WorksheetModel();
     Wise.Selection = new NodeSelectionManager();
@@ -235,6 +211,32 @@ function dialog(text) {
 // Server Queries
 ///////////////////////////////////////////////////////////
 
+function graft(preimage, json, html) {
+    // Is the image a toplevel element (i.e. Equation )
+    var is_toplevel = (json[0].toplevel);
+    nsym = preimage.view.el.replace(html);
+    var newnode = null;
+
+    if (is_toplevel) {
+      newnode = graft_toplevel_from_json(
+          // Graft on top of the old node
+          Wise.Nodes.getByCid(preimage.cid),
+          // Build the new node from the response JSON
+          json
+      );
+
+    } else {
+      newnode = graft_fragment_from_json(
+          // Graft on top of the old node
+          Wise.Nodes.getByCid(preimage.cid),
+          // Build the new node from the response JSON
+          json
+      );
+    }
+
+    return newnode;
+}
+
 // Heartbeat to check to see whether the server is alive
 function heartbeat() {
   $.ajax({
@@ -291,104 +293,63 @@ function apply_rule(rule, operands, callback) {
   //});
   var image = [];
 
-  $.post("/cmds/apply_rule/", data, function (response) {
-    if (!response) {
-      error('Server did not repsond to request.');
-      return;
-    }
+  $.ajax({
+    type: 'POST',
+    url: "/cmds/apply_rule/",
+    data: data,
+    datatype: 'json',
+    success: function (response) {
 
-    if (response.error) {
-      Wise.Log.error(response.error);
-      return;
-    }
-
-    if(!response.namespace_index) {
-        Wise.Log.error('Null namespace index');
-        return;
-    }
-
-    NAMESPACE_INDEX = response.namespace_index;
-
-    //Iterate over the elements in the image of the
-    //transformation, attempt to map them 1:1 with the
-    //elements in the domain. Elements mapped to 'null'
-    //are deleted.
-    for (var i = 0; i < response.new_html.length; i++) {
-      var preimage = operands[i];
-
-      if (response.new_html[i] === undefined) {
-        //Desroy the preimage
-        preimage.remove();
-      }
-      else if (response.new_html[i] == 'pass') {
-        //Do nothing, map the preimage to itself
-      }
-      else if (response.new_html[i] == 'delete') {
-        //Desroy the preimage
-        preimage.remove();
-      }
-      else {
-        // Is the image a toplevel element (i.e. Equation )
-        var is_toplevel = (response.new_json[i][0].toplevel);
-
-        if (is_toplevel) {
-
-          nsym = preimage.view.el.replace(response.new_html[i]);
-
-          // !!!!!!!!!!!!!!!!
-          // Swap the nodes reference in its Cell so
-          // the cell isn't reference something that
-          // doesn't exist anymore
-          // !!!!!!!!!!!!!!!!
-          newnode = graft_toplevel_from_json(
-              // Graft on top of the old node
-              Wise.Nodes.getByCid(preimage.cid),
-
-              // Build the new node from the response JSON
-              response.new_json[i],
-
-              // Optionally tell the new node what is
-              // was before and which transform created
-              // it
-              data.rule
-          );
-
-          image.push(newnode);
-          Wise.last_expr = newnode.root;
-
-        }
-        else {
-
-          nsym = preimage.view.el.replace(response.new_html[i]);
-
-          newnode = graft_fragment_from_json(
-              // Graft on top of the old node
-              Wise.Nodes.getByCid(preimage.cid),
-
-              // Build the new node from the response JSON
-              response.new_json[i],
-
-              // Optionally tell the new node what is
-              // was before and which transform created
-              // it
-              data.rule
-          );
-
-          image.push(newnode);
-          Wise.last_expr = newnode.root;
-
+        if (!response) {
+          error('Server did not repsond to request.');
+          return;
         }
 
-        if(callback) {
-            callback(image);
+        if (response.error) {
+          Wise.Log.error(response.error);
+          return;
         }
-        Wise.Selection.clear();
 
-      }
+        if(!response.namespace_index) {
+            Wise.Log.error('Null namespace index');
+            return;
+        }
+
+        NAMESPACE_INDEX = response.namespace_index;
+
+        //Iterate over the elements in the image of the
+        //transformation, attempt to map them 1:1 with the
+        //elements in the domain. Elements mapped to 'null'
+        //are deleted.
+        for (var i = 0; i < response.new_html.length; i++) {
+          var preimage = operands[i];
+          var image_json = response.new_json[i];
+          var image_html = response.new_html[i];
+
+          switch(image_html) {
+              case 'pass':
+                  break;
+              case 'delete':
+                  preimage.remove();
+                  break;
+              case undefined:
+                  preimage.remove();
+                  break;
+              default:
+                  newnode = graft(preimage, image_json, image_html);
+                  Wise.last_expr = newnode.root;
+                  Wise.Selection.clear();
+
+                  if(callback) {
+                    callback(image);
+                  }
+          }
+        }
     }
+  });
 
-  }, "json");
 }
+
 
 function apply_def(def, selections) {
   var data = {};
@@ -399,7 +360,7 @@ function apply_def(def, selections) {
   if (selections) {
 
     //Fetch the math for each of the selections
-    if (Wise.Selection.count == 0) {
+    if (Wise.Selection.count === 0) {
       //error("Selection is empty.");
       $('#selectionlist').effect("highlight", {
         color: '#E6867A'
@@ -491,7 +452,7 @@ function use_infix(code) {
     return;
   }
 
-  selections = Wise.Selection.toArray();
+  var operands = Wise.Selection.toArray();
 
   postdata = {};
   postdata.namespace_index = NAMESPACE_INDEX;
@@ -527,53 +488,26 @@ function use_infix(code) {
       //  hide_cmdline();
       //}
 
-      //Iterate over the elements in the image of the
-      //transformation, attempt to map them 1:1 with the
-      //elements in the domain. Elements mapped to 'null'
-      //are deleted.
       for (var i = 0; i < response.new_html.length; i++) {
-        obj = selections[i];
+        var preimage = operands[i];
+        var image_json = response.new_json[i];
+        var image_html = response.new_html[i];
 
-        if (response.new_html[i] === null) {
-          obj.remove();
-        }
-        else if (response.new_html[i] == 'pass') {
-          //console.log("Doing nothing");
-        }
-        else if (response.new_html[i] == 'delete') {
-          //console.log("Deleting - at some point in the future");
-        }
-        else {
-          var is_toplevel = (response.new_json[i][0].toplevel);
-
-          if (is_toplevel) {
-            if (!obj.toplevel) {
-              //error('Cannot replace toplevel node with non-toplevel node');
-              obj.errorFlash();
-              //return;
-            }
-            obj.view.el.replace(response.new_html[i]);
-
-            var newtree = graft_tree_from_json(
-                Wise.Nodes.getByCid(obj.cid), response.new_json[i]
-            );
-
-            Wise.last_expr = newtree.root;
-
-          } else {
-            nsym = obj.view.el.replace(response.new_html[i]);
-
-            var newtree = graft_fragment_from_json(
-                Wise.Nodes.getByCid(obj.cid), response.new_json[i]
-            );
-
-            Wise.last_expr = newtree.root;
-
-          }
+        switch(image_html) {
+            case 'pass':
+                break;
+            case 'delete':
+                preimage.remove();
+                break;
+            case undefined:
+                preimage.remove();
+                break;
+            default:
+                newnode = graft(preimage, image_json, image_html);
+                Wise.last_expr = newnode.root;
+                Wise.Selection.clear();
         }
       }
-
-      Wise.Selection.clear();
     }
   });
 }
@@ -723,57 +657,6 @@ function new_line(type, cell) {
   }, 'json')
 }
 
-//function new_assum(type, index) {
-//  var data = {};
-//  data.namespace_index = NAMESPACE_INDEX;
-//  data.cell_index = CELL_INDEX;
-//  data.type = type;
-//
-//  if (index != undefined) {
-//    active_cell = Wise.Worksheet.getByCid(index);
-//  }
-//
-//  if (!active_cell) {
-//    if (Wise.Worksheet.length == 1) {
-//      active_cell = Wise.Worksheet.at(0);
-//    } else {
-//      error("Select a cell to insert into");
-//      return;
-//    }
-//  }
-//
-//  // If the cell new then commit it to the database before we
-//  // so that all foreign keys on expression objects will
-//  // resolve properly
-//  if (active_cell.isNew()) {
-//    active_cell.save();
-//  }
-//
-//  $.post("/cmds/new_line/", data, function (data) {
-//
-//    if (data.error) {
-//      error(data.error);
-//    }
-//
-//    if (data.new_html) {
-//      new_expr_html = $(data.new_html);
-//      active_cell.view.addAssumption(new_expr_html);
-//
-//      // Initiale the new expression in the term db
-//      var expr = build_tree_from_json(data.new_json, AssumptionTree);
-//
-//      expr.cell = active_cell;
-//      expr.set({
-//        cell: active_cell.id
-//      });
-//      active_cell.addAssumption(expr);
-//
-//    }
-//
-//    NAMESPACE_INDEX = data.namespace_index;
-//  }, 'json')
-//}
-
 function new_cell() {
   data = {};
   data.namespace_index = NAMESPACE_INDEX;
@@ -805,13 +688,6 @@ function new_cell() {
       });
 
       cell.view = view;
-
-      // Make the cell selction object
-      //var cs = new CellSelection({
-      //  model: cell,
-      //});
-
-      //cs.render();
 
       Wise.last_cell = cell;
 
@@ -847,65 +723,34 @@ function mathjax_typeset(element) {
 ///////////////////////////////////////////////////////////
 
 function load_rules_palette() {
-  if (DISABLE_SIDEBAR) {
-    return;
-  }
-
   $.ajax({
     url: '/rule_request/',
-    dataType: "html", 
+    dataType: "html",
     success: function (data) {
-      $("#rules_palette").replaceWith($(data));
+      $("#rules_palette").replaceWith(data);
       $("#rules_palette").hide();
 
       $(".panel_category", "#rules_palette").bind('click', function () {
         $(this).next().toggle();
-        return false
+        return false;
       }).next().hide();
 
-      // Ugliness to make Tooltips appear properly
-      $('a[title]').qtip({
-        style: {
-          name: 'cream',
-          tip: true
-        },
-        container: $('#rules_palette'),
-        position: {
-          corner: {
-            target: 'topRight',
-            tooltip: 'bottomLeft',
-          },
-          adjust: {
-            x: 0,
-            y: 0,
-            screen: true,
-          },
-        },
-      });
-      // End Ugliness
     }
   });
 }
 
 function load_math_palette() {
-  if (DISABLE_SIDEBAR) {
-    return;
-  }
-
   $.ajax({
     url: '/palette/',
     dataType: "html",
     success: function (data) {
-      $("#math_palette").replaceWith($(data))
+      $("#math_palette").replaceWith(data);
 
       //Make the palette sections collapsable
       $(".panel_category", "#math_palette").bind('click', function () {
         $(this).next().toggle();
         return false;
       }).next().hide();
-
-      //Typeset the panel
-      //MathJax.Hub.Typeset($(this).next()[0]);
 
       $("#math_palette").resizable({
         handles: 's'
@@ -914,7 +759,6 @@ function load_math_palette() {
       $('#math_palette td').button();
     }
   });
-
 
 }
 
