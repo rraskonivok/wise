@@ -7,6 +7,9 @@ __all__ = ['PureInt', 'PureSymbol', 'PureLevel',
 'new_level', 'restore_level', 'PureEnv']
 
 cdef class PureEnv:
+    """
+    Wrapper for spawning and managing Pure interpreter instances.
+    """
     cdef pure_interp *_interp
     cpdef list locals
     cdef char **argv
@@ -16,23 +19,7 @@ cdef class PureEnv:
         # light and fast.
         print "Creating interpreter instance ...",
 
-#        args = ['--noprelude']
-
-        #cdef char *xp
-        #cdef char *xps[5]
-        #for i in range(0,len(args)):
-        #    xp = <char *>malloc(len(args[i]) * sizeof(char))
-        #    xps[i] = <char *>malloc( (len(args[i])+2) * sizeof( char* ) )
-        #    xp = '--noprelude'
-        #    xp = 'h'
-        #    strcpy(xps[i],xp)
-
         self._interp = cpure.pure_create_interp(0,NULL)
-        #try:
-        #    print 'Created succesfully!'
-        #finally:
-        #    pass
-        #    free(self.argv)
 
         if self._interp is NULL:
             cpython.PyErr_NoMemory()
@@ -48,6 +35,9 @@ cdef class PureEnv:
         pass
 
     cpdef eval(self, s):
+        """
+        Evaluate a string in the active interpreter.
+        """
         cdef pure_expr *y
         y = cpure.pure_eval(s)
         if y == NULL:
@@ -55,61 +45,85 @@ cdef class PureEnv:
         else:
             return PureExpr().se(y)
 
-    cpdef cmd(self, s):
-        print cpure.pure_evalcmd(s)
-
     def using(self, lib):
+        """
+        Include a Pure library in this active interpreter.
+        """
         self.eval("using %s" % lib)
         for sym in self.locals:
             sym.update()
 
     def compile_interp(self, fnp=0):
+        """
+        Force the active interpreter to JIT compile all toplevel
+        symbols.
+        """
         print 'JIT compiling symbols.'
         cpure.pure_interp_compile(self._interp,fnp)
 
 cdef class PureExpr:
     cdef pure_expr *_expr
     cpdef int _tag
-    cpdef int _refc
     _type = None
     cdef PureEnv _interp
 
     def __cinit__(self):
+        """
+        Base class for all derived Pure expressions wrappers.
+        """
         pass
 
     cdef se(self, pure_expr *ex):
+        """
+        Bind Python object to pure_expr object.
+        """
         self._expr = ex
         self._tag = ex.tag
         return self
 
     @property
     def interp(self):
+        """
+        Return the interpreter instance for this symbol.
+        """
         return self._interp
 
     @property
     def tag(self):
+        """
+        Return the internal tag value from the pure_expr struct.
+        """
         self._tag = self._expr.tag
         return self._tag
 
-    def refresh(self):
-        self._expr = cpure.eval(self._expr)
-
-    @property
-    def refc(self):
-        self._refc = self._expr.refc
-        return self._refc
-
     @property
     def type(self):
+        """
+        Return the `type` attribute as overloaded by child
+        classes.
+        """
         return self._type
 
     def __del__(self):
+        """
+        Bind the Python garbage collection to the pure_free
+        function on the pure_expr object.
+        """
         cpure.pure_free(self._expr)
 
     def __repr__(self):
+        """
+        Return a string representation of the pure_expr object as
+        given by the `str` function in Pure.
+        """
         return cpure.str(self._expr)
 
     def __call__(self,*args):
+        """
+        Apply the given arguments to symbol on the right hand
+        side. Rougly Equivelent to the `$ arg1 arg2 ...`
+        syntax in Pure.
+        """
         cdef pure_expr *xp
         #TODO, why did I set this to 10?
         cdef pure_expr *xps[10]

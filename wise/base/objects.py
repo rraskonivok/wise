@@ -25,8 +25,6 @@ from wise.utils import latex
 # * toplevel.py
 # * operations.py
 
-__all__ = ['cell', 'term', 'toplevel', 'operations']
-
 def initialize():
     super_classes = [Term, Relation]
 
