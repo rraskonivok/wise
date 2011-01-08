@@ -5,13 +5,13 @@ var _infix = function(code) {
     return function() {
         use_infix(code);
     }
-}
+};
 
 var _rule = function(rule) {
     return function() {
         apply_rule(rule);
     }
-}
+};
 
 Wise.Accelerators = new Backbone.Collection([
 

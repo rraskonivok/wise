@@ -432,12 +432,41 @@ var CmdLineView = Backbone.View.extend({
         "submit": "evaluate",
     },
 
+    visible: false,
+
+    initialize: function() {
+        _.bindAll(this, 'hide','show');
+    },
+
     evaluate: function(e) {
         var input = this.$('#cmdinput');
         use_infix( input.val() );
-        input.val("");
-        input.blur();
+        this.hide();
         return false;
+    },
+
+    hide: function() {
+        this.el.hide();
+        this.$('#cmdinput').blur();
+        this.$('#cmdinput').val("");
+        this.visible = 0;
+    },
+
+    show: function() {
+        this.el.show();
+        this.$('#cmdinput').focus();
+        this.visible = 1;
+    },
+
+    toggleVisible: function() {
+        this.visible = this.visible ^ 1;
+
+        if(!this.visible) {
+            this.hide();
+        } else {
+            this.show();
+        }
+
     },
 
 });

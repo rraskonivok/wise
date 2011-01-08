@@ -551,28 +551,35 @@ function new_line(type, cell) {
     cell.save();
   }
 
-  $.post("/cmds/new_line/", data, function (data) {
+  $.ajax({
+    type: 'POST',
+    url: "/cmds/new_line/",
+    data: data,
+    datatype: 'json',
+    success: function (data) {
 
-    if (data.error) {
-      Wise.Log.error(data.error);
+        if (data.error) {
+          Wise.Log.error(data.error);
+        }
+
+        if (data.new_html) {
+          var new_expr_html = $(data.new_html);
+          cell.view.addExpression(new_expr_html);
+
+          // Initiale the new expression in the term db
+          var eq = build_tree_from_json(data.new_json);
+
+          eq.cell = cell;
+          eq.set({
+            cell: cell.id
+          });
+          cell.addExpression(eq);
+        }
+
+        NAMESPACE_INDEX = data.namespace_index;
     }
 
-    if (data.new_html) {
-      var new_expr_html = $(data.new_html);
-      cell.view.addExpression(new_expr_html);
-
-      // Initiale the new expression in the term db
-      var eq = build_tree_from_json(data.new_json);
-
-      eq.cell = cell;
-      eq.set({
-        cell: cell.id
-      });
-      cell.addExpression(eq);
-    }
-
-    NAMESPACE_INDEX = data.namespace_index;
-  }, 'json')
+  });
 }
 
 function new_cell() {
@@ -580,34 +587,40 @@ function new_cell() {
   data.namespace_index = NAMESPACE_INDEX;
   data.cell_index = CELL_INDEX;
 
-  $.post("/cmds/new_cell/", data, function (response) {
+  $.ajax({
+    type: 'POST',
+    url: "/cmds/new_cell/",
+    data: data,
+    datatype: 'json',
+    success: function (response) {
 
-    if (response.error) {
-      Wise.Log.error(response.error);
-    }
+        if (response.error) {
+          Wise.Log.error(response.error);
+        }
 
-    if (response.new_html) {
+        if (response.new_html) {
 
-      var cell = build_cell_from_json(response.new_json);
-      Wise.last_cell = cell;
+          var cell = build_cell_from_json(response.new_json);
+          Wise.last_cell = cell;
 
-      Wise.Worksheet.add(cell);
-      CELL_INDEX = response.cell_index;
-      NAMESPACE_INDEX = response.namespace_index;
+          Wise.Worksheet.add(cell);
+          CELL_INDEX = response.cell_index;
+          NAMESPACE_INDEX = response.namespace_index;
 
-      $("#worksheet").append(response.new_html);
+          $("#worksheet").append(response.new_html);
 
-      console.log($("#"+cell.cid));
+          console.log($("#"+cell.cid));
 
-      // Make the cell workspace object
-      var view = new CellView({
-        el: $("#"+cell.cid),
-        model: cell,
-      });
+          // Make the cell workspace object
+          var view = new CellView({
+            el: $("#"+cell.cid),
+            model: cell,
+          });
 
-      cell.view = view;
+          cell.view = view;
 
-      Wise.last_cell = cell;
+          Wise.last_cell = cell;
+        }
 
     }
   });
@@ -637,7 +650,7 @@ function mathjax_typeset(element) {
 }
 
 ///////////////////////////////////////////////////////////
-// Palette Loading / Handeling
+// Palette Loading
 ///////////////////////////////////////////////////////////
 
 function load_rules_palette() {
@@ -662,6 +675,7 @@ function load_math_palette() {
     url: '/palette/',
     dataType: "html",
     success: function (data) {
+
       $("#math_palette").replaceWith(data);
 
       //Make the palette sections collapsable
@@ -675,6 +689,7 @@ function load_math_palette() {
       });
 
       $('#math_palette td').button();
+
     }
   });
 
@@ -683,9 +698,9 @@ function load_math_palette() {
 ///////////////////////////////////////////////////////////
 // Command Line
 ///////////////////////////////////////////////////////////
-$('#cmdline').submit(function () {
-  use_infix($("#cmdinput").val());
-  $("#cmdinput").blur();
-  // Inject into scratchpad
-  return false;
-});
+//$('#cmdline').submit(function () {
+//  use_infix($("#cmdinput").val());
+//  $("#cmdinput").blur();
+//  // Inject into scratchpad
+//  return false;
+//});

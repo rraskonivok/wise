@@ -62,9 +62,10 @@ function boot() {
         setInterval( "heartbeat()", 10000 );
     }
 
-    new CmdLineView({
-        el: $("#cmdline"),
+    Wise.CmdLine = new CmdLineView({
+        el: $("#cmd"),
     });
+
     $("#worksheet").show();
 }
 
