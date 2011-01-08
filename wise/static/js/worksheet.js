@@ -344,7 +344,9 @@ function apply_rule(rule, operands, callback) {
                     callback(image);
                   }
           }
+
         }
+
     }
   });
 
@@ -352,87 +354,6 @@ function apply_rule(rule, operands, callback) {
 
 
 function apply_def(def, selections) {
-  var data = {};
-
-  data.def = def.sexp();
-  data.namespace_index = NAMESPACE_INDEX;
-
-  if (selections) {
-
-    //Fetch the math for each of the selections
-    if (Wise.Selection.count === 0) {
-      //error("Selection is empty.");
-      $('#selectionlist').effect("highlight", {
-        color: '#E6867A'
-      }, 500);
-      return;
-    }
-
-    //TODO: This is vestigal
-    data.selections = Wise.Selection.list_attr('math');
-
-  }
-  else {
-    data.selections = _.invoke(selections, 'math');
-  }
-
-  window.log(data);
-
-  $.post("/cmds/apply_def/", data, function (data) {
-
-    if (data.error) {
-      error(data.error);
-      base_mode();
-      return;
-    }
-
-    //Iterate over the elements in the image of the
-    //transformation, attempt to map them 1:1 with the
-    //elements in the domain. Elements mapped to 'null'
-    //are deleted.
-    for (var i = 0; i < data.new_html.length; i++) {
-      obj = selections[i];
-
-      obj.queue(function () {
-        $(this).fadeTo('slow', 1);
-        $(this).dequeue();
-      });
-
-      if (data.new_html[i] == null) {
-        obj.remove();
-      }
-      else if (data.new_html[i] == 'pass') {
-        //console.log("Doing nothing");
-      }
-      else if (data.new_html[i] == 'delete') {
-        //console.log("Deleting - at some point in the future");
-      }
-      else {
-
-        //changed this
-        toplevel = (data.new_json[i][0].toplevel)
-
-        if (toplevel) {
-          build_tree_from_json(data.new_json[i])
-
-          graft_tree_from_json(
-          Wise.Nodes.getByCid(obj.id()), data.new_json[i], 'apply_def');
-
-        } else {
-
-          graft_tree_from_json(
-          Wise.Nodes.getByCid(obj.id()), data.new_json[i], 'apply_def');
-
-        }
-
-        var nsym = obj.replace(data.new_html[i]);
-      }
-    }
-
-    NAMESPACE_INDEX = data.namespace_index;
-
-    base_mode();
-  }, "json");
 }
 
 function use_infix(code) {
@@ -546,59 +467,56 @@ function apply_transform(transform, operands) {
     datatype: 'json',
     success: function (response) {
 
-      if (!response) {
-        error('Server side error in processing apply_transform.');
-        return;
-      }
-
-      if (response.error) {
-        error(response.error);
-        return
-      }
-
-      //Iterate over the elements in the image of the
-      //transformation, attempt to map them 1:1 with the
-      //elements in the domain. Elements mapped to 'null'
-      //are deleted.
-      for (var i = 0; i < response.new_html.length; i++) {
-        obj = operands[i];
-
-        if (response.new_html[i] == null) {
-          obj.remove();
+        if (!response) {
+          error('Server did not repsond to request.');
+          return;
         }
-        else if (response.new_html[i] == 'pass') {
-          //console.log("Doing nothing");
+
+        if (response.error) {
+          Wise.Log.error(response.error);
+          return;
         }
-        else if (response.new_html[i] == 'delete') {
-          //console.log("Deleting - at some point in the future");
+
+        if(!response.namespace_index) {
+            Wise.Log.error('Null namespace index');
+            return;
         }
-        else {
-          var is_toplevel = (response.new_json[i][0].toplevel);
-          if (is_toplevel) {
-            nsym = obj.dom().replace(response.new_html[i]);
 
-            var newtree = graft_toplevel_from_json(
-                Wise.Nodes.getByCid(obj.cid), response.new_json[i],
-                postdata.transform
-            );
+        NAMESPACE_INDEX = response.namespace_index;
 
-            Wise.last_expr = newtree.root;
+        //Iterate over the elements in the image of the
+        //transformation, attempt to map them 1:1 with the
+        //elements in the domain. Elements mapped to 'null'
+        //are deleted.
+        for (var i = 0; i < response.new_html.length; i++) {
+          var preimage = operands[i];
+          var image_json = response.new_json[i];
+          var image_html = response.new_html[i];
 
-          } else {
-            nsym = obj.dom().replace(response.new_html[i]);
+          switch(image_html) {
+              case 'pass':
+                  break;
+              case 'delete':
+                  preimage.remove();
+                  break;
+              case undefined:
+                  preimage.remove();
+                  break;
+              default:
+                  newnode = graft(preimage, image_json, image_html);
+                  Wise.last_expr = newnode.root;
+                  Wise.Selection.clear();
 
-            var newtree = graft_fragment_from_json(
-                Wise.Nodes.getByCid(obj.cid), response.new_json[i],
-                postdata.transform
-            );
-
-            Wise.last_expr = newtree.root;
+                  if(callback) {
+                    callback(image);
+                  }
           }
+
         }
-      }
-      NAMESPACE_INDEX = response.namespace_index;
+
     }
   });
+
 }
 
 function new_line(type, cell) {
