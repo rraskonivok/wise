@@ -1,0 +1,100 @@
+Install
+-------------------------------------
+
+
+1. Get the wise source code and install to a directory of your
+   choice.
+
+   Stable releases can be downloaded from Github::
+
+        https://github.com/sdiehl/wise/archives/master
+
+   Development version can be obtained by git::
+
+        git clone git://github.com/sdiehl/wise
+
+
+2. You'll need Python 2.6+ (but not Python 3) and the Python
+   header files On Ubuntu::
+
+        $ sudo python install python python-dev
+
+   and the Python package managmenent tools::
+
+        $ sudo apt-get install python-setuptools python-dev build-essential
+        $ sudo easy_install -U pip
+        $ sudo pip install -U virtualenv
+
+
+3. Install Pure and LLVM:
+
+   If you are on Ubuntu/Debian you can use the build script
+   included with Wise which should install the packages
+   `llvm, libgmp3-dev, g++`, and build Pure from source::
+
+        $ ./dist/build_pure.sh
+
+   If you are not on Ubuntu then, it is highly likely that your
+   distribution has a package for LLVM, but if you need to
+   compile from source you can find directions on the pure site::
+
+        http://pure-lang.googlecode.com/hg/pure/INSTALL
+
+   There are packages are source code available for Fedora, Arch,
+   OS X and a few other package managers available here::
+
+        http://code.google.com/p/pure-lang
+
+   If your distribution does not carry Pure then you can find
+   directions for compiling it from source here::
+
+        http://pure-lang.googlecode.com/hg/pure/INSTALL
+
+
+4. Set up a new virtualenv, if you aren't using virtualenv then
+   start today! If this is your first virtualenv then run the
+   following two commands::
+
+        $ mkdir -p ~/.virtualenvs
+        $ cd ~/.virtualenvs
+
+   Create a Wise virtualenv::
+
+        $ virtualenv --no-site-packages --distribute wise
+
+   To activate the new virtualenv shell run::
+
+        $ source ~/.virtualenvs/wise/bin/activate
+
+   which gives you a shell where all commands are run run in your
+   local virtualenv. From here on commands prefixed with::
+
+        $(wise)
+
+   refer to commands that should be
+   run in the wise virtualenv shell.
+
+
+5. Install python libraries::
+
+       (wise)$ pip install -r /path/to/wise/dir/requirements.txt
+
+6. Build the Pure module::
+
+        (wise)$ cd wise
+        (wise)$ make
+
+
+7. Create the database::
+
+        (wise)$ cd wise/
+        (wise)$ python mange.py syncdb
+
+   This will prompt you to create a admin user and create
+   the local database in the file `wise.db`.
+
+
+8. Run Wise::
+
+        (wise)$ gunicorn_django
+        (wise)$ firefox localhost:8000

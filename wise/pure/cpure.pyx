@@ -62,15 +62,15 @@ cdef class PureEnv:
         cpure.pure_interp_compile(self._interp,fnp)
 
 cdef class PureExpr:
+    """
+    Base class for all derived Pure expressions wrappers.
+    """
     cdef pure_expr *_expr
     cpdef int _tag
     _type = None
     cdef PureEnv _interp
 
     def __cinit__(self):
-        """
-        Base class for all derived Pure expressions wrappers.
-        """
         pass
 
     cdef se(self, pure_expr *ex):
@@ -121,7 +121,7 @@ cdef class PureExpr:
     def __call__(self,*args):
         """
         Apply the given arguments to symbol on the right hand
-        side. Rougly Equivelent to the `$ arg1 arg2 ...`
+        side. Roughly Equivalent to the `$ arg1 arg2 ...`
         syntax in Pure.
         """
         cdef pure_expr *xp
@@ -165,6 +165,9 @@ cdef class PureExpr:
     #    return operator.div(self,other)
 
 cdef class PureApp(PureExpr):
+    """
+    A Pure function application.
+    """
     _type = 'app'
     cdef PureExpr _head
     cdef pure_expr _rebuild
@@ -183,6 +186,9 @@ cdef class PureApp(PureExpr):
         pass
 
 cdef class PureSymbol(PureExpr):
+    """
+    Generic Pure symbol specified by alphanumeric characters.
+    """
     _type = 'symbol'
     cdef char* _sym
     cdef public _psym
@@ -202,6 +208,9 @@ cdef class PureSymbol(PureExpr):
         return PureQuotedSymbol(self._sym)
 
 cdef class PureQuotedSymbol(PureExpr):
+    """
+    A quoted PureSymbol.
+    """
     cdef char* _sym
 
     def __cinit__(self,sym):
@@ -210,9 +219,15 @@ cdef class PureQuotedSymbol(PureExpr):
        self._tag = self._expr.tag
 
 cdef class PureClosure(PureSymbol):
+    """
+    A Pure closure, i.e. a reference to callable object.
+    """
     cdef public arity
 
 cdef class PureRule(PureExpr):
+    """
+    A class which generates a Pure rule from `LHS` and `RHS` symbols.
+    """
     cdef char* _stmt
     cdef public _pstmt
 
@@ -240,6 +255,9 @@ cdef class PureRule(PureExpr):
         return self._stmt
 
 cdef class PureInt(PureExpr):
+    """
+    A Pure integer primitive.
+    """
     _type = 'int'
     number = None
 
@@ -252,6 +270,9 @@ cdef class PureInt(PureExpr):
         self._tag = self._expr.tag
 
 cdef class PureDouble(PureExpr):
+    """
+    A Pure double primitive.
+    """
     _type = 'double'
     number = None
 
@@ -260,6 +281,9 @@ cdef class PureDouble(PureExpr):
         self._tag = self._expr.tag
 
 cdef class PureList(PureExpr):
+    """
+    A Pure list primitive.
+    """
     _type = 'list'
 
     def __cinit__(self,*args):
@@ -277,6 +301,9 @@ cdef class PureList(PureExpr):
 #        return operator.__getslice__(a,PureInt(b),PureInt(c))
 
 cdef class PureTuple(PureExpr):
+    """
+    A Pure tuple primitive.
+    """
     _type = 'tuple'
 
     def __cinit__(self,*args):
@@ -288,6 +315,9 @@ cdef class PureTuple(PureExpr):
         self._expr = cpure.pure_tuplev(len(args),xps)
 
 cdef class PureLevel(PureExpr):
+    """
+    A Pure level instance.
+    """
     _type = 'level'
     cdef uint32_t _hash
 
@@ -305,11 +335,15 @@ cdef class PureLevel(PureExpr):
         return self._hash
 
 cdef pure_expr *g(PureExpr obj):
+    """
+    Cython function extract private _expr attribute and return it
+    in a Cython context.
+    """
     return obj._expr
 
 def reduce_with_pure_rules(PureExpr level, PureExpr expr):
     '''Convert a Python list of strings into a dynamic local
-    enviroment and pass reduce the given expression with it'''
+    environment and pass reduce the given expression with it'''
 
     # Basically equivelent to
     # reduce_with expr __locals__ with rule1; rule2; end;
@@ -319,7 +353,13 @@ def reduce_with_pure_rules(PureExpr level, PureExpr expr):
     return PureExpr().se(rexp)
 
 def new_level():
+    """
+    Spawn a new level in the interpreter.
+    """
     cpure.pure_save()
 
 def restore_level():
+    """
+    Restore previous level in the interpreter.
+    """
     cpure.pure_restore()
