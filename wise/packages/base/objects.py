@@ -8,15 +8,17 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 from math import modf
-from django import template
-from wise.base.operations import (PrefixOperation, InfixOperation,
+
+from operations import (PrefixOperation, InfixOperation,
 PostfixOperation, SupOperation, SubOperation, OutfixOperation,
 Operation)
-from wise.base.term import Term, Placeholder
-from wise.base.toplevel import Relation
+from term import Term, Placeholder
+from toplevel import Relation
+
 from wise.translators import pureobjects
 from wise.worksheet.utils import *
 from wise.utils import latex
+from django import template
 
 # Subpackages
 # -----------

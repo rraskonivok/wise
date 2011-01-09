@@ -1,5 +1,5 @@
 from wise.utils.library_utils import _, Map
-from wise.base.objects import Placeholder, Term, FunctionAppl
+from objects import Placeholder, Term, FunctionAppl
 
 @Map( _( Placeholder , Term ) >> _( Term ) )
 def PlaceholderSubstitute( ph, tm ):

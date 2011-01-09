@@ -8,13 +8,13 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
+
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 
 import wise.translators.pytopure as translate
 import wise.worksheet.exceptions as exception
-from wise.base.cell import Cell
-from wise.base.toplevel import EquationPrototype
+
 from wise.translators.mathobjects import rulesets, transforms
 from wise.worksheet import tasks
 from wise.worksheet.utils import *
@@ -24,6 +24,10 @@ def heartbeat(request):
     response = HttpResponse(status=200)
     response['Cache-Control'] = 'no-cache'
     return response
+
+from wise.packages import loader
+Cell = loader.load_package_module('base','cell').Cell
+EquationPrototype = loader.load_package_module('base','toplevel').EquationPrototype
 
 # ------------------------------------
 # Note:

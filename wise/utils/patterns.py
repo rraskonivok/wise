@@ -61,10 +61,10 @@ class Aggregator(object):
     def __contains__(self, key):
         return key in self.persistance
 
-    def __del__(self):
-        if self.persistance:
-            self.persistance.close()
-            del self.persistance
+    #def __del__(self):
+    #    if self.persistance:
+    #        self.persistance.close()
+    #        del self.persistance
 
     def all(self):
         return [i for i in self.persistance]

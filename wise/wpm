@@ -81,7 +81,7 @@ def main():
     (options, args) = parser.parse_args()
 
     if options.rebuild:
-        packages_in_dir = meta_inspector.lspackages('.')
+        packages_in_dir = meta_inspector.lspackages()
         meta_inspector.rebuild_modules(packages_in_dir)
 
     #---------------------------

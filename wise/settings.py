@@ -34,10 +34,11 @@ DATABASES = {
     }
 }
 
+PACKAGE_DIR = 'packages'
 # The root module for wise
 ROOT_MODULE = 'wise'
 # Module contianing packages
-PACK_MODULE = ROOT_MODULE + '.packages'
+PACK_MODULE = ROOT_MODULE + '.' + PACKAGE_DIR
 
 # `base` is the minimum needed to run
 INSTALLED_MATH_PACKAGES = ('base',)
@@ -182,7 +183,7 @@ ROOTDIR = os.path.abspath(os.path.dirname(__file__))
 # $PACKAGES/templates
 TEMPLATE_DIRS = tuple(
     [ROOTDIR +'/templates'] +
-    [ROOTDIR + ('/%s/templates' % pack) for pack in INSTALLED_MATH_PACKAGES]
+    [ROOTDIR + ('/packages/%s/templates' % pack) for pack in INSTALLED_MATH_PACKAGES]
 )
 TEMPLATE_DEBUG = DEBUG
 USE_BUNDLES = False

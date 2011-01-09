@@ -1,6 +1,6 @@
 from django import template
 from worksheet.utils import *
-from wise.base.term import ph
+from term import ph
 
 
 #-------------------------------------------------------------

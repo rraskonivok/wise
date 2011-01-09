@@ -85,13 +85,13 @@ def translate_pure(key):
 
 def build_translation(python=True, pure=True, force=False):
     for name in settings.INSTALLED_MATH_PACKAGES:
-        pack_module = import_module(name)
+        pack_module = import_module('packages.' + name)
 
         if module_has_submodule(pack_module, 'objects'):
             print 'Importing objects from ... ' + name
 
             path = name + '.objects'
-            pack_objects = import_module(path, settings.ROOT_MODULE)
+            pack_objects = import_module('packages.' + path, settings.ROOT_MODULE)
 
             super_clss, nullary_types = pack_objects.initialize()
             pure_trans.populate(nullary_types)
@@ -162,14 +162,14 @@ def build_rule_lookup(force=False):
         return
 
     for name in settings.INSTALLED_MATH_PACKAGES:
-        pack_module = import_module(name)
+        pack_module = import_module('packages.' + name)
 
         # Load PACKAGE/rules.py
         if module_has_submodule(pack_module, 'rules'):
             print 'Importing rules from ... ' + name
 
             path = name + '.rules'
-            pack_objects = import_module(path, settings.ROOT_MODULE)
+            pack_objects = import_module('packages.' + path, settings.ROOT_MODULE)
 
             # Build mathobjects.rulesets:
             # ------------------------
@@ -205,7 +205,13 @@ def build_cython_objects(force=False, jit=False):
         return
 
     for pack in settings.INSTALLED_MATH_PACKAGES:
-        interface.use(pack,pack)
+        # Query meta_inspector to find the packages path
+        path = wise.meta_inspector.PACKAGES[pack].path
+
+        # Convert the Unix path to a Pure style path
+        pure_path = '::'.join(path.split('/'))
+
+        interface.use(pure_path,pack)
 
     print 'Building Cython Objects'
 
@@ -236,12 +242,12 @@ def build_transform_lookup(force=False):
 
     for pack_name in settings.INSTALLED_MATH_PACKAGES:
         print 'Importing transforms from ... ' + pack_name
-        pack_module = import_module(pack_name)
+        pack_module = import_module('packages.' + pack_name)
 
         # Load PACKAGE/rules.py
         if module_has_submodule(pack_module, 'transforms'):
             path = pack_name + '.transforms'
-            pack_transforms = import_module(path, settings.ROOT_MODULE)
+            pack_transforms = import_module('packages.' + path, settings.ROOT_MODULE)
 
             transforms.make_writable()
             for name, symbol in pack_transforms.__dict__.iteritems():
