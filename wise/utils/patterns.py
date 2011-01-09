@@ -1,5 +1,7 @@
 import os
 import shelve
+import atexit
+
 
 class Borg(object):
     """ Object with shared state across all instances """
@@ -50,6 +52,9 @@ class Aggregator(object):
                 flag = 'c'
 
             self.persistance = shelve.open(self.filename, flag or 'r')
+
+            # Fix for Python Bug: http://bugs.python.org/issue7835
+            atexit.register( lambda : self.persistance.close() )
         except:
             print 'Could not load cache', self.filename
             self.persistance = self.fallback_dict
@@ -60,11 +65,6 @@ class Aggregator(object):
 
     def __contains__(self, key):
         return key in self.persistance
-
-    #def __del__(self):
-    #    if self.persistance:
-    #        self.persistance.close()
-    #        del self.persistance
 
     def all(self):
         return [i for i in self.persistance]
