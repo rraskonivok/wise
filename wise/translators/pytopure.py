@@ -12,9 +12,6 @@ from wise.worksheet.utils import *
 
 from parser import sexp_parse, pure_parse
 
-
-#Used for hashing trees
-
 #-------------------------------------------------------------
 # Parse Tree
 #-------------------------------------------------------------
@@ -297,7 +294,6 @@ def parse_pure_exp(expr):
     'PureExpr -> Object'
     #Get the string representation of the pure expression
     parsed = ParseTree(str(expr),'pure')
-
     #Map into the Python wrapper classes
     return parsed.eval_pure()
 

@@ -1,4 +1,3 @@
 #!/bin/bash
 
-python -m tests/test_metainspector
-python -m tests/test_pure
+python -m unittest discover tests 'test_*.py'
