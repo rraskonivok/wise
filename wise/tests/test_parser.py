@@ -13,7 +13,10 @@ boot.start_python_pure()
 boot.start_cython()
 # --- End Test Setup ---
 
-from wise.translators.pytopure import parse_sexp, sexp_parse
+from wise.translators.pytopure import parse_sexp, sexp_parse, make_sexp
+from wise.packages import loader
+
+base_objects = loader.load_package_module('base','objects')
 
 class TestParser(unittest.TestCase):
 
@@ -50,12 +53,48 @@ class TestParser(unittest.TestCase):
             ( '(a b c)'    ,  ('a', ['b', 'c'])                  ),
             ( '(f 1 2)'    ,  ('f', [1, 2])                      ),
             ( '(f 1.1 2.5)',  ('f', [1.1, 2.5])                  ),
+            ( '(f 0 -1)'   ,  ('f', [0, -1])                     ),
             ( '(f (g (x)))',  ('f', [('g', [('x', [])])])        ),
         ]
 
         for sexp, output in tests:
-            self.assertEqual(sexp_parse(sexp), output)
+            parsed = sexp_parse(sexp)
+            mapped = make_sexp(parsed)
+            self.assertEqual(parsed, output)
+            self.assertEqual(len(mapped.args), len(output[1]))
 
+    def test_sexp_mapping(self):
+        good_sexps = [
+            '( Addition ( Variable x ) ( Variable y ) )',
+            '( Variable x )',
+            '( Equation 1 1 )',
+            '( Placeholder )',
+            '( Numeric 3.14159 )',
+        ]
+
+        bad_sexps = [
+            '( Variable 1 )',
+            '( Numeric x )',
+            '( Numeric 1 1 )',
+            '( Equation foo )',
+            '( Addition )',
+        ]
+
+        for sexp in good_sexps:
+            self.assertIsNotNone(parse_sexp(sexp))
+
+        for sexp in bad_sexps:
+            with self.assertRaises(Exception):
+                parsed = parse_sexp(sexp)
+
+    def test_sexp_mapping_types(self):
+        good_sexps = [
+        ( '( Addition ( Variable x ) ( Variable y ))',base_objects.Addition),
+        ( '( Variable x )', base_objects.Variable) ,
+        ]
+        for sexp, cls in good_sexps:
+            parsed = parse_sexp(sexp)
+            self.assertEqual(parsed.classname, cls.__name__)
 
 if __name__ == '__main__':
     unittest.main()

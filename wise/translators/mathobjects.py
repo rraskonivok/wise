@@ -277,5 +277,4 @@ python_trans = PythonTranslationTable()
 pure_trans   = PureTranslationTable()
 
 # For compatability
-pyobjects = python_trans
 translation_table = pure_trans

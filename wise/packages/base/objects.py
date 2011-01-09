@@ -49,6 +49,10 @@ class Variable(Term):
     pure = 'var'
 
     def __init__(self,symbol):
+
+        if is_number(symbol):
+            raise TypeError(symbol)
+
         if symbol in latex.greek_unicode:
             self.latex = latex.greek_lookup(symbol)
             self.html = load_haml_template('constant.tpl')
@@ -68,8 +72,11 @@ class Numeric(Term):
     numeric_type = 'float'
 
     def __init__(self, number):
-        self.number = float(number)
 
+        if not is_number(number):
+            raise TypeError(number)
+
+        self.number = float(number)
         fpart, ipart = modf(self.number)
 
         if fpart == 0:
@@ -255,7 +262,7 @@ def Zero(Constant):
 def One(Constant):
     """
     This symbol represents the multiplicative identity element.
-    """""
+    """
 
     cd = 'alg1'
     cd_name = 'one'

@@ -7,7 +7,7 @@
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-from wise.translators.mathobjects import pyobjects, translate_pure
+from wise.translators.mathobjects import python_trans, translate_pure
 from wise.worksheet.utils import *
 
 from parser import sexp_parse, pure_parse
@@ -68,7 +68,7 @@ class Branch(object):
             elif isinstance(x,Branch):
                 return x.eval_args()
 
-        type = pyobjects[self.type]
+        type = python_trans[self.type]
 
         if not type:
             raise Exception('Could not lookup Python class', self.type)
