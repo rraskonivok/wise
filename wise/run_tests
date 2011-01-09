@@ -1,0 +1,4 @@
+#!/bin/bash
+
+python -m tests/test_metainspector
+python -m tests/test_pure

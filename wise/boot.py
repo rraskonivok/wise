@@ -43,3 +43,9 @@ def start_cython():
     build_rule_lookup()
 
     logger.info('Started Cython Interface')
+
+def start_django():
+    from django.core.management import setup_environ
+    import settings
+    setup_environ(settings)
+    settings.DEBUG = True
