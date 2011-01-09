@@ -3,7 +3,7 @@
 
 import settings
 from wise.utils.module_loading import module_has_submodule
-from django.utils.importlib import import_module
+from wise.packages.loader import load_package_module
 
 try:
     from pygraphviz import AGraph
@@ -43,9 +43,5 @@ def pycls2graph(*tcls):
     return G
 
 def package_to_graph(package):
-    pack_module = import_module(package)
-    if module_has_submodule(pack_module, 'objects'):
-        path = package + '.objects'
-        pack_objects = import_module(path, settings.ROOT_MODULE)
-    tops, nullary = pack_objects.initialize()
+    tops, nullary = load_package_module(package,'objects').initialize()
     return pycls2graph(*tops)
