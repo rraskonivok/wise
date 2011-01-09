@@ -212,6 +212,7 @@ math .selected {
 .cmd {
     position: fixed;
     bottom: 50px;
+    z-index: 2;
     /* 70% of 960px */
     width: 70%;
     min-width: 672px;

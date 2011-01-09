@@ -1,5 +1,14 @@
 {% load custom_tags %}
 
-mfrac#{{id}} title="{{type}}"
-    {{num}}
-    {{den}}
+mrow
+    {% if parenthesis %}
+    <mo stretchy="true">(</mo>
+    {% endif %}
+
+    mfrac#{{id}} title="{{type}}"
+        {{num}}
+        {{den}}
+
+    {% if parenthesis %}
+    <mo stretchy="true">)</mo>
+    {% endif %}

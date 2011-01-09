@@ -1,13 +1,12 @@
-msup#{{id}}
-
+mrow#{{id}}
     {% if parenthesis %}
     <mo stretchy="true">(</mo>
     {% endif %}
 
-    {{base}}
+    msup
+        {{base}}
+        {{exponent}}
 
     {% if parenthesis %}
     <mo stretchy="true">)</mo>
     {% endif %}
-
-    {{exponent}}

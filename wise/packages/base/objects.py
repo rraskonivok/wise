@@ -422,6 +422,9 @@ class Power(Operation):
             if term.terms and len(term.terms) > 1:
                 term.show_parenthesis = True
 
+        if isinstance(base,Rational):
+            self.base.show_parenthesis = True
+
     def _pure_(self):
         return self.po(self.base._pure_() , self.exponent._pure_())
 
@@ -431,7 +434,8 @@ class Power(Operation):
             'id': self.id,
             'base': self.base.get_html(),
             'type': self.classname,
-            'exponent': self.exponent.get_html()
+            'exponent': self.exponent.get_html(),
+            'parenthesis':self.show_parenthesis,
         })
 
         return self.html.render(c)

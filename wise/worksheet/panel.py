@@ -1,3 +1,4 @@
+import os
 from inspect import getargspec
 from types import TypeType
 
@@ -9,9 +10,9 @@ from django.utils.importlib import import_module
 from wise.utils.module_loading import module_has_submodule
 
 panels = Aggregator(file='cache/panels_cache')
-from wise.packages import loader
 
-base = loader.load_package('base.objects')
+from wise.packages import loader
+base = loader.load_package_module('base','objects')
 Placeholder = base.Placeholder
 
 def _map_panel_types(obj):
@@ -80,7 +81,8 @@ class MathMLPanel(Panel):
         else:
             for xml, obj in self.objects:
                 button = {}
-                button['mathml'] = open(self.package + '/' + xml).read()
+                panel = os.path.join(settings.PACKAGE_DIR,self.package,xml)
+                button['mathml'] = open(panel).read()
                 button['math'] = _map_panel_types(obj)
                 buttons.append( button )
 
@@ -104,10 +106,10 @@ def build_panels(force=False):
 
         # Load PACKAGE/rules.py
         if module_has_submodule(pack_module, 'panel'):
-            pack_rules = loader.load_package_module(pack_name,'rules')
+            pack_panels = loader.load_package_module(pack_name,'panel')
 
             panels.make_writable()
-            for panel_name, symbol in pack_rules.__dict__.iteritems():
+            for panel_name, symbol in pack_panels.__dict__.iteritems():
                 if is_panel(symbol):
                     symbol.package = pack_name
                     panels[panel_name] = symbol
