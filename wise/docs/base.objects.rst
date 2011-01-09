@@ -9,12 +9,12 @@
 
 .. contents::
     :local:
-.. currentmodule:: wise.base.objects
+.. currentmodule:: wise.packages.base.objects
 
 Term
 ----------
 
-.. automodule:: wise.base.term
+.. automodule:: wise.packages.base.term
     :members:
     :undoc-members:
     :show-inheritance:
@@ -22,7 +22,7 @@ Term
 Primitives
 ----------
 
-.. automodule:: wise.base.objects
+.. automodule:: wise.packages.base.objects
     :members:
     :undoc-members:
     :show-inheritance:
@@ -31,7 +31,7 @@ Primitives
 Operations
 ----------
 
-.. automodule:: wise.base.operations
+.. automodule:: wise.packages.base.operations
     :members:
     :undoc-members:
     :show-inheritance:
@@ -39,7 +39,7 @@ Operations
 Toplevel Elements
 -----------------
 
-.. automodule:: wise.base.toplevel
+.. automodule:: wise.packages.base.toplevel
     :members:
     :undoc-members:
     :show-inheritance:
@@ -47,7 +47,7 @@ Toplevel Elements
 Cells
 -----
 
-.. automodule:: wise.base.cell
+.. automodule:: wise.packages.base.cell
     :members:
     :undoc-members:
     :show-inheritance:

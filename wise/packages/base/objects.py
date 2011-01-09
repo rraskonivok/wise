@@ -185,24 +185,39 @@ class ComplexPolar(Complex):
         return self.po(*purify(self.terms))
 
 class Real(PrefixOperation):
+    """
+    This represents the real part of a complex number
+    """
     pure = 'real'
 
     cd = 'complex1'
     cd_name = 'real'
 
 class Imaginary(PrefixOperation):
+    """
+    This represents the imaginary part of a complex number
+    """
+
     pure = 'imag'
 
     cd = 'complex1'
     cd_name = 'imaginary'
 
 class Argument(PrefixOperation):
+    """
+    This symbol represents the unary function which returns the
+    argument of a complex number.
+    """
     pure = 'argm'
 
     cd = 'complex1'
     cd_name = 'argument'
 
 class Conjugate(PrefixOperation):
+    """
+    A unary operator representing the complex conjugate of its argument.
+    """
+
     pure = 'conj'
 
     cd = 'complex1'
@@ -213,6 +228,11 @@ class Conjugate(PrefixOperation):
 #-------------------------------------------------------------
 
 class Constant(Term):
+    """
+    A symbol to be used as the argument of the type symbol to
+    convey a type for the common constants.
+    """
+
     #Constants should be able to be represented by multiple symbols
     representation = None
     html = load_haml_template('constant.tpl')
@@ -232,12 +252,21 @@ class ImaginaryUnit(Constant):
     args = "'i'"
 
 class Pi(Constant):
+    """
+    A symbol to convey the notion of pi, approximately 3.142. The
+    ratio of the circumference of a circle to its diameter.
+    """
+
     latex = 'π'
     symbol = 'π'
     pure = 'Pi'
     args = "'pi'"
 
 class Infinity(Constant):
+    """
+    A symbol to represent the notion of infinity.
+    """
+
     latex = '\\infty'
     symbol = 'inf'
     pure = 'inf'
@@ -276,6 +305,12 @@ def One(Constant):
 #-------------------------------------------------------------
 
 class Quotient(PrefixOperation):
+    """
+    The symbol to represent the integer (binary) division
+    operator. That is, for integers a and b, quotient(a,b)
+    denotes q such that a=b*q+r, with |r| less than |b| and a*r
+    positive.
+    """
     symbol = 'quotient'
     pure = 'quo'
 
@@ -283,6 +318,12 @@ class Quotient(PrefixOperation):
     cd_name = 'quotient'
 
 class Remainder(PrefixOperation):
+    """
+    The symbol to represent the integer remainder after (binary)
+    division. For integers a and b, remainder(a,b) denotes r such
+    that a=b*q+r, with |r| less than |b| and a*r positive.
+    """
+
     symbol = 'remainder'
     pure = 'rem'
 
@@ -290,6 +331,11 @@ class Remainder(PrefixOperation):
     cd_name = 'remainder'
 
 class Factorial(PostfixOperation):
+    """
+    The symbol to represent a unary factorial function on
+    non-negative integers.
+    """
+
     symbol = '!'
     pure = 'fact'
 
@@ -307,6 +353,11 @@ class Catalan(SubOperation):
 #-------------------------------------------------------------
 
 class LCM(PrefixOperation):
+    """
+    The symbol to represent the n-ary function to return the
+    least common multiple of its arguments.
+    """
+
     symbol = '\\lcm'
     pure = 'lcm'
 
@@ -314,6 +365,11 @@ class LCM(PrefixOperation):
     cd_name = 'lcm'
 
 class GCD(PrefixOperation):
+    """
+    The symbol to represent the n-ary function to return the gcd
+    (greatest common divisor) of its arguments.
+    """
+
     symbol = '\\gcd'
     pure = 'gcd'
 
@@ -321,6 +377,10 @@ class GCD(PrefixOperation):
     cd_name = 'gcd'
 
 class Addition(InfixOperation):
+    """
+    The symbol representing an binary commutative function plus.
+    """
+
     symbol = '+'
     show_parenthesis = False
     pure = 'add'
@@ -356,6 +416,10 @@ class Addition(InfixOperation):
            return self.po(*pterms)
 
 class Product(InfixOperation):
+    """
+    The symbol representing an binary multiplication function.
+    """
+
     symbol = '·'
     show_parenthesis = False
     pure = 'mul'
@@ -389,6 +453,11 @@ class Product(InfixOperation):
            return self.po(*pterms)
 
 class NRoot(Operation):
+    """
+    A binary operator which represents its first argument
+    "lowered" to its n'th root where n is the second argument.
+    """
+
     html = load_haml_template('root.tpl')
     cd = 'arith1'
     cd_name = 'nroot'
@@ -413,6 +482,13 @@ class NRoot(Operation):
         return self.html.render(c)
 
 class Power(Operation):
+    """
+    This symbol represents a power function. The first argument is
+    raised to the power of the second argument. When the second
+    argument is not an integer, powering is defined in terms of
+    exponentials and logarithms for the complex and real numbers.
+    """
+
     html = load_haml_template('power.tpl')
     pure = 'powr'
 
@@ -448,6 +524,13 @@ class Power(Operation):
         return self.html.render(c)
 
 class Rational(Term):
+    """
+    This symbol represents the constructor function for rational
+    numbers. It takes two arguments, the first is an integer p to
+    denote the numerator and the second a nonzero integer q to
+    denote the denominator of the rational p/q.
+    """
+
     html = load_haml_template('rational.tpl')
     pure = 'rational'
 
@@ -473,9 +556,21 @@ class Rational(Term):
 
 
 class Interval(InfixOperation):
+    """
+    A symbol to denote a continuous 1-dimensional interval
+    without any information about the character of the end points
+    (used in definite integration). The arguments are the start
+    and the end points of the interval in that order.
+    """
+
     html = load_haml_template('power.tpl')
 
 class Minus(InfixOperation):
+    """
+    The symbol representing a binary minus function. This is
+    equivalent to adding the additive inverse.
+    """
+
     symbol = '\\cdot'
     show_parenthesis = False
     pure = 'sub'
@@ -484,7 +579,10 @@ class Minus(InfixOperation):
     cd_name = 'minus'
 
 class Negate(PrefixOperation):
-    ''' Unary negation'''
+    """
+    The symbol representing a unary negate function.
+    """
+
     symbol = '-'
     show_parenthesis = False
     css_class = 'negate'
@@ -531,6 +629,12 @@ class Sqrt(NRoot):
         return self.html.render(c)
 
 class Abs(OutfixOperation):
+    """
+    A unary operator which represents the absolute value of its
+    argument. The argument should be numerically valued. In the
+    complex case this is often referred to as the modulus.
+    """
+
     symbol1 = '|'
     symbol2 = '|'
 
@@ -554,6 +658,12 @@ class DiracDelta(PrefixOperation):
 #-------------------------------------------------------------
 
 class Tuple(Term):
+    """
+    The n-ary tupling constructor when n>2. The arguments are the
+    element of the tuple. Tuple objects can also be constructed
+    by successive nesting of Pair.
+    """
+
     show_parenthesis = True
     html = load_haml_template('tuple.tpl')
     symbol = ','
@@ -578,6 +688,12 @@ class Tuple(Term):
         return self.html.render(c)
 
 class Set(Term):
+    """
+    This symbol represents the set construct. It is an n-ary
+    function. The set entries are given explicitly. There is no
+    implied ordering to the elements of a set.
+    """
+
     show_parenthesis = True
     html = load_haml_template('set.tpl')
     symbol = ','
@@ -602,6 +718,11 @@ class Set(Term):
         return self.html.render(c)
 
 class Integral(Term):
+    """
+    This symbol is used to represent indefinite integration of
+    unary functions. The argument is the unary function.
+    """
+
     show_parenthesis = True
     html = load_haml_template('integral.tpl')
     pure = 'integrate'
@@ -627,6 +748,13 @@ class Integral(Term):
 
 
 class CartesianProduct(InfixOperation):
+    """
+    This symbol represents an n-ary construction function for
+    constructing the Cartesian product of multisets. It takes n
+    multiset arguments in order to construct their Cartesian
+    product.
+    """
+
     symbol = '×'
     pure = 'carts'
 
@@ -634,10 +762,20 @@ class CartesianProduct(InfixOperation):
     cd_name = 'cartesian_product'
 
 class EmptySet(Term):
+    """
+    This symbol is used to represent the empty set, that is the set which contains no members. It takes no parameters.
+    """
+
     symbol = '∅'
     latex = '\\emptyset'
 
 class Intersect(InfixOperation):
+    """
+    This symbol is used to denote the n-ary intersection of sets.
+    It takes sets as arguments, and denotes the set that contains
+    all the elements that occur in all of them.
+    """
+
     symbol = '\\cup'
     pure = 'intersect'
 
@@ -645,6 +783,12 @@ class Intersect(InfixOperation):
     cd_name = 'intersect'
 
 class Union(InfixOperation):
+    """
+    This symbol is used to denote the n-ary union of sets. It takes
+    sets as arguments, and denotes the set that contains all the
+    elements that occur in any of them.
+    """
+
     symbol = '\\cap'
     pure = 'union'
 
@@ -656,9 +800,15 @@ class Union(InfixOperation):
 #-------------------------------------------------------------
 
 class Exp(PrefixOperation):
+    """
+    This symbol represents the exponentiation function.
+    """
     symbol = 'exp'
 
 class Ln(PrefixOperation):
+    """
+    This symbol represents the ln function (natural logarithm).
+    """
     symbol = 'ln'
     pure = 'ln'
 
