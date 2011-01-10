@@ -1,7 +1,7 @@
 from django import template
 from wise.worksheet.utils import load_haml_template
 from wise.packages.loader import load_package_module
-Term = load_package_module('base','term').Term
+base_objects = load_package_module('base','objects')
 
 def initialize():
     super_classes = [Integral]
@@ -9,7 +9,7 @@ def initialize():
 
     return super_classes, nullary_types
 
-class Integral(Term):
+class Integral(base_objects.Term):
     """
     This symbol is used to represent indefinite integration of
     unary functions. The first argument is the unary function the
@@ -38,4 +38,3 @@ class Integral(Term):
             })
 
         return self.html.render(c)
-

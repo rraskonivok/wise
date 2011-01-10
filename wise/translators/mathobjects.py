@@ -25,17 +25,46 @@ from wise.utils.patterns import TranslationTable, Aggregator
 from wise.utils.module_loading import module_has_submodule
 
 
-def all_subclasses(cls, accumulator=set(),
+def all_subclasses(cls, accumulator=None,
                         depth=1,
                         max_inheritance_depth=30):
+
+    if not accumulator:
+        accumulator = set([])
 
     accumulator.update(cls.__subclasses__())
 
     if depth < max_inheritance_depth:
         for scls in cls.__subclasses__():
-            all_subclasses(scls, accumulator, depth=depth+1)
+            all_subclasses(scls, accumulator=accumulator, depth=depth+1)
 
     return accumulator
+
+def collect_objects(package, recursive=False):
+    """
+    Run through `$PACKAGE.objects` and collect all objects which
+    are subclasses of the superclasses provided in the
+    `$PACKAGE.objects.initialize` function.
+    """
+    pack_objects = load_package_module(package,'objects')
+    super_clss, nullary_types = pack_objects.initialize()
+
+    classes = {}
+    inherited = {}
+
+    for clsname, cls in pack_objects.__dict__.iteritems():
+        if type(cls) is TypeType and issubclass(cls,tuple(super_clss)):
+            classes[cls.__name__] = cls
+
+    if recursive:
+        for cls in classes.itervalues():
+            for scls in all_subclasses(cls):
+                inherited[scls.__name__] =  scls
+
+    if recursive:
+        return classes, inherited
+    else:
+        return classes
 
 #-------------------------------------------------------------
 # Python Math Translation
@@ -77,59 +106,37 @@ class PureTranslationTable(TranslationTable):
 # Rule Translation
 #---------------------------
 
-
+#TODO: remove this
 def translate_pure(key):
     try:
         return pure_trans[key]
     except KeyError:
         raise exception.NoWrapper(key)
 
-def build_translation(python=True, pure=True, force=False):
+def build_python_lookup(force=False):
+    if python_trans.loaded and not force:
+        return
+
     for name in settings.INSTALLED_MATH_PACKAGES:
         pack_module = load_package(name)
         package = wise.meta_inspector.PACKAGES[name]
 
         if module_has_submodule(pack_module, 'objects'):
-            print 'Importing objects from ... ' + name
+            print 'Building Python translation table from ... ' + name
 
-            path = name + '.objects'
-            pack_objects = import_module('packages.' + path, settings.ROOT_MODULE)
-
+            pack_objects = load_package_module(name,'objects')
             super_clss, nullary_types = pack_objects.initialize()
-            pure_trans.populate(nullary_types)
 
-            # Use sets, so we can do interesections to check for
-            # namespace collisions later
-            _provided_symbols = set()
-            _pure_trans = {}
-
-            first_order_symbols = {}
-            all_symbols = {}
-            for clsname, cls in pack_objects.__dict__.iteritems():
-                # Get the symbols explicitly defined in
-                # $PACKAGE/objects.py
-                if type(cls) is TypeType and issubclass(cls,tuple(super_clss)):
-                    first_order_symbols[clsname] = cls
-
-                    for scls in all_subclasses(cls):
-                        all_symbols[scls.__name__] =  scls
-
-                        if hasattr(scls,'pure'):
-                            _pure_trans[scls.pure] = scls
-
-                    if hasattr(cls,'pure'):
-                        _pure_trans[cls.pure] = cls
-
+            first_order_symbols, all_symbols = collect_objects(name, recursive=True)
             python_trans.populate(first_order_symbols)
             python_trans.populate(all_symbols)
-            pure_trans.populate(_pure_trans)
 
+            # Give the package a list of strings containing the
+            # classnames of the provided symbols and update the
+            # persistence in memory value and sync to the disk
             if not package.provided_symbols:
                 wise.meta_inspector.PACKAGES.make_writable()
 
-                # Give the package a list of strings containing the
-                # classnames of the provided symbols and update the
-                # persistence in memory value and sync to the disk
                 for sym in first_order_symbols.iterkeys():
                     package.provides(sym)
 
@@ -139,14 +146,35 @@ def build_translation(python=True, pure=True, force=False):
                 if settings.DEBUG:
                     print 'Not rebuilding symbol table for:', name
 
-def build_python_lookup(force=False):
-    if not python_trans.loaded or force:
-        build_translation()
     return python_trans
 
+
 def build_pure_lookup(force=False):
-    if not pure_trans.loaded or force:
-        build_translation()
+    if pure_trans.loaded and not force:
+        return
+
+    for name in settings.INSTALLED_MATH_PACKAGES:
+        pack_module = load_package(name)
+        package = wise.meta_inspector.PACKAGES[name]
+
+        if module_has_submodule(pack_module, 'objects'):
+            print 'Building Pure translation table from ... ' + name
+
+            pack_objects = load_package_module(name,'objects')
+            super_clss, nullary_types = pack_objects.initialize()
+
+            # Populate the Pure translation table with nullary
+            # objects
+            pure_trans.populate(nullary_types)
+
+    _pure_trans = {}
+    for cls in python_trans.table.values():
+        print cls
+        if hasattr(cls,'pure'):
+            _pure_trans[cls.pure] = cls
+
+    pure_trans.populate(_pure_trans)
+
     return pure_trans
 
 def build_rule_lookup(force=False):
