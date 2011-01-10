@@ -1,3 +1,13 @@
+/*
+ Wise
+ Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as
+ published by the Free Software Foundation, either version 3 of the
+ License, or (at your option) any later version.
+*/
+
 function palette(num) {
     if(num == 1) {
         $('#math_palette').show();
@@ -29,3 +39,23 @@ function base_mode() {
     Wise.Selection.clear();
     Wise.CmdLine.hide();
 }
+
+//TODO: This still doesn't work
+//$(window).scroll(function() {
+//    var $sidebar = $("#worksheet_sidebar");
+//    var offset = $sidebar.offset();
+//    var topPadding = 20;
+//    var $window = $(window);
+//
+//    if ($window.scrollTop() > offset.top) {
+//        $sidebar.css({
+//            top: $window.scrollTop() - offset.top + topPadding,
+//        });
+//    } else {
+//        $sidebar.css({
+//           top: 20,
+//        });
+//    }
+//});
+
+
