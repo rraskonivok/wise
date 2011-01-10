@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title></title>
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/static/css/worksheet_read.css">
+  <script src="/static/mathjax/MathJax.js"></script>
+  <script src="js/jquery.js"></script>
+</head>
+
+<body>
+
+  <div id="container">
+    <header>
+    </header>
+
+    {% for cell in cells %}
+        {{cell|safe}}
+    {% endfor %}
+
+    <footer>
+    </footer>
+  </div>
+
+  <!-- Javascript at the bottom for fast page loading -->
+
+</body>
+</html>

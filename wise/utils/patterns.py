@@ -4,7 +4,10 @@ import atexit
 
 
 class Borg(object):
-    """ Object with shared state across all instances """
+    """
+    Object with shared state across all instances
+    """
+
     _shared_state = {}
 
     def __new__(cls, *a, **k):
@@ -13,7 +16,9 @@ class Borg(object):
         return obj
 
 class TranslationTable(object):
-    """ Two way hash table with shared state across all instances """
+    """
+    Two way hash table with shared state across all instances.
+    """
 
     def populate(self, trans):
         self.loaded = True

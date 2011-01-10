@@ -3,11 +3,6 @@
 ::selection { background: transparent; }
 ::-moz-selection { background: transparent; }
 
-.MathJax_Display {
-    margin-top: 0px !important;
-    margin-bottom: 0px !important;
-}
-
 #worksheet math {
     font-size: 200%;
 }

@@ -70,7 +70,7 @@ urlpatterns = patterns('',
 
          # READ
          (r'^ws/(?P<ws_id>\d+)/$', 'wise.worksheet.views.ws'),
-         (r'^ws/(?P<ws_id>\d+)/readonly$', 'wise.worksheet.views.ws'),
+         (r'^ws/(?P<ws_id>\d+)/read$', 'wise.worksheet.views.ws_read'),
 
          # UPDATE
          url(r'^ws/(?P<pk>\d+)/update/$',

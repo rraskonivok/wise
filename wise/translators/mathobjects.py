@@ -169,7 +169,6 @@ def build_pure_lookup(force=False):
 
     _pure_trans = {}
     for cls in python_trans.table.values():
-        print cls
         if hasattr(cls,'pure'):
             _pure_trans[cls.pure] = cls
 

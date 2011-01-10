@@ -117,6 +117,54 @@ def ecosystem(request):
 # Worksheet
 #---------------------------
 
+@login_required
+def ws_read(request, ws_id):
+    ws = get_object_or_404(models.Workspace, pk=ws_id)
+
+    if ( ws.owner.id != request.user.id ) and not ws.public:
+        return HttpResponseForbidden()
+
+    cells = models.Cell.objects.filter(workspace=ws_id)
+
+    if not cells:
+        cells = []
+
+    # HTML elements to inject into the #workspace div
+    html_cells = []
+
+    # Populate the Cell
+    for index,cell in enumerate(cells):
+        # Load toplevel expressions
+        eqs = models.Expression.objects.filter(cell=cell).order_by('index')
+        top_exprs = []
+
+        #asms = Assumption.objects.filter(cell=cell).order_by('index')
+        #top_asms = []
+
+        for eq in eqs:
+            # Build up the object from the sexp in the database
+            etree = parse_sexp(eq.sexp)
+            etree.annotation = eq.annotation
+            top_exprs.append(etree)
+
+        # Initialize the new Cell instance
+        ncell = basecell.Cell(top_exprs, [],
+           index = index,
+           cid = 'cell'+str(index),
+           id = cell.id
+        )
+
+        html_cells.append(html(ncell))
+
+    response = render_to_response('worksheet_read.html', {
+        'title': ws.name,
+        'cells': html_cells,
+        },
+        context_instance = RequestContext(request),
+    )
+
+    return response
+
 #TODO: change the name of this to something more illuminating
 # i.e. WorksheetView
 @login_required
