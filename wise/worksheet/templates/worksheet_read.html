@@ -6,9 +6,14 @@
   <meta name="description" content="">
   <meta name="author" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script type="text/javascript" src="/static/mathjax/MathJax.js">
+      MathJax.Hub.Config({
+          extensions: ["mml2jax.js"],
+          jax: ["input/MathML", "output/HTML-CSS"],
+      });
+  </script>
   <link rel="stylesheet" href="/static/css/worksheet_read.css">
-  <script src="/static/mathjax/MathJax.js"></script>
-  <script src="js/jquery.js"></script>
+
 </head>
 
 <body>
@@ -25,6 +30,42 @@
     </footer>
   </div>
 
+When <math><mi>a</mi><mo>&#x2260;</mo><mn>0</mn></math>,
+there are two solutions to <math> 
+  <mi>a</mi><msup><mi>x</mi><mn>2</mn></msup> 
+  <mo>+</mo> <mi>b</mi><mi>x</mi> 
+  <mo>+</mo> <mi>c</mi> <mo>=</mo> <mn>0</mn> 
+</math> and they are
+<math mode="display"> 
+  <mi>x</mi> <mo>=</mo> 
+  <mrow> 
+    <mfrac> 
+      <mrow> 
+        <mo>&#x2212;</mo> 
+        <mi>b</mi> 
+        <mo>&#x00B1;</mo> 
+        <msqrt> 
+          <msup><mi>b</mi><mn>2</mn></msup> 
+          <mo>&#x2212;</mo> 
+          <mn>4</mn><mi>a</mi><mi>c</mi> 
+        </msqrt> 
+      </mrow> 
+      <mrow> <mn>2</mn><mi>a</mi> </mrow> 
+    </mfrac> 
+  </mrow> 
+  <mtext>.</mtext> 
+</math> 
+
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+    <mi id="c1">2</mi>
+    <mo>&#xB7;</mo>
+    <mi id="c2">x</mi>
+  <mo>=</mo>
+    <mi id="c3">3</mi>
+    <mo>&#xB7;</mo>
+    <mi id="c4">x</mi>
+</math>
+ 
   <!-- Javascript at the bottom for fast page loading -->
 
 </body>

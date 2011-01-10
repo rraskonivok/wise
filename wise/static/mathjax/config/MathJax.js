@@ -76,7 +76,7 @@ MathJax.Hub.Config({
   //  inefficient to include jax that may not actually be used on the page.  These
   //  are found in the MathJax/jax directory.
   //  
-  jax: ["input/TeX","output/HTML-CSS"],
+  jax: ["input/MathML","output/HTML-CSS"],
   
   //
   //  A comma-separated list of extensions to load at startup.  The default
@@ -84,7 +84,7 @@ MathJax.Hub.Config({
   //  
   //  Example:    extensions: ["tex2jax.js","TeX/AMSmath.js","TeX/AMSsymbols.js"],
   //
-  extensions: ["tex2jax.js"],
+  extensions: ["mml2jax.js"],
   
   //
   //  Patterns to remove from before and after math script tags.  If you are not

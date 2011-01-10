@@ -132,6 +132,7 @@ def ws_read(request, ws_id):
     # HTML elements to inject into the #workspace div
     html_cells = []
 
+    uid = uidgen()
     # Populate the Cell
     for index,cell in enumerate(cells):
         # Load toplevel expressions
@@ -145,6 +146,7 @@ def ws_read(request, ws_id):
             # Build up the object from the sexp in the database
             etree = parse_sexp(eq.sexp)
             etree.annotation = eq.annotation
+            etree.uid_walk(uid)
             top_exprs.append(etree)
 
         # Initialize the new Cell instance
