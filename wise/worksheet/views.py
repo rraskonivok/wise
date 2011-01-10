@@ -94,7 +94,6 @@ def new_worksheet_prototype(attrs):
 
 @login_required
 def ecosystem(request):
-
     # Wrap up the packages into 'pack' objects so aren't passing
     # pointers to our disk persistence to the template
     context = RequestContext(request)

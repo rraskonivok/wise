@@ -21,13 +21,8 @@ class Package(object):
     depends = []
     files = []
 
-    provided_rules = []
-    provided_transforms = []
-    provided_panels = []
-    translation_table = []
-
     def __init__(self, **kwargs):
-        self.provided_symbols = {}
+        self.provided_symbols = []
         self.__dict__.update(kwargs)
 
     def provides(self, symbol):

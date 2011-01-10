@@ -8,7 +8,7 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
-from types import ClassType
+from types import ClassType, TypeType
 
 from django.conf import settings
 from django.utils.importlib import import_module
@@ -17,6 +17,7 @@ import wise.meta_inspector
 import wise.worksheet.exceptions as exception
 
 from wise.worksheet.utils import *
+from wise.packages.loader import load_package_module, load_package
 from wise.translators.pure_wrap import PureInterface, PublicRule
 from wise.translators import pureobjects
 from wise.utils.bidict import bidict
@@ -85,7 +86,8 @@ def translate_pure(key):
 
 def build_translation(python=True, pure=True, force=False):
     for name in settings.INSTALLED_MATH_PACKAGES:
-        pack_module = import_module('packages.' + name)
+        pack_module = load_package(name)
+        package = wise.meta_inspector.PACKAGES[name]
 
         if module_has_submodule(pack_module, 'objects'):
             print 'Importing objects from ... ' + name
@@ -98,31 +100,30 @@ def build_translation(python=True, pure=True, force=False):
 
             # Use sets, so we can do interesections to check for
             # namespace collisions later
-            provided_symbols = set(super_clss)
+            _provided_symbols = set()
             _pure_trans = {}
 
-            # Grab all the sbuclasses for the top superclasses
-            # and join to the objects store
-            for cls in super_clss:
-                provided_symbols.update(all_subclasses(cls))
-
             symbol_dict = {}
-            for cls in provided_symbols:
-                symbol_dict[cls.__name__] = cls
+            for clsname, cls in pack_objects.__dict__.iteritems():
+                if type(cls) is TypeType and issubclass(cls,tuple(super_clss)):
+                    symbol_dict[clsname] = cls
 
-                if cls.pure:
-                    _pure_trans[cls.pure] = cls
+                    if hasattr(cls,'pure'):
+                        _pure_trans[cls.pure] = cls
 
             python_trans.populate(symbol_dict)
             pure_trans.populate(_pure_trans)
 
-            package = wise.meta_inspector.PACKAGES[name]
             if not package.provided_symbols:
                 wise.meta_inspector.PACKAGES.make_writable()
 
                 # Give the package a list of strings containing the
                 # classnames of the provided symbols and update the
                 # persistence in memory value and sync to the disk
+                for sym in symbol_dict.iterkeys():
+                    print name, sym
+                    package.provides(sym)
+
                 package.provided_symbols = [sym for sym in symbol_dict.iterkeys()]
                 wise.meta_inspector.PACKAGES[name] = package
                 wise.meta_inspector.PACKAGES.sync()

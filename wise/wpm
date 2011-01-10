@@ -81,8 +81,28 @@ def main():
     (options, args) = parser.parse_args()
 
     if options.rebuild:
+        cache_files = [
+            'cache/panels_cache',
+            'cache/rulesets_cache',
+            'cache/rules_cache',
+            'cache/transforms_cache',
+        ]
+
+        for f in cache_files:
+            try:
+                os.remove(f)
+            except OSError:
+                pass
+
+        meta_inspector.PACKAGES.make_writable()
+
+        for key in meta_inspector.PACKAGES.iterkeys():
+            del meta_inspector.PACKAGES.persistance[key]
         packages_in_dir = meta_inspector.lspackages()
         meta_inspector.rebuild_modules(packages_in_dir)
+
+        meta_inspector.PACKAGES.sync()
+
 
     #---------------------------
     # Query Actions
@@ -133,6 +153,8 @@ def main():
         meta_inspector.PACKAGES.make_writable()
         meta_inspector.PACKAGES[name] = meta_inspector.Package(name=name)
         meta_inspector.PACKAGES.sync()
+
+
         print 'Created package', name, 'in folder', newpath
 
 if __name__ == "__main__":

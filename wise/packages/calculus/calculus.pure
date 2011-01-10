@@ -1,43 +1,43 @@
 diffp (diff f x) = 1;
 diffp _ = 0;
 
-diff_normal X = reduce X
-with
-    diff x = 1;
-    diff (c::int) x = 0;
-    diff (c::int *u) x = c * (diff u x);
+/*diff_normal X = reduce X*/
+/*with*/
+    /*diff x = 1;*/
+    /*diff (c::int) x = 0;*/
+    /*diff (c::int *u) x = c * (diff u x);*/
 
-    // Power Rule
-    diff (x^(n::int)) x = n * (x^(n-1)) if n > 0;
-    diff (x^0) x = 0;
-    diff (x^x) x = x^x * (1+ ln x);
+    /*// Power Rule*/
+    /*diff (x^(n::int)) x = n * (x^(n-1)) if n > 0;*/
+    /*diff (x^0) x = 0;*/
+    /*diff (x^x) x = x^x * (1+ ln x);*/
 
-    // Generalized Power Rule
-    diff (f^g) x = f^g *( (diff g x) * (ln f) + (g/f) * (diff f x) );
+    /*// Generalized Power Rule*/
+    /*diff (f^g) x = f^g *( (diff g x) * (ln f) + (g/f) * (diff f x) );*/
 
-    // Trigonometric functions
-    diff (Sin x) x = Cos x;
-    diff (Cos x) x = (-1)*Sin x;
+    /*// Trigonometric functions*/
+    /*diff (Sin x) x = Cos x;*/
+    /*diff (Cos x) x = (-1)*Sin x;*/
 
-    // Exponentials
-    diff (Exp x) x = Exp x;
+    /*// Exponentials*/
+    /*diff (Exp x) x = Exp x;*/
 
-    // Logarithms
-    diff (Ln x) x = 1/x if x ~= 0;
-    diff (Ln (func@_ u)) x = (diff (func u) x)/(func x);
+    /*// Logarithms*/
+    /*diff (Ln x) x = 1/x if x ~= 0;*/
+    /*diff (Ln (func@_ u)) x = (diff (func u) x)/(func x);*/
 
-    // Linearity
-    diff (u+v) x = (diff u x) + (diff v x);
+    /*// Linearity*/
+    /*diff (u+v) x = (diff u x) + (diff v x);*/
 
-    // Product Rule
-    diff (u*v) x = (diff u x) * v + u * (diff v x);
+    /*// Product Rule*/
+    /*diff (u*v) x = (diff u x) * v + u * (diff v x);*/
 
-    // Quotient rule
-    diff (u/v) x = (((diff u x)*v) - (u*(diff v x)))/(v^2);
+    /*// Quotient rule*/
+    /*diff (u/v) x = (((diff u x)*v) - (u*(diff v x)))/(v^2);*/
 
-    // Chain rule
-    diff (func@_ u) x = (diff (func u) u) * (diff u x) if ~(diffp (func u));
-end;
+    /*// Chain rule*/
+    /*diff (func@_ u) x = (diff (func u) u) * (diff u x) if ~(diffp (func u));*/
+/*end;*/
 
 ndiff f x n = foldl diff f (repeatn n x);
 

@@ -1,3 +1,3 @@
-from wise.worksheet.rules import PublicRule
+from wise.translators.pure_wrap import PublicRule
 
 panel = {}
