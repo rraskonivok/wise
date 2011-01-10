@@ -1,11 +1,12 @@
 import objects
-from wise.worksheet.panel import TabularPanel, ArrayPanel, ButtonPanel
+from wise.worksheet.panel import MathMLPanel
 
-calculusobjs = [
-        ('\\frac{d}{dx}',objects.Diff),
-        ('\\int', objects.Integral),
-        ('\\nabla', objects.Del)
-        ]
+#--------------------
+# Integral Operations
+#--------------------
 
-Calculus = ButtonPanel(name='Calculus',
-                      objects=calculusobjs)
+calc = (
+        ('buttons/integral.xml',  objects.Integral),
+)
+
+Calculus = MathMLPanel(name="Calculus", objects=calc)

@@ -9,28 +9,9 @@
 */
 
 
-
 _.templateSettings = {
   interpolate: /\{\{(.+?)\}\}/g
 };
-
-//TODO: This still doesn't work
-//$(window).scroll(function() {
-//    var $sidebar = $("#worksheet_sidebar");
-//    var offset = $sidebar.offset();
-//    var topPadding = 20;
-//    var $window = $(window);
-//
-//    if ($window.scrollTop() > offset.top) {
-//        $sidebar.css({
-//            top: $window.scrollTop() - offset.top + topPadding,
-//        });
-//    } else {
-//        $sidebar.css({
-//           top: 20,
-//        });
-//    }
-//});
 
 var button_template = _.template("<button>{{label}}</button>");
 

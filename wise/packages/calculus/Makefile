@@ -15,8 +15,8 @@ html: doc
 	rst2html.py $(PACKAGENAME).markdown > $(PACKAGENAME).html
 
 latex: doc
-	rst2latex.py $(PACKAGENAME).markdown > $(PACKAGENAME).tex 
+	rst2latex.py $(PACKAGENAME).markdown > $(PACKAGENAME).tex
 	pdflatex $(PACKAGENAME).tex
 
-clean: 
+clean:
 	-rm -f *.o *.pyc *.pyo *.html *.markdown *.out *.aux *.log *.pdf tags

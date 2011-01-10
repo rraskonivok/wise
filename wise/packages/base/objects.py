@@ -717,35 +717,6 @@ class Set(Term):
 
         return self.html.render(c)
 
-class Integral(Term):
-    """
-    This symbol is used to represent indefinite integration of
-    unary functions. The argument is the unary function.
-    """
-
-    show_parenthesis = True
-    html = load_haml_template('integral.tpl')
-    pure = 'integrate'
-
-    def __init__(self, f, dx):
-        self.integrand = f
-        self.variable = dx
-        self.terms = [f, dx]
-
-    def _pure_(self):
-        return self.po(self.integrand._pure_(),self.variable._pure_())
-
-    def get_html(self):
-        objects = [o.get_html() for o in self.terms]
-
-        c = template.Context({
-            'id': self.id,
-            'integrand': self.integrand.get_html(),
-            'variable': self.variable.get_html(),
-            })
-
-        return self.html.render(c)
-
 
 class CartesianProduct(InfixOperation):
     """

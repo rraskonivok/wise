@@ -213,14 +213,20 @@ def palette(request):
     return response
 
 def generate_palette():
-    render_panels = []
+    # Sort panels alphabetically
     panels = sorted(panel.panels.iteritems(), key=itemgetter(0))
+
+    render_panels = []
 
     for name, pnl in panels:
         pnl.html = pnl.get_html()
         render_panels.append(pnl)
 
-    return render_haml_to_response('palette_template.tpl',{'panels': render_panels})
+    return render_haml_to_response('palette_template.tpl',
+        {
+            'panels': render_panels
+        }
+    )
 
 #---------------------------
 # Development Tools
