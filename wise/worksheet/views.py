@@ -11,7 +11,7 @@
 import panel
 import wise.boot
 import wise.meta_inspector
-from django.utils.decorators import method_decorator
+
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseForbidden
@@ -244,8 +244,10 @@ def translate(request):
 
 @login_required
 def dict(request, data='pure'):
-    ''' Dump the translation dictionary to a JSON object, for
-    debugging purposes '''
+    """
+    Dump the translation dictionary to a JSON object, for
+    debugging purposes
+    """
 
     from pprint import pformat
 

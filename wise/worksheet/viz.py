@@ -1,14 +1,20 @@
-# General function to recursively consume the math hierarchy and
-# output some form of structured data (UML , dotviz, ...)
+# -*- coding: utf-8 -*-
+
+# Wise
+# Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
 
 import settings
-from wise.utils.module_loading import module_has_submodule
 from wise.packages.loader import load_package_module
 
 try:
     from pygraphviz import AGraph
     GRAPHVIZ = True
-except:
+except ImportError:
     GRAPHVIZ = False
 
 def all_subclasses(cls, accumulator=set(),

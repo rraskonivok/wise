@@ -221,7 +221,10 @@ class Branch(object):
         return lst
 
 def map_nullary(parsed):
-    """ Recursively convert nullary functions to prefix form"""
+    """
+    Recursively convert nullary and primative functions to prefix
+    sexp form.
+    """
     if isinstance(parsed,tuple):
         head = parsed[0]
         args = parsed[1]
@@ -229,6 +232,8 @@ def map_nullary(parsed):
         return Branch(head, [map_nullary(arg) for arg in args])
     else:
         atom = parsed
+
+        #TODO: generalize this into primatives/nullary
         if is_number(atom):
             return Branch('num',[atom])
         elif atom == 'ph':
@@ -237,7 +242,9 @@ def map_nullary(parsed):
             return Branch('var',[atom])
 
 def make_sexp(parsed):
-    """ Convert ParseTree into Branch objects"""
+    """
+    Convert ParseTree into Branch objects
+    """
     if isinstance(parsed,tuple):
         head = parsed[0]
         args = parsed[1]
@@ -247,8 +254,9 @@ def make_sexp(parsed):
         return parsed
 
 def ParseTree(s, parser):
-    """ Recursively maps the output of the sexp parser to
-    expression tree Branch objects.
+    """
+    Recursively maps the output of the sexp parser to
+    parse tree Branch objects.
     """
 
     # the parser generates nested tuples, in the simplest case it

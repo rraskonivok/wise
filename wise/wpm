@@ -98,7 +98,7 @@ def main():
 
         # Output of query
         if options.shell:
-            line = ['%s/%s.pure' % (lib[0],lib[0]) for lib in query]
+            line = ['packages/%s/%s.pure' % (lib[0],lib[0]) for lib in query]
             line += ['pure/prelude.pure']
             sys.stdout.write('pure -i -q ' + ' '.join(line) + "\n")
 
@@ -118,14 +118,22 @@ def main():
     # Create Actions
     #---------------------------
     if options.create:
-        if os.path.exists(options.create):
-            print 'Cannot overwrite existing folder'
-            sys.exit(0)
-
         name = options.create
 
-        shutil.copytree('pkgtemplate', name)
+        newpath = os.path.join(settings.PACKAGE_DIR, name)
+        if os.path.exists(newpath):
+            print 'Cannot overwrite existing folder:', newpath
+            sys.exit(0)
+
+        templatedir = os.path.join(settings.PACKAGE_DIR, 'pkgtemplate')
+        shutil.copytree(templatedir, newpath)
+
+        #touch $NAME.pure
+        open(os.path.join(newpath,name+'.pure'), 'w').close()
+        meta_inspector.PACKAGES.make_writable()
         meta_inspector.PACKAGES[name] = meta_inspector.Package(name=name)
+        meta_inspector.PACKAGES.sync()
+        print 'Created package', name, 'in folder', newpath
 
 if __name__ == "__main__":
    main()
