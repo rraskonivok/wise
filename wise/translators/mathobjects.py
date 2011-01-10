@@ -103,15 +103,25 @@ def build_translation(python=True, pure=True, force=False):
             _provided_symbols = set()
             _pure_trans = {}
 
-            symbol_dict = {}
+            first_order_symbols = {}
+            all_symbols = {}
             for clsname, cls in pack_objects.__dict__.iteritems():
+                # Get the symbols explicitly defined in
+                # $PACKAGE/objects.py
                 if type(cls) is TypeType and issubclass(cls,tuple(super_clss)):
-                    symbol_dict[clsname] = cls
+                    first_order_symbols[clsname] = cls
+
+                    for scls in all_subclasses(cls):
+                        all_symbols[scls.__name__] =  scls
+
+                        if hasattr(scls,'pure'):
+                            _pure_trans[scls.pure] = scls
 
                     if hasattr(cls,'pure'):
                         _pure_trans[cls.pure] = cls
 
-            python_trans.populate(symbol_dict)
+            python_trans.populate(first_order_symbols)
+            python_trans.populate(all_symbols)
             pure_trans.populate(_pure_trans)
 
             if not package.provided_symbols:
@@ -120,11 +130,9 @@ def build_translation(python=True, pure=True, force=False):
                 # Give the package a list of strings containing the
                 # classnames of the provided symbols and update the
                 # persistence in memory value and sync to the disk
-                for sym in symbol_dict.iterkeys():
-                    print name, sym
+                for sym in first_order_symbols.iterkeys():
                     package.provides(sym)
 
-                package.provided_symbols = [sym for sym in symbol_dict.iterkeys()]
                 wise.meta_inspector.PACKAGES[name] = package
                 wise.meta_inspector.PACKAGES.sync()
             else:
