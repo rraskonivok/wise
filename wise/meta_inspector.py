@@ -8,7 +8,7 @@ import ConfigParser
 
 PACKAGES = Aggregator(file='cache/packages_cache')
 blacklist = set(['pkgtemplate'])
-required_files = ['desc', 'files', 'depends']
+required_files = ['metadata','objects.py']
 PACKAGE_DIR = settings.PACKAGE_DIR
 
 class Package(object):
@@ -51,17 +51,13 @@ def rebuild_modules(packages):
         kwargs['name'] = package
         try:
             config = ConfigParser.ConfigParser()
-            config.read(os.path.join(pack_path, 'files'))
+            config.read(os.path.join(pack_path, 'metadata'))
+
             files = str2list(config.get('files','pure'))
-            kwargs['files'] = files
-
-            config = ConfigParser.ConfigParser()
-            config.read(os.path.join(pack_path, 'depends'))
             depends = str2list(config.get('depends','depends'))
-            kwargs['depends'] = depends
 
-            config = ConfigParser.ConfigParser()
-            config.read(os.path.join(pack_path, 'desc'))
+            kwargs['files'] = files
+            kwargs['depends'] = depends
 
             # Find all keys in the desc section
             for option in config.items('desc'):
@@ -81,4 +77,3 @@ def rebuild_modules(packages):
 # package cache, if not then build it
 if len(PACKAGES) == 0:
     rebuild_modules(lspackages())
-    print 'Package database is blank. Rebuilding'
