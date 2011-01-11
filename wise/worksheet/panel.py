@@ -1,37 +1,46 @@
 import os
+
 from inspect import getargspec
 from types import TypeType
 
 from django.conf import settings
-from django.template import Template, Context
+from django.template import Context
 
+from wise.worksheet.utils import load_haml_template
 from wise.worksheet.utils import trim_docstring
 from wise.utils.patterns import Aggregator
 from wise.utils.module_loading import module_has_submodule
 from wise.packages import loader
+
 Placeholder = loader.load_package_module('base','objects').Placeholder
-
-
 panels = Aggregator(file='cache/panels_cache')
-def _map_panel_types(obj):
-    if isinstance(obj, TypeType):
 
+def _map_panel_types(obj):
+    # If we have a Class read the argument signature of the
+    # __init__ function and fill in all required arguments with
+    # Placeholders.
+    # Example:
+    #   Addition -> Addition(Placeholder(),Placeholder())
+    if isinstance(obj, TypeType):
         # Get the number of arguments the __init__ function for
         # the mathobject takes and substitute placeholder in for
         # each argument
         args, varargs, keywords, defaults = getargspec(obj.__init__)
+
+        # decrement the len(args) since we ignore the self
+        # argument
         arglength = (len(args) - 1) or 1;
         try:
-            # decrement the len(args) since we ignore the self
-            # argument
             placeholder_tuples = (Placeholder(),)*(arglength)
             return obj(*placeholder_tuples)
         except TypeError:
             print 'Type Error',args, arglength
 
+    # If an instance is passed do nothing and just pass it
+    # along.
+    # Example:
+    #   Variable('x')
     else:
-        # If an instance is passed do nothing and just pass it
-        # along
         return obj
 
 class Panel:
@@ -43,25 +52,8 @@ class Panel:
         c = Context({'name':self.name, 'objects': objects})
         return interface_ui.render(c)
 
-mathml_template = '''
-<table>
-<tr>
-{% for button in buttons %}
-  <td>
-  <span title="{{ button.tooltip|escape }}" class="uniform_button" onclick="subs('{{ button.math }}');">
-  {{ button.mathml|safe }}
-  </span>
-  </td>
-  {% if forloop.counter|divisibleby:"5" %}
-    </tr><tr>
-  {% endif %}
-{% endfor %}
-</tr>
-</table>
-'''
-
 class MathMLPanel(Panel):
-    template = Template(mathml_template)
+    template = load_haml_template('mathml_buttons.tpl')
 
     def __init__(self, name, objects, use_template=False):
         self.name = name
