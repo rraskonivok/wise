@@ -144,7 +144,8 @@ def build_python_lookup(force=False):
                 wise.meta_inspector.PACKAGES.sync()
             else:
                 if settings.DEBUG:
-                    print 'Not rebuilding symbol table for:', name
+                    pass
+                    #print 'Not rebuilding symbol table for:', name
 
     return python_trans
 

@@ -43,3 +43,10 @@ ndiff f x n = foldl diff f (repeatn n x);
 
 diff_both_sides (eq lhs rhs) = eq (diff lhs) (diff rhs);
 diff_both_sides x = error "Must perform on relation.";
+
+integrate (1/Sqrt(1+x^2)) x = Asinh x;
+integrate (1/Sqrt(x^2+1)) x = Asinh x;
+integrate x x = x^2;
+integrate (x^(n::int)) x = x^(n+1)/(n+1) if n ~= -1;
+integrate (x^(-1)) x = ln x;
+integrate (f+g) x = integrate f x + integrate g x;
