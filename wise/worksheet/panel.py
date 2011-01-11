@@ -57,7 +57,7 @@ class MathMLPanel(Panel):
 
     def __init__(self, name, objects, use_template=False):
         self.name = name
-        self.objects = objects
+        elf.objects = objects
         self.use_template = use_template
 
     def get_html(self):

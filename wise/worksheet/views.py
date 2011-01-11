@@ -160,6 +160,7 @@ def ws_read(request, ws_id):
 
     response = render_to_response('worksheet_read.html', {
         'title': ws.name,
+        'author': ws.owner,
         'cells': html_cells,
         },
         context_instance = RequestContext(request),

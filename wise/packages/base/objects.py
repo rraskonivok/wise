@@ -69,6 +69,7 @@ class Variable(Term):
         return self.symbol
 
 class Numeric(Term):
+    html = load_haml_template('numeric.tpl')
     numeric_type = 'float'
 
     def __init__(self, number):
@@ -85,7 +86,7 @@ class Numeric(Term):
             self.numeric_type = 'float'
 
         self.args = number
-        self.latex = number
+        self.symbol = number
 
     def _pure_(self):
         if self.numeric_type is 'float':
@@ -96,7 +97,7 @@ class Numeric(Term):
     def get_html(self):
         c = template.Context({
             'id': self.id,
-            'latex':self.latex,
+            'symbol':self.symbol,
             'type': self.classname,
         })
 
@@ -164,7 +165,7 @@ class ComplexPolar(Complex):
     pure = 'complex_polar'
 
     cd = 'complex1'
-    cd_name = 'complex_cartesian'
+    cd_name = 'complex_polar'
 
     def __init__(self, re, im):
         self.re = re
