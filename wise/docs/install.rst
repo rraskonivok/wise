@@ -17,7 +17,7 @@ Install
 2. You'll need Python 2.6+ (but not Python 3) and the Python
    header files On Ubuntu::
 
-        $ sudo python install python python-dev
+        $ sudo apt-get install python python-dev
 
    and the Python package managmenent tools::
 
@@ -34,19 +34,8 @@ Install
 
         $ ./dist/build_pure.sh
 
-   If you are not on Ubuntu then, it is highly likely that your
-   distribution has a package for LLVM, but if you need to
-   compile from source you can find directions on the pure site::
-
-        http://pure-lang.googlecode.com/hg/pure/INSTALL
-
-   There are packages are source code available for Fedora, Arch,
-   OS X and a few other package managers available here::
-
-        http://code.google.com/p/pure-lang
-
-   If your distribution does not carry Pure then you can find
-   directions for compiling it from source here::
+   If your distribution does not carry Pure and LLVM then you can 
+   find directions for compiling it from source here::
 
         http://pure-lang.googlecode.com/hg/pure/INSTALL
 
