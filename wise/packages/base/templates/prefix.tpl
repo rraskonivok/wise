@@ -6,7 +6,9 @@ mrow#{{id}} title="{{type}}"
     <mo stretchy="true">(</mo>
     {% endif %}
 
-    {{operand}}
+    {% for o in operand %}
+        {{ o }}
+    {% endfor %}
 
     {% if parenthesis %}
     <mo stretchy="true">)</mo>

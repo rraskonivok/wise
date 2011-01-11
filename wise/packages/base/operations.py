@@ -11,7 +11,7 @@ from django import template
 from term import Term
 
 import worksheet.exceptions as exception
-from worksheet.utils import *
+from worksheet.utils import load_haml_template, purify, html
 
 #-------------------------------------------------------------
 # Operations
@@ -19,40 +19,30 @@ from worksheet.utils import *
 
 class Operation(Term):
     """
-    An generic operator acting on an arbitrary number of terms
+    An generic operation acting on n>0 operands.
     """
 
     pure = None
 
-    # Templates are assigned from 'ui_style'
-    #
-    # prefix  ~  base/templates/prefix.tpl
-    # postfix ~  base/templates/postfix.tpl
-    # infix   ~  base/templates/infix.tpl
+    # Templates are assigned from 'ui_style':
+    # * prefix  ~  base/templates/prefix.tpl
+    # * postfix ~  base/templates/postfix.tpl
+    # * infix   ~  base/templates/infix.tpl
 
     ui_style = 'prefix'
-
     symbol = None
     show_parenthesis = False
-
-    #Arity of the operation
     arity = None
 
-    def __init__(self,op,*ops):
-        operands = list(ops) + [op]
+    def __init__(self,*operands):
+        self.terms = list(operands)
+
         if len(operands) > 1:
-            self.terms = list(operands)
             self.operand = self.terms
-        else:
-            # TODO: wtf is this shit?
-            self.operand = operands[0]
-            self.terms = [operands[0]]
+        elif len(operands) == 1:
+            self.operand = self.terms[0]
 
         self.arity = len(self.terms)
-
-    @property
-    def description(self):
-        return self.__doc__
 
     def _pure_(self):
         if self.po:
@@ -73,7 +63,6 @@ class Operation(Term):
                 'operand': objects,
                 'symbol': self.symbol,
                 'parenthesis': self.show_parenthesis,
-                'class': self.css_class or '',
                 })
 
             return self.html.render(c)
@@ -95,18 +84,14 @@ class Operation(Term):
 
         #Prefix Formatting
         elif self.ui_style == 'prefix':
-            #self.html = load_haml_template('prefix.tpl')
-
-            #if not self.css_class:
-            #    self.css_class = 'baseline'
+            objects = [o.get_html() for o in self.terms]
 
             c = template.Context({
                 'id': self.id,
                 'type': self.classname,
-                'operand': self.operand.get_html(),
+                'operand': objects,
                 'symbol': self.symbol,
                 'parenthesis': self.show_parenthesis,
-                'class': self.css_class or '',
                 })
 
         #Postfix Formatting
@@ -119,15 +104,11 @@ class Operation(Term):
                 'operand': self.operand.get_html(),
                 'symbol': self.symbol,
                 'parenthesis': self.show_parenthesis,
-                'class': self.css_class or '',
                 })
 
         #Superscript Formatting
         elif self.ui_style == 'sup':
             self.html = load_haml_template('sup.tpl')
-
-            if not self.css_class:
-                self.css_class = 'middle'
 
             c = template.Context({
                 'id': self.id,
@@ -135,15 +116,11 @@ class Operation(Term):
                 'operand': self.operand.get_html(),
                 'symbol1': self.symbol1.get_html(),
                 'parenthesis': self.show_parenthesis,
-                'class': self.css_class or '',
                 })
 
         #Subscript Formatting
         elif self.ui_style == 'sub':
             self.html = load_haml_template('sub.tpl')
-
-            if not self.css_class:
-                self.css_class = 'middle'
 
             c = template.Context({
                 'id': self.id,
@@ -151,22 +128,6 @@ class Operation(Term):
                 'operand': self.operand.get_html(),
                 'symbol1': self.symbol1,
                 'parenthesis': self.show_parenthesis,
-                'class': self.css_class or '',
-                })
-
-        #Latex Styled Formatting
-        elif self.ui_style == 'latex':
-            self.html = load_haml_template('latex.tpl')
-
-            if hasattr(self.operand,'symbol'):
-                self.operand.latex = "%s{%s}" % (self.symbol1, self.operand.symbol)
-
-            c = template.Context({
-                'id': self.id,
-                'type': self.classname,
-                'operand': self.operand.get_html(),
-                'parenthesis': self.show_parenthesis,
-                'class': self.css_class or '',
                 })
 
         return self.html.render(c)
@@ -179,11 +140,6 @@ class Operation(Term):
             return True
 
 class PrefixOperation(Operation):
-    '''A prefix operator, requires atrributes
-
-    * symbol
-
-    '''
     html = load_haml_template('prefix.tpl')
     ui_style = 'prefix'
     show_parenthesis = True

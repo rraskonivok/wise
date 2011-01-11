@@ -388,20 +388,8 @@ class Addition(InfixOperation):
     cd = 'arith1'
     cd_name = 'plus'
 
-    def __init__(self,fst,snd=None):
-        if snd:
-            terms = [fst, snd]
-        else:
-            terms = [fst]
-
-        self.terms = list(terms)
-
-        #If we have nested Additions collapse them Ex: 
-        #(Addition (Addition x y ) ) = (Addition x y)
-        if len(terms) == 1:
-            if type(terms[0]) is Addition:
-                self.terms = terms[0].terms
-
+    def __init__(self,fst, snd):
+        self.terms = [fst, snd]
         self.operand = self.terms
 
     def _pure_(self):
@@ -427,17 +415,12 @@ class Product(InfixOperation):
     cd = 'arith1'
     cd_name = 'times'
 
-    def __init__(self,fst,snd=None):
-        if snd:
-            terms = [fst, snd]
-        else:
-            terms = [fst]
+    def __init__(self,fst,snd):
+        self.terms = [fst, snd]
 
-        self.terms = list(terms)
-
-        #for term in self.terms:
-        #    if term.terms and len(term.terms) > 1:
-        #        term.show_parenthesis = True
+        for term in self.terms:
+            if term.terms and len(term.terms) > 1:
+                term.show_parenthesis = True
 
         self.operand = self.terms
 

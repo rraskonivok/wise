@@ -15,17 +15,20 @@ Placeholder = loader.load_package_module('base','objects').Placeholder
 panels = Aggregator(file='cache/panels_cache')
 def _map_panel_types(obj):
     if isinstance(obj, TypeType):
+
         # Get the number of arguments the __init__ function for
         # the mathobject takes and substitute placeholder in for
         # each argument
         args, varargs, keywords, defaults = getargspec(obj.__init__)
+        arglength = (len(args) - 1) or 1;
         try:
             # decrement the len(args) since we ignore the self
             # argument
-            placeholder_tuples = (Placeholder(),)*(len(args) - 1)
+            placeholder_tuples = (Placeholder(),)*(arglength)
             return obj(*placeholder_tuples)
         except TypeError:
-            print 'Type Error',args
+            print 'Type Error',args, arglength
+
     else:
         # If an instance is passed do nothing and just pass it
         # along
@@ -80,7 +83,6 @@ class MathMLPanel(Panel):
             for xml, obj in self.objects:
                 # Search in $PACKAGE/buttons/$XML for the MathML
                 # to render on the button
-
                 button = {}
                 panel = os.path.join(settings.PACKAGE_DIR, self.package, xml)
                 button['mathml'] = open(panel).read()
