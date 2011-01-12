@@ -51,7 +51,7 @@ class algebra_normal(PublicRule):
     """Reduce addition, multiplication, and division to the their
     respective normal forms.
     """
-    pure = 'algebra_normal'
+    pure = 'evals'
 
 class commute_elementary(PublicRule):
     """Commute binary addition and multiplication."""

@@ -13,7 +13,8 @@ try:
     import settings
     import meta_inspector
 except:
-    pass
+    print 'Could not load inspector module.'
+    sys.exit(0)
 
 def optional_arg(arg_default):
     def func(option,opt_str,value,parser):
@@ -118,8 +119,8 @@ def main():
 
         # Output of query
         if options.shell:
-            line = ['packages/%s/%s.pure' % (lib[0],lib[0]) for lib in query]
-            line += ['pure/prelude.pure']
+            line = ['pure/prelude.pure']
+            line += ['packages/%s/%s.pure' % (lib[0],lib[0]) for lib in query]
             sys.stdout.write('pure -i -q ' + ' '.join(line) + "\n")
 
         elif options.info:

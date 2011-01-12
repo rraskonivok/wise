@@ -1,5 +1,11 @@
 export PURE_STACK=1024;
 
+/* Evaluation */
+prefix 1000 evalb; // Evaluation to boolean
+prefix 1000 evali; // Evaluation to integer
+prefix 1000 evalf; // Evaluation to float
+prefix 1000 evals; // Evaluation to symbolic value
+
 // For all x: i2p . p2i x = p2i . i2p x
 
 // Hack to overcome the fact that we can't overload the internal
@@ -20,13 +26,21 @@ end;
 
 // Convert Prefix to Infix
 p2i X = reduce X with
-    Num x         = x;
-    Neg x         =  - x;
-    add x y       =  x + y; 
-    mul x y       =  x * y;
-    rational x y  =  x / y;
-    powr x y      =  x ^ y;
+    Num x         =    x   ;
+    Neg x         =  - x   ;
+    add x y       =  x + y ;
+    mul x y       =  x * y ;
+    rational x y  =  x / y ;
+    powr x y      =  x ^ y ;
+
+    // Disregard partial evaluations
+    evalb x |
+    evali x |
+    evalf x |
+    evals x = x;
 end;
+
+def a::int/b::int = (rational a b);
 
 // The prototype operator is used to initialize rules dynamially
 infixl 1001 -->;
