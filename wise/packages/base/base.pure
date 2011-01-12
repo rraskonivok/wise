@@ -8,14 +8,13 @@
   License, or (at your option) any later version.
 */
 
-// Order of operations is defined by the fixity of the operators
-// defined in prelude.pure
+// Adapted from:
+//  * https://github.com/dharmatech
+//  * Cohen J S. Computer Algebra and Symbolic Computation.
 
-//using math;
 using ask;
 
 /* Evaluation */
-
 prefix 1000 evalb; // Evaluation to boolean
 prefix 1000 evali; // Evaluation to integer
 prefix 1000 evalf; // Evaluation to float
@@ -35,7 +34,7 @@ def a::int/b::int = (rational a b);
    :Description: Returns 1 if ``x`` > ``y``
    :Python: None (Internal)
    :See Also:
-    ------------ 
+    ------------
 */
 cmp x y = x < y if numberp x && numberp y ;
 cmp x y = 1 if numberp x && ~(numberp y) ;
@@ -648,7 +647,7 @@ pull_numeric_right X = pull_right_prop X numberp;
 division_theorem a b = add (mul b (a div b)) (a mod b);
 
 //TODO: Use longs
-fact n = loop 1 n with
+fact n::int = loop 1 n with
   loop p n = if n>0 then loop (p*n) (n-1) else p;
 end;
 

@@ -2,19 +2,28 @@ from django.conf.urls.defaults import *
 from piston.resource import Resource
 from piston.authentication import HttpBasicAuthentication
 
+from wise.api.auth import DjangoAuthentication
+
 from wise.api.handlers import CellHandeler, ExpressionHandeler, \
 WorkspaceHandeler, AssumptionHandeler
 
 #TODO: add authentication on per user basis
 
-auth = HttpBasicAuthentication(realm='Wise API')
-cells = Resource(handler=CellHandeler, authentication=auth)
-exps = Resource(handler=ExpressionHandeler, authentication=auth)
-asms = Resource(handler=AssumptionHandeler, authentication=auth)
-workspaces = Resource(handler=WorkspaceHandeler, authentication=auth)
+django_auth = DjangoAuthentication(login_url='/accounts/login')
+
+cells = Resource(handler=CellHandeler,
+        authentication=django_auth)
+
+exps = Resource(handler=ExpressionHandeler,
+        authentication=django_auth)
+
+asms = Resource(handler=AssumptionHandeler,
+        authentication=django_auth)
+
+workspaces = Resource(handler=WorkspaceHandeler,
+        authentication=django_auth)
 
 urlpatterns = patterns('',
-
    # Cells
    url(r'^cell/(?P<id>[^/]+)', cells, name='cells'),
    url(r'^cell/', cells),
@@ -31,3 +40,4 @@ urlpatterns = patterns('',
    url(r'^ws/(?P<id>[^/]+)', workspaces, name='workspaces'),
    url(r'^ws/', workspaces),
 )
+
