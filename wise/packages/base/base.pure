@@ -12,8 +12,6 @@
 //  * Cohen J S. Computer Algebra and Symbolic Computation.
 //  * Scheme code at https://github.com/dharmatech
 
-using ask;
-
 // See: Cohen J S.
 cmp x y = x < y if numberp x && numberp y ;
 cmp x y = 1 if numberp x && ~(numberp y) ;
@@ -72,7 +70,7 @@ expand_abs = reduce with
     abs (mul x*y) = abs(x) * abs(y);
 end;
 
-/*  ..
+/*
     Complex Manipulation
     --------------------
 */
@@ -152,7 +150,6 @@ algebra_normal X = simplify_multiplication .
 
    Multiplication of algebraic terms is sorted alphabetically by
    variable as defined by ``cmp`` rule.
-
 */
 
 simplify_multiplication = reduce
@@ -186,7 +183,6 @@ end;
 
    Addition of algebraic terms is sorted alphabetically by
    variable as defined by ``cmp`` rule.
-
 */
 
 simplify_addition X = reduce X
@@ -218,7 +214,6 @@ end;
 
    Powers of numeric quantities is reduced to a
    single numeric quantitiy.
-
 */
 
 simplify_power = reduce
@@ -237,7 +232,6 @@ end;
    :Description: Reduces the given expression with the following rules
    .. math::
         \frac{x}{y} = x y^{-1}\\
-
 */
 
 rational_to_power = reduce with
@@ -255,7 +249,6 @@ end;
    :Description: Reduces the given expression with the following rules
    .. math::
         \frac{x}{y} = x y^{-1}\\
-
 */
 
 simplify_rational = reduce with
@@ -274,7 +267,6 @@ end;
         \frac{a}{b} + \frac{c}{d} = \frac{ad+bc}{bd}\\
         \frac{a}{b} \cdot \frac{c}{d} = \frac{ac}{bd}\\
         \frac{a}{b} \div \frac{c}{d} = \frac{ad}{bc}
-
 */
 
 combine_rational X = reduce X
@@ -292,7 +284,6 @@ end;
    :Description: Seperates rational expressions according to the rules:
    .. math::
         \frac{a+b}{c} = \frac{a}{c} + \frac{b}{c}
-
 */
 
 split_rational X = reduce X
@@ -337,43 +328,43 @@ iter_left (a+(b+c)) x = b + (a+c) if b === x;
 iter_left (a + b) x = a + (iter_left b x);
 iter_left b x = b;
 
-pull_left X a = reduce 
-    (associate_add_left . associate_mul_left $ X) 
+pull_left X a = reduce
+    (associate_add_left . associate_mul_left $ X)
 with
-    (y+x) = (x+y) if x === a && ~( x === y ); 
+    (y+x) = (x+y) if x === a && ~( x === y );
     (y*x) = (x*y) if x === a && ~( x === y );
     (x/y) = x*(1/y) if x === a;
     //(y/x) = (1/x)*y if x === a;
 end if varp a;
 
 pull_left X a = reduce X a with
-    (y+x) = (x+y) if x === a && ~( x === y ); 
+    (y+x) = (x+y) if x === a && ~( x === y );
     (y*x) = (x*y) if x === a && ~( x === y );
     (x/y) = x*(1/y) if x === a;
     //(y/x) = (1/x)*y if x === a;
 end;
 
-pull_right X a = reduce 
-    (associate_add_right . associate_mul_right $ X) 
+pull_right X a = reduce
+    (associate_add_right . associate_mul_right $ X)
 with
-    (y+x) = (x+y) if y === a && ~( x === y ); 
+    (y+x) = (x+y) if y === a && ~( x === y );
     (y*x) = (x*y) if y === a && ~( x === y );
     (x/y) = x*(1/y) if y === a;
     //(y/x) = (1/x)*y if y === a;
 end;
 
-pull_left_prop X prop = reduce 
-    (associate_add_left . associate_mul_left $ X) 
+pull_left_prop X prop = reduce
+    (associate_add_left . associate_mul_left $ X)
 with
-    (y+x) = (x+y) if `(prop x) && ~( x === y ); 
+    (y+x) = (x+y) if `(prop x) && ~( x === y );
     (y*x) = (x*y) if `(prop x) && ~( x === y );
 //    (x/y) = x*(1/y) if `(prop x);
 end;
 
-pull_right_prop X prop = reduce 
-    (associate_add_right . associate_mul_right $ X) 
+pull_right_prop X prop = reduce
+    (associate_add_right . associate_mul_right $ X)
 with
-    (y+x) = (x+y) if `(prop y) && ~( x === y ); 
+    (y+x) = (x+y) if `(prop y) && ~( x === y );
     (y*x) = (x*y) if `(prop y) && ~( x === y );
 //    (x/y) = x*(1/y) if `(prop y);
 end;

@@ -44,9 +44,20 @@ ndiff f x n = foldl diff f (repeatn n x);
 diff_both_sides (eq lhs rhs) = eq (diff lhs) (diff rhs);
 diff_both_sides x = error "Must perform on relation.";
 
-integrate (1/Sqrt(1+x^2)) x = Asinh x;
-integrate (1/Sqrt(x^2+1)) x = Asinh x;
-integrate x x = x^2;
-integrate (x^(n::int)) x = x^(n+1)/(n+1) if n ~= -1;
-integrate (x^(-1)) x = ln x;
-integrate (f+g) x = integrate f x + integrate g x;
+rulep (reduce_with x) = 1;
+rulep _ = 0;
+
+rules (reduce_with x) = x;
+
+simp_integral = reduce with
+    evals integrate (1/Sqrt(1+x^2)) x = Asinh x;
+    evals integrate (1/Sqrt(x^2+1)) x = Asinh x;
+    evals integrate x x = x^2;
+    evals integrate (x^(n::int)) x = x^(n+1)/(n+1) if n ~= -1;
+    evals integrate (x^(-1)) x = ln x;
+    evals integrate (f+g) x = integrate f x + integrate g x;
+end;
+
+simp2_integral = extends simp_integral with
+    evals integrate (x^(n::double)) x = x^(n+1)/(n+1) if n ~= -1;
+end;

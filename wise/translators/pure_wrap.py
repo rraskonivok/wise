@@ -106,8 +106,8 @@ class PublicRule:
         return self.__doc__
 
     def reduce_with(self, *expr):
-        po = pureobjects.PureClosure(self.pure)
-        return pureobjects.p2i(po(*expr))
+        rule = pureobjects.PureClosure(self.pure)
+        return pureobjects.p2i(rule(*expr))
 
 # This is a statefull change in the interpreter, if this is
 # called at the root definition level it applies globally

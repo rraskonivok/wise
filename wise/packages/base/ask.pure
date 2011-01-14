@@ -46,10 +46,6 @@ def x ≠ y = x ~= y;
       > is_zero_or_one y; # "is_zero_or_one y" as desired
 */
 
-prefix 1001 `;
-
-` expr = 1 if (expr === true);
-       = 0 otherwise;
 
 /* 
 

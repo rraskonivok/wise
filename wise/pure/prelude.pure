@@ -1,5 +1,7 @@
 export PURE_STACK=1024;
 
+def extends x = x . reduce_with __locals__;
+
 /* Evaluation */
 prefix 1000 evalb; // Evaluation to boolean
 prefix 1000 evali; // Evaluation to integer
@@ -40,7 +42,21 @@ p2i X = reduce X with
     evals x = x;
 end;
 
-def a::int/b::int = (rational a b);
+using dict;
+subst x e = subst x (hdict e) with
+  subst (x@_ y) e = (subst x e) (subst y e);
+  subst x e = if member e x then e!x else x;
+end;
+
+def a::int/b::int       = rational a b;
+def a::double/b::double = rational a b;
+def a::int/b::double = rational a b;
+def a::double/b::int = rational a b;
+
+prefix 1001 `;
+
+` expr = 1 if (expr === true);
+       = 0 otherwise;
 
 // The prototype operator is used to initialize rules dynamially
 infixl 1001 -->;
