@@ -19,7 +19,7 @@ i2p x::int = x if x > 0;
 // Convert Infix to Prefix
 i2p X = reduce X with
     x + y = add (i2p x) (i2p y);
-    x - y = add (i2p x) (Neg i2p y);
+    x - y = add (i2p x) (Neg $ i2p y);
     x * y = mul (i2p x) (i2p y);
     x / y = rational (i2p x) (i2p y);
     x ^ y = powr (i2p x) (i2p y);
