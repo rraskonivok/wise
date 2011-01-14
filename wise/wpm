@@ -43,6 +43,12 @@ def main():
                       help="Print command for interactive Pure\
                       interpreter with installed libraries.")
 
+    qgroup.add_option("--testshell",
+                      action="store_true",
+                      dest="shell",
+                      help="Print command for interactive Pure\
+                      interpreter with installed libraries.")
+
     qgroup.add_option("--info",
                       action="store_true",
                       dest="info",

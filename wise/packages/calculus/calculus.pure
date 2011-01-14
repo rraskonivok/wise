@@ -5,7 +5,7 @@ diffp _ = 0;
 // Symbolic Differentiation
 //--------------------------
 
-evals (diff f x) = algebra_normal $ diff_normal (diff f x);
+evals (diff f x) = diff_normal (diff f x);
 
 diff_normal = reduce with
     diff x x = 1;
@@ -16,7 +16,9 @@ diff_normal = reduce with
     diff (x^(n::int)) x = n * (x^(n-1)) if n ~= 0;
                         = 0 otherwise;
 
-    diff (x^0) x = 0;
+    diff (x^(n::double)) x = n * (x^(n-1)) if n ~= 0;
+                           = 0 otherwise;
+
     diff (x^x) x = x^x * (1+ ln x);
 
     // Generalized Power Rule
@@ -30,7 +32,7 @@ diff_normal = reduce with
     diff (Exp x) x = Exp x;
 
     // Logarithms
-    diff (Ln x) x = 1/x if x ~= 0;
+    diff (Ln x) x = 1/x;
     diff (Ln (func@_ u)) x = (diff (func u) x)/(func x);
 
     // Linearity
@@ -43,7 +45,8 @@ diff_normal = reduce with
     diff (u/v) x = (((diff u x)*v) - (u*(diff v x)))/(v^2);
 
     // Chain rule
-    diff (func@_ u) x = (diff (func u) u) * (diff u x) if ~(diffp (func u));
+    /*diff (func@_ u) x = (diff (func u) u) * (diff u x) if ~(diffp (func u));*/
+                      /*= 0 otherwise;*/
 end;
 
 //--------------------------
