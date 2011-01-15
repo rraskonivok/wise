@@ -1,0 +1,27 @@
+using dict;
+using calculus;
+
+basic_simplify = reduce with
+    0*x = 0;
+    x-0 = x; 
+    -(-x) = x;
+end;
+
+subst x e = subst x (hdict e) with
+  subst (x@_ y) e = (subst x e) (subst y e);
+  subst x e = if member e x then e!x else x;
+end;
+
+fact n = loop 1 n with
+  loop p n = if n>0 then loop (p*n) (n-1) else p;
+end;
+
+nthdiff f x n = diff_normal $ evals $ ndiff f x n;
+
+taylor_term f x x0 n = basic_simplify $ 
+    (subst (nthdiff f x n) [x=>x0]) / 
+    fact n * (x-x0)^n;
+
+taylor_nonzero = taylor_term 
+
+/*taylor f x x0 = */

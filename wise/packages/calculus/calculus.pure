@@ -9,6 +9,7 @@ evals (diff f x) = diff_normal (diff f x);
 
 diff_normal = reduce with
     diff x x = 1;
+    diff (-f) x = - diff f x;
     diff (c::int) x = 0;
     diff (c::int *u) x = c * (diff u x);
 

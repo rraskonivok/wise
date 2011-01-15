@@ -1,0 +1,115 @@
+// Gruntz Algorithm - http://www.cybertester.com/data/gruntz.pdf
+
+using set;
+prefix 1001 `;
+
+` expr = 1 if (expr === true);
+       = 0 otherwise;
+
+using dict;
+subst x e = subst x (hdict e) with
+  subst (x@_ y) e = (subst x e) (subst y e);
+  subst x e = if member e x then e!x else x;
+end;
+
+//Check if an expression `x` has a subatom `e`.
+has x e = detect x e with
+    detect (x@_ y) e = (detect x e) || (detect y e);
+    detect x e = 1 if (x === e) && atomp x;
+               = 0 otherwise;
+end;
+
+// Walk the expression tree `x` and return 1 if any element has
+// the given property `p`.
+hasprop x p = detect x e with
+    detect (x@_ y) e = (detect x e) || (detect y e);
+    detect x e = 1 if (p x === 1);
+               = 0 otherwise;
+end;
+
+//Check if an expression `x` has a subexpression `e`.
+contains x e = detect x
+with
+    detect (func@_ a) = ((func$a) === e) || (detect func) || (detect a);
+    detect x = 1 if x === e;
+             = 0 otherwise;
+end;
+
+gruntz e z z0 = limitinf e z if z0 === inf;
+              = limitinf (subst e [z=>-z]) z if z0 === -inf;
+              = limitinf e0 _x with 
+                  e0 = subst e [z=>z0+1/_x];
+              end otherwise;
+
+limitinf e x = limit with
+    x = y; 
+end;
+
+sign X = _sgn X with
+    _sgn x = 1 if varp x;
+           = sgn x if numberp x;
+
+    _sgn (exp x) = 1;
+    _sgn (a^b) = _sgn(a) == 1;
+    _sgn (-a)  = -1;
+    _sgn (a*b) = _sgn a * _sgn b;  
+    _sgn (a/b) = _sgn a * _sgn b;  
+    /*_sgn (a+b) = 0 if b === (-a) || a === (-b);*/
+               /*= max (_sgn a) (_sgn b) otherwise;*/
+
+    _sgn (a+b) = _sgn $ limitinf (a+b) x
+               
+end;
+
+moveup l x = map (\e -> subst e [x=>Exp(x)]) l;
+movedown l x = map (\e -> subst e [x=>Log(x)]) l;
+
+mrv_leadterm0 e x = mrv e x;
+
+mrv_leadterm e x ω = 
+    filter (contains e) ω;
+
+/*moveup l x = [e.subs(x,exp(x)) for e in l]*/
+
+/*mrv_leadterm e x with*/
+    /*if not e.has(x): return (e, S.Zero)*/
+/*end;*/
+
+compare a b x = p with
+    c = limitinf (log(a)/log(b)) x;
+    p = ">" if c == 0;
+      = "<" if numberp c;
+      = "=" otherwise;
+end;
+
+exponent (a^b) = b;
+base (a^b) = a;
+
+mrv_max f g x = g if null f;
+              = f if null g;
+              // Union if null intersection
+              = f+g if null $ f*g;
+              = g if member f x;
+              = f if member g x;
+              = cls with
+                c = compare ((members f) ! 0) ((members g) ! 0) x;
+                cls = f if c == ">";
+                    = g if c == "<";
+                    = f+g if c == "=";
+                    = 0 otherwise;
+                end otherwise;
+                
+
+mrv e x = _mrv e x with
+    _mrv x x = set [x];
+    _mrv (a*b) x = mrv_max (mrv a x) (mrv b x) x;
+    _mrv (a+b) x = mrv_max (mrv a x) (mrv b x) x;
+    _mrv (a^b) x = mrv ((exp $ exponent e) * (log $ base e)) x; 
+    _mrv (ln a) x = mrv a x;
+
+    // Add more complex behavior
+    _mrv (exp a) x = mrv_max (set [e]) (mrv a x) x;
+
+    _mrv (func@_ a) x = mrv a x;
+    _mrv _ x = emptyset;
+end;
