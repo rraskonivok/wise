@@ -1,10 +1,18 @@
+using math;
 using dict;
 using calculus;
 
+sum = foldl (+) 0;
+
 basic_simplify = reduce with
+    Sin 0 = 0;
+    Cos 0 = 1;
+    0 % x = 0;
     0*x = 0;
+    0.0*x = 0;
     x-0 = x; 
     -(-x) = x;
+    x^0 = 1;
 end;
 
 subst x e = subst x (hdict e) with
@@ -12,16 +20,32 @@ subst x e = subst x (hdict e) with
   subst x e = if member e x then e!x else x;
 end;
 
+// Factorial function via accumulator.
 fact n = loop 1 n with
   loop p n = if n>0 then loop (p*n) (n-1) else p;
 end;
 
+// Returns the algebraicly simplified nth derivative of f(x).
 nthdiff f x n = diff_normal $ evals $ ndiff f x n;
 
+// Returns the first nonzero term in the Taylor expansion of f(x)
+// around the point x0. Not guaranteed to terminate.
 taylor_term f x x0 n = basic_simplify $ 
-    (subst (nthdiff f x n) [x=>x0]) / 
+    (subst (nthdiff f x n) [x=>x0]) % 
     fact n * (x-x0)^n;
 
-taylor_nonzero = taylor_term 
+// Returns the first nonzero term in the Taylor expansion of f(x)
+// around the point x0. Not guaranteed to terminate.
+taylor_nonzero f x x0 = term 0 with
+    ntaylor n = taylor_term f x x0 n;
+    term n = ntaylor n if ~(ntaylor n === 0) && ~(ntaylor n === 0.0);
+           = term (n+1) otherwise;
+end;
 
-/*taylor f x x0 = */
+// Returns the first n terms taylor in the taylor series of f(x)
+// around x0 as a list.
+taylor f x x0 n = [taylor_term f x x0 a | a=(0..n)];
+
+// Test 
+sin_approx x = sum $ subst (taylor (Sin y) y 0 15) [y=>x];
+cos_approx x = sum $ subst (taylor (Cos y) y 0 15) [y=>x];

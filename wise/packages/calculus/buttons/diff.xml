@@ -1,0 +1,11 @@
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML">
+    <mrow>
+        <mfrac>
+          <mo form="prefix">d</mo>
+          <mrow>
+            <mo form="prefix" rspace="0em">d</mo>
+            <mi>x</mi>
+          </mrow>
+        </mfrac>
+    </mrow>
+</math>
