@@ -9,6 +9,7 @@ evals (diff f x) = diff_normal (diff f x);
 
 diff_normal = reduce with
     diff x x = 1;
+
     diff (-f) x = - diff f x;
     diff (c::int) x = 0;
     diff (c::int *u) x = c * (diff u x);
@@ -20,10 +21,10 @@ diff_normal = reduce with
     diff (x^(n::double)) x = n * (x^(n-1)) if n ~= 0;
                            = 0 otherwise;
 
-    diff (x^x) x = x^x * (1+ ln x);
+    diff (x^x) x = x^x * (1+ Ln x);
 
     // Generalized Power Rule
-    diff (f^g) x = f^g *( (diff g x) * (ln f) + (g/f) * (diff f x) );
+    diff (f^g) x = f^g *( (diff g x) * (Ln f) + (g/f) * (diff f x) );
 
     // Trigonometric functions
     diff (Sin x) x = Cos x;
@@ -38,6 +39,7 @@ diff_normal = reduce with
 
     // Linearity
     diff (u+v) x = (diff u x) + (diff v x);
+    diff (u-v) x = (diff u x) - (diff v x);
 
     // Product Rule
     diff (u*v) x = (diff u x) * v + u * (diff v x);
@@ -46,8 +48,8 @@ diff_normal = reduce with
     diff (u/v) x = (((diff u x)*v) - (u*(diff v x)))/(v^2);
 
     // Chain rule
-    /*diff (func@_ u) x = (diff (func u) u) * (diff u x) if ~(diffp (func u));*/
-                      /*= 0 otherwise;*/
+    diff (func@_ u) x = (diff (func u) u) * (diff u x) if ~(diffp (func u));
+                      = 0 otherwise;
 end;
 
 //--------------------------

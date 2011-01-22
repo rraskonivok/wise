@@ -1,18 +1,123 @@
 using math;
 using dict;
+using subexp;
 using calculus;
 
-sum = foldl (+) 0;
+namespace powseries;
+
+/* 
+  ------------------------
+   Power Series Operations
+  ------------------------
+*/
+
+/*
+References:
+
+* McIlroy MD. The Music of Streams. 
+  Information processing letters. 2001;77(2-4):189-195.
+
+* David Amos: Haskell for Maths.
+  http://haskellformaths.blogspot.com
+
+*/
+
+infixl 7 $* ;
+infixl 7 $. ;
+infixl 6 $+ ;
+infixl 6 $- ;
+infixl 6 $/ ;
+infixl 6 $# ;
+
+// Addition of power series
+(a:as) $+ (b:bs) = (a+b) : (as $+ bs);
+as     $+ []     = as;
+[]     $+ bs     = bs;
+
+// Subtraction of power series
+as $- bs = as $+ (map neg bs);
+
+// Scalar multiplication of power series
+a $. bs = map (a*) bs;
+
+// Add 0 term to power series
+shift [] = [];
+shift as = 0 : as;
+
+// Convolution of power series
+[] $* _ = [];
+_ $* [] = [];
+(a:as) $* (b:bs) = [a*b] $+
+    shift (map (a*) bs $+
+    map (*b) as) $+
+    shift (shift (as $* bs));
+
+series f = f : repeat 0;
+[] $/ _ = [];
+
+(f:ft) $/ (g:gt) = qs : series(1/g) $. (ft $- (qs $. gt)) 
+    with qs = f/g end;
+
+// Composition of power series
+[] $# gs = [];
+(f:ft) $# (gs@(0:gt)) = f : ( gt $* (ft $# gs) );
+
+/*divSeries [] _ = [];*/
+/*divSeries (0:xs) (0:ys) = divSeries xs ys;*/
+/*divSeries (x:xs) (y:ys) =*/
+   /*divSeries (xs $- (q * ys)) (y:ys) when q = x/y end;*/
+
+expSeries = map ((%) 1) (scanl (*) 1 (1..inf));
+/*sinSeries = zipWith (*) (cycle [0,1,0,-1]) expSeries;*/
+/*cosSeries = zipWith (*) (cycle [1,0,-1,0]) expSeries;*/
+
+// Power series differentiation and integration
+differentiate x = zipwith (*) (tail x) (1..inf);
+integrate c x = c : (zipwith (/) x (1..inf));
+
+/* 
+  ---------------------
+   Sequence Operations
+  --------------------- 
+*/
+
+lbnd = foldr1 min;
+ubnd = foldr1 max;
+
+primes = sieve (2..inf) with
+    sieve (p:qs)  = p : sieve [q | q = qs; q mod p] &;
+end;
+
+/* 
+  ----------------
+   Simplification
+  ---------------- 
+*/
 
 basic_simplify = reduce with
     Sin 0 = 0;
     Cos 0 = 1;
+    Exp 0 = 1;
+    Exp 0.0 = 1;
     0 % x = 0;
+
     0*x = 0;
+    x*0 = 0;
     0.0*x = 0;
+
     x-0 = x; 
+    0-x = -x;
     -(-x) = x;
+
     x^0 = 1;
+    x+0 = x;
+    0+x = x;
+end;
+
+simplify_rational = reduce with
+    x%1 = x;
+    x%y = x if numberp y && y == 1;
+    x%y = x div y if all numberp [x,y] && x mod y == 0;
 end;
 
 subst x e = subst x (hdict e) with
@@ -25,27 +130,61 @@ fact n = loop 1 n with
   loop p n = if n>0 then loop (p*n) (n-1) else p;
 end;
 
+is_undefined x = (contains x inf) || (contains x (-inf)) || (contains x nan);
+
 // Returns the algebraicly simplified nth derivative of f(x).
 nthdiff f x n = diff_normal $ evals $ ndiff f x n;
 
-// Returns the first nonzero term in the Taylor expansion of f(x)
-// around the point x0. Not guaranteed to terminate.
-taylor_term f x x0 n = basic_simplify $ 
-    (subst (nthdiff f x n) [x=>x0]) % 
-    fact n * (x-x0)^n;
+// Returns the nth term in the taylor_expansion of f(x) around the
+// point x0
+taylor_term f x x0 n = term with
+    coef = basic_simplify $ (subst (nthdiff f x n) [x=>x0]) % (fact n);
+    term = coef if ~(is_undefined coef);
+         = nan otherwise;
+end;
 
 // Returns the first nonzero term in the Taylor expansion of f(x)
 // around the point x0. Not guaranteed to terminate.
 taylor_nonzero f x x0 = term 0 with
     ntaylor n = taylor_term f x x0 n;
-    term n = ntaylor n if ~(ntaylor n === 0) && ~(ntaylor n === 0.0);
+    term n = ntaylor n if ~(ntaylor n ! 0 === 0) && ~(ntaylor n !  0=== 0.0);
            = term (n+1) otherwise;
 end;
 
 // Returns the first n terms taylor in the taylor series of f(x)
-// around x0 as a list.
-taylor f x x0 n = [taylor_term f x x0 a | a=(0..n)];
+// around x0 as a list. If the series is not the defined at x
+// then return [f] which corresponds to the constant series f *
+// x^0. If the f has an unremovable discontinuity (lim f_n ->
+// inf) for some truncation of the series at n0 then all
+// subsequent terms are undefined.
+taylor _ _ _  (-1) = [];
+taylor f x x0 n = if ~(is_undefined term) 
+    then 
+        (taylor f x x0 (n-1)) + [term]
+    else [f]
+with
+    term = basic_simplify $ taylor_term f x x0 n; 
+end;
+
+// Evaluate the power series xs at a point `x` by joining taking
+// the summation of the product 
+//
+//   (c0,x^0) + (c1,x^1) + ... =>
+//   c0*x^0 + c1*x^1 + ... 
+//
+series_eval x xs = foldr1 (+) $ zipwith (*) xs [x^n | n=(0..(#xs))];
+series_var x xs = series_eval x xs;
 
 // Test 
-sin_approx x = sum $ subst (taylor (Sin y) y 0 15) [y=>x];
-cos_approx x = sum $ subst (taylor (Cos y) y 0 15) [y=>x];
+sin_approx x = sum $ (taylor (Sin y) y 0 15) with y = x end;
+cos_approx x = sum $ (taylor (Cos y) y 0 15) with y = x end; 
+partialSums xs = scanl1 (+) xs;
+partialProducts xs = scanl1 (*) xs;
+
+// Nested taylor
+ntaylor f x x0 n = tay f with
+    _tay _f = taylor _f x x0 n;
+    tay (a+b) = tay a $+ tay b;
+    tay (a*b) = tay a $* tay b;
+    tay x = _tay x;
+end;
