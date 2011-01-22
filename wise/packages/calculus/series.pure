@@ -22,19 +22,29 @@ References:
 
 */
 
+// Check if the data stucture can be safely called in full. i.e.
+// it does not contain any potentially inifinite thunks.
+finite x@(_:xs) = ~(thunkp xs) && (listp x || listnp x || tuplep x);
+finite _        = 1;
+
+indexable (x:xs) = 1;
+indexable _      = 0;
+
+// Series operations
 infixl 7 $* ;
 infixl 7 $. ;
 infixl 6 $+ ;
 infixl 6 $- ;
 infixl 6 $/ ;
 infixl 6 $# ;
+prefix 2599 ##; // Cardinality
 
 // Addition of power series
 (a:as) $+ (b:bs) = (a+b) : (as $+ bs);
 as     $+ []     = as;
 []     $+ bs     = bs;
 
-// Subtraction of power series
+// Subtraction of power serie
 as $- bs = as $+ (map neg bs);
 
 // Scalar multiplication of power series
@@ -62,11 +72,6 @@ series f = f : repeat 0;
 [] $# gs = [];
 (f:ft) $# (gs@(0:gt)) = f : ( gt $* (ft $# gs) );
 
-/*divSeries [] _ = [];*/
-/*divSeries (0:xs) (0:ys) = divSeries xs ys;*/
-/*divSeries (x:xs) (y:ys) =*/
-   /*divSeries (xs $- (q * ys)) (y:ys) when q = x/y end;*/
-
 expSeries = map ((%) 1) (scanl (*) 1 (1..inf));
 /*sinSeries = zipWith (*) (cycle [0,1,0,-1]) expSeries;*/
 /*cosSeries = zipWith (*) (cycle [1,0,-1,0]) expSeries;*/
@@ -75,18 +80,23 @@ expSeries = map ((%) 1) (scanl (*) 1 (1..inf));
 differentiate x = zipwith (*) (tail x) (1..inf);
 integrate c x = c : (zipwith (/) x (1..inf));
 
-/* 
-  ---------------------
-   Sequence Operations
-  --------------------- 
-*/
+## (x:xs) = inf if thunkp xs;
+## x = #x if listp x;
 
-lbnd = foldr1 min;
-ubnd = foldr1 max;
+// Is the series the zero series
+zerop xs = all (==0) xs;
 
-primes = sieve (2..inf) with
-    sieve (p:qs)  = p : sieve [q | q = qs; q mod p] &;
-end;
+// Truncate trailing zero terms from power series
+truncate_zeros [] = [];
+truncate_zeros (x:xs) = [x] if zerop xs;
+                      = x: (truncate_zeros xs) otherwise;
+
+// Degree of the power series with trailing zeroes truncated. The
+// zero power series has degree `nan` by convention.
+deg xs = ##(truncate_zeros xs) if indexable xs && finite xs && ~zerop xs;
+       = nan if indexable xs && finite xs && zerop xs; // Zero series
+       = ##(xs) if indexable xs;
+       = nan otherwise;
 
 /* 
   ----------------
@@ -94,13 +104,18 @@ end;
   ---------------- 
 */
 
+// Use the internal sin/cos functions to return floating point
+// values
+evalf (Sin x) = sin x if numberp x;
+evalf (Cos x) = cos x if numberp x;
+
 basic_simplify = reduce with
     Sin 0 = 0;
     Cos 0 = 1;
     Exp 0 = 1;
     Exp 0.0 = 1;
     0 % x = 0;
-
+    0L % x = 0;
     0*x = 0;
     x*0 = 0;
     0.0*x = 0;
@@ -186,5 +201,22 @@ ntaylor f x x0 n = tay f with
     _tay _f = taylor _f x x0 n;
     tay (a+b) = tay a $+ tay b;
     tay (a*b) = tay a $* tay b;
+    tay (f@_ x) = (taylor (f u) u x0 n) $# (basic_simplify $ tay x);
     tay x = _tay x;
+end;
+
+namespace;
+namespace seq;
+
+/* 
+  ---------------------
+   Sequence Operations
+  --------------------- 
+*/
+
+lbnd = foldr1 min;
+ubnd = foldr1 max;
+
+primes = sieve (2..inf) with
+    sieve (p:qs)  = p : sieve [q | q = qs; q mod p] &;
 end;
