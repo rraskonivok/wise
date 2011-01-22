@@ -68,13 +68,17 @@ series f = f : repeat 0;
 (f:ft) $/ (g:gt) = qs : series(1/g) $. (ft $- (qs $. gt)) 
     with qs = f/g end;
 
-// Composition of power series
+/* Composition of power series is given by:
+    f(x) = \sum_{n=1}^\infty a_n x^n = a_1 x + a_2 x^2 + \cdots
+    g(x) = \sum_{n=0}^\infty b_n x^n = b_0 + b_1 x + b_2 x^2 + \cdots,
+    g(f(x)) = \sum_{n=0}^\infty b_n (f(x))^n = \sum_{n=0}^\infty c_n x^n
+*/
 [] $# gs = [];
 (f:ft) $# (gs@(0:gt)) = f : ( gt $* (ft $# gs) );
 
 expSeries = map ((%) 1) (scanl (*) 1 (1..inf));
-/*sinSeries = zipWith (*) (cycle [0,1,0,-1]) expSeries;*/
-/*cosSeries = zipWith (*) (cycle [1,0,-1,0]) expSeries;*/
+/*sinSeries = zipWith (*) (cycle [0,1,0,-1]) expSeries&;*/
+/*cosSeries = zipWith (*) (cycle [1,0,-1,0]) expSeries&;*/
 
 // Power series differentiation and integration
 differentiate x = zipwith (*) (tail x) (1..inf);
@@ -166,7 +170,7 @@ taylor_nonzero f x x0 = term 0 with
            = term (n+1) otherwise;
 end;
 
-// Returns the first n terms taylor in the taylor series of f(x)
+// Returns the first n terms in the taylor series of f(x)
 // around x0 as a list. If the series is not the defined at x
 // then return [f] which corresponds to the constant series f *
 // x^0. If the f has an unremovable discontinuity (lim f_n ->
@@ -181,20 +185,20 @@ with
     term = basic_simplify $ taylor_term f x x0 n; 
 end;
 
+partialSums xs = scanl1 (+) xs;
+partialProducts xs = scanl1 (*) xs;
+
 // Evaluate the power series xs at a point `x` by joining taking
 // the summation of the product 
 //
 //   (c0,x^0) + (c1,x^1) + ... =>
 //   c0*x^0 + c1*x^1 + ... 
-//
-series_eval x xs = foldr1 (+) $ zipwith (*) xs [x^n | n=(0..(#xs))];
+series_eval x xs = foldl1 (+) $ zipwith (*) xs [x^n | n=(0..(#xs))];
 series_var x xs = series_eval x xs;
 
 // Test 
 sin_approx x = sum $ (taylor (Sin y) y 0 15) with y = x end;
 cos_approx x = sum $ (taylor (Cos y) y 0 15) with y = x end; 
-partialSums xs = scanl1 (+) xs;
-partialProducts xs = scanl1 (*) xs;
 
 // Nested taylor
 ntaylor f x x0 n = tay f with
@@ -214,8 +218,8 @@ namespace seq;
   --------------------- 
 */
 
-lbnd = foldr1 min;
-ubnd = foldr1 max;
+lbnd = foldl1 min;
+ubnd = foldl1 max;
 
 primes = sieve (2..inf) with
     sieve (p:qs)  = p : sieve [q | q = qs; q mod p] &;
