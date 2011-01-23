@@ -1,3 +1,17 @@
+/*
+  Wise
+  Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as
+  published by the Free Software Foundation, either version 3 of the
+  License, or (at your option) any later version.
+*/
+
+// References:
+//  * Cohen J S. Computer Algebra and Symbolic Computation.
+//  * Scheme code at https://github.com/dharmatech
+
 namespace simplify;
 
 private sump base exponent term constant;
@@ -52,11 +66,6 @@ end;
    -------------------------
 */
 
-algebra_normal X = simplify_multiplication .
-                   simplify_addition .
-                   simplify_power .
-                   simplify_rational $ X;
-
 simplify_multiplication = reduce
 with
     0*x = 0 ;
@@ -100,6 +109,9 @@ simplify_rational = reduce with
     0/x = 0;
     x/1 = x;
     (-x)/y = -(x/y);
+
+    1/(1/x) = x;
+    x/(y/z) = (x*z)/y;
 end;
 
 rational_to_power = reduce with

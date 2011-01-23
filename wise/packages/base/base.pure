@@ -8,12 +8,18 @@
   License, or (at your option) any later version.
 */
 
-// References:
-//  * Cohen J S. Computer Algebra and Symbolic Computation.
-//  * Scheme code at https://github.com/dharmatech
-
 using simp;
-using namespace simp::simplify;
+
+// The default automatic simplification stack. Can be overloaded
+// as desired.
+using namespace simplify;
+
+algebra_normal X = simplify_multiplication .
+                   simplify_addition .
+                   simplify_power .
+                   simplify_rational $ X;
+
+namespace;
 
 /*
     Equation Manipulation
