@@ -59,9 +59,18 @@ subst x e = subst x (hdict e) with
   subst x e = if member e x then e!x else x;
 end;
 
-/* --------------------------
-  Expression Tree Properties
----------------------------- */
+/*
+  ----------------------
+   Expression Detection
+  ----------------------
+*/
+
+//Check if an expression `x` has a subexpression `e`.
+contains x e = detect x with
+    detect (func@_ a) = ((func$a) === e) || (detect func) || (detect a);
+    detect x = 1 if x === e;
+             = 0 otherwise;
+end;
 
 //Check if an expression `x` has a subatom `e`.
 has x e = detect x e with
@@ -76,14 +85,6 @@ hasprop x p = detect x e with
     detect (x@_ y) e = (detect x e) || (detect y e);
     detect x e = 1 if (p x === 1);
                = 0 otherwise;
-end;
-
-//Check if an expression `x` has a subexpression `e`.
-contains x e = detect x
-with
-    detect (func@_ a) = ((func$a) === e) || (detect func) || (detect a);
-    detect x = 1 if x === e;
-             = 0 otherwise;
 end;
 
 /* --------------------------

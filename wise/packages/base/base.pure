@@ -8,40 +8,12 @@
   License, or (at your option) any later version.
 */
 
-// Adapted from:
+// References:
 //  * Cohen J S. Computer Algebra and Symbolic Computation.
 //  * Scheme code at https://github.com/dharmatech
 
-// See: Cohen J S.
-cmp x y = x < y if numberp x && numberp y ;
-cmp x y = 1 if numberp x && ~(numberp y) ;
-cmp (a^b) (c^d) = if a === c then cmp b d else cmp a c ;
-cmp a (b^c) = if a === b then cmp 1 c else cmp a b ;
-cmp (a^b) c = if a === b then cmp b 1 else cmp a c ;
-cmp (x1@_ y1) (x2@_ y2) = if x1===x2 then cmp y1 y2 else cmp x1 x2;
-cmp (x1@_ y1) x2 = if x1===x2 then 0 else cmp x1 x2;
-cmp x1 (x2@_ y2) = if x1===x2 then 1 else cmp x1 x2;
-cmp x y = str x < str y if atomp x && atomp y ;
-cmp x y = ~(cmp y x) otherwise ;
-
-sump x+y = 1 ;
-sump x = 0 ;
-
-base x^y = x;
-base x = x;
-
-exponent x^y = y ;
-exponent x = 1;
-
-term (n*x) = x if numberp n ;
-term ((x*y)*z) = (term (x*y)) * z ;
-term (-x) = x;
-term x = x ;
-
-constant (n*x) = n if numberp n ;
-constant ((x*y)*z) = (constant (x*y)) ;
-constant (-x) = -1;
-constant x = 1 ;
+using simp;
+using namespace simp::simplify;
 
 /*
     Equation Manipulation
@@ -88,18 +60,6 @@ abs (complex x y) = Sqrt (x^2+y^2);
 conj (complex x y) = complex x (-y);
 conj x = conj x;
 
-simplify_complex X = reduce X
-with
-    // Complex Addition
-    (complex x y) + (complex u v) = complex (x+u) (y+v);
-    - (complex x y) = complex (-x) (-y);
-
-    // Complex Multiplication
-    (complex a b) * (complex c d) = complex (a*c-b*d) (b*c+a*d);
-
-    // Complex Division
-    (complex a b) / (complex c d) = (complex ((a*c+b*d) / (c^2 + d^2)) ((b*c-a*d) / (c^2 + d^2)) )
-end;
 
 rect_to_polar X = reduce X
 with
@@ -122,141 +82,6 @@ end;
 
 complex_split (complex x y) = x + (I * y);
 
-/*
-    Automatic Simplification
-   -------------------------
-*/
-
-algebra_normal X = simplify_multiplication .
-                   simplify_addition .
-                   simplify_power .
-                   simplify_rational $ X;
-
-/* :Name: ``simplify_multiplication`` x
-   :Arguments:
-   :x: Arbitrary expression
-   :Description: Reduces the given expression with the following rules
-   .. math::
-        0x = 0\\
-        a^x a^y = a^{x+y}\\
-        (a b^x) b^y = a b^{x+y}\\
-        x(yz) = (xy)z\\
-        x(-y) = (-x)y\\
-
-   Multiplication is is associated to the left.
-
-   Multiplication of numeric quantities is reduced to a
-   single numeric quantitiy.
-
-   Multiplication of algebraic terms is sorted alphabetically by
-   variable as defined by ``cmp`` rule.
-*/
-
-simplify_multiplication = reduce
-with
-    0*x = 0 ;
-    1*x = x ;
-    x*y = (base x) ^ ((exponent x) + (exponent y)) if (base x) === (base y) ;
-    a*x*y = a * ( (base x) ^ ((exponent x) + (exponent y)) ) if (base x) === (base y) ;
-    x*y = y*x if cmp y x ;
-    x*y*z = x*z*y if cmp z y ;
-    x*(y*z) = x*y*z ;
-    x*(-y) = (-x)*y ;
-    -(k*x) = (-k)*x if numberp k;
-end;
-
-/* :Name: ``simplify_addition`` x
-   :Arguments:
-   :x: Arbitrary expression
-   :Description: Reduces the given expression with the following rules
-   .. math::
-        0+x = x\\
-        (qx)+(rx) = (q+r)(x)\\
-        (qx)+(qy) = (q)(x+y)\\
-        x+(y+z) = (x+y)+z\\
-        -x+-y = -(x+y)\\
-
-   Addition is is associated to the left.
-
-   Addition of numeric quantities is reduced to a
-   single numeric quantitiy.
-
-   Addition of algebraic terms is sorted alphabetically by
-   variable as defined by ``cmp`` rule.
-*/
-
-simplify_addition X = reduce X
-with
-    -(a*x) = (-a) * x if numberp a;
-    0+x = x ;
-    x+0 = x ;
-    a+b = ( (constant a) + (constant b) ) * (term a) if ((term a) === (term b)) and (~numberp a && ~numberp b) ;
-    a+b+c = a + ((constant b) + (constant c)) * (term b) if (term b) === (term c) ;
-//    a+b = b+a if (cmp b a) && ~(sump a) ;
-    a+b+c = a+c+b if cmp c b ;
-    a+(b+c) = a+b+c ;
-    x-x = 0;
-    (-x)+x = 0;
-    (-x) + (-y) = -(x+y);
-end;
-
-/* :Name: ``simplify_power`` x
-   :Arguments:
-   :x: Arbitrary expression
-   :Description: Reduces the given expression with the following rules
-   .. math::
-        x^0 = 1\\
-        x^1 = x\\
-        0^x = 0\\
-        1^x = 1\\
-        (x^y)^z = x^{yz}\\
-        (xy)^z = x^y x^z\\
-
-   Powers of numeric quantities is reduced to a
-   single numeric quantitiy.
-*/
-
-simplify_power = reduce
-with
-    0^x = 0 if `(x ~= 0);
-    1^x = 1 ;
-    x^0 = 1 if `(x ~= 0);
-    x^1 = x ;
-    (r^s)^w = r^(s*w) if numberp w ;
-    (x*y)^w = (x^w)*(y^w) if numberp w ;
-end;
-
-/* :Name: ``rational_to_power`` x
-   :Arguments:
-   :x: Arbitrary expression
-   :Description: Reduces the given expression with the following rules
-   .. math::
-        \frac{x}{y} = x y^{-1}\\
-*/
-
-rational_to_power = reduce with
-    x/y = x*(y^(-1));
-end;
-
-/*
-   Rationals
-   ------------
-*/
-
-/* :Name: ``simplify_rational`` x
-   :Arguments:
-   :x: Arbitrary expression
-   :Description: Reduces the given expression with the following rules
-   .. math::
-        \frac{x}{y} = x y^{-1}\\
-*/
-
-simplify_rational = reduce with
-    x/x = 1;
-    0/x = 0;
-    x/1 = x;
-    (-x)/y = -(x/y);
-end;
 
 /* :Name: ``combine_rational`` x
    :Arguments:

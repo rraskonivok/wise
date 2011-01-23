@@ -1,6 +1,5 @@
 using math;
 using dict;
-using subexp;
 using calculus;
 
 namespace powseries;
@@ -23,7 +22,7 @@ References:
 */
 
 // Check if the data stucture can be safely called in full. i.e.
-// it does not contain any potentially inifinite thunks.
+// it does not contain any potentially infinite thunks.
 finite x@(_:xs) = ~(thunkp xs) && (listp x || listnp x || tuplep x);
 finite _        = 1;
 
@@ -31,13 +30,16 @@ indexable (x:xs) = 1;
 indexable _      = 0;
 
 // Series operations
-infixl 7 $* ;
-infixl 7 $. ;
-infixl 6 $+ ;
-infixl 6 $- ;
-infixl 6 $/ ;
-infixl 6 $# ;
-prefix 2599 ##; // Cardinality
+infixl 6 $+ ; // Addition
+infixl 6 $- ; // Subtraction
+infixl 7 $* ; // Multiplication
+infixl 7 $. ; // Scalar Multiplication
+infixl 6 $/ ; // Division
+infixl 6 $# ; // Composition
+
+// Cardinality, generalization of # operator to handle lazy data
+// structures
+prefix 2599 ##; 
 
 // Addition of power series
 (a:as) $+ (b:bs) = (a+b) : (as $+ bs);
@@ -50,11 +52,11 @@ as $- bs = as $+ (map neg bs);
 // Scalar multiplication of power series
 a $. bs = map (a*) bs;
 
-// Add 0 term to power series
+// Append 0 term to power series
 shift [] = [];
 shift as = 0 : as;
 
-// Convolution of power series
+// Multiplication of power series
 [] $* _ = [];
 _ $* [] = [];
 (a:as) $* (b:bs) = [a*b] $+
@@ -75,10 +77,6 @@ series f = f : repeat 0;
 */
 [] $# gs = [];
 (f:ft) $# (gs@(0:gt)) = f : ( gt $* (ft $# gs) );
-
-expSeries = map ((%) 1) (scanl (*) 1 (1..inf));
-/*sinSeries = zipWith (*) (cycle [0,1,0,-1]) expSeries&;*/
-/*cosSeries = zipWith (*) (cycle [1,0,-1,0]) expSeries&;*/
 
 // Power series differentiation and integration
 differentiate x = zipwith (*) (tail x) (1..inf);
@@ -110,8 +108,8 @@ deg xs = ##(truncate_zeros xs) if indexable xs && finite xs && ~zerop xs;
 
 // Use the internal sin/cos functions to return floating point
 // values
-evalf (Sin x) = sin x if numberp x;
-evalf (Cos x) = cos x if numberp x;
+/*evalf (Sin x) = sin x if numberp x;*/
+/*evalf (Cos x) = cos x if numberp x;*/
 
 basic_simplify = reduce with
     Sin 0 = 0;
@@ -152,7 +150,7 @@ end;
 is_undefined x = (contains x inf) || (contains x (-inf)) || (contains x nan);
 
 // Returns the algebraicly simplified nth derivative of f(x).
-nthdiff f x n = diff_normal $ evals $ ndiff f x n;
+nthdiff f x n = diff_normal $ evals ndiff f x n;
 
 // Returns the nth term in the taylor_expansion of f(x) around the
 // point x0
@@ -196,20 +194,28 @@ partialProducts xs = scanl1 (*) xs;
 series_eval x xs = foldl1 (+) $ zipwith (*) xs [x^n | n=(0..(#xs))];
 series_var x xs = series_eval x xs;
 
-// Test 
-sin_approx x = sum $ (taylor (Sin y) y 0 15) with y = x end;
-cos_approx x = sum $ (taylor (Cos y) y 0 15) with y = x end; 
-
-// Nested taylor
+// Evaluate taylor series for all subexpressions and compose the
+// series.
 ntaylor f x x0 n = tay f with
     _tay _f = taylor _f x x0 n;
     tay (a+b) = tay a $+ tay b;
     tay (a*b) = tay a $* tay b;
-    tay (f@_ x) = (taylor (f u) u x0 n) $# (basic_simplify $ tay x);
+    tay (f@_ x) = (taylor (f u) u x0 n) $# (basic_simplify $ tay x) when u = x end;
+    tay x::int = [x];
+    tay x::double = [x];
     tay x = _tay x;
 end;
-
 namespace;
+
+namespace specialseries;
+using namespace powseries;
+expSeries = map ((%) 1) (scanl (*) 1 (1..inf));
+/*sinSeries = zipWith (*) (cycle [0,1,0,-1]) expSeries&;*/
+/*cosSeries = zipWith (*) (cycle [1,0,-1,0]) expSeries&;*/
+sin_approx x = sum $ (taylor (Sin y) y 0 15) with y = x end;
+cos_approx x = sum $ (taylor (Cos y) y 0 15) with y = x end; 
+namespace;
+
 namespace seq;
 
 /* 
@@ -218,7 +224,9 @@ namespace seq;
   --------------------- 
 */
 
+// Lower bound
 lbnd = foldl1 min;
+// Upper Bound
 ubnd = foldl1 max;
 
 primes = sieve (2..inf) with

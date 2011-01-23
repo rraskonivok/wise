@@ -1,3 +1,4 @@
+using base;
 using set;
 using dict;
 using system; 
@@ -11,8 +12,11 @@ using series;
 */
 
 // Adapted from code by Albert Graef on pure-lang mailing list.
-subst rules t = eval $ sprintf "(%s) with %s end" (str t, join ";" [sprintf "%s = %s" (str l,str r) | l=>r = rules]); 
-subst_atomic t rules atom = eval $ sprintf "reduce (%s) with %s end" (str t, join ";" [sprintf "%s = %s if varp %s" (str l,str r,str atom) | l=>r = rules]); 
+subst rules t = eval $ sprintf "(%s) with %s end" (str t, join ";" 
+    [sprintf "%s = %s" (str l,str r) | l=>r = rules]); 
+subst_atomic t rules atom = eval $ 
+    sprintf "reduce (%s) with %s end" (str t, join ";" 
+    [sprintf "%s = %s if varp %s" (str l,str r,str atom) | l=>r = rules]); 
 
 infix 0 /.; 
 infix 0 /./; 
@@ -106,7 +110,7 @@ end;
 
 mrv_max f g x = g if null f;
               = f if null g;
-              // Union if null intersection
+              // Union if f,g disjoint
               = f+g if ~(null (f*g));
               = g if member f x;
               = f if member g x;

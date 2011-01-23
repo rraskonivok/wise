@@ -1,3 +1,5 @@
+using series;
+
 diffp (diff f x) = 1;
 diffp _ = 0;
 
