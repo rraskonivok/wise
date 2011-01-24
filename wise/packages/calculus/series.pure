@@ -1,7 +1,9 @@
 using math;
 using dict;
 using calculus;
+using base::simp;
 
+nthdiff f x n = evals ndiff f x n;
 namespace powseries;
 
 /* 
@@ -111,26 +113,6 @@ deg xs = ##(truncate_zeros xs) if indexable xs && finite xs && ~zerop xs;
 /*evalf (Sin x) = sin x if numberp x;*/
 /*evalf (Cos x) = cos x if numberp x;*/
 
-basic_simplify = reduce with
-    Sin 0 = 0;
-    Cos 0 = 1;
-    Exp 0 = 1;
-    Exp 0.0 = 1;
-    0 % x = 0;
-    0L % x = 0;
-    0*x = 0;
-    x*0 = 0;
-    0.0*x = 0;
-
-    x-0 = x; 
-    0-x = -x;
-    -(-x) = x;
-
-    x^0 = 1;
-    x+0 = x;
-    0+x = x;
-end;
-
 simplify_rational = reduce with
     x%1 = x;
     x%y = x if numberp y && y == 1;
@@ -142,21 +124,18 @@ subst x e = subst x (hdict e) with
   subst x e = if member e x then e!x else x;
 end;
 
-// Factorial function via accumulator.
-fact n = loop 1 n with
-  loop p n = if n>0 then loop (p*n) (n-1) else p;
-end;
 
 is_undefined x = (contains x inf) || (contains x (-inf)) || (contains x nan);
-
-// Returns the algebraicly simplified nth derivative of f(x).
-nthdiff f x n = diff_normal $ evals ndiff f x n;
 
 // Returns the nth term in the taylor_expansion of f(x) around the
 // point x0
 taylor_term f x x0 n = term with
-    coef = basic_simplify $ (subst (nthdiff f x n) [x=>x0]) % (fact n);
-    term = coef if ~(is_undefined coef);
+    // \frac {f^{(n)}(a)}{n!} \, (x-a)^{n}
+    coef =  (nthdiff f x n)
+            % (fact n);
+
+    // Substitution d^n/dx^n f(x) -> d^n/dx^n f(x0)
+    term = coef if ~(is_undefined coef) when x = x0 end;
          = nan otherwise;
 end;
 
@@ -180,7 +159,7 @@ taylor f x x0 n = if ~(is_undefined term)
         (taylor f x x0 (n-1)) + [term]
     else [f]
 with
-    term = basic_simplify $ taylor_term f x x0 n; 
+    term = simplify::basic_simplify $ taylor_term f x x0 n; 
 end;
 
 partialSums xs = scanl1 (+) xs;
@@ -200,21 +179,24 @@ ntaylor f x x0 n = tay f with
     _tay _f = taylor _f x x0 n;
     tay (a+b) = tay a $+ tay b;
     tay (a*b) = tay a $* tay b;
-    tay (f@_ x) = (taylor (f u) u x0 n) $# (basic_simplify $ tay x) when u = x end;
+    tay (f@_ x) = (taylor (f u) u x0 n) $# 
+        (simplify::basic_simplify $ tay x) 
+        when u = x end;
     tay x::int = [x];
     tay x::double = [x];
     tay x = _tay x;
 end;
 namespace;
 
-namespace specialseries;
-using namespace powseries;
-expSeries = map ((%) 1) (scanl (*) 1 (1..inf));
-/*sinSeries = zipWith (*) (cycle [0,1,0,-1]) expSeries&;*/
-/*cosSeries = zipWith (*) (cycle [1,0,-1,0]) expSeries&;*/
-sin_approx x = sum $ (taylor (Sin y) y 0 15) with y = x end;
-cos_approx x = sum $ (taylor (Cos y) y 0 15) with y = x end; 
-namespace;
+/*namespace specialseries;*/
+
+/*using namespace powseries;*/
+/*expSeries = map ((%) 1) (scanl (*) 1 (1..inf));*/
+/*[>sinSeries = zipWith (*) (cycle [0,1,0,-1]) expSeries&;<]*/
+/*[>cosSeries = zipWith (*) (cycle [1,0,-1,0]) expSeries&;<]*/
+/*sin_approx x = sum $ (taylor (Sin y) y 0 15) with y = x end;*/
+/*cos_approx x = sum $ (taylor (Cos y) y 0 15) with y = x end; */
+/*namespace;*/
 
 namespace seq;
 
@@ -232,3 +214,4 @@ ubnd = foldl1 max;
 primes = sieve (2..inf) with
     sieve (p:qs)  = p : sieve [q | q = qs; q mod p] &;
 end;
+namespace;

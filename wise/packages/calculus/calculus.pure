@@ -72,7 +72,8 @@ end;
 // Risch algorithm, but until then just fall back on table 
 // lookup.
 
-evals (ndiff f x n) = foldl diff f (repeatn n x);
+evals (ndiff f x 0) = f;
+evals (ndiff f x n) = evals (foldl diff f (repeatn n x));
 evals (integrate f x) = int_normal (integrate f x);
 
 int_normal = reduce with

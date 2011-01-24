@@ -8,17 +8,36 @@
   License, or (at your option) any later version.
 */
 
+using system;
 using simp;
 
-// The default automatic simplification stack. Can be overloaded
-// as desired.
-using namespace simplify;
+nonfix Pi;    // Constant Pi
+nonfix Exp1;  // Constant e
+nonfix IUnit; // Constant i
+nonfix Unit;  // 1
+nonfix Zero;  // 0
 
+namespace constants;
+// Declare constants with single letter names as const to avoid
+// namespace collisions.
+const E = Exp1;
+const I = I;
+namespace;
+
+//Evaluate out to the constant defined in the default math
+//libraires.
+evalf Pi = pi;
+evalf Exp1 = e;
+evalf IUnit = i;
+evalf Unit = 1.0;
+evalf Zero = 0.0;
+
+// The default automatic simplification stack.
+using namespace simplify;
 algebra_normal X = simplify_multiplication .
                    simplify_addition .
                    simplify_power .
                    simplify_rational $ X;
-
 namespace;
 
 /*
@@ -31,41 +50,23 @@ eq_sub (eq lhs rhs) x = eq (lhs+(-x)) (rhs+(-x));
 eq_mul (eq lhs rhs) x = eq (lhs*x) (rhs*x);
 eq_div (eq lhs rhs) x = eq (lhs/x) (rhs/x);
 
-atan2 y x = atan (rational y x) if numberp x && x > 0;
-          = Pi + atan (rational y x) if all numberp [y x] && y >= 0 && x < 0;
-          = -Pi + atan (rational y x ) if all numberp [y,x] && y < 0 && x < 0;
-          = Pi/2 if all numberp [y,x] && y > 0 && x == 0;
-          = -(Pi/2) if all numberp [y,x] && y < 0 && x == 0;
-          = rational 0 0 if all numberp [y,x] && y == 0 && x == 0;
-          = atan (rational y x) otherwise;
-
 /*
-    Absolute Value Manipulation
-    ---------------------------
-*/
-
-expand_abs = reduce with
-    abs (mul x*y) = abs(x) * abs(y);
-end;
-
-/*
-    Complex Manipulation
+    Complex Numbers
     --------------------
 */
 
 evals real complex x y = x;
 evals real x = Re x;
-
 evals imag complex x y = y;
 evals imag x = Im x;
 
+__show__ (complex x y) = sprintf "%s + i %s" (str x, str y) if all atomp [x,y];
+                       = sprintf "(%s) + i(%y)" (str x, str y) otherwise;
+
 // Modulus
-// TODO: differentiate between abs and complex modulus
-abs (complex x y) = Sqrt (x^2+y^2);
-
-conj (complex x y) = complex x (-y);
-conj x = conj x;
-
+/*abs (complex x y) = Sqrt (x^2+y^2);*/
+/*conj (complex x y) = complex x (-y);*/
+/*conj x = conj x;*/
 
 rect_to_polar X = reduce X
 with
@@ -85,37 +86,36 @@ with
     mul r (exp (mul I theta)) = complex;
 end;
 
-
 complex_split (complex x y) = x + (I * y);
 
 
-/* :Name: ``combine_rational`` x
-   :Arguments:
-   :x: Complex number
-   :Description: Combines rational expressions according to the rules:
-   .. math::
-        -\frac{a}{b} = \frac{-a}{b}\\
-        \frac{a}{b} + \frac{c}{d} = \frac{ad+bc}{bd}\\
-        \frac{a}{b} \cdot \frac{c}{d} = \frac{ac}{bd}\\
-        \frac{a}{b} \div \frac{c}{d} = \frac{ad}{bc}
+/* 
+    Combine rational quantities by the rules:
+    -\frac{a}{b} = \frac{-a}{b}\\
+    \frac{a}{b} + \frac{c}{d} = \frac{ad+bc}{bd}\\
+    \frac{a}{b} \cdot \frac{c}{d} = \frac{ac}{bd}\\
+    \frac{a}{b} \div \frac{c}{d} = \frac{ad}{bc}
 */
 
 combine_rational X = reduce X
 with
-    // Pull the negation outside of the fraction
     -(a/b) = (-a)/b;
     (a/c) + (b/c) = (a+b)/c;
     (a/b) + (c/d) = (a*d+b*c)/(b*d);
     (a/b) / (c/d) = (a*c)/(b*d);
 end;
 
-/* :Name: ``split_rational`` x
-   :Arguments:
-   :x: Complex number
-   :Description: Seperates rational expressions according to the rules:
-   .. math::
-        \frac{a+b}{c} = \frac{a}{c} + \frac{b}{c}
+/* 
+  ----------------------
+   Rational Manipulation
+  ----------------------
 */
+
+// Convert numerical primitives to rational types.
+to_rational X::int = rational X;
+to_rational X::double = rational X;
+to_rational X::bigint = rational X;
+to_rational x = x/1;
 
 split_rational X = reduce X
 with
@@ -129,11 +129,16 @@ with
     a/b = a*(1/b) if ~(a === 1);
 end;
 
-replace_heads f g X = replf X
-with
-    replf (func@_ a) = (replf func) (replf a);
-    replf x = if x === f then g else x;
-end;
+/* 
+  ----------------------------------
+  Commutative Variable Manipulation
+  ----------------------------------
+*/
+
+commute_elementary (x+y) = y+x;
+commute_elementary (x-y) = (-y)+x;
+commute_elementary (x*y) = y*x;
+commute_elementary x = x;
 
 associate_add_left = reduce with
     x+(y+z) = (x+y) + z;
@@ -203,12 +208,12 @@ end;
 pull_numeric_left X = pull_left_prop X numberp;
 pull_numeric_right X = pull_right_prop X numberp;
 
-division_theorem a b = add (mul b (a div b)) (a mod b);
 
-//TODO: Use longs
-fact n::int = loop 1 n with
-  loop p n = if n>0 then loop (p*n) (n-1) else p;
-end;
+/* 
+  ----------------------------------
+  Commutative Variable Manipulation
+  ----------------------------------
+*/
 
 algebra_expand X = reduce X
 with
@@ -218,10 +223,19 @@ with
     (a+b)^2 = a^2+2*a*b+b^2;
 end;
 
-commute_elementary (x+y) = y+x;
-commute_elementary (x-y) = (-y)+x;
-commute_elementary (x*y) = y*x;
-commute_elementary x = x;
+/*
+    ----
+    Misc
+    ----
+*/
+
+// Factorial function via accumulator outputs a bigint;
+evals (fact n) = loop 1 (bigint n) with
+  loop p n = if n>0 then loop (p*n) (n-1) else p;
+end;
+
+/*__show__ (fact x) = sprintf "%s!" (str x) if atomp x;*/
+                  /*= sprintf "(%s)!" (str x) otherwise;*/
 
 nfunc f n p = nfunc (f p) (n-1) p if n > 1;
             = f p otherwise;
@@ -230,3 +244,9 @@ ntuple n p = nfunc Tuple n p;
 
 GammaF(1/2) = Sqrt pi;
 GammaF(0.5) = Sqrt pi;
+
+expand_abs = reduce with
+    abs (mul x*y) = abs(x) * abs(y);
+end;
+
+division_theorem a b = add (mul b (a div b)) (a mod b);

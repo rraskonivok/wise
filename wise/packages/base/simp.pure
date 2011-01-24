@@ -109,7 +109,6 @@ simplify_rational = reduce with
     0/x = 0;
     x/1 = x;
     (-x)/y = -(x/y);
-
     1/(1/x) = x;
     x/(y/z) = (x*z)/y;
 end;
@@ -125,22 +124,18 @@ rat_simp = reduce with
     x/(y/z) = (x*z)/y;
 end;
 
+// Reduce simple expressions involving 1 and 0
 basic_simplify = reduce with
-    Sin 0 = 0;
-    Cos 0 = 1;
-    Exp 0 = 1;
-    Exp 0.0 = 1;
-    0 % x = 0;
-    0L % x = 0;
-    0*x = 0;
-    x*0 = 0;
-    0.0*x = 0;
-
-    x-0 = x; 
-    0-x = -x;
-    -(-x) = x;
-
+    x % y = 0 if numberp x && x == 0;
+    x % y = 1 if numberp y && y == 1;
+    x * y = 0 if (numberp x && x == 0) ||
+                 (numberp y && y == 0);
+    x * y = x if numberp y && y == 1;
+    x * y = y if numberp x && x == 1;
+    x + y = x if numberp y && y == 0;
+    x + y = y if numberp x && x == 0;
+    0^x = 0 if numberp x;
     x^0 = 1;
-    x+0 = x;
-    0+x = x;
+    x^1 = x;
+    -(-x) = x;
 end;

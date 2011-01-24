@@ -28,7 +28,7 @@ i2p X = reduce X with
     x + y = add (i2p x) (i2p y);
     x - y = add (i2p x) (Neg $ i2p y);
     x * y = mul (i2p x) (i2p y);
-    x / y = rational (i2p x) (i2p y);
+    x / y = rat (i2p x) (i2p y);
     x ^ y = powr (i2p x) (i2p y);
     - x   = Neg (i2p x);
 end;
@@ -39,13 +39,13 @@ p2i X = reduce X with
     Neg x         =  - x   ;
     add x y       =  x + y ;
     mul x y       =  x * y ;
-    rational x y  =  x / y ;
+    rat x y  =  x / y ;
     powr x y      =  x ^ y ;
 
     // Disregard partial evaluations
-    evalb x |
-    evali x |
-    evalf x |
+    evalb x = x;
+    evali x = x;
+    evalf x = x;
     evals x = x;
 end;
 
@@ -91,10 +91,10 @@ end;
   Overload Default Arithmetic
 ---------------------------- */
 
-def a::int/b::int       = rational a b;
-def a::double/b::double = rational a b;
-def a::int/b::double = rational a b;
-def a::double/b::int = rational a b;
+def a::int/b::int       = a%b;
+def a::double/b::double = a%b;
+def a::int/b::double = a%b;
+def a::double/b::int = a%b;
 
 prefix 1001 `;
 
