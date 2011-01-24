@@ -18,10 +18,10 @@ nonfix Unit;  // 1
 nonfix Zero;  // 0
 
 namespace constants;
-// Declare constants with single letter names as const to avoid
-// namespace collisions.
-const E = Exp1;
-const I = I;
+    // Declare constants with single letter names as const to
+    // avoid namespace collisions.
+    const E = Exp1;
+    const I = I;
 namespace;
 
 //Evaluate out to the constant defined in the default math
@@ -39,6 +39,31 @@ algebra_normal X = simplify_multiplication .
                    simplify_power .
                    simplify_rational $ X;
 namespace;
+
+/* 
+  -----------------------
+  Numeric Function Values
+  -----------------------
+*/
+
+
+using namespace constants;
+    evalf (Exp 0) = 1.0;
+    evalf (Exp 1) = evalf E;
+    evalf (Exp (complex x y)) = Exp x with
+        Exp (I * Pi) = -1;
+    end;
+    evalf (Exp x) = exp x if numberp x;
+                  = Exp x otherwise;
+namespace;
+
+using namespace constants;
+    evalf (Ln Exp1) = 1;
+    evalf (Ln x) = ln x if numberp x && x ~= 0;
+                 = nan if numberp x && x == 0;
+                 = Ln x otherwise;
+namespace;
+
 
 /*
     Equation Manipulation
@@ -60,40 +85,36 @@ evals real x = Re x;
 evals imag complex x y = y;
 evals imag x = Im x;
 
-__show__ (complex x y) = sprintf "%s + i %s" (str x, str y) if all atomp [x,y];
-                       = sprintf "(%s) + i(%y)" (str x, str y) otherwise;
+/*__show__ (complex x y) = sprintf "%s + i %s" (str x, str y) if all atomp [x,y];*/
+                       /*= sprintf "(%s) + i(%y)" (str x, str y) otherwise;*/
 
 // Modulus
 /*abs (complex x y) = Sqrt (x^2+y^2);*/
 /*conj (complex x y) = complex x (-y);*/
 /*conj x = conj x;*/
 
-rect_to_polar X = reduce X
-with
+rect_to_polar = reduce with
     (complex 0 0) = 0;
     (complex x y) = (Sqrt (x*x+y*y)) * exp( I * (atan2 y x));
 end;
 
-complex_trig_expand X = reduce X
-with
+complex_trig_expand = reduce with
     Sin (complex x y)  = complex (Sin x*Cosh y) (Cos x*Sinh y);
     Cos (complex x y)  = complex (Cos x*Cosh y) (-Sin x*Sinh y);
     Tan (complex x y)  = (complex (Sin (2*x)) (Sinh (2*y))) / (Cos (2*x)+Cosh (2*y));
 end;
 
-complex_polar_to_rect X = reduce X
-with
+complex_polar_to_rect = reduce with
     mul r (exp (mul I theta)) = complex;
 end;
 
 complex_split (complex x y) = x + (I * y);
 
-
 /* 
     Combine rational quantities by the rules:
-    -\frac{a}{b} = \frac{-a}{b}\\
-    \frac{a}{b} + \frac{c}{d} = \frac{ad+bc}{bd}\\
-    \frac{a}{b} \cdot \frac{c}{d} = \frac{ac}{bd}\\
+    -\frac{a}{b} = \frac{-a}{b}
+    \frac{a}{b} + \frac{c}{d} = \frac{ad+bc}{bd}
+    \frac{a}{b} \cdot \frac{c}{d} = \frac{ac}{bd}
     \frac{a}{b} \div \frac{c}{d} = \frac{ad}{bc}
 */
 
@@ -208,13 +229,6 @@ end;
 pull_numeric_left X = pull_left_prop X numberp;
 pull_numeric_right X = pull_right_prop X numberp;
 
-
-/* 
-  ----------------------------------
-  Commutative Variable Manipulation
-  ----------------------------------
-*/
-
 algebra_expand X = reduce X
 with
     -(a+b)  = (-a) + (-b);
@@ -230,7 +244,7 @@ end;
 */
 
 // Factorial function via accumulator outputs a bigint;
-evals (fact n) = loop 1 (bigint n) with
+evalf (fact n) = loop 1 (bigint n) with
   loop p n = if n>0 then loop (p*n) (n-1) else p;
 end;
 

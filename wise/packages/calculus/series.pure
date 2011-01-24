@@ -6,6 +6,13 @@ using base::simp;
 nthdiff f x n = evals ndiff f x n;
 namespace powseries;
 
+// Used for evaluation of taylor expansion terms at a single
+// point.
+subst x e = subst x (hdict e) with
+  subst (x@_ y) e = (subst x e) (subst y e);
+  subst x e = if member e x then e!x else x;
+end;
+
 /* 
   ------------------------
    Power Series Operations
@@ -119,11 +126,6 @@ simplify_rational = reduce with
     x%y = x div y if all numberp [x,y] && x mod y == 0;
 end;
 
-subst x e = subst x (hdict e) with
-  subst (x@_ y) e = (subst x e) (subst y e);
-  subst x e = if member e x then e!x else x;
-end;
-
 
 is_undefined x = (contains x inf) || (contains x (-inf)) || (contains x nan);
 
@@ -135,7 +137,7 @@ taylor_term f x x0 n = term with
             % (fact n);
 
     // Substitution d^n/dx^n f(x) -> d^n/dx^n f(x0)
-    term = coef if ~(is_undefined coef) when x = x0 end;
+    term = subst coef [x=>x0] if ~(is_undefined coef);
          = nan otherwise;
 end;
 
