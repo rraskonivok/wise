@@ -8,6 +8,7 @@
   License, or (at your option) any later version.
 */
 
+using math;
 using system;
 using simp;
 
@@ -16,6 +17,8 @@ nonfix Exp1;  // Constant e
 nonfix IUnit; // Constant i
 nonfix Unit;  // 1
 nonfix Zero;  // 0
+
+prefix 1000 fact;
 
 namespace constants;
     // Declare constants with single letter names as const to
@@ -46,6 +49,9 @@ namespace;
   -----------------------
 */
 
+/*evalf' = reduce with*/
+    /*f@_ u = evalf (f u) if atomp u || numberp u;*/
+/*end;*/
 
 using namespace constants;
     evalf (Exp 0) = 1.0;
@@ -242,6 +248,7 @@ end;
     Misc
     ----
 */
+
 
 // Factorial function via accumulator outputs a bigint;
 evalf (fact n) = loop 1 (bigint n) with

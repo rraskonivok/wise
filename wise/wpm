@@ -125,8 +125,10 @@ def main():
 
         # Output of query
         if options.shell:
+            packages = ['packages/%s/%s.pure' % (lib[0],lib[0]) for lib in query]
+            packages.reverse()
             line = ['pure/prelude.pure']
-            line += ['packages/%s/%s.pure' % (lib[0],lib[0]) for lib in query]
+            line += packages
             sys.stdout.write('pure -i -q ' + ' '.join(line) + " -g -I ./packages \n")
 
         elif options.info:

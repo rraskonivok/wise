@@ -41,7 +41,7 @@ ROOT_MODULE = 'wise'
 PACK_MODULE = ROOT_MODULE + '.' + PACKAGE_DIR
 
 # `base` is the minimum needed to run
-INSTALLED_MATH_PACKAGES = ('base','calculus')
+INSTALLED_MATH_PACKAGES = ['base','calculus']
 
 #---------------------------
 # Message Queues
