@@ -48,6 +48,8 @@ end;
   ----------------------
 */
 
+// TODO: moved to prelude
+
 // Return the complexity of the expression by the number of
 // termins in it.
 complexity e = count_terms e 0  with

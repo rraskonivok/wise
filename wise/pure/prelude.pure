@@ -88,6 +88,23 @@ hasprop x p = detect x e with
 end;
 
 /* --------------------------
+  Expression Complexity
+---------------------------- */
+
+// Return the complexity of the expression by the number of
+// termins in it.
+complexity e = count_terms e 0  with
+    count_terms (x@_ y) a = (count_terms x a) + (count_terms y a);
+    count_terms x a = 1;
+end;
+
+complexity_sort a b = complexity a <= complexity b;
+
+// Order a list of expressions by their complexity from least to
+// greatest.
+complex_order xs = sort complexity_sort xs;
+
+/* --------------------------
   Overload Default Arithmetic
 ---------------------------- */
 

@@ -516,7 +516,7 @@ class Rational(Term):
     """
 
     html = load_haml_template('rational.tpl')
-    pure = 'rational'
+    pure = 'rat'
 
     def __init__(self,num,den):
         self.num = num

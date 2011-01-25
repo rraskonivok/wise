@@ -69,8 +69,8 @@ end;
 //--------------------------
 
 // At some point I'll throw together an implementation of the 
-// Risch algorithm, but until then just fall back on table 
-// lookup.
+// Risch-Norman algorithm, but until then just fall back on 
+// table lookup.
 
 evals (ndiff f x 0) = f;
 evals (ndiff f x n) = evals (foldl diff f (repeatn n x));

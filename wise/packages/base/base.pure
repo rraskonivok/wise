@@ -12,13 +12,30 @@ using math;
 using system;
 using simp;
 
+/* 
+  -----------------------
+  Logical Atoms
+  -----------------------
+*/
+
+// These are strictly distinct from the internal (true, false)
+// which are just macros for (1,0).
+nonfix True;
+nonfix False;
+
+/* 
+  -----------------------
+  Numeric Constants
+  -----------------------
+*/
+
 nonfix Pi;    // Constant Pi
 nonfix Exp1;  // Constant e
 nonfix IUnit; // Constant i
 nonfix Unit;  // 1
 nonfix Zero;  // 0
 
-prefix 1000 fact;
+
 
 namespace constants;
     // Declare constants with single letter names as const to
@@ -53,7 +70,12 @@ namespace;
     /*f@_ u = evalf (f u) if atomp u || numberp u;*/
 /*end;*/
 
+prefix 1000 factorial
+            Exp
+            Log;
+
 using namespace constants;
+    // Specific Values of Exp
     evalf (Exp 0) = 1.0;
     evalf (Exp 1) = evalf E;
     evalf (Exp (complex x y)) = Exp x with
@@ -61,25 +83,62 @@ using namespace constants;
     end;
     evalf (Exp x) = exp x if numberp x;
                   = Exp x otherwise;
-namespace;
 
-using namespace constants;
+    // Specific Values of Ln
     evalf (Ln Exp1) = 1;
     evalf (Ln x) = ln x if numberp x && x ~= 0;
                  = nan if numberp x && x == 0;
                  = Ln x otherwise;
 namespace;
 
-
-/*
-    Equation Manipulation
-    ---------------------
+/* 
+  -----------------------
+  Equational Operations
+  -----------------------
 */
+
+infixl (==) ?=;
+def a ?= b = eq a b;
+
+eqp (eq lhs rhs) = 1;
+eqp _            = 0;
 
 eq_add (eq lhs rhs) x = eq (lhs+x) (rhs+x);
 eq_sub (eq lhs rhs) x = eq (lhs+(-x)) (rhs+(-x));
 eq_mul (eq lhs rhs) x = eq (lhs*x) (rhs*x);
 eq_div (eq lhs rhs) x = eq (lhs/x) (rhs/x);
+eq_map (eq lhs rhs) op = eq (op $ lhs) (op $ rhs);
+
+// Zero out RHS.
+eq_rzero (eq lhs rhs) = eq (-rhs) 0 if `(lhs == 0);
+                      = eq (lhs - rhs) 0 if ~(numberp rhs) || `(rhs ~= 0);
+                      = eq lhs rhs otherwise;
+
+// Zero out LHS.
+eq_lzero (eq lhs rhs) = eq 0 (-lhs) if `(rhs == 0);
+                      = eq 0 (rhs - lhs) if ~(numberp lhs) || `(lhs ~= 0);
+                      = eq lhs rhs otherwise;
+
+
+// Reflexivity, binds universally
+eq_ref x = (eq x x);
+// Symmetric and Transitive, bind on equations
+eq_sym (eq lhs rhs) = (eq rhs lhs);
+eq_tran (eq l1 r1) (eq l2 r2) = (eq l1 l2) if r1 === r2;
+                              = (eq l1 r2) if r1 === l2;
+                              = (eq r1 r2) if l1 === l2;
+                              = (eq r1 l2) if l1 === r2;
+
+// Put the more complex equation on the left simply for aesthetic
+// reasons.
+eq_normal (eq lhs rhs) = (eq rhs lhs) if (complexity lhs) < (complexity rhs);
+                       = (eq lhs rhs) otherwise;
+
+// Null test to determine whether we can positively assert that
+// the LHS and RHS of the equation are equal.
+eq_test (eq lhs rhs) = 1 if (lhs === rhs);
+                     = 1 if `(lhs == rhs);
+                     = nan otherwise;
 
 /*
     Complex Numbers
@@ -251,11 +310,11 @@ end;
 
 
 // Factorial function via accumulator outputs a bigint;
-evalf (fact n) = loop 1 (bigint n) with
+evalf (factorial n) = loop 1 (bigint n) with
   loop p n = if n>0 then loop (p*n) (n-1) else p;
 end;
 
-/*__show__ (fact x) = sprintf "%s!" (str x) if atomp x;*/
+/*__show__ (factorial x) = sprintf "%s!" (str x) if atomp x;*/
                   /*= sprintf "(%s)!" (str x) otherwise;*/
 
 nfunc f n p = nfunc (f p) (n-1) p if n > 1;

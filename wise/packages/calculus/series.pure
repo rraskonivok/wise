@@ -132,8 +132,8 @@ is_undefined x = (contains x inf) || (contains x (-inf)) || (contains x nan);
 // point x0
 taylor_term f x x0 n = term with
     // \frac {f^{(n)}(a)}{n!} \, (x-a)^{n}
-    coef =  (nthdiff f x n)
-            % (fact n);
+    coef = (nthdiff f x n)
+           % (factorial n);
 
     // Substitution d^n/dx^n f(x) -> d^n/dx^n f(x0)
     term = subst coef [x=>x0] if ~(is_undefined coef);
