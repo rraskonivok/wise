@@ -90,6 +90,11 @@ end;
 // Strip function `head` from expression `ex` returning its
 // arguments in it's place.
 chop_head head ex = _strip ex with
+    // Matches function of arbitrary arguments using currying
+    // f a b c -> (f a b) c
+    // (f a b) -> (f a) b
+    // (f a)   -> f a
+
     _strip (func@_ a) = if func === head 
         then a
         else (_strip func) $ (_strip a);
@@ -122,10 +127,14 @@ complex_order xs = sort complexity_sort xs;
   Overload Default Arithmetic
 ---------------------------- */
 
+namespace cast_division;
+infixl 5 /;
+
 def a::int/b::int       = a%b;
 def a::double/b::double = a%b;
 def a::int/b::double = a%b;
 def a::double/b::int = a%b;
+namespace;
 
 prefix 1001 `;
 

@@ -166,7 +166,7 @@ with
 end;
 
 basic_taylor f x x0 n = taylor f x x0 (simplify::basic_simplify) n;
-/*num_taylor f x x0 n */
+num_taylor f x x0 n = taylor f x x0 (simplify::recursive_evalf) n;
 
 partialSums xs = scanl1 (+) xs;
 partialProducts xs = scanl1 (*) xs;
@@ -181,7 +181,7 @@ series_var x xs = series_eval x xs;
 
 // Evaluate taylor series for all subexpressions and compose the
 // series.
-ntaylor f x x0 n = tay f with
+series_taylor f x x0 n = tay f with
     _tay _f = taylor _f x x0 n;
     tay (a+b) = tay a $+ tay b;
     tay (a*b) = tay a $* tay b;

@@ -55,9 +55,11 @@ evalf IUnit = i;
 evalf Unit = 1.0;
 evalf Zero = 0.0;
 
+evalf (a%b) = double $ (double a)/(double b);
+
 evalf n::int    | 
 evalf n::double |
-evalf n::bigint = double n;
+evalf n::bigint = n;
 
 // The default automatic simplification stack.
 using namespace simplify;
