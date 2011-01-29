@@ -154,14 +154,19 @@ end;
 // x^0. If the f has an unremovable discontinuity (lim f_n ->
 // inf) for some truncation of the series at n0 then all
 // subsequent terms are undefined.
-taylor _ _ _  (-1) = [];
-taylor f x x0 n = if ~(is_undefined term) 
+taylor _ _ _  _ (-1) = [];
+taylor f x x0 _s n = if ~(is_undefined term) 
     then 
-        (taylor f x x0 (n-1)) + [term]
+        (taylor f x x0 _s (n-1)) + [term]
     else [f]
 with
-    term = simplify::basic_simplify $ taylor_term f x x0 n; 
+    // Reduce the rule with the specified simplification rule
+    // `_s`.
+    term = _s $ taylor_term f x x0 n; 
 end;
+
+basic_taylor f x x0 n = taylor f x x0 (simplify::basic_simplify) n;
+/*num_taylor f x x0 n */
 
 partialSums xs = scanl1 (+) xs;
 partialProducts xs = scanl1 (*) xs;

@@ -46,7 +46,6 @@ constant ((x*y)*z) = (constant (x*y)) ;
 constant (-x) = -1;
 constant x = 1 ;
 
-
 simplify_complex X = reduce X
 with
     // Complex Addition
@@ -84,9 +83,11 @@ with
     -(a*x) = (-a) * x if numberp a;
     0+x = x ;
     x+0 = x ;
-    a+b = ( (constant a) + (constant b) ) * (term a) if ((term a) === (term b)) and (~numberp a && ~numberp b) ;
-    a+b+c = a + ((constant b) + (constant c)) * (term b) if (term b) === (term c) ;
-//    a+b = b+a if (cmp b a) && ~(sump a) ;
+    a+b = ( (constant a) + (constant b) ) * (term a) 
+        if ((term a) === (term b)) and (~numberp a && ~numberp b) ;
+    a+b+c = a + ((constant b) + (constant c)) * (term b) 
+        if (term b) === (term c) ;
+    a+b = b+a if (cmp b a) && ~(sump a) ;
     a+b+c = a+c+b if cmp c b ;
     a+(b+c) = a+b+c ;
     x-x = 0;
@@ -139,3 +140,15 @@ basic_simplify = reduce with
     x^1 = x;
     -(-x) = x;
 end;
+
+// Propogate an operator through an expression by applying it to
+// the leaves of the expression tree and recursively upwards.
+// At the moment only propogate through n={0,1,2,3} n-ary expressions.
+propogate_thru rule expr = _rule (expr) with
+    _rule (f@_ x y z) = rule $ f (_rule x) (_rule y) (_rule z) if ~(f === _rule);
+    _rule (f@_ x y) = rule $ f (_rule x) (_rule y) if ~(f === _rule);
+    _rule (f@_ x) = rule $ f (_rule x) if ~(f === _rule);
+    _rule x = rule x;
+end;
+
+recursive_evalf = propogate_thru (evalf);

@@ -87,6 +87,20 @@ hasprop x p = detect x e with
                = 0 otherwise;
 end;
 
+// Strip function `head` from expression `ex` returning its
+// arguments in it's place.
+chop_head head ex = _strip ex with
+    _strip (func@_ a) = if func === head 
+        then a
+        else (_strip func) $ (_strip a);
+    _strip x = x;
+end;
+
+spice_head f g ex = _repl ex with
+    _repl (func@_ a) = (_repl func) $ (_repl a);
+    _repl x = if x === f then g else x;
+end;
+
 /* --------------------------
   Expression Complexity
 ---------------------------- */

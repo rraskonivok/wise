@@ -152,7 +152,7 @@ limitinf e x = e if ~(has e x);
 //      
 //      Exp x tends to 0 iff sign(x) = -1
 // 
-// Call the simplest term which tends toward 0: ω and rewrite all
+// Call the simplest term which tends toward 0: ω  and rewrite all
 // other members of mrv(...) in terms of ω.
 
 /*rewrite e x = rw with*/
@@ -179,10 +179,8 @@ rewrite e x = e2, atomic_rewrites, rule_rewrites with
             w0 = 1/simplest if sign simplest ~= -1;
                = simplest otherwise;
 
-            rewrite_forms = powexpand $ rat_simp $ [
-                                w0=>w,
-                                1/w0=>1/w
-                            ];
+            rewrite_forms = powexpand $ rat_simp $ 
+                            [ w0=>w, 1/w0=>1/w ];
 
             atomic_rewrites = filter atomic rewrite_forms with
                                 atomic (x=>y) = atomp x;

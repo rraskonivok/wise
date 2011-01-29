@@ -1,0 +1,73 @@
+using quantum;
+
+/* 
+  ----------------
+  Indexed Objects
+  ----------------
+*/
+
+// Inner product
+infixl 1000 <*>; // Matrix product
+infixl 1000 <+>; // Matrix addition
+infixl 1000 <'>; // Matrix transpose
+infixl 1000 <.>; // Matrix transpose
+
+// Convert a n-tuple into a (n+1)-tuple
+expand_tuple xs = xs,ph;
+// Convert a n-tuple into a (n-1)-tuple
+contract_tuple xs = xs !! (0..#xs-2); 
+
+sum = foldl (+) 0;
+
+// Matrix Addition
+(<+>) x::matrix y::matrix =  zipwith (+) x y if dim x == dim y;
+
+// Matrix multiplication
+(<*>) x::matrix y::matrix = sum $ zipwith (*) (rowvector x) (rowvector y) if dim x == dim y;
+
+// Scalar multiplication
+(<.>) a x::matrix = map (a*) x if ~matrixp a;
+
+// Constructors
+RowVector = rowvector;
+ColVector = colvector;
+Matrix = matrix;
+
+// nxn identity matrix
+eye n = {i==j | i = 1..n; j = 1..n};
+
+// nxn zero matrix
+zeros n = {0 | i = 1..n; j = 1..n};
+
+tensor_type x::double |
+tensor_type x::int = (0,0) if numberp x;
+tensor_type x::matrix = (0,1) if vectorp x;
+                      = (1,1) if matrixp x;
+
+Summmation f (x:xs) (b:bs) = 0;
+
+evals Sum (x:xs) = sum $ x:xs;
+
+TSum f x = Tensor (indices f) x;
+
+
+// Return the indices of the tensor, repeated indices imply
+// summation and are summed over.
+
+indices (Tensor x:xs) = set $x:xs;
+/* 
+  ----------------------
+  Commutative Operations
+  ----------------------
+*/
+
+commute_indexed (a <+> b) = b <+> a;
+commute_indexed (a <*> b) = -(b <*> a);
+commute_indexed (-(a <*> b)) = b <*> a;
+
+Diag xs = diagmat xs;
+
+evals LeviCivita i j k = int $ (j-i)*(k-i)*(k-j)/2;
+
+KroneckerDelta i j = 0 if i ~= j;
+                   = 1 if i == j;

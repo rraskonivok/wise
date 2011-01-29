@@ -12,6 +12,9 @@ using math;
 using system;
 using simp;
 
+using poly;
+using indexed;
+
 /* 
   -----------------------
   Logical Atoms
@@ -52,13 +55,17 @@ evalf IUnit = i;
 evalf Unit = 1.0;
 evalf Zero = 0.0;
 
+evalf n::int    | 
+evalf n::double |
+evalf n::bigint = double n;
+
 // The default automatic simplification stack.
 using namespace simplify;
 algebra_normal X = simplify_multiplication .
                    simplify_addition .
                    simplify_power .
                    simplify_rational $ X;
-namespace;
+using namespace;
 
 /* 
   -----------------------
@@ -72,6 +79,7 @@ namespace;
 
 prefix 1000 factorial
             Exp
+            Ln
             Log;
 
 using namespace constants;
@@ -89,7 +97,7 @@ using namespace constants;
     evalf (Ln x) = ln x if numberp x && x ~= 0;
                  = nan if numberp x && x == 0;
                  = Ln x otherwise;
-namespace;
+using namespace;
 
 /* 
   -----------------------
