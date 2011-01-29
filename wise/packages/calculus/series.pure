@@ -84,7 +84,7 @@ series f = f : repeat 0;
     g(f(x)) = \sum_{n=0}^\infty b_n (f(x))^n = \sum_{n=0}^\infty c_n x^n
 */
 [] $# gs = [];
-(f:ft) $# (gs@(0:gt)) = f : ( gt $* (ft $# gs) );
+(f:ft) $# (gs@(g:gt)) = f : ( gt $* (ft $# gs) );
 
 // Power series differentiation and integration
 differentiate x = zipwith (*) (tail x) (1..inf);
@@ -162,7 +162,7 @@ taylor f x x0 _s n = if ~(is_undefined term)
 with
     // Reduce the rule with the specified simplification rule
     // `_s`.
-    term = _s $ taylor_term f x x0 n; 
+    term = _s $ simplify::basic_simplify $ taylor_term f x x0 n; 
 end;
 
 basic_taylor f x x0 n = taylor f x x0 (simplify::basic_simplify) n;
@@ -177,20 +177,27 @@ partialProducts xs = scanl1 (*) xs;
 //   (c0,x^0) + (c1,x^1) + ... =>
 //   c0*x^0 + c1*x^1 + ... 
 series_eval x xs = foldl1 (+) $ zipwith (*) xs [x^n | n=(0..(#xs))];
-series_var x xs = series_eval x xs;
+
+// Multiply each term by x^n yielding a full list of the Taylor
+// expansion.
+series_var x xs = [x^n * (xs ! n) | n=(0..(#xs - 1))];
 
 // Evaluate taylor series for all subexpressions and compose the
 // series.
 series_taylor f x x0 n = tay f with
-    _tay _f = taylor _f x x0 n;
+    _tay _f = basic_taylor _f x x0 n;
     tay (a+b) = tay a $+ tay b;
     tay (a*b) = tay a $* tay b;
-    tay (f@_ x) = (taylor (f u) u x0 n) $# 
-        (simplify::basic_simplify $ tay x) 
-        when u = x end;
+    tay (f@_ ser) = //series_var x $ 
+        (basic_taylor (f u) u x0 n)
+        $# 
+        (tay ser)
+        when u = ser end
+    ;
     tay x::int = [x];
     tay x::double = [x];
-    tay x = _tay x;
+    /*tay x = [0,x] if varp x;*/
+    tay f = _tay f;
 end;
 namespace;
 

@@ -61,6 +61,16 @@ evalf n::int    |
 evalf n::double |
 evalf n::bigint = n;
 
+evalf Sin(n::int)    | 
+evalf Sin(n::double) |
+evalf Sin(n::bigint) = sin n;
+
+evalf Cos(n::int)    | 
+evalf Cos(n::double) |
+evalf Cos(n::bigint) = cos n;
+evalf x = x if varp x;
+
+
 // The default automatic simplification stack.
 using namespace simplify;
 algebra_normal X = simplify_multiplication .
@@ -79,10 +89,10 @@ using namespace;
     /*f@_ u = evalf (f u) if atomp u || numberp u;*/
 /*end;*/
 
-prefix 1000 factorial
-            Exp
-            Ln
-            Log;
+/*prefix 1000 factorial*/
+            /*Exp*/
+            /*Ln*/
+            /*Log;*/
 
 using namespace constants;
     // Specific Values of Exp

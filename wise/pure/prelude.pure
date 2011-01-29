@@ -9,7 +9,7 @@ def extends x = x . reduce_with __locals__;
 prefix 1000 evalb; // Evaluation to boolean
 prefix 1000 evali; // Evaluation to integer
 prefix 1000 evalf; // Evaluation to float
-prefix 1000 evals; // Evaluation to symbolic value
+prefix 1000 evals; // Evaluation to symbolic
 
 /* ------------------------
   Prefix-Infix Conversion
@@ -28,7 +28,10 @@ i2p X = reduce X with
     x + y = add (i2p x) (i2p y);
     x - y = add (i2p x) (Neg $ i2p y);
     x * y = mul (i2p x) (i2p y);
+
     x / y = rat (i2p x) (i2p y);
+    x % y = rat (i2p x) (i2p y);
+
     x ^ y = powr (i2p x) (i2p y);
     - x   = Neg (i2p x);
 end;
