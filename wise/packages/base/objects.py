@@ -780,13 +780,14 @@ class Exp(PrefixOperation):
     This symbol represents the exponentiation function.
     """
     symbol = 'exp'
+    pure = 'Exp'
 
 class Ln(PrefixOperation):
     """
     This symbol represents the ln function (natural logarithm).
     """
     symbol = 'ln'
-    pure = 'ln'
+    pure = 'Ln'
 
 class Sin(PrefixOperation):
     symbol = 'sin'

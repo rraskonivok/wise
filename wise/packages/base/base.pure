@@ -79,7 +79,7 @@ algebra_normal X = simplify_multiplication .
                    simplify_rational $ X;
 using namespace;
 
-/* 
+/*
   -----------------------
   Numeric Function Values
   -----------------------

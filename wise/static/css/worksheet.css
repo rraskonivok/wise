@@ -222,6 +222,7 @@ math .selected {
 
 .cmd input {
     height: 50px;
+    width: 100%;
     font-size: 15pt;
     font-family: Monaco, sans-serif;
     border-style: solid;
