@@ -377,6 +377,25 @@ class GCD(PrefixOperation):
     cd = 'arith1'
     cd_name = 'gcd'
 
+class Order(PrefixOperation):
+    """
+    """
+    show_parenthesis = True
+    symbol = 'O'
+    pure = 'Order'
+
+class FiniteSeries(InfixOperation):
+    symbol = '+'
+    pure = "FiniteSeries"
+
+    def __init__(self, *terms):
+        self.terms = terms
+        self.operand = self.terms
+
+    def _pure_(self):
+       pterms = map(lambda o: o._pure_() , self.terms)
+       return self.po(*pterms)
+
 class Addition(InfixOperation):
     """
     The symbol representing an binary commutative function plus.
@@ -401,6 +420,7 @@ class Addition(InfixOperation):
        if len(self.terms) == 1:
            return self.terms[0]._pure_()
        else:
+           # TODO: why are we using a lambda here? --> purify
            pterms = map(lambda o: o._pure_() , self.terms)
            return self.po(*pterms)
 
@@ -718,7 +738,8 @@ class CartesianProduct(InfixOperation):
 
 class EmptySet(Term):
     """
-    This symbol is used to represent the empty set, that is the set which contains no members. It takes no parameters.
+    This symbol is used to represent the empty set, that is the
+    set which contains no members. It takes no parameters.
     """
 
     symbol = '∅'

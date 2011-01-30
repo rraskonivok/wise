@@ -13,7 +13,8 @@ boot.start_python_pure()
 boot.start_cython()
 # --- End Test Setup ---
 
-from wise.translators.pytopure import parse_sexp, sexp_parse, make_sexp
+from wise.translators.pytopure import (parse_sexp, sexp_parse,
+        make_sexp, parse_pure_exp)
 from wise.packages import loader
 
 base_objects = loader.load_package_module('base','objects')
@@ -95,6 +96,10 @@ class TestParser(unittest.TestCase):
         for sexp, cls in good_sexps:
             parsed = parse_sexp(sexp)
             self.assertEqual(parsed.classname, cls.__name__)
+
+    def test_pure_parser(self):
+        pure_expr = 'rat 2L 3L'
+        self.assertIsNotNone(parse_pure_exp(pure_expr))
 
 if __name__ == '__main__':
     unittest.main()

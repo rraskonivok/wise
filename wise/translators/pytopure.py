@@ -89,7 +89,10 @@ class Branch(object):
         def f(x):
             if isinstance(x,str):
                 return x
-            elif isinstance(x,int) or isinstance(x,float):
+            # Numbers are passed as is to Pure
+            elif (isinstance(x,int)   or
+                  isinstance(x,float) or
+                  isinstance(x,long)):
                 return x
             elif isinstance(x,Branch):
                 return x.eval_pure()

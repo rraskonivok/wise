@@ -23,6 +23,7 @@ def tokenize(str):
             (0|([1-9][0-9]*))   # Int
             (\.[0-9]+)?         # Frac
             ([Ee][+-][0-9]+)?   # Exp
+            (L)?                # Long
             ''', VERBOSE),
         Spec('op', r'[()\[\]\-,:]'),
         Spec('name', r'[A-Za-z_][A-Za-z]*'),
@@ -36,7 +37,11 @@ def pure_parse(seq):
 
     #http://pure-lang.googlecode.com/svn/docs/pure-syntax/pure-syntax.pdf&pli=1
 
+    # This is some beautiful code... whatever it's fast
     def make_number(n):
+        if 'L' in n:
+            return long(n)
+
         try:
             return int(n)
         except ValueError:
