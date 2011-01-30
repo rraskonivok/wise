@@ -48,7 +48,13 @@ Wise.Accelerators = new Backbone.Collection([
     {
         keys: 's',
         name: 'Reduce to Algebraic Normal Form',
-        action: _rule('algebra_normal'),
+        action: _rule('evals'),
+    },
+
+    {
+        keys: 'f',
+        name: 'Reduce to Algebraic Normal Form',
+        action: _rule('evalf'),
     },
 
     {

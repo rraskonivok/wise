@@ -338,7 +338,7 @@ class Factorial(PostfixOperation):
     """
 
     symbol = '!'
-    pure = 'fact'
+    pure = 'factorial'
 
     cd = 'integer1'
     cd_name = 'factorial'

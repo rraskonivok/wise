@@ -14,7 +14,7 @@ subst x e = subst x (hdict e) with
 end;
 
 
-/* 
+/*
   ------------------------
    Power Series Operations
   ------------------------
@@ -23,7 +23,7 @@ end;
 /*
 References:
 
-* McIlroy MD. The Music of Streams. 
+* McIlroy MD. The Music of Streams.
   Information processing letters. 2001;77(2-4):189-195.
 
 * David Amos: Haskell for Maths.
@@ -220,10 +220,10 @@ namespace;
 
 namespace seq;
 
-/* 
+/*
   ---------------------
    Sequence Operations
-  --------------------- 
+  ---------------------
 */
 
 // Lower bound
@@ -237,14 +237,16 @@ end;
 namespace;
 
 /*namespace reduce_factorials;*/
-factorial n = loop 1 (bigint n) with
+factorial n::int    |
+factorial n::double |
+factorial n::bigint = loop 1 (bigint n) with
   loop p n = if n>0 then loop (p*n) (n-1) else p;
 end;
 /*namespace;*/
 
 using namespace reduce_factorials;
 
-/* 
+/*
 The closed form for a Taylor expression is given by `Taylor`
 which symbolically evalutes to a FiniteSeries expression with a
 O(n) tail.
@@ -252,15 +254,11 @@ O(n) tail.
 
 // Symbol Taylor series metafunction
 evals Taylor f x x0 n = listapply FiniteSeries $
-        ( 
+        (
             (powseries::series_var x)
             (powseries::basic_taylor f x x0 n)
         ) + [Order n] // List of terms
 ;
-
-// Apply a list of arguments 
-listapply f [] = f;
-listapply f (x:xs) = listapply (f x) xs;
 
 // A series specified specifically by it's terms up to n order.
 FiniteSeries order terms;

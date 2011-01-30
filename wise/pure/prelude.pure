@@ -158,3 +158,11 @@ rhs (l --> r) = str r;
 
 // Create an instance of our prototype rule
 instance proto = eval $ (lhs proto) + " = " + (rhs proto);
+
+/* --------------------------
+  Misc. Utilities
+---------------------------- */
+
+// Apply a list of arguments
+listapply f [] = f;
+listapply f (x:xs) = listapply (f x) xs;
