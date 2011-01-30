@@ -51,8 +51,8 @@ class Branch(object):
         self.subterms = set([child for child in self.args if
             isinstance(child,Branch)])
 
-        self.subatoms = set([child for child in self.args if
-            not isinstance(child,Branch)])
+        #self.subatoms = set([child for child in self.args if
+            #not isinstance(child,Branch)])
 
     # TODO: this documentation is severly lacking
     def eval_args(self):
@@ -89,6 +89,8 @@ class Branch(object):
         def f(x):
             if isinstance(x,str):
                 return x
+            elif isinstance(x,list):
+                return tuple(x)
             # Numbers are passed as is to Pure
             elif (isinstance(x,int)   or
                   isinstance(x,float) or
@@ -239,6 +241,8 @@ def map_nullary(parsed):
         #TODO: generalize this into primatives/nullary
         if is_number(atom):
             return Branch('num',[atom])
+        if isinstance(atom,list):
+            return Branch('Tuple',[map_nullary(satom) for satom in atom])
         elif atom == 'ph':
             return Branch('ph',[])
         else:

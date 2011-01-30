@@ -11,9 +11,10 @@ from re import VERBOSE
 
 from funcparserlib.contrib.common import op_, sometok
 from funcparserlib.lexer import make_tokenizer, Spec
-from funcparserlib.parser import many, finished, skip, with_forward_decls
+from funcparserlib.parser import (many, maybe, finished, skip,
+with_forward_decls, forward_decl)
 
-
+# The same tokens are used for both Sexp and Pure parsers
 def tokenize(str):
     'str -> Sequence(Token)'
     specs = [
@@ -47,25 +48,44 @@ def pure_parse(seq):
         except ValueError:
             return float(n)
 
+    def make_array(n):
+        if n is None:
+            return []
+        else:
+            return [n[0]] + n[1]
+
     def make_name(s):
         return s
 
     number = sometok('number') >> make_number
     var = sometok('name') >> make_name
-
     atom = var | number | ( op_('(') + number + op_(')') )
+    first_order = forward_decl()
 
     @with_forward_decls
-    def sexp():
-        return op_('(') + atom + many(atom|sexp) + op_(')')
+    def expr():
+        return op_('(') + atom + many(atom|expr) + op_(')')
 
     @with_forward_decls
     def funcapp():
-        return var + many(atom|sexp)
+        return var + many(atom|expr|first_order)
+
+    array = (op_('[') +
+            maybe(first_order + many(op_(',') + first_order)) +
+            op_(']')
+            >> make_array)
+
+    # First order objects
+    first_order.define(
+        array |
+        funcapp |
+        expr |
+        atom
+    )
 
     @with_forward_decls
     def pure():
-        return ( atom + skip(finished) ) | funcapp
+        return ( atom + skip(finished) ) | first_order
 
     primary = pure
 

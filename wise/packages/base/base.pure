@@ -57,18 +57,6 @@ evalf Zero = 0.0;
 
 evalf (a%b) = double $ (double a)/(double b);
 
-evalf n::int    | 
-evalf n::double |
-evalf n::bigint = n;
-
-evalf Sin(n::int)    | 
-evalf Sin(n::double) |
-evalf Sin(n::bigint) = sin n;
-
-evalf Cos(n::int)    | 
-evalf Cos(n::double) |
-evalf Cos(n::bigint) = cos n;
-evalf x = x if varp x;
 
 
 // The default automatic simplification stack.
@@ -109,6 +97,12 @@ using namespace constants;
     evalf (Ln x) = ln x if numberp x && x ~= 0;
                  = nan if numberp x && x == 0;
                  = Ln x otherwise;
+
+    evalf n = double n if numberp n;
+    evalf x = x if varp x;
+
+    evalf (Sin n) = sin n;
+    evalf (Cos n) = cos n;
 using namespace;
 
 /* 

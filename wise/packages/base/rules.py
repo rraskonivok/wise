@@ -22,6 +22,13 @@ class evalf(PublicRule):
 
     pure = 'evalf'
 
+panel['Evaluations'] = (
+
+        ('Evaluate Symbolically'    , evals),
+        ('Evaluate Float'           , evalf),
+
+)
+
 # -------------------
 # Relational Calculus
 # -------------------

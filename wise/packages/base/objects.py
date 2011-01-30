@@ -664,8 +664,7 @@ class DiracDelta(PrefixOperation):
 class Tuple(Term):
     """
     The n-ary tupling constructor when n>2. The arguments are the
-    element of the tuple. Tuple objects can also be constructed
-    by successive nesting of Pair.
+    element of the tuple.
     """
 
     show_parenthesis = True
@@ -673,8 +672,8 @@ class Tuple(Term):
     symbol = ','
     pure = 'Tuple'
 
-    def __init__(self, x, *xs):
-        self.terms = [x] + list(xs)
+    def __init__(self, *xs):
+        self.terms = list(xs)
 
     def _pure_(self):
         return self.po(*purify(self.terms))
@@ -687,7 +686,7 @@ class Tuple(Term):
             'operand': objects,
             'symbol': self.symbol,
             'parenthesis': self.show_parenthesis,
-            })
+        })
 
         return self.html.render(c)
 

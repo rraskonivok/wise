@@ -39,7 +39,7 @@ series f = f : repeat 0;
 (f:ft) $# (gs@(0:gt)) = f : ( gt $* (ft $# gs) );
 namespace;
 
-using namespace poly;
+namespace poly;
 expr_to_poly X var = _to_poly X with
     _to_poly (x+y) = (_to_poly x) $+ (_to_poly y);
     _to_poly (x*y) = (_to_poly x) $* (_to_poly y);
@@ -50,11 +50,10 @@ expr_to_poly X var = _to_poly X with
     _to_poly x = [x] if numberp x;
     _to_poly x = throw ("Unknown variable: " + str(x)) if varp x;
 end;
+
+poly_var x xs = [x^n * (xs ! n) | n=(0..(#xs - 1))];
+
 namespace;
-
-series_eval x xs = foldl1 (+) $ zipwith (*) xs [x^n | n=(0..(#xs))];
-
-poly_to_expr = series_eval;
 
 /*using namespace poly;*/
 /*[] / gs = [];*/
@@ -63,3 +62,12 @@ poly_to_expr = series_eval;
 /*(f:fs) / (g:gs) = (f/g) : ((fs $- (f/g) $. gs) / (g:gs) &);*/
 /*(f:fs) / (g:gs) = (f/g) : (fs $- ( (f/g) $. gs )) / (g:gs);*/
 /*namespace;*/
+
+series_eval x xs = foldl1 (+) $ poly_var x xs;
+poly_to_expr = series_eval;
+
+// Symbol Taylor series metafunction
+evals UPoly x cs = listapply FinitePoly $
+            (poly::poly_var x cs);
+
+/*FinitePoly*/

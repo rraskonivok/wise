@@ -337,6 +337,6 @@ def is_number(s):
 
     try:
         float(s)
-    except ValueError:
+    except (ValueError, TypeError):
         return False
     return True
