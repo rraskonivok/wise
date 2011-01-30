@@ -46,14 +46,20 @@ Wise.Accelerators = new Backbone.Collection([
     },
 
     {
-        keys: 's',
+        keys: 'shift+s',
         name: 'Reduce to Algebraic Normal Form',
+        action: _rule('algebra_normal'),
+    },
+
+    {
+        keys: 's',
+        name: 'Evaluate symbolically',
         action: _rule('evals'),
     },
 
     {
         keys: 'f',
-        name: 'Reduce to Algebraic Normal Form',
+        name: 'Evaluate to floating point',
         action: _rule('evalf'),
     },
 
