@@ -139,9 +139,9 @@ basic_simplify = reduce with
     x^0 = 1;
     x^1 = x;
     -(-x) = x;
-    Exp x = exp x if numberp x;
-    Sin x = sin x if numberp x;
-    Cos x = cos x if numberp x;
+    /*Exp x = exp x if numberp x;*/
+    /*Sin x = sin x if numberp x;*/
+    /*Cos x = cos x if numberp x;*/
 end;
 
 // Propogate an operator through an expression by applying it to
