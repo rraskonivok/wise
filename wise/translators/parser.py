@@ -9,10 +9,10 @@
 # License, or (at your option) any later version.
 from re import VERBOSE
 
-from funcparserlib.contrib.common import op_, sometok
+from funcparserlib.contrib.common import op_, op, sometok
 from funcparserlib.lexer import make_tokenizer, Spec
 from funcparserlib.parser import (many, maybe, finished, skip,
-with_forward_decls, forward_decl)
+with_forward_decls, forward_decl, oneplus)
 
 # The same tokens are used for both Sexp and Pure parsers
 def tokenize(str):
@@ -62,30 +62,35 @@ def pure_parse(seq):
     atom = var | number | ( op_('(') + number + op_(')') )
     first_order = forward_decl()
 
+    #@with_forward_decls
+
     @with_forward_decls
     def expr():
-        return op_('(') + atom + many(atom|expr) + op_(')')
+        return op_('(') + var + oneplus(expr|funcapp|atom) + op_(')')
 
     @with_forward_decls
     def funcapp():
-        return var + many(atom|expr|first_order)
+        return (
+            var + many(expr|atom)
+        )
 
-    array = (op_('[') +
-            maybe(first_order + many(op_(',') + first_order)) +
+    @with_forward_decls
+    def array():
+        return (op_('[') +
+            maybe((funcapp|atom) + oneplus(op_(',') + first_order)) +
             op_(']')
             >> make_array)
 
     # First order objects
     first_order.define(
-        array |
         funcapp |
-        expr |
+        #array |
         atom
     )
 
     @with_forward_decls
     def pure():
-        return ( atom + skip(finished) ) | first_order
+        return ( first_order + skip(finished) ) | first_order
 
     primary = pure
 

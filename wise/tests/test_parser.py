@@ -98,7 +98,21 @@ class TestParser(unittest.TestCase):
             self.assertEqual(parsed.classname, cls.__name__)
 
     def test_pure_lists(self):
-        self.assertIsNotNone(pure_parse('f [1,2,3]'))
+        tests = [
+            ('f x',            ('f', ['x']) ),
+            ('f x y',          ('f', ['x', 'y']) ),
+            ('f x (f x y)',          ('f', ['x', ('f',['x','y'])]) ),
+            ('[1,2,3]',        [1,2,3] ),
+            ('f [1,2,3]',      ('f', [[1,2,3]]) ),
+            ('f [1,2,3] x',    ('f', [[1,2,3],'x']) ),
+            ('f y [1,2,3]',    ('f', ['y',[1,2,3]]) ),
+            ('1',              1  ),
+            ('[x,y,z]',        ['x','y','z']  ),
+            ('[f x,y,z]',        [('x',['x']),'y','z']  ),
+
+        ]
+        for sexp, output in tests:
+            self.assertEqual(pure_parse(sexp), output)
 
 
     def test_pure_parser(self):

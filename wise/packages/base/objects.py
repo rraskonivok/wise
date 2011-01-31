@@ -673,6 +673,7 @@ class Tuple(Term):
     pure = 'Tuple'
 
     def __init__(self, *xs):
+        print xs
         self.terms = list(xs)
 
     def _pure_(self):
