@@ -61,6 +61,7 @@ def pure_parse(seq):
     var = sometok('name') >> make_name
     atom = var | number | ( op_('(') + number + op_(')') )
     #first_order = forward_decl()
+    pure = forward_decl()
 
     @with_forward_decls
     def expr():
@@ -69,18 +70,22 @@ def pure_parse(seq):
     @with_forward_decls
     def funcapp():
         return (
-            var + many(atom|array|expr)
+            var + many(atom|expr|array)
         )
 
     @with_forward_decls
-    def array():
-        return (op_('[') +
-            maybe(
-                (atom|funcapp|expr) +
-                many(op_(',') +
-                (atom|funcapp|expr))) +
-            op_(']')
-            >> make_array)
+    def funcapp2():
+        return (
+            var + many(funcapp|number)
+        )
+
+    first = funcapp|atom
+
+    array = (
+        op_('[') +
+        maybe(first + many(op_(',') + first)) +
+        op_(']')
+        >> make_array)
 
     # First order objects
     #first_order.define(
