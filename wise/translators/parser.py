@@ -71,20 +71,20 @@ def pure_parse(seq):
     @with_forward_decls
     def funcapp():
         return (
-            var + many(expr|atom)
+            var + oneplus(expr|array|atom)
         )
 
     @with_forward_decls
     def array():
         return (op_('[') +
-            maybe((funcapp|atom) + oneplus(op_(',') + first_order)) +
+            maybe((funcapp|atom) + many(op_(',') + (funcapp|atom))) +
             op_(']')
             >> make_array)
 
     # First order objects
     first_order.define(
         funcapp |
-        #array |
+        array |
         atom
     )
 
