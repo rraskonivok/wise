@@ -673,11 +673,11 @@ class Tuple(Term):
     pure = 'Tuple'
 
     def __init__(self, *xs):
-        print xs
         self.terms = list(xs)
 
     def _pure_(self):
-        return self.po(*purify(self.terms))
+        lst = pureobjects.PureList(*purify(self.terms))
+        return self.po(lst)
 
     def get_html(self):
         objects = [o.get_html() for o in self.terms]

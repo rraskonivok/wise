@@ -102,25 +102,30 @@ class TestParser(unittest.TestCase):
             ('f x',            ('f', ['x']) ),
             ('f x y',          ('f', ['x', 'y']) ),
             ('f x (f x y)',    ('f', ['x', ('f',['x','y'])]) ),
-            ('f (f x y) x',      ('f', [('f',['x','y']),'x']) ),
+            ('f (f x y) x',    ('f', [('f',['x','y']),'x']) ),
             ('[1,2,3]',        [1,2,3] ),
             ('f [1,2,3]',      ('f', [[1,2,3]]) ),
             ('f [1,2,3] x',    ('f', [[1,2,3],'x']) ),
             ('f y [1,2,3]',    ('f', ['y',[1,2,3]]) ),
             ('1',              1  ),
             ('[x,y,z]',        ['x','y','z']  ),
-            ('[f x,y,z]',        [('f',['x']),'y','z']  ),
-            ('[x,f y,z]',        ['x',('f',['y']),'z']  ),
-            ('[x,f x 1L,z]',        ['x',('f',['x',1L]),'z']  ),
+            ('[f x,y,z]',      [('f',['x']),'y','z']  ),
+            ('[x,f y,z]',      ['x',('f',['y']),'z']  ),
+            ('[x,f x 1L,z]',   ['x',('f',['x',1L]),'z']  ),
 
         ]
         for sexp, output in tests:
             self.assertEqual(pure_parse(sexp), output)
 
+    def test_pure_mapping(self):
 
-    def test_pure_parser(self):
-        pure_expr = 'rat 2L 3L'
-        self.assertIsNotNone(parse_pure_exp(pure_expr))
+        tests = [
+            (    '[x,y]', '(Tuple (Variable x) (Variable y))' ),
+            (    '[x,1]', '(Tuple (Variable x) (Numeric 1))' ),
+        ]
+
+        for sexp, output in tests:
+            self.assertIsNotNone(parse_pure_exp(sexp))
 
 if __name__ == '__main__':
     unittest.main()

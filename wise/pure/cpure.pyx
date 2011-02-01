@@ -4,7 +4,7 @@ from libc.stdlib cimport *
 
 __all__ = ['PureInt', 'PureSymbol', 'PureLevel',
 'PureExpr', 'PureDouble', 'PureClosure', 'reduce_with_pure_rules',
-'new_level', 'restore_level', 'PureEnv']
+'new_level', 'restore_level', 'PureEnv','PureList']
 
 cdef class PureEnv:
     """
