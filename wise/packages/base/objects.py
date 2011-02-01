@@ -677,7 +677,8 @@ class Tuple(Term):
 
     def _pure_(self):
         lst = pureobjects.PureList(*purify(self.terms))
-        return self.po(lst)
+        return lst
+        #return self.po(lst)
 
     def get_html(self):
         objects = [o.get_html() for o in self.terms]
