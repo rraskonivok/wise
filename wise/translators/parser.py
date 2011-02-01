@@ -57,35 +57,33 @@ def pure_parse(seq):
     def make_name(s):
         return s
 
+    def make_funcapp(n):
+        head, tail = n
+        if len(tail) == 0:
+            return head
+        else:
+            return (head, tail)
+
     number = sometok('number') >> make_number
     var = sometok('name') >> make_name
-    atom = var | number | ( op_('(') + number + op_(')') )
-    #first_order = forward_decl()
+    atom = var | number
     pure = forward_decl()
+    funcapp = forward_decl()
+    array = forward_decl()
 
-    @with_forward_decls
-    def expr():
-        return op_('(') + var + many(atom|array|expr) + op_(')')
+    expr = op_('(') + funcapp + op_(')')
+    funcapp.define(
+        var + many(expr|atom) >> make_funcapp
+    )
 
-    @with_forward_decls
-    def funcapp():
-        return (
-            var + many(atom|expr|array)
-        )
+    first = (funcapp|array|atom)
 
-    @with_forward_decls
-    def funcapp2():
-        return (
-            var + many(funcapp|number)
-        )
-
-    first = funcapp|atom
-
-    array = (
+    array.define(
         op_('[') +
-        maybe(first + many(op_(',') + first)) +
+        first + many(op_(',') + first) +
         op_(']')
-        >> make_array)
+        >> make_array
+    )
 
     # First order objects
     #first_order.define(
@@ -96,7 +94,7 @@ def pure_parse(seq):
 
     @with_forward_decls
     def pure():
-        return ( (atom|array) + skip(finished) ) | funcapp
+        return (first + skip(finished)) | first
 
     primary = pure
 
