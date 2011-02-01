@@ -73,7 +73,7 @@ def pure_parse(seq):
 
     expr = op_('(') + funcapp + op_(')')
     funcapp.define(
-        var + many(expr|atom) >> make_funcapp
+        var + many(expr|array|atom) >> make_funcapp
     )
 
     first = (funcapp|array|atom)
