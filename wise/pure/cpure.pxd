@@ -5,11 +5,11 @@ cdef extern from "stdlib.h":
     void free(void *ptr)
     void *malloc(size_t size)
     void *realloc(void *ptr, size_t size)
-    size_t strlen(char *s)
     void *calloc(long nmemb, long size)
 
 cdef extern from "string.h":
     char *strcpy(char *dest, char *src)
+    long strlen(char *s)
 
 cdef extern from "stdint.h":
     ctypedef int int32_t

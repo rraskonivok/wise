@@ -243,7 +243,7 @@ def map_nullary(parsed):
             return Branch('num',[atom])
         if isinstance(atom,list):
             print 'ATOM:::', atom
-            return Branch('Tuple',[map_nullary(str(satom)) for satom in atom])
+            return Branch('Tuple',[map_nullary(satom) for satom in atom])
         elif atom == 'ph':
             return Branch('ph',[])
         else:

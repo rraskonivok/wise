@@ -12,14 +12,16 @@ cdef class PureEnv:
     """
     cdef pure_interp *_interp
     cpdef list locals
-    cdef char **argv
 
     def __cinit__(self):
         # This is called whenever a worker is spawned, it must be
         # light and fast.
         print "Creating interpreter instance ...",
 
-        self._interp = cpure.pure_create_interp(0,NULL)
+        s = b'foobar.pure'
+
+        cdef char** argv = [<char*>'',<char*>'-Ipackages',NULL]
+        self._interp = cpure.pure_create_interp(2,argv)
 
         if self._interp is NULL:
             cpython.PyErr_NoMemory()
