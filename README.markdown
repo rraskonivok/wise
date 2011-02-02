@@ -3,19 +3,14 @@ Copyright (C) 2010 Stephen Diehl (<sdiehl@clarku.edu>)
 
 Released under the Affero GPLv3.
 
-Wise is an *simple* computer algebra system with a web notebook
-interface. It is very much a work in progress at this time.
+Wise is an experimental web-based notebook for simple symbolic
+calculations.
 
-The goal of Wise is to provide a digital scratchpad that makes 
-manipulating symbolic expressions fluid, fast, and extensible.
+The goal of the Wise project is to provide an interactive mathematical
+scratch pad that makes manipulating symbolic expressions fast, accessible,
+and extensible.
 
-In addition to being a simple standalone app I hope to make 
-exporting formalism from Wise to other open source programs
-like Sage / Sympy and LaTeX very seamless.
-
-See the homepage here: [http://sdiehl.github.com/wise](http://sdiehl.github.com/wise)
-
-See the [screencast of the web notebook](http://sdiehl.github.com/wise/#screencast).
+Documentation : [http://sdiehl.github.com/wise](http://sdiehl.github.com/wise)
 
 ## Credits 
 
