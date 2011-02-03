@@ -18,8 +18,6 @@ cdef class PureEnv:
         # light and fast.
         print "Creating interpreter instance ...",
 
-        s = b'foobar.pure'
-
         cdef char** argv = [<char*>'',<char*>'-Ipackages',NULL]
         self._interp = cpure.pure_create_interp(2,argv)
 

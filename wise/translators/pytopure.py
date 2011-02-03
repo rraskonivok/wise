@@ -67,6 +67,10 @@ class Branch(object):
                 return x
             elif isinstance(x,Branch):
                 return x.eval_args()
+            elif isinstance(x,list) or isinstance(x,tuple):
+                return [xi.eval_args() for xi in x]
+            else:
+                raise Exception("Could not map")
 
         type = python_trans[self.type]
 
@@ -89,8 +93,10 @@ class Branch(object):
         def f(x):
             if isinstance(x,str):
                 return x
-            elif isinstance(x,list):
-                return tuple(x)
+            elif isinstance(x,list) or isinstance(x,tuple):
+                return [xi.eval_pure() for xi in x]
+            #elif isinstance(x,list):
+                #return tuple(x)
             # Numbers are passed as is to Pure
             elif (isinstance(x,int)   or
                   isinstance(x,float) or
@@ -98,6 +104,8 @@ class Branch(object):
                 return x
             elif isinstance(x,Branch):
                 return x.eval_pure()
+            else:
+                raise Exception("Could not map")
 
         type = translate_pure(self.type)
         obj = type(*(f(arg) for arg in self.args))
@@ -242,8 +250,7 @@ def map_nullary(parsed):
         if is_number(atom):
             return Branch('num',[atom])
         if isinstance(atom,list):
-            print 'ATOM:::', atom
-            return Branch('Tuple',[map_nullary(satom) for satom in atom])
+            return [map_nullary(satom) for satom in atom]
         elif atom == 'ph':
             return Branch('ph',[])
         else:

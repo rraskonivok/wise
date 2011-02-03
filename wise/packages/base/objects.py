@@ -672,13 +672,15 @@ class Tuple(Term):
     symbol = ','
     pure = 'Tuple'
 
-    def __init__(self, *xs):
-        self.terms = list(xs)
+    def __init__(self, x, *xs):
+        if xs:
+            self.terms = (x,) + xs
+        else:
+            self.terms = x
 
     def _pure_(self):
         lst = pureobjects.PureList(*purify(self.terms))
-        return lst
-        #return self.po(lst)
+        return self.po(lst)
 
     def get_html(self):
         objects = [o.get_html() for o in self.terms]
