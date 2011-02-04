@@ -11,9 +11,18 @@ infixl 1000 <'>; // Matrix transpose
 infixl 1000 <.>; // Matrix transpose
 
 // Convert a n-tuple into a (n+1)-tuple
-expand_tuple xs = xs,ph;
+expand_tuple (Tuple xs) = Tuple $ xs+[ph] ;
 // Convert a n-tuple into a (n-1)-tuple
-contract_tuple xs = xs !! (0..#xs-2); 
+contract_tuple (Tuple xs) = Tuple $ xs !! (0..#xs-2);
+
+// Convert a n-vector into a (n+1)-vector
+expand_vector (Vector xs) = Vecotr $ xs+[ph] ;
+// Convert a n-vector into a (n-1)-vector
+contract_vector (Vector xs) = Vector $ xs !! (0..#xs-2);
+
+evals (Vector xs) + (Vector ys) = Vector $ zipwith (+) xs ys;
+evals k * (Vector xs) = Vector $ map (k*) xs;
+evals (Vector xs) * k = Vector $ map (k*) xs;
 
 sum = foldl (+) 0;
 
@@ -53,7 +62,7 @@ TSum f x = Tensor (indices f) x;
 // summation and are summed over.
 
 indices (Tensor x:xs) = set $x:xs;
-/* 
+/*
   ----------------------
   Commutative Operations
   ----------------------

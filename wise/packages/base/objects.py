@@ -379,17 +379,61 @@ class GCD(PrefixOperation):
 
 class Order(PrefixOperation):
     """
+    The O symbol represents a unary function which constructs a
+    set of certain functions of type reals to reals. The
+    condition f(n)=O(g(n)) is intended to express an upper bound
+    condition on f.
     """
     show_parenthesis = True
+
     symbol = 'O'
     pure = 'Order'
+
+class FinitePoly(InfixOperation):
+    symbol = ','
+    pure = "FinitePoly"
+
+    def __init__(self, x, *xs):
+        print type(x), type(xs), type(xs[0])
+        if isinstance(xs[0],list):
+            self.variable = x
+            self.coefs = xs[0]
+            self.terms = [x] + list(xs[0])
+        else:
+            self.variable = x
+            self.coefs = xs
+            self.terms = [x] + list(xs)
+
+    def _pure_(self):
+        cs = pureobjects.PureList(*purify(self.coefs))
+        return self.po(purify(self.variable), cs)
+
+    def get_html(self):
+        self.html = load_haml_template('poly.tpl')
+
+        objects = [o.get_html() for o in self.coefs]
+
+        c = template.Context({
+            'id': self.id,
+            'type': self.classname,
+            'var': self.variable.get_html(),
+            'operand': objects,
+            'symbol': self.symbol,
+            'parenthesis': self.show_parenthesis,
+        })
+
+        return self.html.render(c)
 
 class FiniteSeries(InfixOperation):
     symbol = '+'
     pure = "FiniteSeries"
 
-    def __init__(self, *terms):
-        self.terms = terms
+    def __init__(self, x, *xs):
+        if xs:
+            self.terms = (x,) + xs
+        else:
+            self.terms = x
+
         self.operand = self.terms
 
     def _pure_(self):
@@ -398,7 +442,8 @@ class FiniteSeries(InfixOperation):
 
 class Addition(InfixOperation):
     """
-    The symbol representing an binary commutative function plus.
+    The symbol representing a binary commutative addition
+    function.
     """
 
     symbol = '+'
@@ -661,6 +706,42 @@ class DiracDelta(PrefixOperation):
 # Set Theory Functions
 #-------------------------------------------------------------
 
+class ColVec(Term):
+    """
+    The n-ary tupling constructor when n>2. The arguments are the
+    element of the tuple.
+    """
+
+    show_parenthesis = True
+    html = load_haml_template('colvec.tpl')
+    pure = 'Vector'
+
+    symbol1 = '('
+    symbol2 = ')'
+
+    def __init__(self, x, *xs):
+        if xs:
+            self.terms = (x,) + xs
+        else:
+            self.terms = x
+
+    def _pure_(self):
+        lst = pureobjects.PureList(*purify(self.terms))
+        return self.po(lst)
+
+    def get_html(self):
+        objects = [o.get_html() for o in self.terms]
+
+        c = template.Context({
+            'id': self.id,
+            'operand': objects,
+            'symbol1': self.symbol1,
+            'symbol2': self.symbol2,
+            'parenthesis': self.show_parenthesis,
+        })
+
+        return self.html.render(c)
+
 class Tuple(Term):
     """
     The n-ary tupling constructor when n>2. The arguments are the
@@ -777,6 +858,33 @@ class Union(InfixOperation):
 #-------------------------------------------------------------
 # Transcendental Functions
 #-------------------------------------------------------------
+
+class Taylor(Term):
+    """
+    This symbol represents the exponentiation function.
+    """
+    symbol = 'Taylor'
+    pure = 'Taylor'
+    html = load_haml_template('funcapp.tpl')
+
+    def __init__(self, f, x, x0, n):
+        self.terms = [f,x,x0,n]
+
+    def _pure_(self):
+        return self.po(*purify(self.terms))
+
+    def get_html(self):
+        objects = [o.get_html() for o in self.terms]
+
+        c = template.Context({
+            'id': self.id,
+            'operand': objects,
+            'symbol': self.symbol,
+            'type': self.classname,
+            'operand': objects,
+        })
+
+        return self.html.render(c)
 
 class Exp(PrefixOperation):
     """

@@ -1,3 +1,6 @@
+// References:
+// * MathObj.Polynomial from Haskell numeric prelude
+
 namespace poly;
 infixl 6 $+ ; // Addition
 infixl 6 $- ; // Subtraction
@@ -6,22 +9,30 @@ infixl 7 $. ; // Scalar Multiplication
 infixl 6 $/ ; // Division
 infixl 6 $# ; // Composition
 
-// Addition of power series
+// Addition of polynomials
 (a:as) $+ (b:bs) = (a+b) : (as $+ bs);
 as     $+ []     = as;
 []     $+ bs     = bs;
 
-// Subtraction of power serie
+// Subtraction of polynomials
 as $- bs = as $+ (map neg bs);
 
-// Scalar multiplication of power series
+// Scalar multiplication of polynomials
 a $. bs = map (a*) bs;
 
-// Append 0 term to power series
+// Append 0 term to polynomial
 shift [] = [];
 shift as = 0 : as;
 
-// Multiplication of power series
+// Prepend zeros to polynomial
+pad n l = (repeatn n 0) + l;
+
+// Scale polynomial by constant
+scale s = map (s*);
+
+alternate = zipwith ($) (cycle [id, neg]);
+
+// Multiplication of polynomials
 [] $* _ = [];
 _ $* [] = [];
 (a:as) $* (b:bs) = [a*b] $+
@@ -29,14 +40,22 @@ _ $* [] = [];
     map (*b) as) $+
     shift (shift (as $* bs));
 
+// Return the polynomail with an appeneded infinite stream of
+// zeros
 series f = f : repeat 0;
 [] $/ _ = [];
 
+// Finite polynomial division
 (f:ft) $/ (g:gt) = qs : series(1/g) $. (ft $- (qs $. gt)) 
     with qs = f/g end;
 
+// Finite polynomial composition
 [] $# gs = [];
 (f:ft) $# (gs@(0:gt)) = f : ( gt $* (ft $# gs) );
+
+// Horner evaluation
+horner v x = foldl (\a b -> a*x + b) 0 (reverse v);
+
 namespace;
 
 namespace poly;

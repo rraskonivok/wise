@@ -15,7 +15,7 @@ using simp;
 using poly;
 using indexed;
 
-/* 
+/*
   -----------------------
   Logical Atoms
   -----------------------
@@ -26,7 +26,7 @@ using indexed;
 nonfix True;
 nonfix False;
 
-/* 
+/*
   -----------------------
   Numeric Constants
   -----------------------

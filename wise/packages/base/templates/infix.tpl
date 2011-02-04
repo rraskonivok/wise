@@ -1,5 +1,3 @@
-{% load custom_tags %}
-
 <mrow id="{{id}}">
     {% if parenthesis %}
     <mo stretchy="true">(</mo>
