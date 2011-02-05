@@ -50,6 +50,8 @@ eye n = {i==j | i = 1..n; j = 1..n};
 // nxn zero matrix
 zeros n = {0 | i = 1..n; j = 1..n};
 
+phmat n = {ph | i = 1..n; j = 1..n};
+
 tensor_type x::double |
 tensor_type x::int = (0,0) if numberp x;
 tensor_type x::matrix = (0,1) if vectorp x;

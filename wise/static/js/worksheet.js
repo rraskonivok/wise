@@ -11,12 +11,16 @@
 ///////////////////////////////////////////////////////////
 // Initalization
 ///////////////////////////////////////////////////////////
-$(document).ajaxError(function () {
+
+$(document).ajaxError(function (e, xhr, settings, exception) {
     Notifications.raise('AJAX_FAIL');
+
+    var content = xhr.responseText;
+
 
     // Disable math operations until we restablish a connection
     Wise.Settings.set({DISABLE_MATH: true});
-    Wise.Log.warn('Operation failed, since server did not respond');
+    Wise.Log.serverError('Operation failed, since server did not respond',content);
 });
 
 $(document).ready(function () {
@@ -291,14 +295,20 @@ function apply_rule(rule, operands, callback) {
     data: data,
     datatype: 'json',
     success: function (response) {
+        console.log(response);
 
-        if (!response) {
-          error('Server did not repsond to request.');
-          return;
+        if(!response.namespace_index) {
+            alert('null');
+            $("#worksheet").html(response);
         }
 
         if (response.error) {
           Wise.Log.error(response.error);
+          return;
+        }
+
+        if (!response) {
+          error('Server did not repsond to request.');
           return;
         }
 
@@ -499,9 +509,9 @@ function apply_transform(transform, operands) {
                   Wise.last_expr = newnode.root;
                   Wise.Selection.clear();
 
-                  if(callback) {
-                    callback(image);
-                  }
+                  //if(callback) {
+                    //callback(image);
+                  //}
           }
 
         }

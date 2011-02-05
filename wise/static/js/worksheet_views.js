@@ -43,6 +43,7 @@ var Logger = Backbone.Collection.extend({
         var err = {
             message: msg, 
             severity: 3,
+            trace: null,
         };
         this.add(err);
     },
@@ -51,6 +52,7 @@ var Logger = Backbone.Collection.extend({
         var err = {
             message: msg, 
             severity: 2,
+            trace: null,
         };
         this.add(err);
     },
@@ -59,6 +61,16 @@ var Logger = Backbone.Collection.extend({
         var err = {
             message: msg, 
             severity: 1,
+            trace: null,
+        };
+        this.add(err);
+    },
+
+    serverError: function(msg, trace) {
+        var err = {
+            message: msg, 
+            severity: 1,
+            trace: trace,
         };
         this.add(err);
     },
@@ -75,12 +87,15 @@ var LoggerView = Backbone.View.extend({
     colorstate: 0,
     
     initialize: function() {
-        _.bindAll(this, 'newError');
+        _.bindAll(this, 'newError','makeStackTrace');
         this.model.bind('add',this.newError);
     },
 
     newError: function(err) {
+        var error_template = _.template('<div class="errmsg">{{error}}<div class="trace">{{trace}}</div></div>');
+
         var severity = err.get('severity');
+
         // Display the color indicator corresponding to the worst
         // active error
         if(severity >= this.colorstate) {
@@ -88,14 +103,55 @@ var LoggerView = Backbone.View.extend({
             $('#log_indicator').css('background-color', color); 
             this.colorstate = severity;
         }
+
         $('#log_indicator').effect('highlight');
-        this.$('.history').append(err.get('message'));
+
+        if(err.get('trace')) {
+           this.makeStackTrace(err); 
+           return;
+        }
+
+        this.$('.history').append(
+            error_template({
+                error: err.get('message'),
+            })
+        );
+    },
+
+    makeStackTrace: function(err) {
+        var error_template = _.template('<div class="errmsg">{{error}}<div class="trace">{{trace}}</div></div>');
+        error = error_template({
+            error: err.get('message'),
+            trace: '',
+        })
+
+        this.$('.history').append(
+            error
+        );
+
+        var iframe = document.createElement("iframe");
+        $('.trace:last','.history')[0].appendChild(iframe);
+
+        var doc = iframe.document;
+        if(iframe.contentDocument) {
+            doc = iframe.contentDocument;
+        } else if(iframe.contentWindow) {
+            doc = iframe.contentWindow.document;
+        }
+
+        // Put the content in the iframe
+        doc.open();
+        doc.writeln(err.get('trace'));
+        doc.close();
+
+        var storeArea = doc.getElementById("storeArea");
+
     },
 
     resetState: function(err) {
         this.colorstate = 0;
         $('#log_indicator').css('background-color', ""); 
-    }
+    },
 });
 
 var SidebarView = Backbone.View.extend({
