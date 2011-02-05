@@ -23,6 +23,8 @@ i2p x::double |
 i2p x::int    = x if x >= 0;
               = Neg $ abs x otherwise;
 
+i2p mat::matrix = Mat $ map (MRow . list) $ rows (map i2p mat);
+
 // Convert Infix to Prefix
 i2p X = reduce X with
     x + y = add (i2p x) (i2p y);
@@ -50,6 +52,9 @@ p2i X = reduce X with
     evali x = x;
     evalf x = x;
     evals x = x;
+
+    Mat xs = matrix xs;
+    MRow xs = xs;
 end;
 
 /* ------------------------

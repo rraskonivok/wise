@@ -35,10 +35,14 @@ sum = foldl (+) 0;
 // Scalar multiplication
 (<.>) a x::matrix = map (a*) x if ~matrixp a;
 
+evals (x::matrix + y::matrix) = x <+> y if dim x == dim y;
+evals (x::matrix * y::matrix) = x <*> y if dim x == dim y;
+evals (k * x::matrix) = k <.> x;
+evals (x::matrix * k) = k <.> x;
+
 // Constructors
 RowVector = rowvector;
 ColVector = colvector;
-Matrix = matrix;
 
 // nxn identity matrix
 eye n = {i==j | i = 1..n; j = 1..n};

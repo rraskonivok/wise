@@ -706,6 +706,58 @@ class DiracDelta(PrefixOperation):
 # Set Theory Functions
 #-------------------------------------------------------------
 
+class Matrix(Term):
+    """
+    """
+    html = load_haml_template('matrix.tpl')
+    pure = 'Mat'
+
+    def __init__(self, x, *xs):
+        if xs:
+            self.terms = (x,) + xs
+        else:
+            self.terms = x
+
+    def _pure_(self):
+        lst = pureobjects.PureList(*purify(self.terms))
+        return self.po(lst)
+
+    def get_html(self):
+        objects = [o.get_html() for o in self.terms]
+
+        c = template.Context({
+            'id': self.id,
+            'operand': objects,
+        })
+
+        return self.html.render(c)
+
+class MRow(Term):
+    """
+    """
+    html = load_haml_template('mrow.tpl')
+    pure = 'MRow'
+
+    def __init__(self, x, *xs):
+        if xs:
+            self.terms = (x,) + xs
+        else:
+            self.terms = x
+
+    def _pure_(self):
+        lst = pureobjects.PureList(*purify(self.terms))
+        return self.po(lst)
+
+    def get_html(self):
+        objects = [o.get_html() for o in self.terms]
+
+        c = template.Context({
+            'id': self.id,
+            'operand': objects,
+        })
+
+        return self.html.render(c)
+
 class ColVec(Term):
     """
     The n-ary tupling constructor when n>2. The arguments are the
