@@ -30,6 +30,43 @@ panel['Evaluations'] = (
 )
 
 # -------------------
+# Indical Operations
+# -------------------
+
+class incrows(PublicRule):
+    """
+    Evaluate the expression to floating point value.
+    """
+    pure = 'incrows'
+
+class inccols(PublicRule):
+    """
+    Evaluate the expression to floating point value.
+    """
+    pure = 'inccols'
+
+class addcvi(PublicRule):
+    """
+    Evaluate the expression to floating point value.
+    """
+    pure = 'addcvi'
+
+class addcoi(PublicRule):
+    """
+    Evaluate the expression to floating point value.
+    """
+    pure = 'addcoi'
+
+panel['Indices'] = (
+
+        ('Increment Rows',         incrows),
+        ('Increment Columns',      inccols),
+        ('Add Covariant Index'    , addcvi),
+        ('Add Contraviarnt Index' , addcoi),
+
+)
+
+# -------------------
 # Relational Calculus
 # -------------------
 

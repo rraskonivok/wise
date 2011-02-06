@@ -37,6 +37,26 @@ var toplevel_types = [
     },
 ]
 
+function expand_trace(obj) {
+    $('.trace:last',obj).css('position','fixed');
+    $('.trace:last',obj).css('left','0');
+    $('.trace:last',obj).css('bottom','0');
+    $('.trace:last',obj).css('z-index','500');
+
+    $('.trace:last iframe',obj).css('height',document.height/2);
+    $('.trace:last iframe',obj).css('width',document.width);
+}
+
+function collapse_trace(obj) {
+    $('.trace:last',obj).css('position','relative');
+    $('.trace:last',obj).css('left','');
+    $('.trace:last',obj).css('top','');
+    $('.trace:last',obj).css('z-index','0');
+
+    $('.trace:last iframe',obj).css('height','100%');
+    $('.trace:last iframe',obj).css('width','100%');
+}
+
 var Logger = Backbone.Collection.extend({
 
     fatal: function(msg) {
@@ -79,20 +99,37 @@ var Logger = Backbone.Collection.extend({
 
 var LoggerView = Backbone.View.extend({
 
+    events: {
+      "click .expandtrace": "toggleTrace",
+    },
+
     colors: ['yellow',      // Warnings 
              'lightsalmon', // Errors
              'red'          // Fatal Errors
             ],
 
     colorstate: 0,
+    activetrace: null,
     
     initialize: function() {
         _.bindAll(this, 'newError','makeStackTrace');
         this.model.bind('add',this.newError);
     },
 
+    toggleTrace: function(e) {
+        if(this.active_trace) {
+            collapse_trace(this.active_trace);
+            this.active_trace = null;
+        }
+        else {
+            var obj = $(e.target).parent();
+            expand_trace(obj);
+            this.active_trace = obj;
+        }
+    },
+
     newError: function(err) {
-        var error_template = _.template('<div class="errmsg">{{error}}<div class="trace">{{trace}}</div></div>');
+        var error_template = _.template('<div class="errmsg">{{error}}<br/><span class="expandtrace">Expand</span>|<span class="collapsetrace">Collapse</span><div class="trace">{{trace}}</div></div>');
 
         var severity = err.get('severity');
 
@@ -111,7 +148,7 @@ var LoggerView = Backbone.View.extend({
            return;
         }
 
-        this.$('.history').append(
+        this.$('.history').prepend(
             error_template({
                 error: err.get('message'),
             })
@@ -119,18 +156,18 @@ var LoggerView = Backbone.View.extend({
     },
 
     makeStackTrace: function(err) {
-        var error_template = _.template('<div class="errmsg">{{error}}<div class="trace">{{trace}}</div></div>');
+        var error_template = _.template('<div class="errmsg">{{error}}<br/><span class="expandtrace">Expand</span><div class="trace">{{trace}}</div></div><hr/>');
         error = error_template({
             error: err.get('message'),
             trace: '',
         })
 
-        this.$('.history').append(
+        this.$('.history').prepend(
             error
         );
 
         var iframe = document.createElement("iframe");
-        $('.trace:last','.history')[0].appendChild(iframe);
+        $('.trace:first','.history')[0].appendChild(iframe);
 
         var doc = iframe.document;
         if(iframe.contentDocument) {

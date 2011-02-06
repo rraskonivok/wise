@@ -10,13 +10,36 @@ infixl 1000 <+>; // Matrix addition
 infixl 1000 <'>; // Matrix transpose
 infixl 1000 <.>; // Matrix transpose
 
+prefix 1000 expandindex;
+
+const ph;
+
 // Convert a n-tuple into a (n+1)-tuple
 expand_tuple (Tuple xs) = Tuple $ xs+[ph] ;
 // Convert a n-tuple into a (n-1)-tuple
 contract_tuple (Tuple xs) = Tuple $ xs !! (0..#xs-2);
 
+nrows x::matrix = (dim x) ! 0;
+ncols x::matrix = (dim x) ! 1;
+
 // Convert a n-vector into a (n+1)-vector
-expand_vector (Vector xs) = Vecotr $ xs+[ph] ;
+/*incrows mat = pack $ {*/
+    /*if (i > nrows mat) || (j > ncols mat) then*/
+        /*1*/
+    /*else*/
+        /*mat ! (i-1,j-1)*/
+    /*| i=(1..nrows mat); j=(1..ncols mat + 1) };*/
+
+/*inccols mat = pack $ {*/
+    /*if (i > nrows mat) || (j > ncols mat) then*/
+        /*1*/
+    /*else*/
+        /*mat ! (i-1,j-1)*/
+    /*| i=(1..nrows mat + 1); j=(1..ncols mat) };*/
+
+inccols mat = matrix $ map ((+[ph]) . list) $ rows mat;
+incrows mat = transpose $ matrix $ map ((+[ph]) . list) $ cols mat;
+
 // Convert a n-vector into a (n-1)-vector
 contract_vector (Vector xs) = Vector $ xs !! (0..#xs-2);
 
@@ -26,11 +49,14 @@ evals (Vector xs) * k = Vector $ map (k*) xs;
 
 sum = foldl (+) 0;
 
+dot x::matrix y::matrix = sum $ zipwith (*) (rowvector x) (rowvector y);
+
 // Matrix Addition
 (<+>) x::matrix y::matrix =  zipwith (+) x y if dim x == dim y;
 
 // Matrix multiplication
-(<*>) x::matrix y::matrix = sum $ zipwith (*) (rowvector x) (rowvector y) if dim x == dim y;
+/*(<*>) x::matrix y::matrix = sum $ zipwith (*) (rowvector x) (rowvector y) if ncols x == nrows y;*/
+(<*>) x::matrix y::matrix = {dot u v | u = rows x; v = cols y};
 
 // Scalar multiplication
 (<.>) a x::matrix = map (a*) x if ~matrixp a;

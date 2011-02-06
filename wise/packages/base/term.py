@@ -226,7 +226,8 @@ class Placeholder(Term):
     def _pure_(self):
         # If there is a placeholder left in an expression throw
         # an error and abort the pure translation.
-        raise PlaceholderInExpression()
+        #raise PlaceholderInExpression()
+        return self.po()
 
     def get_math(self):
         return '(Placeholder )'

@@ -213,6 +213,24 @@ Wise.Accelerators = new Backbone.Collection([
         action: function() { new_line('eq', Wise.last_cell) },
     },
 
+    {
+        keys: 'o',
+        name: 'New Cell',
+        action: function() { new_line('eq', Wise.last_cell) },
+    },
+
+    {
+        keys: 'b',
+        name: 'Increment Rows',
+        action: _rule('inccols'),
+    },
+
+    {
+        keys: 'v',
+        name: 'Increment Cols',
+        action: _rule('incrows'),
+    },
+
     //{
     //    keys: 'h',
     //    name: 'Debug',
