@@ -1,3 +1,4 @@
-msup#{{id}} title="{{type}}"
-    {{base}}
-    {{symbol}}
+<msup id="{{id}}">
+    {{operand}}
+    <mo>T</mo>
+</msup>

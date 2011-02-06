@@ -706,6 +706,61 @@ class DiracDelta(PrefixOperation):
 # Set Theory Functions
 #-------------------------------------------------------------
 
+class Idx(InfixOperation):
+    """
+    Covariant Indexes
+    """
+
+    symbol = ''
+    pure = 'Idx'
+    html = load_haml_template('idx.tpl')
+
+    def __init__(self, x, *xs):
+        if xs:
+            self.terms = (x,) + xs
+        else:
+            self.terms = [x]
+
+    def _pure_(self):
+        lst = pureobjects.PureList(*purify(self.terms))
+        return self.po(lst)
+
+class AbstractTensor(Term):
+
+    pure = 'Tensor'
+    html = load_haml_template('tensor.tpl')
+
+    def __init__(self, base, co, cv):
+        self.base = base
+        self.co = co
+        self.cv = cv
+
+        self.terms = [base,co,cv]
+
+    def _pure_(self):
+        return self.po(*purify(self.terms))
+
+    def get_html(self):
+        c = template.Context({
+            'id': self.id,
+            'base': self.base.get_html(),
+            'co': self.co.get_html(),
+            'cv': self.cv.get_html(),
+        })
+
+        return self.html.render(c)
+
+class Transpose(SupOperation):
+    symbol1 = 'T'
+    pure = 'Transpose'
+
+    def __init__(self, operand):
+        self.operand = operand
+        self.terms = [operand]
+
+    def _pure_(self):
+        return self.po(*purify(self.terms))
+
 class Matrix(Term):
     """
     """
@@ -713,10 +768,15 @@ class Matrix(Term):
     pure = 'Mat'
 
     def __init__(self, x, *xs):
-        if xs:
-            self.terms = (x,) + xs
-        else:
+        # Arguments are either of the form
+        # atom atom atom
+        #  --- or ---
+        # [atom,atom,atom]
+
+        if isinstance(x,list):
             self.terms = x
+        else:
+            self.terms = (x,) + xs
 
     def _pure_(self):
         lst = pureobjects.PureList(*purify(self.terms))
@@ -739,10 +799,15 @@ class MRow(Term):
     pure = 'MRow'
 
     def __init__(self, x, *xs):
-        if xs:
-            self.terms = (x,) + xs
-        else:
+        # Arguments are either of the form
+        # atom atom atom
+        #  --- or ---
+        # [atom,atom,atom]
+
+        if isinstance(x,list):
             self.terms = x
+        else:
+            self.terms = (x,) + xs
 
     def _pure_(self):
         lst = pureobjects.PureList(*purify(self.terms))
@@ -806,10 +871,15 @@ class Tuple(Term):
     pure = 'Tuple'
 
     def __init__(self, x, *xs):
-        if xs:
-            self.terms = (x,) + xs
-        else:
+        # Arguments are either of the form
+        # atom atom atom
+        #  --- or ---
+        # [atom,atom,atom]
+
+        if isinstance(x,list):
             self.terms = x
+        else:
+            self.terms = (x,) + xs
 
     def _pure_(self):
         lst = pureobjects.PureList(*purify(self.terms))

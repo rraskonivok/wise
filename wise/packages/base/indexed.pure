@@ -11,8 +11,7 @@ infixl 1000 <'>; // Matrix transpose
 infixl 1000 <.>; // Matrix transpose
 
 prefix 1000 expandindex;
-
-const ph;
+prefix 1000 Idx;
 
 // Convert a n-tuple into a (n+1)-tuple
 expand_tuple (Tuple xs) = Tuple $ xs+[ph] ;
@@ -22,23 +21,15 @@ contract_tuple (Tuple xs) = Tuple $ xs !! (0..#xs-2);
 nrows x::matrix = (dim x) ! 0;
 ncols x::matrix = (dim x) ! 1;
 
-// Convert a n-vector into a (n+1)-vector
-/*incrows mat = pack $ {*/
-    /*if (i > nrows mat) || (j > ncols mat) then*/
-        /*1*/
-    /*else*/
-        /*mat ! (i-1,j-1)*/
-    /*| i=(1..nrows mat); j=(1..ncols mat + 1) };*/
+inccols mat::matrix = matrix $ map ((+[ph]) . list) $ rows mat;
+incrows mat::matrix = transpose $ matrix $ map ((+[ph]) . list) $ cols mat;
 
-/*inccols mat = pack $ {*/
-    /*if (i > nrows mat) || (j > ncols mat) then*/
-        /*1*/
-    /*else*/
-        /*mat ! (i-1,j-1)*/
-    /*| i=(1..nrows mat + 1); j=(1..ncols mat) };*/
+// Generic expansion functions
+fstex (f@_ x y) = f (x+[ph]) y if listp x;
+fstex (f@_ x) = f (x+[ph]) if listp x;
+sndex (f@_ x y) = f x (y+[ph]) if listp y;
 
-inccols mat = matrix $ map ((+[ph]) . list) $ rows mat;
-incrows mat = transpose $ matrix $ map ((+[ph]) . list) $ cols mat;
+incrows (f@_ x y) = f (x+[ph]) y if listp x;
 
 // Convert a n-vector into a (n-1)-vector
 contract_vector (Vector xs) = Vector $ xs !! (0..#xs-2);
@@ -62,49 +53,66 @@ dot x::matrix y::matrix = sum $ zipwith (*) (rowvector x) (rowvector y);
 (<.>) a x::matrix = map (a*) x if ~matrixp a;
 
 evals (x::matrix + y::matrix) = x <+> y if dim x == dim y;
-evals (x::matrix * y::matrix) = x <*> y if dim x == dim y;
-evals (k * x::matrix) = k <.> x;
-evals (x::matrix * k) = k <.> x;
+evals (x::matrix * y::matrix) = x <*> y if ncols x == nrows y;
+
+evals (k * x::matrix) = k <.> x if numberp k || varp k;
+evals (x::matrix * k) = k <.> x if numberp k || varp k;
 
 // Constructors
 RowVector = rowvector;
 ColVector = colvector;
 
-// nxn identity matrix
+/*
+  ----------------------
+  Special Matrices
+  ----------------------
+*/
+
 eye n = {i==j | i = 1..n; j = 1..n};
-
-// nxn zero matrix
 zeros n = {0 | i = 1..n; j = 1..n};
-
 phmat n = {ph | i = 1..n; j = 1..n};
+cstmat n c = {c | i = 1..n; j = 1..n};
 
-tensor_type x::double |
-tensor_type x::int = (0,0) if numberp x;
-tensor_type x::matrix = (0,1) if vectorp x;
-                      = (1,1) if matrixp x;
+Transpose x::matrix = transpose x;
 
 Summmation f (x:xs) (b:bs) = 0;
 
 evals Sum (x:xs) = sum $ x:xs;
 
-TSum f x = Tensor (indices f) x;
+lex a b = str a < str b;
+lexo xs = sort lex xs;
 
-
-// Return the indices of the tensor, repeated indices imply
-// summation and are summed over.
-
-indices (Tensor x:xs) = set $x:xs;
 /*
   ----------------------
-  Commutative Operations
+  Abstract Tensors
   ----------------------
 */
 
-commute_indexed (a <+> b) = b <+> a;
-commute_indexed (a <*> b) = -(b <*> a);
-commute_indexed (-(a <*> b)) = b <*> a;
+ATensor x co cv = Tensor x (Idx lexo co) (Idx lexo cv);
 
-Diag xs = diagmat xs;
+tensor_type x::double |
+tensor_type x::int = (0,0) if numberp x;
+tensor_type x::matrix = (0,1) if vectorp x;
+                      = (1,1) if matrixp x;
+tensor_type (Tensor (Idx co) (Idx cv)) = (#co,#cv);
+
+addcoi (Tensor x (Idx co) (Idx cv)) = (Tensor y (Idx co + [ph]) (Idx cv));
+addcoi x = x;
+
+addcvi (Tensor x (Idx co) (Idx cv)) = (Tensor y (Idx co ) (Idx cv + [ph]));
+addcvi x = x;
+
+indices (Tensor (Idx co) (Idx cv)) = co,cv;
+
+/*
+  ----------------------
+  Special Tensors
+  ----------------------
+*/
+
+LeviCevita = ATensor epsilon [];
+
+Diag xs = diagmat $ rowvector xs;
 
 evals LeviCivita i j k = int $ (j-i)*(k-i)*(k-j)/2;
 

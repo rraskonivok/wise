@@ -114,7 +114,7 @@ class Operation(Term):
                 'id': self.id,
                 'type': self.classname,
                 'operand': self.operand.get_html(),
-                'symbol1': self.symbol1.get_html(),
+                'symbol1': self.symbol1,
                 'parenthesis': self.show_parenthesis,
                 })
 
