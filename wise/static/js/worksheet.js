@@ -19,7 +19,7 @@ $(document).ajaxError(function (e, xhr, settings, exception) {
 
 
     // Disable math operations until we restablish a connection
-    Wise.Settings.set({DISABLE_MATH: true});
+    //Wise.Settings.set({DISABLE_MATH: true});
     Wise.Log.serverError('Operation failed, since server did not respond',content);
 });
 

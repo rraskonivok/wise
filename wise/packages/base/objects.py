@@ -716,10 +716,10 @@ class Idx(InfixOperation):
     html = load_haml_template('idx.tpl')
 
     def __init__(self, x, *xs):
-        if xs:
-            self.terms = (x,) + xs
+        if isinstance(x,list):
+            self.terms = x
         else:
-            self.terms = [x]
+            self.terms = (x,) + xs
 
     def _pure_(self):
         lst = pureobjects.PureList(*purify(self.terms))

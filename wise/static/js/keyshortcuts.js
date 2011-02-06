@@ -231,6 +231,12 @@ Wise.Accelerators = new Backbone.Collection([
         action: _rule('incrows'),
     },
 
+    {
+        keys: 'shift+t',
+        name: 'Tranpose',
+        action: _rule('transpose'),
+    },
+
     //{
     //    keys: 'h',
     //    name: 'Debug',

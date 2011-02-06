@@ -30,6 +30,16 @@ panel['Evaluations'] = (
 )
 
 # -------------------
+# Matrix Operations
+# -------------------
+
+class transpose(PublicRule):
+    """
+    Evaluate the expression to floating point value.
+    """
+    pure = 'transpose'
+
+# -------------------
 # Indical Operations
 # -------------------
 

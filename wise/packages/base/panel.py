@@ -28,6 +28,49 @@ ops = (
 
 Algebraic = MathMLPanel(name="Algebraic", objects=ops)
 
+#-------------------------
+# Matrix Operations
+#-------------------------
+
+def mat_constructor(rows, cols):
+    return objects.Matrix(
+        *( objects.MRow(
+            *(objects.Placeholder(),)*rows
+        ),) * cols
+    )
+
+mat_ops = (
+    ('1x3', mat_constructor(1,3)),
+    ('3x1', mat_constructor(3,1)),
+    ('1x2', mat_constructor(1,2)),
+    ('2x1', mat_constructor(2,1)),
+    ('1x4', mat_constructor(1,4)),
+    ('4x1', mat_constructor(4,1)),
+    ('1x4', mat_constructor(1,4)),
+    ('4x1', mat_constructor(4,1)),
+    ('2x2', mat_constructor(2,2)),
+    ('3x3', mat_constructor(3,3)),
+)
+
+Matrix = MathMLPanel(name="Matrix", objects=mat_ops,
+        use_template='True')
+
+
+#-------------------------
+# Tensors
+#-------------------------
+
+generic_tensor = objects.AbstractTensor(
+    objects.Variable('T'),
+    objects.Idx(objects.Placeholder()),
+    objects.Idx(objects.Placeholder())
+)
+
+tens_ops = (
+    ('buttons/generic_tensor.xml', generic_tensor),
+)
+
+Tensor = MathMLPanel(name="Tensor", objects=tens_ops)
 
 #-------------------------
 # Trigonometric Operations

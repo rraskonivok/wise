@@ -96,10 +96,10 @@ tensor_type x::matrix = (0,1) if vectorp x;
                       = (1,1) if matrixp x;
 tensor_type (Tensor (Idx co) (Idx cv)) = (#co,#cv);
 
-addcoi (Tensor x (Idx co) (Idx cv)) = (Tensor y (Idx co + [ph]) (Idx cv));
+addcoi (Tensor x (Idx co) (Idx cv)) = (Tensor x (Idx co + [ph]) (Idx cv));
 addcoi x = x;
 
-addcvi (Tensor x (Idx co) (Idx cv)) = (Tensor y (Idx co ) (Idx cv + [ph]));
+addcvi (Tensor x (Idx co) (Idx cv)) = (Tensor x (Idx co ) (Idx cv + [ph]));
 addcvi x = x;
 
 indices (Tensor (Idx co) (Idx cv)) = co,cv;
