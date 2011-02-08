@@ -108,10 +108,6 @@ evals (Tensor x (Idx co1) (Idx cv1)) *
       (Tensor y (Idx co2) (Idx cv2)) = 
       (Tensor (x*y) (Idx co1 + co2) (Idx cv1 + cv2));
 
-evals (Tensor x (Idx co1) (Idx cv1)) * 
-      (Tensor y (Idx co2) (Idx cv2)) = 
-      (Tensor (x*y) (Idx co1 + co2) (Idx cv1 + cv2));
-
 /*
   ----------------------
   Special Tensors

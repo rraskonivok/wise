@@ -703,52 +703,8 @@ class DiracDelta(PrefixOperation):
     symbol = '\\delta'
 
 #-------------------------------------------------------------
-# Set Theory Functions
+# Matrices
 #-------------------------------------------------------------
-
-class Idx(InfixOperation):
-    """
-    Covariant Indexes
-    """
-
-    symbol = ''
-    pure = 'Idx'
-    html = load_haml_template('idx.tpl')
-
-    def __init__(self, x, *xs):
-        if isinstance(x,list):
-            self.terms = x
-        else:
-            self.terms = (x,) + xs
-
-    def _pure_(self):
-        lst = pureobjects.PureList(*purify(self.terms))
-        return self.po(lst)
-
-class AbstractTensor(Term):
-
-    pure = 'Tensor'
-    html = load_haml_template('tensor.tpl')
-
-    def __init__(self, base, co, cv):
-        self.base = base
-        self.co = co
-        self.cv = cv
-
-        self.terms = [base,co,cv]
-
-    def _pure_(self):
-        return self.po(*purify(self.terms))
-
-    def get_html(self):
-        c = template.Context({
-            'id': self.id,
-            'base': self.base.get_html(),
-            'co': self.co.get_html(),
-            'cv': self.cv.get_html(),
-        })
-
-        return self.html.render(c)
 
 class Transpose(SupOperation):
     symbol1 = 'T'
@@ -896,6 +852,62 @@ class Tuple(Term):
         })
 
         return self.html.render(c)
+
+#-------------------------------------------------------------
+# Tensors
+#-------------------------------------------------------------
+
+class Idx(InfixOperation):
+    """
+    Covariant Indexes
+    """
+
+    symbol = ''
+    pure = 'Idx'
+    html = load_haml_template('idx.tpl')
+
+    def __init__(self, x, *xs):
+        if isinstance(x,list):
+            self.terms = x
+        else:
+            self.terms = (x,) + xs
+
+    def _pure_(self):
+        lst = pureobjects.PureList(*purify(self.terms))
+        return self.po(lst)
+
+class AbstractTensor(Term):
+
+    pure = 'Tensor'
+    html = load_haml_template('tensor.tpl')
+
+    def __init__(self, base, co, cv):
+        self.base = base
+        self.co = co
+        self.cv = cv
+
+        self.terms = [base,co,cv]
+        if len(base.terms) > 1:
+            self.show_parenthesis = True
+
+    def _pure_(self):
+        return self.po(*purify(self.terms))
+
+    def get_html(self):
+        c = template.Context({
+            'id': self.id,
+            'base': self.base.get_html(),
+            'co': self.co.get_html(),
+            'cv': self.cv.get_html(),
+            'parenthesis': self.show_parenthesis,
+        })
+
+        return self.html.render(c)
+
+#-------------------------------------------------------------
+# Set Theory Functions
+#-------------------------------------------------------------
+
 
 class Set(Term):
     """

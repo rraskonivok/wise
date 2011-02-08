@@ -21,13 +21,13 @@ end;
 */
 
 /*
-References:
+ References:
 
-* McIlroy MD. The Music of Streams.
-  Information processing letters. 2001;77(2-4):189-195.
-
-* David Amos: Haskell for Maths.
-  http://haskellformaths.blogspot.com
+ * McIlroy MD. The Music of Streams.
+   Information processing letters. 2001;77(2-4):189-195.
+ 
+ * David Amos: Haskell for Maths.
+   http://haskellformaths.blogspot.com
 
 */
 
@@ -96,7 +96,7 @@ integrate c x = c : (zipwith (/) x (1..inf));
 ## x = #x if listp x;
 
 // Is the series the zero series
-zerop xs = all (==0) xs;
+zerop xs = all (\x -> `(x == 0)) xs;
 
 // Truncate trailing zero terms from power series
 truncate_zeros [] = [];
@@ -187,6 +187,8 @@ series_eval x xs = foldl1 (+) $ zipwith (*) xs [x^n | n=(0..(#xs))];
 // expansion.
 series_var x xs = [x^n * (xs ! n) | n=(0..(#xs - 1))];
 
+simplify_series xs = truncate_zeros $ map simplify::basic_simplify xs;
+
 // Evaluate taylor series for all subexpressions and compose the
 // series.
 series_taylor f x x0 n::int = tay f with
@@ -195,12 +197,12 @@ series_taylor f x x0 n::int = tay f with
     tay (a*b) = tay a $* tay b;
 
     tay (f@_ s) = _tay (f $ s) if s === x && varp x;
-    tay (f@_ ser) = simplify::basic_simplify $ 
-        (basic_taylor (f u) u x0 n)
+    tay (f@_ ser) = 
+        (simplify_series $ (basic_taylor (f u) u x0 n))
         $# 
-        (tay ser)
+        (simplify_series $ (tay ser))
         /*when u = ser end*/
-    if ~(applp f) ;
+        if ~(applp f) ;
     tay x::int = [x];
     tay x::double = [x];
     tay x = [0,1] if varp x;
