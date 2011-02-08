@@ -1,8 +1,8 @@
-using base;
+/*using base;*/
 using set;
 using dict;
 using system; 
-using subexp;
+/*using subexp;*/
 using series;
 
 /* 
@@ -12,11 +12,12 @@ using series;
 */
 
 // Adapted from code by Albert Graef on pure-lang mailing list.
-subst rules t = eval $ sprintf "(%s) with %s end" (str t, join ";" 
-    [sprintf "%s = %s" (str l,str r) | l=>r = rules]); 
-subst_atomic t rules atom = eval $ 
-    sprintf "reduce (%s) with %s end" (str t, join ";" 
-    [sprintf "%s = %s if varp %s" (str l,str r,str atom) | l=>r = rules]); 
+/*subst rules t = eval $ sprintf "(%s) with %s end" (str t, join ";" */
+    /*[sprintf "%s = %s" (str l,str r) | l=>r = rules]); */
+
+subst_atomic t rules atom = eval $
+    sprintf "reduce (%s) with %s end" (str t, join ";"
+    [sprintf "%s = %s if varp %s" (str l,str r,str atom) | l=>r = rules]);
 
 infix 0 /.; 
 infix 0 /./; 
@@ -52,16 +53,16 @@ end;
 
 // Return the complexity of the expression by the number of
 // termins in it.
-complexity e = count_terms e 0  with
-    count_terms (x@_ y) a = (count_terms x a) + (count_terms y a);
-    count_terms x a = 1;
-end;
+/*complexity e = count_terms e 0  with*/
+    /*count_terms (x@_ y) a = (count_terms x a) + (count_terms y a);*/
+    /*count_terms x a = 1;*/
+/*end;*/
 
-complexity_sort a b = complexity a <= complexity b;
+/*complexity_sort a b = complexity a <= complexity b;*/
 
 // Order a list of expressions by their complexity from least to
 // greatest.
-complex_order xs = sort complexity_sort xs;
+/*complex_order xs = sort complexity_sort xs;*/
 
 /*
   ----------------------
@@ -170,7 +171,7 @@ rat_simp = reduce with
     x/(y/z) = (x*z)/y;
 end;
 
-rewrite e x = e2, atomic_rewrites, rule_rewrites with
+rewrite e x = e2 with
             omega = members $ mrv e x;
             omega_up = moveup omega x;
             e_up = (moveup [e] x) ! 0;
@@ -197,7 +198,6 @@ rewrite e x = e2, atomic_rewrites, rule_rewrites with
             e2 = rat_simp e1;
 
             /*e0 = subst_atomic (powexpand e) [w0=>w] x;*/
-            end;
+end;
 
-/*let Y = Exp(x+2*(Exp (-x)))-Exp(x)+1/x;*/
-let Y = 1/x*(Exp x);
+let Y = Exp(x+2*(Exp (-x)))-Exp(x)+1/x;

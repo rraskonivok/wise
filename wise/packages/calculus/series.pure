@@ -187,11 +187,13 @@ series_eval x xs = foldl1 (+) $ zipwith (*) xs [x^n | n=(0..(#xs))];
 // expansion.
 series_var x xs = [x^n * (xs ! n) | n=(0..(#xs - 1))];
 
+// Perform basic arithmetic on terms and chop any trailing zero
+// terms, this reduces the load when composing series.
 simplify_series xs = truncate_zeros $ map simplify::basic_simplify xs;
 
 // Evaluate taylor series for all subexpressions and compose the
 // series.
-series_taylor f x x0 n::int = tay f with
+series_taylor f x x0 n::int = simplify::basic_simplify $ tay f with
     _tay _f = basic_taylor _f x x0 n;
     tay (a+b) = tay a $+ tay b;
     tay (a*b) = tay a $* tay b;
@@ -203,9 +205,10 @@ series_taylor f x x0 n::int = tay f with
         (simplify_series $ (tay ser))
         /*when u = ser end*/
         if ~(applp f) ;
-    tay x::int = [x];
-    tay x::double = [x];
-    tay x = [0,1] if varp x;
+    tay e::int = [e];
+    tay e::double = [e];
+    tay e = [e] if ~(has e x);
+    tay e = [0,1] if varp x;
     tay f = _tay f;
 end;
 namespace;

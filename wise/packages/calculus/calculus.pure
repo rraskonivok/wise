@@ -9,6 +9,7 @@
 */
 
 using series;
+using limit;
 
 diffp (diff f x) = 1;
 diffp _ = 0;
