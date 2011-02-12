@@ -44,7 +44,7 @@ p2i X = reduce X with
     Neg x         =  - x   ;
     add x y       =  x + y ;
     mul x y       =  x * y ;
-    rat x y  =  x / y ;
+    rat x y       =  x % y ;
     powr x y      =  x ^ y ;
 
     // Disregard partial evaluations
@@ -136,12 +136,8 @@ complex_order xs = sort complexity_sort xs;
 ---------------------------- */
 
 namespace cast_division;
-infixl 5 /;
-
-def a::int/b::int       = a%b;
-def a::double/b::double = a%b;
-def a::int/b::double = a%b;
-def a::double/b::int = a%b;
+infixl (::/) /;
+def a/b              = a%b;
 namespace;
 
 prefix 1001 `;

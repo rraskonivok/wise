@@ -38,7 +38,7 @@ evals (Vector xs) + (Vector ys) = Vector $ zipwith (+) xs ys;
 evals k * (Vector xs) = Vector $ map (k*) xs;
 evals (Vector xs) * k = Vector $ map (k*) xs;
 
-sum = foldl (+) 0;
+sum = foldl1 (+);
 
 dot x::matrix y::matrix = sum $ zipwith (*) (rowvector x) (rowvector y);
 

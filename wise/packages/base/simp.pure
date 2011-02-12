@@ -12,9 +12,6 @@
 //  * Cohen J S. Computer Algebra and Symbolic Computation.
 //  * Scheme code at https://github.com/dharmatech
 
-using math;
-using set;
-
 namespace simplify;
 
 simplify_complex X = reduce X
@@ -49,7 +46,7 @@ end;
 // Reduce simple expressions involving 1 and 0
 basic_simplify = reduce with
     x % y = 0 if numberp x && x == 0;
-    x % y = 1 if numberp y && y == 1;
+    x % y = x if numberp y && y == 1;
     x * y = 0 if (numberp x && x == 0) ||
                  (numberp y && y == 0);
     x * y = x if numberp y && y == 1;
@@ -166,7 +163,7 @@ mvarp x = ~uvarp x;
 
 deepsame a b = same a b;
 
-fullsimp = reduce with 
+fullsimp = eval $ reduce with 
     0^x = 0 ;
     1^x = 1 ;
     x^0 = 1 ;
@@ -204,7 +201,7 @@ fullsimp = reduce with
     a+(b+c) = a+b+c ;
 
     x - y = x + (-1 * y) ;
-    x / y = x * (y^(-1)) ;
+    x % y = x * (y^(-1)) ;
 end;
 
 applwhile pred f x = app (f x) (f $ f x) with
@@ -212,6 +209,8 @@ applwhile pred f x = app (f x) (f $ f x) with
             = app b (f b) otherwise;
 end;
 
-algebra_normal X = sum $ 
-    applwhile (===) fullsimp rx 
-    when rx = reorder X end;
+/*algebra_normal X = eval $*/
+    /*applwhile (===) fullsimp rx*/
+    /*when rx = reorder X end;*/
+
+algebra_normal x = applwhile (===) fullsimp x;
