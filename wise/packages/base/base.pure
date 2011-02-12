@@ -59,13 +59,6 @@ evalf Zero = 0.0;
 
 evalf (a%b) = double $ (double a)/(double b);
 
-
-
-// The default automatic simplification stack.
-using namespace fullsimplify;
-algebra_normal X = X;
-using namespace;
-
 /*
   -----------------------
   Numeric Function Values

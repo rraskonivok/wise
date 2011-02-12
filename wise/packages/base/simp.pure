@@ -12,39 +12,10 @@
 //  * Cohen J S. Computer Algebra and Symbolic Computation.
 //  * Scheme code at https://github.com/dharmatech
 
+using math;
+using set;
+
 namespace simplify;
-
-/*private sump base exponent term constant lex;*/
-
-lex x y = x < y if numberp x && numberp y ;
-lex x y = 1 if numberp x && ~(numberp y) ;
-lex (a^b) (c^d) = if a === c then lex b d else lex a c ;
-lex a (b^c) = if a === b then lex 1 c else lex a b ;
-lex (a^b) c = if a === b then lex b 1 else lex a c ;
-lex (x1@_ y1) (x2@_ y2) = if x1===x2 then lex y1 y2 else lex x1 x2;
-lex (x1@_ y1) x2 = if x1===x2 then 0 else lex x1 x2;
-lex x1 (x2@_ y2) = if x1===x2 then 1 else lex x1 x2;
-lex x y = str x < str y if atomp x && atomp y ;
-lex x y = ~(lex y x) otherwise ;
-
-sump (x+y) = 1;
-sump x = 0;
-
-base (x^y) = x;
-base x = x;
-
-exponent (x^y) = y ;
-exponent x = 1;
-
-term (n*x) = x if numberp n ;
-term ((x*y)*z) = (term (x*y)) * z ;
-term (-x) = x;
-term x = x ;
-
-constant (n*x) = n if numberp n ;
-constant ((x*y)*z) = (constant (x*y)) ;
-constant (-x) = -1;
-constant x = 1 ;
 
 simplify_complex X = reduce X
 with
@@ -59,24 +30,10 @@ with
     (complex a b) / (complex c d) = (complex ((a*c+b*d) / (c^2 + d^2)) ((b*c-a*d) / (c^2 + d^2)) )
 end;
 
-
 /*
     Automatic Simplification
    -------------------------
 */
-
-fullsimp X = reduce X with
-    a+b = ((constant a) + (constant b)) * (term a) if ((term a) === (term b)) ;
-    a+b+c = a + (((constant b) + (constant c)) * (term b)) if (term b) === (term c) ;
-    a+b = b+a if (cmp b a) && ~(sump a) ;
-    a+b+c = a+c+b if cmp c b ;
-    a+(b+c) = a+b+c ;
-
-    a+b+c = a + (((constant b) + (constant c)) * (term b)) if (term b) === (term c) ;
-    a+b = ((constant a) + (constant b)) * (term a) 
-        if ((term a) === (term b)) and 
-        (~numberp a && ~numberp b);
-end;
 
 rational_to_power = reduce with
     x/y = x*(y^(-1));
@@ -119,13 +76,9 @@ recursive_evalf = propogate_thru (evalf);
 
 namespace;
 
-namespace fullsimp;
-
-has x e = detect x e with
-    detect (x@_ y) e = (detect x e) || (detect y e);
-    detect x e = 1 if (x === e) && atomp x;
-               = 0 otherwise;
-end;
+// -------------------------------
+// Algebraic Simplification Stack
+// -------------------------------
 
 sump (x+y) = 1 ; sump x = 0 ;
 base (x^y) = x ;
@@ -163,33 +116,33 @@ groupBy _  []           =  [];
 groupBy eq (x:xs)       =  (x:ys) : (groupBy eq zs) when
                            (ys,zs) = span (eq x) xs end;
 
-sigpart = groupBy (\x y -> sig x === sig y); 
-
-sum x = foldr1 (+) x if ~(null x);
-      = 0 otherwise;
+eqSig x y = sig x === sig y;
+sigpart = groupBy eqSig;
 
 sig x = sort cmp $ lsvars x;
-lexv = sort sig;
 
-mlex a b = sum $ zipwith (>) (sig a) (sig b);
-mrvlex = sort mlex;
-
+// This is O(crazy) at the moment, I'll optimize later
+mdeg a::int b::int = (a*b << 2);
 graded a = if sum a == 1 
-           then index a 1 
-           else sum $ zipwith (\x y -> x*y << (#a) ) a (1..inf);
+           then 1 + index a 1 
+           else _graded a 0;
 
-reorder X = map (foldl1 (+)) 
+_graded []     _ = 1;
+_graded (x:xs) n = (x * n << 2) + _graded xs (n+1);
+
+reorder X = map sum
             $ sigpart 
+            $ sort gorder
             $ lst X 
 with
     sigx = sig X;
-    isig e = [has e x | x=sigx];
+    isig e = [has e x | x = sigx];
 
     gorder a b = 
         graded (isig a) <
         graded (isig b);
 
-    lst (a+b) = sort gorder $ lst(a) + lst(b);
+    lst (a+b) = lst(a) + lst(b);
     lst a = [a] if varp x;
 end;
 
@@ -200,15 +153,20 @@ lsvars X = members $ pick X with
            = emptyhset otherwise;
 end;
 
+lsatoms X = members $ pick X with
+    pick (x@_ y) = (pick x) + (pick y);
+    pick x = hset [x] if atomp x && fixity x >= 30000;
+           = emptyhset otherwise;
+end;
+
 // Univariate
 uvarp x = #lsvars x == 1;
 // Multivariate
 mvarp x = ~uvarp x;
 
-// 
-deepsame a b = same a b || same (str a) (str b);
+deepsame a b = same a b;
 
-fullsimp X = eval $ reduce X with 
+fullsimp = reduce with 
     0^x = 0 ;
     1^x = 1 ;
     x^0 = 1 ;
@@ -244,6 +202,7 @@ fullsimp X = eval $ reduce X with
     a+b+c = a+c+b
         if cmp c b ;
     a+(b+c) = a+b+c ;
+
     x - y = x + (-1 * y) ;
     x / y = x * (y^(-1)) ;
 end;
@@ -253,6 +212,6 @@ applwhile pred f x = app (f x) (f $ f x) with
             = app b (f b) otherwise;
 end;
 
-FullSimp = applwhile (===) fullsimp;
-
-namespace;
+algebra_normal X = sum $ 
+    applwhile (===) fullsimp rx 
+    when rx = reorder X end;
