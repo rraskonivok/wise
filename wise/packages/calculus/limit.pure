@@ -181,15 +181,15 @@ rewrite e x = e2 with
                = simplest otherwise;
 
             rewrite_forms = powexpand $ rat_simp $ 
-                            [ w0=>w, 1/w0=>1/w ];
+                [ w0=>w, 1/w0=>1/w ];
 
             atomic_rewrites = filter atomic rewrite_forms with
-                                atomic (x=>y) = atomp x;
-                            end;
+                atomic (x=>y) = atomp x;
+            end;
 
             rule_rewrites = filter (natomic) rewrite_forms with
-                                natomic (x=>y) = ~atomp x;
-                            end;
+                natomic (x=>y) = ~atomp x;
+            end;
 
             e0 = subst_atomic (powexpand e) rule_rewrites x;
             e1 = e0 /. atomic_rewrites if ~(null atomic_rewrites);

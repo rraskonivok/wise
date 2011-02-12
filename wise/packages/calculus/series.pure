@@ -185,7 +185,8 @@ series_eval x xs = foldl1 (+) $ zipwith (*) xs [x^n | n=(0..(#xs))];
 
 // Multiply each term by x^n yielding a full list of the Taylor
 // expansion.
-series_var x xs = [x^n * (xs ! n) | n=(0..(#xs - 1))];
+series_var x xs = [x^n * (xs ! n) | n=(0..(#xs - 1))] with x^0 =
+1; x^1 = x; end;
 
 // Perform basic arithmetic on terms and chop any trailing zero
 // terms, this reduces the load when composing series.

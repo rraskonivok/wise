@@ -62,11 +62,8 @@ evalf (a%b) = double $ (double a)/(double b);
 
 
 // The default automatic simplification stack.
-using namespace simplify;
-algebra_normal X = simplify_multiplication .
-                   simplify_addition .
-                   simplify_power .
-                   simplify_rational $ X;
+using namespace fullsimplify;
+algebra_normal X = X;
 using namespace;
 
 /*

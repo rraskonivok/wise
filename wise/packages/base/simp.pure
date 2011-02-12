@@ -14,18 +14,18 @@
 
 namespace simplify;
 
-private sump base exponent term constant;
+/*private sump base exponent term constant lex;*/
 
-cmp x y = x < y if numberp x && numberp y ;
-cmp x y = 1 if numberp x && ~(numberp y) ;
-cmp (a^b) (c^d) = if a === c then cmp b d else cmp a c ;
-cmp a (b^c) = if a === b then cmp 1 c else cmp a b ;
-cmp (a^b) c = if a === b then cmp b 1 else cmp a c ;
-cmp (x1@_ y1) (x2@_ y2) = if x1===x2 then cmp y1 y2 else cmp x1 x2;
-cmp (x1@_ y1) x2 = if x1===x2 then 0 else cmp x1 x2;
-cmp x1 (x2@_ y2) = if x1===x2 then 1 else cmp x1 x2;
-cmp x y = str x < str y if atomp x && atomp y ;
-cmp x y = ~(cmp y x) otherwise ;
+lex x y = x < y if numberp x && numberp y ;
+lex x y = 1 if numberp x && ~(numberp y) ;
+lex (a^b) (c^d) = if a === c then lex b d else lex a c ;
+lex a (b^c) = if a === b then lex 1 c else lex a b ;
+lex (a^b) c = if a === b then lex b 1 else lex a c ;
+lex (x1@_ y1) (x2@_ y2) = if x1===x2 then lex y1 y2 else lex x1 x2;
+lex (x1@_ y1) x2 = if x1===x2 then 0 else lex x1 x2;
+lex x1 (x2@_ y2) = if x1===x2 then 1 else lex x1 x2;
+lex x y = str x < str y if atomp x && atomp y ;
+lex x y = ~(lex y x) otherwise ;
 
 sump (x+y) = 1;
 sump x = 0;
@@ -65,53 +65,17 @@ end;
    -------------------------
 */
 
-simplify_multiplication = reduce
-with
-    0*x = 0 ;
-    1*x = x ;
-    x*y = (base x) ^ ((exponent x) + (exponent y)) if (base x) === (base y) ;
-    a*x*y = a * ( (base x) ^ ((exponent x) + (exponent y)) ) if (base x) === (base y) ;
-    x*y = y*x if cmp y x ;
-    x*y*z = x*z*y if cmp z y ;
-    x*(y*z) = x*y*z ;
-    x*(-y) = (-x)*y ;
-    -(k*x) = (-k)*x if numberp k;
-end;
-
-simplify_addition X = reduce X
-with
-    -(a*x) = (-a) * x if numberp a;
-    0+x = x ;
-    x+0 = x ;
-    a+b = ( (constant a) + (constant b) ) * (term a) 
-        if ((term a) === (term b)) and (~numberp a && ~numberp b) ;
-    a+b+c = a + ((constant b) + (constant c)) * (term b) 
-        if (term b) === (term c) ;
-    /*a+b = b+a if (cmp b a) && ~(sump a) ;*/
+fullsimp X = reduce X with
+    a+b = ((constant a) + (constant b)) * (term a) if ((term a) === (term b)) ;
+    a+b+c = a + (((constant b) + (constant c)) * (term b)) if (term b) === (term c) ;
+    a+b = b+a if (cmp b a) && ~(sump a) ;
     a+b+c = a+c+b if cmp c b ;
     a+(b+c) = a+b+c ;
-    x-x = 0;
-    (-x)+x = 0;
-    (-x) + (-y) = -(x+y);
-end;
 
-simplify_power = reduce
-with
-    0^x = 0 if `(x ~= 0);
-    1^x = 1 ;
-    x^0 = 1 if `(x ~= 0);
-    x^1 = x ;
-    (r^s)^w = r^(s*w) if numberp w ;
-    (x*y)^w = (x^w)*(y^w) if numberp w ;
-end;
-
-simplify_rational = reduce with
-    x/x = 1;
-    0/x = 0;
-    x/1 = x;
-    (-x)/y = -(x/y);
-    1/(1/x) = x;
-    x/(y/z) = (x*z)/y;
+    a+b+c = a + (((constant b) + (constant c)) * (term b)) if (term b) === (term c) ;
+    a+b = ((constant a) + (constant b)) * (term a) 
+        if ((term a) === (term b)) and 
+        (~numberp a && ~numberp b);
 end;
 
 rational_to_power = reduce with
@@ -139,9 +103,6 @@ basic_simplify = reduce with
     x^0 = 1;
     x^1 = x;
     -(-x) = x;
-    /*Exp x = exp x if numberp x;*/
-    /*Sin x = sin x if numberp x;*/
-    /*Cos x = cos x if numberp x;*/
 end;
 
 // Propogate an operator through an expression by applying it to
@@ -155,3 +116,143 @@ propogate_thru rule expr = _rule (expr) with
 end;
 
 recursive_evalf = propogate_thru (evalf);
+
+namespace;
+
+namespace fullsimp;
+
+has x e = detect x e with
+    detect (x@_ y) e = (detect x e) || (detect y e);
+    detect x e = 1 if (x === e) && atomp x;
+               = 0 otherwise;
+end;
+
+sump (x+y) = 1 ; sump x = 0 ;
+base (x^y) = x ;
+base x = x ;
+exponent (x^y) = y ;
+exponent x = 1 ;
+
+term (-n*x) = x if numberp n;
+term (n*x) = x if numberp n ;
+term ((x*y)*z) = (term (x*y)) * z ;
+term x = x ;
+
+constant (-n*x) = -n if numberp n;
+constant (n*x) = n if numberp n ;
+constant ((x*y)*z) = (constant (x*y)) ;
+constant (-x) = -1;
+constant x = 1 ;
+
+cmp x y = x < y if numberp x && numberp y ;
+cmp x y = 1 if numberp x && ~(numberp y) ;
+cmp (a^b) (c^d) = if a === c then cmp b d else cmp a c ;
+cmp a (b^c) = if a === b then cmp 1 c else cmp a b ;
+cmp (a^b) c = if a === b then cmp b 1 else cmp a c ;
+cmp (x1@_ y1) (x2@_ y2) = if x1===x2 then cmp y1 y2 else cmp x1 x2;
+cmp (x1@_ y1) x2 = if x1===x2 then 0 else cmp x1 x2;
+cmp x1 (x2@_ y2) = if x1===x2 then 1 else cmp x1 x2;
+cmp x y = str x < str y if atomp x && atomp y ;
+cmp x y = ~(cmp y x) otherwise ;
+
+span _ xs@[]      =  (xs, xs);
+span p xs@(x:xs1) =  (x:ys,zs) when (ys,zs) = span p xs1 end if p x;
+                  =  ([],xs) otherwise;
+
+groupBy _  []           =  [];
+groupBy eq (x:xs)       =  (x:ys) : (groupBy eq zs) when
+                           (ys,zs) = span (eq x) xs end;
+
+sigpart = groupBy (\x y -> sig x === sig y); 
+
+sum x = foldr1 (+) x if ~(null x);
+      = 0 otherwise;
+
+sig x = sort cmp $ lsvars x;
+lexv = sort sig;
+
+mlex a b = sum $ zipwith (>) (sig a) (sig b);
+mrvlex = sort mlex;
+
+graded a = if sum a == 1 
+           then index a 1 
+           else sum $ zipwith (\x y -> x*y << (#a) ) a (1..inf);
+
+reorder X = map (foldl1 (+)) 
+            $ sigpart 
+            $ lst X 
+with
+    sigx = sig X;
+    isig e = [has e x | x=sigx];
+
+    gorder a b = 
+        graded (isig a) <
+        graded (isig b);
+
+    lst (a+b) = sort gorder $ lst(a) + lst(b);
+    lst a = [a] if varp x;
+end;
+
+lsvars X = members $ pick X with
+    pick (x@_ y) = (pick x) + (pick y) if applp x;
+                 = (pick y) otherwise;
+    pick x = hset [x] if atomp x;
+           = emptyhset otherwise;
+end;
+
+// Univariate
+uvarp x = #lsvars x == 1;
+// Multivariate
+mvarp x = ~uvarp x;
+
+// 
+deepsame a b = same a b || same (str a) (str b);
+
+fullsimp X = eval $ reduce X with 
+    0^x = 0 ;
+    1^x = 1 ;
+    x^0 = 1 ;
+    x^1 = x ;
+
+    (r^s)^w = r^(s*w) if numberp w ;
+    (x*y)^w = (x^w)*(y^w) if numberp w ;
+
+    0*x = 0 ;
+    x*y = (base x) ^ ((exponent x) + (exponent y))
+        if deepsame (base x) (base y) ;
+
+    a*x*y = a * ( (base x) ^ ((exponent x) + (exponent y)) )
+        if deepsame (base x) (base y) ;
+
+    x*y = y*x if cmp y x ;
+
+    x*y*z = x*z*y if cmp z y ;
+    x*(y*z) = x*y*z;
+
+
+    0+x = x ;
+    a+b = ((constant a) + (constant b)) * (term a) 
+        if deepsame (term a) (term b)
+        && ~all numberp [a,b];
+
+    a+b+c = a + (((constant b) + (constant c)) * (term b))
+        if deepsame (term b) (term c)
+        && ~all numberp [a,b];
+
+    a+b = b+a
+        if (cmp b a) && ~(sump a) ;
+    a+b+c = a+c+b
+        if cmp c b ;
+    a+(b+c) = a+b+c ;
+    x - y = x + (-1 * y) ;
+    x / y = x * (y^(-1)) ;
+end;
+
+applwhile pred f x = app (f x) (f $ f x) with
+    app a b = a if pred a b;
+            = app b (f b) otherwise;
+end;
+
+FullSimp = applwhile (===) fullsimp;
+
+namespace;
