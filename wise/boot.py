@@ -20,10 +20,11 @@ def start_python_pure():
     """ Load all Python packages and initialize the Pure-Cython
     wrapper. Potentially a very long operation """
 
-    from wise.translators.mathobjects import (build_translation,
-            build_transform_lookup)
+    from wise.translators.mathobjects import (build_python_lookup,
+        build_pure_lookup, build_transform_lookup)
 
-    build_translation()
+    build_python_lookup()
+    build_pure_lookup()
     build_transform_lookup()
 
     logger.info('Started Pure+Python Session')
@@ -43,3 +44,9 @@ def start_cython():
     build_rule_lookup()
 
     logger.info('Started Cython Interface')
+
+def start_django():
+    from django.core.management import setup_environ
+    import settings
+    setup_environ(settings)
+    settings.DEBUG = True

@@ -1,0 +1,19 @@
+/*
+  ----------------------
+   Expression Detection
+  ----------------------
+*/
+
+//Check if an expression `x` has a subexpression `e`.
+contains x e = detect x with
+    detect (func@_ a) = ((func$a) === e) || (detect func) || (detect a);
+    detect x = 1 if x === e;
+             = 0 otherwise;
+end;
+
+//Check if an expression `x` has a subatom `e`.
+has x e = detect x e with
+    detect (x@_ y) e = (detect x e) || (detect y e);
+    detect x e = 1 if (x === e) && atomp x;
+               = 0 otherwise;
+end;

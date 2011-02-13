@@ -1,0 +1,88 @@
+/*
+  Wise
+  Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as
+  published by the Free Software Foundation, either version 3 of the
+  License, or (at your option) any later version.
+*/
+
+using series;
+using limit;
+
+diffp (diff f x) = 1;
+diffp _ = 0;
+
+//--------------------------
+// Symbolic Differentiation
+//--------------------------
+
+evals (diff f x) = diff_normal (diff f x);
+
+diff_normal = reduce with
+    diff x x = 1;
+
+    diff (-f) x = - diff f x;
+    diff (c::int) x = 0;
+    diff (c::int *u) x = c * (diff u x);
+
+    // Power Rule
+    diff (x^(n::int)) x = n * (x^(n-1)) if n ~= 0;
+                        = 0 otherwise;
+
+    diff (x^(n::double)) x = n * (x^(n-1)) if n ~= 0;
+                           = 0 otherwise;
+
+    diff (x^x) x = x^x * (1+ Ln x);
+
+    // Generalized Power Rule
+    diff (f^g) x = f^g *( (diff g x) * (Ln f) + (g/f) * (diff f x) );
+
+    // Trigonometric functions
+    diff (Sin x) x = Cos x;
+    diff (Cos x) x = -(Sin x);
+
+    // Exponentials
+    diff (Exp x) x = Exp x;
+
+    // Logarithms
+    diff (Ln x) x = 1/x;
+    diff (Ln (func@_ u)) x = (diff (func u) x)/(func x);
+
+    // Linearity
+    diff (u+v) x = (diff u x) + (diff v x);
+    diff (u-v) x = (diff u x) - (diff v x);
+
+    // Product Rule
+    diff (u*v) x = (diff u x) * v + u * (diff v x);
+
+    // Quotient rule
+    diff (u/v) x = (((diff u x)*v) - (u*(diff v x)))/(v^2);
+
+    // Chain rule
+    diff (func@_ u) x = (diff (func u) u) * (diff u x) if ~(diffp (func u));
+                      = 0 otherwise;
+end;
+
+//--------------------------
+// Symbolic Integration
+//--------------------------
+
+// At some point I'll throw together an implementation of the 
+// Risch-Norman algorithm, but until then just fall back on 
+// table lookup.
+
+evals (ndiff f x 0) = f;
+evals (ndiff f x n) = evals (foldl diff f (repeatn n x));
+evals (integrate f x) = int_normal (integrate f x);
+
+int_normal = reduce with
+    integrate (1/Sqrt(1+x^2)) x = Asinh x;
+    integrate (1/Sqrt(x^2+1)) x = Asinh x;
+    integrate x x = x^2;
+    integrate (x^(n::int)) x = x^(n+1)/(n+1) if n ~= -1;
+    integrate (x^(-1)) x = ln x;
+    integrate (f+g) x = integrate f x + integrate g x;
+    integrate (x^(n::double)) x = x^(n+1)/(n+1) if n ~= -1;
+end;

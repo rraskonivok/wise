@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title></title>
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script type="text/javascript" src="/static/mathjax/MathJax.js">
+      MathJax.Hub.Config({
+          extensions: ["mml2jax.js"],
+          jax: ["input/MathML", "output/HTML-CSS"],
+      });
+  </script>
+  <link rel="stylesheet" href="/static/css/reset.css">
+  <link rel="stylesheet" href="/static/css/worksheet_read.css">
+
+</head>
+
+<body>
+
+  <div id="container">
+    <header>
+        <h1>{{title}}</h1>
+        <p class="subheading">Authors: {{author}}</p>
+    </header>
+
+    <section class="text">
+    <p>
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam ipsum orci, viverra eu vestibulum sed, feugiat vel est. Praesent pulvinar luctus mi. Aenean rutrum diam at tortor tincidunt euismod. In interdum rutrum massa vitae pharetra. Proin venenatis diam ac lacus venenatis faucibus in id sem. Curabitur volutpat leo sodales dui sollicitudin vitae mollis risus tempor. Mauris malesuada tincidunt sem. Etiam molestie porta odio, sed tincidunt ante hendrerit ultrices. Etiam ornare suscipit dolor, non mattis ante imperdiet ac. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Phasellus molestie dignissim ipsum eu consectetur. Nullam nec diam quis purus consequat mollis. Fusce ac turpis at velit egestas facilisis. Nulla convallis accumsan magna vitae iaculis. Sed rhoncus tellus dolor, et sagittis magna. Proin eros massa, malesuada sed porta sit amet, pharetra eget ipsum. Suspendisse risus tellus, malesuada non tincidunt et, blandit non leo. Vestibulum ut odio quis elit varius facilisis vitae sed mauris. 
+    </p>
+    </section>
+
+    {% for cell in cells %}
+        <section class="math">
+        {{cell|safe}}
+        </section>
+    {% endfor %}
+
+    <footer>
+    </footer>
+  </div>
+
+</body>
+</html>

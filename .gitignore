@@ -10,6 +10,7 @@
 *.log
 *.pid
 *.backup
+wise/docs/_*
 wise/static/img/icons/*.png
 wise/static/admin
 wise/media/*

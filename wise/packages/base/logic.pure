@@ -1,0 +1,24 @@
+infixl (and) ∧;
+infixl (or) ∨;
+
+infixl (or) xor;
+infixl (and) nand;
+infixl (or) xnor;
+infixl (or) iff;
+infixl (or) implies;
+
+infixl (or) ⊕;
+infixl (or) →;
+prefix (~) ¬;
+
+def ¬ p = ~p;
+def p ∧ q = p and q;
+def p ∨ q = p or q;
+
+// Definitions are in conjunctive normal form
+def p xor q = ((~p) or (~q)) and (p or q);
+def p xnor q = ((~p) or q) and (p or (~q));
+def p iff q = p xnor q;
+def p implies q = (~p) or q;
+def p → q = p implies q;
+def p nand q = (~p) or (~q);

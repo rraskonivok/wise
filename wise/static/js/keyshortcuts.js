@@ -5,13 +5,13 @@ var _infix = function(code) {
     return function() {
         use_infix(code);
     }
-}
+};
 
 var _rule = function(rule) {
     return function() {
         apply_rule(rule);
     }
-}
+};
 
 Wise.Accelerators = new Backbone.Collection([
 
@@ -46,9 +46,21 @@ Wise.Accelerators = new Backbone.Collection([
     },
 
     {
-        keys: 's',
+        keys: 'shift+s',
         name: 'Reduce to Algebraic Normal Form',
         action: _rule('algebra_normal'),
+    },
+
+    {
+        keys: 's',
+        name: 'Evaluate symbolically',
+        action: _rule('evals'),
+    },
+
+    {
+        keys: 'f',
+        name: 'Evaluate to floating point',
+        action: _rule('evalf'),
     },
 
     {
@@ -199,6 +211,30 @@ Wise.Accelerators = new Backbone.Collection([
         keys: 'o',
         name: 'New Cell',
         action: function() { new_line('eq', Wise.last_cell) },
+    },
+
+    {
+        keys: 'o',
+        name: 'New Cell',
+        action: function() { new_line('eq', Wise.last_cell) },
+    },
+
+    {
+        keys: 'b',
+        name: 'Increment Rows',
+        action: _rule('inccols'),
+    },
+
+    {
+        keys: 'v',
+        name: 'Increment Cols',
+        action: _rule('incrows'),
+    },
+
+    {
+        keys: 'shift+t',
+        name: 'Tranpose',
+        action: _rule('transpose'),
     },
 
     //{

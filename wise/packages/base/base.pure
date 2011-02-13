@@ -1,0 +1,339 @@
+/*
+  Wise
+  Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as
+  published by the Free Software Foundation, either version 3 of the
+  License, or (at your option) any later version.
+*/
+
+using maths;
+using system;
+using simp;
+
+using poly;
+using indexed;
+
+nonfix ph;
+
+/*
+  -----------------------
+  Logical Atoms
+  -----------------------
+*/
+
+// These are strictly distinct from the internal (true, false)
+// which are just macros for (1,0).
+nonfix True;
+nonfix False;
+
+/*
+  -----------------------
+  Numeric Constants
+  -----------------------
+*/
+
+nonfix M_PI;    // Constant pi
+nonfix M_E;     // Constant e
+nonfix M_I;     // Constant i
+nonfix M_INF;   // infinity
+
+namespace constants;
+    nonfix PI;
+    nonfix E;
+    nonfix I;
+    nonfix Inf;
+
+    def PI = M_PI;
+    def E = M_E;
+    def I = M_I;
+    def Inf = M_INF;
+namespace;
+
+// Evaluate out to the constant defined by math.h
+using namespace nconstants;
+evalf M_PI = pi;
+evalf M_E = e;
+evalf M_I = i;
+using namespace;
+
+/*evalf (a%b) = double $ (double a)/(double b);*/
+
+/*
+  -----------------------
+  Numeric Function Values
+  -----------------------
+*/
+
+/*evalf' = reduce with*/
+    /*f@_ u = evalf (f u) if atomp u || numberp u;*/
+/*end;*/
+
+using namespace constants;
+    // Specific Values of Exp
+    evalf (Exp 0) = 1.0;
+    evalf (Exp 1) = evalf E;
+    evalf (Exp (complex x y)) = Exp x with
+        Exp (M_I * M_PI) = -1;
+    end;
+    evalf (Exp x) = exp x if numberp x;
+                  = Exp x otherwise;
+
+    // Specific Values of Ln
+    evalf (Ln M_E) = 1;
+    evalf (Ln x) = ln x if numberp x && x ~= 0;
+                 = Ln x otherwise;
+
+    evalf n = double n if numberp n;
+    evalf x = x if varp x;
+
+    evalf (Sin n) = sin n if numberp n;
+    evalf (Cos n) = cos n if numberp n;
+
+    evals (Sin 0) = 0;
+    evals (Cos 0) = 1;
+    evals (Sin (n::int*M_PI)) = 0;
+    evals (Cos (n::int*M_PI)) = (-1)^n;
+using namespace;
+
+
+/*
+  -----------------------
+  Equational Operations
+  -----------------------
+*/
+
+infixl (==) ?=;
+def a ?= b = eq a b;
+
+eqp (eq lhs rhs) = 1;
+eqp _            = 0;
+
+eq_add (eq lhs rhs) x = eq (lhs+x) (rhs+x);
+eq_sub (eq lhs rhs) x = eq (lhs+(-x)) (rhs+(-x));
+eq_mul (eq lhs rhs) x = eq (lhs*x) (rhs*x);
+eq_div (eq lhs rhs) x = eq (lhs/x) (rhs/x);
+eq_map (eq lhs rhs) op = eq (op $ lhs) (op $ rhs);
+
+// Zero out RHS.
+eq_rzero (eq lhs rhs) = eq (-rhs) 0 if `(lhs == 0);
+                      = eq (lhs - rhs) 0 if ~(numberp rhs) || `(rhs ~= 0);
+                      = eq lhs rhs otherwise;
+
+// Zero out LHS.
+eq_lzero (eq lhs rhs) = eq 0 (-lhs) if `(rhs == 0);
+                      = eq 0 (rhs - lhs) if ~(numberp lhs) || `(lhs ~= 0);
+                      = eq lhs rhs otherwise;
+
+
+// Reflexivity, binds universally
+eq_ref x = (eq x x);
+// Symmetric and Transitive, bind on equations
+eq_sym (eq lhs rhs) = (eq rhs lhs);
+eq_tran (eq l1 r1) (eq l2 r2) = (eq l1 l2) if r1 === r2;
+                              = (eq l1 r2) if r1 === l2;
+                              = (eq r1 r2) if l1 === l2;
+                              = (eq r1 l2) if l1 === r2;
+
+// Put the more complex equation on the left simply for aesthetic
+// reasons.
+eq_normal (eq lhs rhs) = (eq rhs lhs) if (complexity lhs) < (complexity rhs);
+                       = (eq lhs rhs) otherwise;
+
+// Null test to determine whether we can positively assert that
+// the LHS and RHS of the equation are equal.
+eq_test (eq lhs rhs) = 1 if (lhs === rhs);
+                     = 1 if `(lhs == rhs);
+                     = nan otherwise;
+
+/*
+    Complex Numbers
+    --------------------
+*/
+
+evals real complex x y = x;
+evals real x = Re x;
+evals imag complex x y = y;
+evals imag x = Im x;
+
+/*__show__ (complex x y) = sprintf "%s + i %s" (str x, str y) if all atomp [x,y];*/
+                       /*= sprintf "(%s) + i(%y)" (str x, str y) otherwise;*/
+
+// Modulus
+/*abs (complex x y) = Sqrt (x^2+y^2);*/
+/*conj (complex x y) = complex x (-y);*/
+/*conj x = conj x;*/
+
+rect_to_polar = reduce with
+    (complex 0 0) = 0;
+    (complex x y) = (Sqrt (x*x+y*y)) * exp( I * (atan2 y x));
+end;
+
+complex_trig_expand = reduce with
+    Sin (complex x y)  = complex (Sin x*Cosh y) (Cos x*Sinh y);
+    Cos (complex x y)  = complex (Cos x*Cosh y) (-Sin x*Sinh y);
+    Tan (complex x y)  = (complex (Sin (2*x)) (Sinh (2*y))) / (Cos (2*x)+Cosh (2*y));
+end;
+
+complex_polar_to_rect = reduce with
+    mul r (exp (mul I theta)) = complex;
+end;
+
+complex_split (complex x y) = x + (I * y);
+
+/* 
+    Combine rational quantities by the rules:
+    -\frac{a}{b} = \frac{-a}{b}
+    \frac{a}{b} + \frac{c}{d} = \frac{ad+bc}{bd}
+    \frac{a}{b} \cdot \frac{c}{d} = \frac{ac}{bd}
+    \frac{a}{b} \div \frac{c}{d} = \frac{ad}{bc}
+*/
+
+combine_rational X = reduce X
+with
+    -(a/b) = (-a)/b;
+    (a/c) + (b/c) = (a+b)/c;
+    (a/b) + (c/d) = (a*d+b*c)/(b*d);
+    (a/b) / (c/d) = (a*c)/(b*d);
+end;
+
+/*
+  ----------------------
+   Rational Manipulation
+  ----------------------
+*/
+
+// Convert numerical primitives to rational types.
+to_rational X::int = rational X;
+to_rational X::double = rational X;
+to_rational X::bigint = rational X;
+to_rational x = x/1;
+
+split_rational X = reduce X
+with
+        (-a) % b = -(a / b);
+        (a+b) % c = (a / c) + (b / c);
+        (a*b) % (c*d) = (a / c)*(b / d);
+end;
+
+seperate_rational X = reduce X
+with
+    a/b = a*(1/b) if ~(a === 1);
+end;
+
+/* 
+  ----------------------------------
+  Commutative Variable Manipulation
+  ----------------------------------
+*/
+
+commute_elementary (x+y) = y+x;
+commute_elementary (x-y) = (-y)+x;
+commute_elementary (x*y) = y*x;
+commute_elementary x = x;
+
+associate_add_left = reduce with
+    x+(y+z) = (x+y) + z;
+end;
+
+associate_mul_left = reduce with
+    x*(y*z) = (x*y) * z;
+end;
+
+associate_add_right = reduce with
+    (x+y)+z = x+(y+z);
+end;
+
+associate_mul_right = reduce with
+    (x*y)*z = x*(y*z);
+end;
+
+// a+(b+(c+d))
+ileft X x = iter_left (associate_add_right X) x;
+
+iter_left (a + b) x = b + a if b === x;
+iter_left (a+(b+c)) x = b + (a+c) if b === x;
+iter_left (a + b) x = a + (iter_left b x);
+iter_left b x = b;
+
+pull_left X a = reduce
+    (associate_add_left . associate_mul_left $ X)
+with
+    (y+x) = (x+y) if x === a && ~( x === y );
+    (y*x) = (x*y) if x === a && ~( x === y );
+    (x/y) = x*(1/y) if x === a;
+    //(y/x) = (1/x)*y if x === a;
+end if varp a;
+
+pull_left X a = reduce X a with
+    (y+x) = (x+y) if x === a && ~( x === y );
+    (y*x) = (x*y) if x === a && ~( x === y );
+    (x/y) = x*(1/y) if x === a;
+    //(y/x) = (1/x)*y if x === a;
+end;
+
+pull_right X a = reduce
+    (associate_add_right . associate_mul_right $ X)
+with
+    (y+x) = (x+y) if y === a && ~( x === y );
+    (y*x) = (x*y) if y === a && ~( x === y );
+    (x/y) = x*(1/y) if y === a;
+    //(y/x) = (1/x)*y if y === a;
+end;
+
+pull_left_prop X prop = reduce
+    (associate_add_left . associate_mul_left $ X)
+with
+    (y+x) = (x+y) if `(prop x) && ~( x === y );
+    (y*x) = (x*y) if `(prop x) && ~( x === y );
+//    (x/y) = x*(1/y) if `(prop x);
+end;
+
+pull_right_prop X prop = reduce
+    (associate_add_right . associate_mul_right $ X)
+with
+    (y+x) = (x+y) if `(prop y) && ~( x === y );
+    (y*x) = (x*y) if `(prop y) && ~( x === y );
+//    (x/y) = x*(1/y) if `(prop y);
+end;
+
+pull_numeric_left X = pull_left_prop X numberp;
+pull_numeric_right X = pull_right_prop X numberp;
+
+algebra_expand X = reduce X
+with
+    -(a+b)  = (-a) + (-b);
+    (a+b)*k = (a * k) + (b * k);
+    k*(a+b) = (k * a) + (k * b);
+    (a+b)^2 = a^2+2*a*b+b^2;
+end;
+
+/*
+    ----
+    Misc
+    ----
+*/
+
+
+// Factorial function via accumulator outputs a bigint;
+evalf (factorial n) = loop 1 (bigint n) with
+  loop p n = if n>0 then loop (p*n) (n-1) else p;
+end;
+
+/*__show__ (factorial x) = sprintf "%s!" (str x) if atomp x;*/
+                  /*= sprintf "(%s)!" (str x) otherwise;*/
+
+nfunc f n p = nfunc (f p) (n-1) p if n > 1;
+            = f p otherwise;
+
+ntuple n p = nfunc Tuple n p;
+
+GammaF(1/2) = Sqrt pi;
+GammaF(0.5) = Sqrt pi;
+
+expand_abs = reduce with
+    abs (mul x*y) = abs(x) * abs(y);
+end;
+
+division_theorem a b = add (mul b (a div b)) (a mod b);

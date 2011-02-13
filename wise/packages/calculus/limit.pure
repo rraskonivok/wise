@@ -1,0 +1,203 @@
+/*using base;*/
+using set;
+using dict;
+using system; 
+/*using subexp;*/
+using series;
+
+/* 
+  -----------------------
+   Substitution Commands
+  -----------------------
+*/
+
+// Adapted from code by Albert Graef on pure-lang mailing list.
+/*subst rules t = eval $ sprintf "(%s) with %s end" (str t, join ";" */
+    /*[sprintf "%s = %s" (str l,str r) | l=>r = rules]); */
+
+subst_atomic t rules atom = eval $
+    sprintf "reduce (%s) with %s end" (str t, join ";"
+    [sprintf "%s = %s if varp %s" (str l,str r,str atom) | l=>r = rules]);
+
+infix 0 /.; 
+infix 0 /./; 
+t /. rules = subst rules t; 
+t /./ rules = reduce_with rules t;
+
+
+/* 
+  --------------------
+   Simplification
+  -------------------- 
+*/
+
+powexpand = reduce with
+    Exp (x+y) = Exp x * Exp y;
+    /*Exp x * Exp y = Exp (x+y);*/
+    Log (Exp x) = x;
+    Exp (Log x) = x;
+    /*Exp (n::int*Log(x)) = x^n;*/
+    /*Log (n::int*Exp(x)) = x^n;*/
+    Exp (-x) = 1/(Exp x);
+    Log (-x) = -Log(x);
+end;
+
+
+/*
+  ----------------------
+   Expression Complexity
+  ----------------------
+*/
+
+// TODO: moved to prelude
+
+// Return the complexity of the expression by the number of
+// termins in it.
+/*complexity e = count_terms e 0  with*/
+    /*count_terms (x@_ y) a = (count_terms x a) + (count_terms y a);*/
+    /*count_terms x a = 1;*/
+/*end;*/
+
+/*complexity_sort a b = complexity a <= complexity b;*/
+
+// Order a list of expressions by their complexity from least to
+// greatest.
+/*complex_order xs = sort complexity_sort xs;*/
+
+/*
+  ----------------------
+   Limit Functions
+  ----------------------
+*/
+
+sign X = _sgn X with
+    _sgn x = 1 if varp x;
+           = sgn x if numberp x;
+
+    _sgn (Exp x) = 1;
+    _sgn (a^b) = _sgn(a) == 1;
+    _sgn (-a)  = -1 *(_sgn a);
+    _sgn (a*b) = _sgn a * _sgn b;  
+    _sgn (a/b) = _sgn a * _sgn b;  
+    /*_sgn (a+b) = 0 if b === (-a) || a === (-b);*/
+               /*= max (_sgn a) (_sgn b) otherwise;*/
+
+    /*_sgn (a+b) = _sgn $ limitinf (a+b) x*/
+end;
+
+mrv e x = _mrv (powexpand e) x with
+    // mrv x = x
+    _mrv x x = hset [x];
+
+    // mrv (a+b) = mrv a + mrv b
+    _mrv (a*b) x = mrv_max (mrv a x) (mrv b x) x;
+    _mrv (-a) x  = mrv a x;
+
+    // mrv (a/b) = mrv a + mrv b
+    _mrv (a/b) x = mrv_max (mrv a x) (mrv b x) x;
+    // mrv (a+b) = mrv a + mrv b
+    _mrv (a+b) x = mrv_max (mrv a x) (mrv b x) x;
+    _mrv (a-b) x = mrv_max (mrv a x) (mrv b x) x;
+
+    // mrv f^c = mrv f
+    _mrv (a^b) x = mrv (Exp (b * Log a)) x if has b x; 
+                 = mrv a x otherwise;
+
+    _mrv (Log a) x = mrv a x;
+    /*_mrv (exp a) x = mrv a x;*/
+    _mrv (Exp a) x = mrv_max (hset $ [Exp a]) (mrv a x) x;
+
+    _mrv (func@_ a) x = mrv a x;
+    _mrv _ x = emptyhset;
+end;
+
+mrv_max f g x = g if null f;
+              = f if null g;
+              // Union if f,g disjoint
+              = f+g if ~(null (f*g));
+              = g if member f x;
+              = f if member g x;
+              = cls with
+                c = compare ((members f) ! 0) ((members g) ! 0) x;
+                cls = f if c == ">";
+                    = g if c == "<";
+                    = f+g if c == "=";
+                    = 0 otherwise;
+                end otherwise;
+
+compare a b x = C with
+            L = limitinf ( (Log a)/(Log b) ) x;
+            C = ">" if L === inf || L === -inf;
+            C = "<" if L === 0;
+            C = "=" otherwise;
+            end;
+
+moveup l x = map (\e -> reduce_with [x=>Exp(x)] e ) l;
+movedown l x = map (\e -> reduce_with [x=>Log(x)] e) l;
+
+limitinf e x = e if ~(has e x); 
+             = mrv_leadterm e x otherwise;
+
+// Sort mrv(b,c,a) in terms of complexity of terms
+//
+//      mrv(b,c,a) -> mrv(a,b,c)
+// 
+// Exponentiate all terms, since the limit of Exp can
+// easily be determined by the sign of it exponent
+//
+//      mrv(a,b,c) -> mrv(Exp a, Exp b, Exp c)
+//
+// Take the simplest expression "Exp a" and determine and if it
+// tends toward infinity, if it doesn't use the relation that
+// f(x) ~ 1/f(x) .
+//      
+//      Exp x tends to 0 iff sign(x) = -1
+// 
+// Call the simplest term which tends toward 0: ω  and rewrite all
+// other members of mrv(...) in terms of ω.
+
+/*rewrite e x = rw with*/
+            /*leading_term = mrv_leadterm e x;*/
+            /*sig = sign (leading_term);*/
+            /*rw = 0 if sig == 1;*/
+               /*= limitinf leading_term x if sig == 0;*/
+               /*= sig * inf if sig == -1;*/
+            /*end;*/
+
+rat_simp = reduce with
+    1/(1/x) = x;
+    0/x = 0;
+    x/1 = x;
+    x/(y/z) = (x*z)/y;
+end;
+
+rewrite e x = e2 with
+            omega = members $ mrv e x;
+            omega_up = moveup omega x;
+            e_up = (moveup [e] x) ! 0;
+
+            simplest = (complex_order omega) ! 0;
+            w0 = 1/simplest if sign simplest ~= -1;
+               = simplest otherwise;
+
+            rewrite_forms = powexpand $ rat_simp $ 
+                [ w0=>w, 1/w0=>1/w ];
+
+            atomic_rewrites = filter atomic rewrite_forms with
+                atomic (x=>y) = atomp x;
+            end;
+
+            rule_rewrites = filter (natomic) rewrite_forms with
+                natomic (x=>y) = ~atomp x;
+            end;
+
+            e0 = subst_atomic (powexpand e) rule_rewrites x;
+            e1 = e0 /. atomic_rewrites if ~(null atomic_rewrites);
+               = e0 otherwise;
+
+            e2 = rat_simp e1;
+
+            /*e0 = subst_atomic (powexpand e) [w0=>w] x;*/
+end;
+
+let Y = Exp(x+2*(Exp (-x)))-Exp(x)+1/x;

@@ -7,13 +7,10 @@
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-from wise.translators.mathobjects import pyobjects, translate_pure
+from wise.translators.mathobjects import python_trans, translate_pure, pure_trans
 from wise.worksheet.utils import *
 
 from parser import sexp_parse, pure_parse
-
-
-#Used for hashing trees
 
 #-------------------------------------------------------------
 # Parse Tree
@@ -54,8 +51,8 @@ class Branch(object):
         self.subterms = set([child for child in self.args if
             isinstance(child,Branch)])
 
-        self.subatoms = set([child for child in self.args if
-            not isinstance(child,Branch)])
+        #self.subatoms = set([child for child in self.args if
+            #not isinstance(child,Branch)])
 
     # TODO: this documentation is severly lacking
     def eval_args(self):
@@ -70,8 +67,12 @@ class Branch(object):
                 return x
             elif isinstance(x,Branch):
                 return x.eval_args()
+            elif isinstance(x,list) or isinstance(x,tuple):
+                return [xi.eval_args() for xi in x]
+            else:
+                raise Exception("Could not map")
 
-        type = pyobjects[self.type]
+        type = python_trans[self.type]
 
         if not type:
             raise Exception('Could not lookup Python class', self.type)
@@ -92,10 +93,19 @@ class Branch(object):
         def f(x):
             if isinstance(x,str):
                 return x
-            elif isinstance(x,int) or isinstance(x,float):
+            elif isinstance(x,list) or isinstance(x,tuple):
+                return [xi.eval_pure() for xi in x]
+            #elif isinstance(x,list):
+                #return tuple(x)
+            # Numbers are passed as is to Pure
+            elif (isinstance(x,int)   or
+                  isinstance(x,float) or
+                  isinstance(x,long)):
                 return x
             elif isinstance(x,Branch):
                 return x.eval_pure()
+            else:
+                raise Exception("Could not map")
 
         type = translate_pure(self.type)
         obj = type(*(f(arg) for arg in self.args))
@@ -223,8 +233,18 @@ class Branch(object):
         map(f, self.args)
         return lst
 
+def is_nullary_symbol(atom):
+    try:
+        pure_trans[atom]
+        return True
+    except KeyError:
+        return False
+
 def map_nullary(parsed):
-    """ Recursively convert nullary functions to prefix form"""
+    """
+    Recursively convert nullary and primative functions to prefix
+    sexp form.
+    """
     if isinstance(parsed,tuple):
         head = parsed[0]
         args = parsed[1]
@@ -232,15 +252,23 @@ def map_nullary(parsed):
         return Branch(head, [map_nullary(arg) for arg in args])
     else:
         atom = parsed
+
+        #TODO: generalize this into primatives/nullary
         if is_number(atom):
             return Branch('num',[atom])
+        if isinstance(atom,list):
+            return [map_nullary(satom) for satom in atom]
         elif atom == 'ph':
             return Branch('ph',[])
+        elif is_nullary_symbol(atom):
+            return Branch(atom,[])
         else:
             return Branch('var',[atom])
 
 def make_sexp(parsed):
-    """ Convert ParseTree into Branch objects"""
+    """
+    Convert ParseTree into Branch objects
+    """
     if isinstance(parsed,tuple):
         head = parsed[0]
         args = parsed[1]
@@ -250,8 +278,9 @@ def make_sexp(parsed):
         return parsed
 
 def ParseTree(s, parser):
-    """ Recursively maps the output of the sexp parser to
-    expression tree Branch objects.
+    """
+    Recursively maps the output of the sexp parser to
+    parse tree Branch objects.
     """
 
     # the parser generates nested tuples, in the simplest case it
@@ -297,7 +326,6 @@ def parse_pure_exp(expr):
     'PureExpr -> Object'
     #Get the string representation of the pure expression
     parsed = ParseTree(str(expr),'pure')
-
     #Map into the Python wrapper classes
     return parsed.eval_pure()
 

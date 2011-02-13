@@ -1,24 +1,17 @@
+/*
+ Wise
+ Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as
+ published by the Free Software Foundation, either version 3 of the
+ License, or (at your option) any later version.
+*/
+
+
 _.templateSettings = {
   interpolate: /\{\{(.+?)\}\}/g
 };
-
-//TODO: This still doesn't work
-//$(window).scroll(function() {
-//    var $sidebar = $("#worksheet_sidebar");
-//    var offset = $sidebar.offset();
-//    var topPadding = 20;
-//    var $window = $(window);
-//
-//    if ($window.scrollTop() > offset.top) {
-//        $sidebar.css({
-//            top: $window.scrollTop() - offset.top + topPadding,
-//        });
-//    } else {
-//        $sidebar.css({
-//           top: 20,
-//        });
-//    }
-//});
 
 var button_template = _.template("<button>{{label}}</button>");
 
@@ -44,12 +37,33 @@ var toplevel_types = [
     },
 ]
 
+function expand_trace(obj) {
+    $('.trace:last',obj).css('position','fixed');
+    $('.trace:last',obj).css('left','0');
+    $('.trace:last',obj).css('bottom','0');
+    $('.trace:last',obj).css('z-index','500');
+
+    $('.trace:last iframe',obj).css('height',document.height/2);
+    $('.trace:last iframe',obj).css('width',document.width);
+}
+
+function collapse_trace(obj) {
+    $('.trace:last',obj).css('position','relative');
+    $('.trace:last',obj).css('left','');
+    $('.trace:last',obj).css('top','');
+    $('.trace:last',obj).css('z-index','0');
+
+    $('.trace:last iframe',obj).css('height','100%');
+    $('.trace:last iframe',obj).css('width','100%');
+}
+
 var Logger = Backbone.Collection.extend({
 
     fatal: function(msg) {
         var err = {
             message: msg, 
             severity: 3,
+            trace: null,
         };
         this.add(err);
     },
@@ -58,6 +72,7 @@ var Logger = Backbone.Collection.extend({
         var err = {
             message: msg, 
             severity: 2,
+            trace: null,
         };
         this.add(err);
     },
@@ -66,6 +81,16 @@ var Logger = Backbone.Collection.extend({
         var err = {
             message: msg, 
             severity: 1,
+            trace: null,
+        };
+        this.add(err);
+    },
+
+    serverError: function(msg, trace) {
+        var err = {
+            message: msg, 
+            severity: 1,
+            trace: trace,
         };
         this.add(err);
     },
@@ -74,20 +99,40 @@ var Logger = Backbone.Collection.extend({
 
 var LoggerView = Backbone.View.extend({
 
+    events: {
+      "click .expandtrace": "toggleTrace",
+    },
+
     colors: ['yellow',      // Warnings 
              'lightsalmon', // Errors
              'red'          // Fatal Errors
             ],
 
     colorstate: 0,
+    activetrace: null,
     
     initialize: function() {
-        _.bindAll(this, 'newError');
+        _.bindAll(this, 'newError','makeStackTrace');
         this.model.bind('add',this.newError);
     },
 
+    toggleTrace: function(e) {
+        if(this.active_trace) {
+            collapse_trace(this.active_trace);
+            this.active_trace = null;
+        }
+        else {
+            var obj = $(e.target).parent();
+            expand_trace(obj);
+            this.active_trace = obj;
+        }
+    },
+
     newError: function(err) {
+        var error_template = _.template('<div class="errmsg">{{error}}<br/><span class="expandtrace">Expand</span>|<span class="collapsetrace">Collapse</span><div class="trace">{{trace}}</div></div>');
+
         var severity = err.get('severity');
+
         // Display the color indicator corresponding to the worst
         // active error
         if(severity >= this.colorstate) {
@@ -95,14 +140,55 @@ var LoggerView = Backbone.View.extend({
             $('#log_indicator').css('background-color', color); 
             this.colorstate = severity;
         }
+
         $('#log_indicator').effect('highlight');
-        this.$('.history').append(err.get('message'));
+
+        if(err.get('trace')) {
+           this.makeStackTrace(err); 
+           return;
+        }
+
+        this.$('.history').prepend(
+            error_template({
+                error: err.get('message'),
+            })
+        );
+    },
+
+    makeStackTrace: function(err) {
+        var error_template = _.template('<div class="errmsg">{{error}}<br/><span class="expandtrace">Expand</span><div class="trace">{{trace}}</div></div><hr/>');
+        error = error_template({
+            error: err.get('message'),
+            trace: '',
+        })
+
+        this.$('.history').prepend(
+            error
+        );
+
+        var iframe = document.createElement("iframe");
+        $('.trace:first','.history')[0].appendChild(iframe);
+
+        var doc = iframe.document;
+        if(iframe.contentDocument) {
+            doc = iframe.contentDocument;
+        } else if(iframe.contentWindow) {
+            doc = iframe.contentWindow.document;
+        }
+
+        // Put the content in the iframe
+        doc.open();
+        doc.writeln(err.get('trace'));
+        doc.close();
+
+        var storeArea = doc.getElementById("storeArea");
+
     },
 
     resetState: function(err) {
         this.colorstate = 0;
         $('#log_indicator').css('background-color', ""); 
-    }
+    },
 });
 
 var SidebarView = Backbone.View.extend({
@@ -432,12 +518,41 @@ var CmdLineView = Backbone.View.extend({
         "submit": "evaluate",
     },
 
+    visible: false,
+
+    initialize: function() {
+        _.bindAll(this, 'hide','show');
+    },
+
     evaluate: function(e) {
         var input = this.$('#cmdinput');
         use_infix( input.val() );
-        input.val("");
-        input.blur();
+        this.hide();
         return false;
+    },
+
+    hide: function() {
+        this.el.hide();
+        this.$('#cmdinput').blur();
+        this.$('#cmdinput').val("");
+        this.visible = 0;
+    },
+
+    show: function() {
+        this.el.show();
+        this.$('#cmdinput').focus();
+        this.visible = 1;
+    },
+
+    toggleVisible: function() {
+        this.visible = this.visible ^ 1;
+
+        if(!this.visible) {
+            this.hide();
+        } else {
+            this.show();
+        }
+
     },
 
 });

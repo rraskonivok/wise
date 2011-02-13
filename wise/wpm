@@ -13,7 +13,8 @@ try:
     import settings
     import meta_inspector
 except:
-    pass
+    print 'Could not load inspector module.'
+    sys.exit(0)
 
 def optional_arg(arg_default):
     def func(option,opt_str,value,parser):
@@ -37,6 +38,12 @@ def main():
                       help="Query package database.")
 
     qgroup.add_option("--shell",
+                      action="store_true",
+                      dest="shell",
+                      help="Print command for interactive Pure\
+                      interpreter with installed libraries.")
+
+    qgroup.add_option("--testshell",
                       action="store_true",
                       dest="shell",
                       help="Print command for interactive Pure\
@@ -81,8 +88,28 @@ def main():
     (options, args) = parser.parse_args()
 
     if options.rebuild:
-        packages_in_dir = meta_inspector.lspackages('.')
+        cache_files = [
+            'cache/panels_cache',
+            'cache/rulesets_cache',
+            'cache/rules_cache',
+            'cache/transforms_cache',
+        ]
+
+        for f in cache_files:
+            try:
+                os.remove(f)
+            except OSError:
+                pass
+
+        meta_inspector.PACKAGES.make_writable()
+
+        for key in meta_inspector.PACKAGES.iterkeys():
+            del meta_inspector.PACKAGES.persistance[key]
+        packages_in_dir = meta_inspector.lspackages()
         meta_inspector.rebuild_modules(packages_in_dir)
+
+        meta_inspector.PACKAGES.sync()
+
 
     #---------------------------
     # Query Actions
@@ -98,9 +125,11 @@ def main():
 
         # Output of query
         if options.shell:
-            line = ['%s/%s.pure' % (lib[0],lib[0]) for lib in query]
-            line += ['pure/prelude.pure']
-            sys.stdout.write('pure -i -q ' + ' '.join(line) + "\n")
+            packages = ['packages/%s/%s.pure' % (lib[0],lib[0]) for lib in query]
+            packages.reverse()
+            line = ['pure/prelude.pure']
+            line += packages
+            sys.stdout.write('pure -i -q ' + ' '.join(line) + " -g -I ./packages \n")
 
         elif options.info:
             for name, package in query:
@@ -118,14 +147,24 @@ def main():
     # Create Actions
     #---------------------------
     if options.create:
-        if os.path.exists(options.create):
-            print 'Cannot overwrite existing folder'
-            sys.exit(0)
-
         name = options.create
 
-        shutil.copytree('pkgtemplate', name)
+        newpath = os.path.join(settings.PACKAGE_DIR, name)
+        if os.path.exists(newpath):
+            print 'Cannot overwrite existing folder:', newpath
+            sys.exit(0)
+
+        templatedir = os.path.join(settings.PACKAGE_DIR, 'pkgtemplate')
+        shutil.copytree(templatedir, newpath)
+
+        #touch $NAME.pure
+        open(os.path.join(newpath,name+'.pure'), 'w').close()
+        meta_inspector.PACKAGES.make_writable()
         meta_inspector.PACKAGES[name] = meta_inspector.Package(name=name)
+        meta_inspector.PACKAGES.sync()
+
+
+        print 'Created package', name, 'in folder', newpath
 
 if __name__ == "__main__":
    main()

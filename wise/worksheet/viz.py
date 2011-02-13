@@ -1,14 +1,20 @@
-# General function to recursively consume the math hierarchy and
-# output some form of structured data (UML , dotviz, ...)
+# -*- coding: utf-8 -*-
+
+# Wise
+# Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
 
 import settings
-from wise.utils.module_loading import module_has_submodule
-from django.utils.importlib import import_module
+from wise.packages.loader import load_package_module
 
 try:
     from pygraphviz import AGraph
     GRAPHVIZ = True
-except:
+except ImportError:
     GRAPHVIZ = False
 
 def all_subclasses(cls, accumulator=set(),
@@ -43,9 +49,5 @@ def pycls2graph(*tcls):
     return G
 
 def package_to_graph(package):
-    pack_module = import_module(package)
-    if module_has_submodule(pack_module, 'objects'):
-        path = package + '.objects'
-        pack_objects = import_module(path, settings.ROOT_MODULE)
-    tops, nullary = pack_objects.initialize()
+    tops, nullary = load_package_module(package,'objects').initialize()
     return pycls2graph(*tops)

@@ -10,9 +10,8 @@
 
 import panel
 import wise.boot
-import wise.base.cell
 import wise.meta_inspector
-from django.utils.decorators import method_decorator
+
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseForbidden
@@ -24,9 +23,10 @@ from django.views.generic.edit import (UpdateView, DeleteView,
 CreateView)
 from wise.translators.pytopure import parse_sexp
 from wise.worksheet.forms import WorksheetForm
-from wise.worksheet.models import (Workspace, Expression, Cell,
-Assumption)
+from wise.worksheet import models
 from wise.worksheet.utils import *
+from wise.packages import loader
+
 from operator import itemgetter
 
 # Initialize the Python-Pure translation bridge
@@ -36,34 +36,36 @@ if settings.WORKER_TYPE == 'sync':
 wise.boot.start_python_pure()
 panel.build_panels()
 
+basecell = loader.load_package_module('base','cell')
+
 #---------------------------
 # Home Page
 #---------------------------
 
 class HomeView(ListView):
-    model = Workspace
+    model = models.Workspace
     template_name = "home.html"
     context_object_name = 'workspaces'
 
     def get_queryset(self):
-        return Workspace.objects.filter(owner=self.request.user)
+        return models.Workspace.objects.filter(owner=self.request.user)
 
 #---------------------------
 # Worksheet CRUD
 #---------------------------
 
 class WorksheetDetail(DetailView):
-    queryset = Workspace.objects.all()
+    queryset = models.Workspace.objects.all()
     template_name = "worksheet_edit.html"
 
 class WorksheetDelete(DeleteView):
-    queryset = Workspace.objects.all()
+    queryset = models.Workspace.objects.all()
     template_name = "worksheet_delete.html"
     success_url = '/home'
 
 class WorksheetEdit(UpdateView):
-    model = Workspace
-    queryset = Workspace.objects.all()
+    model = models.Workspace
+    queryset = models.Workspace.objects.all()
 
     form = WorksheetForm
     template_name = "worksheet_edit.html"
@@ -73,7 +75,7 @@ class WorksheetEdit(UpdateView):
         return reverse('worksheet_detail', args=[obj.id])
 
 class WorksheetCreate(CreateView):
-    model = Workspace
+    model = models.Workspace
     form = WorksheetForm
     template_name = "worksheet_edit.html"
     success_url = '/home'
@@ -82,8 +84,8 @@ class WorksheetCreate(CreateView):
         return reverse('authors_list')
 
 def new_worksheet_prototype(attrs):
-    nworksheet = Workspace(**attrs).save()
-    Cell(workspace=ws, index=0).save()
+    nworksheet = models.Workspace(**attrs).save()
+    models.Cell(workspace=ws, index=0).save()
     return nworksheet
 
 #---------------------------
@@ -92,11 +94,10 @@ def new_worksheet_prototype(attrs):
 
 @login_required
 def ecosystem(request):
-
     # Wrap up the packages into 'pack' objects so aren't passing
     # pointers to our disk persistence to the template
     context = RequestContext(request)
-    context['workspaces'] = Workspace.objects.filter(owner=request.user)
+    context['workspaces'] = models.Workspace.objects.filter(owner=request.user)
 
     packages = []
 
@@ -116,22 +117,73 @@ def ecosystem(request):
 # Worksheet
 #---------------------------
 
+@login_required
+def ws_read(request, ws_id):
+    ws = get_object_or_404(models.Workspace, pk=ws_id)
+
+    if ( ws.owner.id != request.user.id ) and not ws.public:
+        return HttpResponseForbidden()
+
+    cells = models.Cell.objects.filter(workspace=ws_id)
+
+    if not cells:
+        cells = []
+
+    # HTML elements to inject into the #workspace div
+    html_cells = []
+
+    uid = uidgen()
+    # Populate the Cell
+    for index,cell in enumerate(cells):
+        # Load toplevel expressions
+        eqs = models.Expression.objects.filter(cell=cell).order_by('index')
+        top_exprs = []
+
+        #asms = Assumption.objects.filter(cell=cell).order_by('index')
+        #top_asms = []
+
+        for eq in eqs:
+            # Build up the object from the sexp in the database
+            etree = parse_sexp(eq.sexp)
+            etree.annotation = eq.annotation
+            etree.uid_walk(uid)
+            top_exprs.append(etree)
+
+        # Initialize the new Cell instance
+        ncell = basecell.Cell(top_exprs, [],
+           index = index,
+           cid = 'cell'+str(index),
+           id = cell.id
+        )
+
+        html_cells.append(html(ncell))
+
+    response = render_to_response('worksheet_read.html', {
+        'title': ws.name,
+        'author': ws.owner,
+        'cells': html_cells,
+        },
+        context_instance = RequestContext(request),
+    )
+
+    return response
+
 #TODO: change the name of this to something more illuminating
 # i.e. WorksheetView
 @login_required
 def ws(request, ws_id):
-    ws = get_object_or_404(Workspace, pk=ws_id)
+    ws = get_object_or_404(models.Workspace, pk=ws_id)
 
     if ( ws.owner.id != request.user.id ):
         return HttpResponseForbidden()
 
     # Start a uid generator at cid0
     uid = uidgen()
-    cells = Cell.objects.filter(workspace=ws_id)
+    cells = models.Cell.objects.filter(workspace=ws_id)
 
     # If the worksheet is empty give it an empty cell
     if not cells:
-        ncell = Cell(workspace=ws, index=0)
+        ncell = models.Cell(workspace=ws, index=0)
         ncell.save()
 
         cells = []
@@ -146,7 +198,7 @@ def ws(request, ws_id):
     # Populate the Cell
     for index,cell in enumerate(cells):
         # Load toplevel expressions
-        eqs = Expression.objects.filter(cell=cell).order_by('index')
+        eqs = models.Expression.objects.filter(cell=cell).order_by('index')
         top_exprs = []
 
         #asms = Assumption.objects.filter(cell=cell).order_by('index')
@@ -171,14 +223,11 @@ def ws(request, ws_id):
         #    top_asms.append(etree)
 
         # Initialize the new Cell instance
-        ncell = wise.base.cell.Cell(top_exprs, [],
+        ncell = basecell.Cell(top_exprs, [],
            index = index,
            cid = 'cell'+str(index),
            id = cell.id
         )
-        #ncell.index = index;
-        #ncell.cid = 'cell' + str(index)
-        #ncell.id = cell.id
 
         html_cells.append(html(ncell))
         json_cells.append(json_flat(ncell))
@@ -214,14 +263,20 @@ def palette(request):
     return response
 
 def generate_palette():
-    render_panels = []
+    # Sort panels alphabetically
     panels = sorted(panel.panels.iteritems(), key=itemgetter(0))
+
+    render_panels = []
 
     for name, pnl in panels:
         pnl.html = pnl.get_html()
         render_panels.append(pnl)
 
-    return render_haml_to_response('palette_template.tpl',{'panels': render_panels})
+    return render_haml_to_response('palette_template.tpl',
+        {
+            'panels': render_panels
+        }
+    )
 
 #---------------------------
 # Development Tools
@@ -245,8 +300,10 @@ def translate(request):
 
 @login_required
 def dict(request, data='pure'):
-    ''' Dump the translation dictionary to a JSON object, for
-    debugging purposes '''
+    """
+    Dump the translation dictionary to a JSON object, for
+    debugging purposes
+    """
 
     from pprint import pformat
 

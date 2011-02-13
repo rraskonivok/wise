@@ -1,6 +1,8 @@
 import unittest
 
-from cpure import PureEnv, PureSymbol, PureInt, PureDouble
+from cpure import (PureEnv, PureSymbol, PureInt,
+        PureDouble,PureList) 
+
 env = PureEnv()
 
 class TestPureCythonModule(unittest.TestCase):
@@ -17,6 +19,7 @@ class TestPureCythonModule(unittest.TestCase):
         self.assertEqual(str(PureSymbol('x')),'x')
         self.assertEqual(str(PureInt(1)),'1')
         self.assertEqual(str(PureDouble(3.14)),'3.14')
+        self.assertEqual(str(PureList(PureInt(1),PureInt(2))),'[1,2]')
 
     def test_prelude(self):
         env.eval('using prelude')

@@ -21,8 +21,8 @@ Worksheet specific javascript
 <!-- <script type="text/javascript"
     src="/ws/mathjax/MathJax.js"></script>-->
 
-{% load_bundle "worksheet_js" %}
 {% load_bundle "worksheet_css" %}
+{% load_bundle "worksheet_js" %}
 
 {% endblock %}
 
@@ -77,6 +77,7 @@ Worksheet Palettes
     <div id="terminal_palette" class="palette hidden">
         <h3>Error Log</h3>
         <div class="history"></div>
+        <div id="errlog"></div>
     </div>
 
 </div>
@@ -166,7 +167,7 @@ Equations
 <div id="selectionlist">
 </div>
 
-<div class="cmd hidden">
+<div id="cmd" class="cmd hidden">
     <form id="cmdline" action="#">
         <input id="cmdinput" type="text"></input>
     </form>

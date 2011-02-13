@@ -106,27 +106,8 @@ class PublicRule:
         return self.__doc__
 
     def reduce_with(self, *expr):
-        po = pureobjects.PureClosure(self.pure)
-        return po(*expr)
-
-#        pure_expr = po(*pexpr)
-#        pyexpr = pure_to_python(pure_expr,expr[0].idgen)
-#
-#        print 'Reduced Sexp:', pyexpr
-#        print 'Reduced Pure:', pure_expr
-
-    # TODO: get tooltips working again
-    #@classmethodn
-    #def register(self):
-    #    if self.pure:
-
-    #        if hasattr(self,'__doc__') and self.__doc__:
-    #            self.desc = trim_docstring(self.__doc__)
-    #        else:
-    #            self.desc = 'No description available'
-
-    #        self.po = PureClosure(self.pure)
-    #        pure_wrap.objects[self.pure] = self.po
+        rule = pureobjects.PureClosure(self.pure)
+        return pureobjects.p2i(rule(*expr))
 
 # This is a statefull change in the interpreter, if this is
 # called at the root definition level it applies globally

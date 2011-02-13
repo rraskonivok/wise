@@ -17,7 +17,7 @@ def init(**kwargs):
     wise.boot.start_cython()
 
     import wise.translators.pytopure as translate
-    from wise.translators.pureobjects import i2p
+    from wise.translators.pureobjects import i2p, p2i
     from wise.translators.mathobjects import rules
     from wise.translators.pure_wrap import PureInterface
 
@@ -25,6 +25,7 @@ def init(**kwargs):
     # namespace
     globals().update(dict(
         i2p = i2p,
+        p2i = p2i,
         translate = translate,
         rules = rules,
         interface = PureInterface,

@@ -1,0 +1,9 @@
+This is a running list of publications which contains the algorithms and mathematical assertions used in Pure. See in 
+individual files for specific references. For algorithms adapted from other software/libraries see LICENSES and 
+LICENSES_NONGPL.
+
+1. Gruntz D. On Computing Limits in a Symbolic Manipulation System presented by. Computing. 1996;(11432).
+2. Sankel D. The Haskell Road to Logic, Maths and Programming. Journal of Functional Programming. 2006;16(02):249.
+3. Zwillinger D. CRC Standard Mathematical Tables. New York. 2003.
+4. Cohen JS. Computer Algebra and Symbolic Computation
+5. Olver, Frank; Lozier, D.; Boisvert, R.F. et al., eds. (2010), NIST Handbook of Mathematical Functions, Cambridge University Press

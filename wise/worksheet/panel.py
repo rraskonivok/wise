@@ -1,33 +1,46 @@
+import os
+
 from inspect import getargspec
 from types import TypeType
 
 from django.conf import settings
-from django.template import Template, Context
-from wise.base.objects import Placeholder
+from django.template import Context
 
+from wise.worksheet.utils import load_haml_template
+from wise.worksheet.utils import trim_docstring
 from wise.utils.patterns import Aggregator
-from django.utils.importlib import import_module
 from wise.utils.module_loading import module_has_submodule
+from wise.packages import loader
 
+Placeholder = loader.load_package_module('base','objects').Placeholder
 panels = Aggregator(file='cache/panels_cache')
 
 def _map_panel_types(obj):
+    # If we have a Class read the argument signature of the
+    # __init__ function and fill in all required arguments with
+    # Placeholders.
+    # Example:
+    #   Addition -> Addition(Placeholder(),Placeholder())
     if isinstance(obj, TypeType):
         # Get the number of arguments the __init__ function for
         # the mathobject takes and substitute placeholder in for
         # each argument
         args, varargs, keywords, defaults = getargspec(obj.__init__)
+
+        # decrement the len(args) since we ignore the self
+        # argument
+        arglength = (len(args) - 1) or 1;
         try:
-            # decrement the len(args) since we ignore the self
-            # argument
-            ph = Placeholder
-            placeholder_tuples = (ph(),)*(len(args) - 1)
+            placeholder_tuples = (Placeholder(),)*(arglength)
             return obj(*placeholder_tuples)
         except TypeError:
-            print 'Type Error',args
+            print 'Type Error',args, arglength
+
+    # If an instance is passed do nothing and just pass it
+    # along.
+    # Example:
+    #   Variable('x')
     else:
-        # If an instance is passed do nothing and just pass it
-        # along
         return obj
 
 class Panel:
@@ -39,25 +52,8 @@ class Panel:
         c = Context({'name':self.name, 'objects': objects})
         return interface_ui.render(c)
 
-mathml_template = '''
-<table>
-<tr>
-{% for button in buttons %}
-  <td>
-  <span class="uniform_button" onclick="subs('{{ button.math }}');">
-  {{ button.mathml|safe }}
-  </span>
-  </td>
-  {% if forloop.counter|divisibleby:"5" %}
-    </tr><tr>
-  {% endif %}
-{% endfor %}
-</tr>
-</table>
-'''
-
 class MathMLPanel(Panel):
-    template = Template(mathml_template)
+    template = load_haml_template('mathml_buttons.tpl')
 
     def __init__(self, name, objects, use_template=False):
         self.name = name
@@ -73,16 +69,20 @@ class MathMLPanel(Panel):
                 button = {}
                 button['mathml'] = xml
                 button['math'] = _map_panel_types(obj)
+                button['tooltip'] = trim_docstring(obj.__doc__)
                 buttons.append( button )
         else:
             for xml, obj in self.objects:
+                # Search in $PACKAGE/buttons/$XML for the MathML
+                # to render on the button
                 button = {}
-                button['mathml'] = open(self.package + '/' + xml).read()
+                panel = os.path.join(settings.PACKAGE_DIR, self.package, xml)
+                button['mathml'] = open(panel).read()
+                button['tooltip'] = trim_docstring(obj.__doc__)
                 button['math'] = _map_panel_types(obj)
                 buttons.append( button )
 
         interface_ui = self.template
-
         c = Context({'name':self.name, 'buttons': buttons})
         return interface_ui.render(c)
 
@@ -90,22 +90,20 @@ def is_panel(obj):
     return isinstance(obj,Panel)
 
 def build_panels(force=False):
-
     if panels and not settings.NOCACHE:
         print 'Using cached panels file.'
         return
 
     for pack_name in settings.INSTALLED_MATH_PACKAGES:
         print 'Importing panels from ... ' + pack_name
-        pack_module = import_module(pack_name)
+        pack_module = loader.load_package(pack_name)
 
-        # Load PACKAGE/rules.py
+        # Load PACKAGE/panel.py
         if module_has_submodule(pack_module, 'panel'):
-            path = pack_name + '.panel'
-            pack_rules = import_module(path, settings.ROOT_MODULE)
+            pack_panels = loader.load_package_module(pack_name,'panel')
 
             panels.make_writable()
-            for panel_name, symbol in pack_rules.__dict__.iteritems():
+            for panel_name, symbol in pack_panels.__dict__.iteritems():
                 if is_panel(symbol):
                     symbol.package = pack_name
                     panels[panel_name] = symbol

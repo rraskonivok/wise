@@ -34,6 +34,7 @@
               <td>{{ workspace.tags|escape }}</td>
 
               <td class="last">
+                <a href="{% url worksheet_read workspace.id %}">read</a> |
                 <a href="{% url worksheet_update workspace.id %}">edit</a> |
                 <a href="{% url worksheet_delete workspace.id %}">delete</a>
               </td>

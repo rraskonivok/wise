@@ -1,0 +1,7 @@
+using calculus;
+
+(evals diff x x) === 1 || throw 1;
+(evals diff (x^2) x) === (2*x^1) || throw 2;
+(evals diff (Ln x) x) === (rational 1 x) || throw 3;
+(evals diff (Sin x) x) === (Cos x) || throw 4;
+(evals diff (u+v) x) === (diff u x) + (diff v x) || throw 5;

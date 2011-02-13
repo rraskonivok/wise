@@ -1,0 +1,92 @@
+// References:
+// * MathObj.Polynomial from Haskell numeric prelude
+
+namespace poly;
+infixl 6 $+ ; // Addition
+infixl 6 $- ; // Subtraction
+infixl 7 $* ; // Multiplication
+infixl 7 $. ; // Scalar Multiplication
+infixl 6 $/ ; // Division
+infixl 6 $# ; // Composition
+
+// Addition of polynomials
+(a:as) $+ (b:bs) = (a+b) : (as $+ bs);
+as     $+ []     = as;
+[]     $+ bs     = bs;
+
+// Subtraction of polynomials
+as $- bs = as $+ (map neg bs);
+
+// Scalar multiplication of polynomials
+a $. bs = map (a*) bs;
+
+// Append 0 term to polynomial
+shift [] = [];
+shift as = 0 : as;
+
+// Prepend zeros to polynomial
+pad n l = (repeatn n 0) + l;
+
+// Scale polynomial by constant
+scale s = map (s*);
+
+alternate = zipwith ($) (cycle [id, neg]);
+
+// Multiplication of polynomials
+[] $* _ = [];
+_ $* [] = [];
+(a:as) $* (b:bs) = [a*b] $+
+    shift (map (a*) bs $+
+    map (*b) as) $+
+    shift (shift (as $* bs));
+
+// Return the polynomail with an appeneded infinite stream of
+// zeros
+series f = f : repeat 0;
+[] $/ _ = [];
+
+// Finite polynomial division
+(f:ft) $/ (g:gt) = qs : series(1/g) $. (ft $- (qs $. gt)) 
+    with qs = f/g end;
+
+// Finite polynomial composition
+[] $# gs = [];
+(f:ft) $# (gs@(0:gt)) = f : ( gt $* (ft $# gs) );
+
+// Horner evaluation
+horner v x = foldl (\a b -> a*x + b) 0 (reverse v);
+
+namespace;
+
+namespace poly;
+expr_to_poly X var = _to_poly X with
+    _to_poly (x+y) = (_to_poly x) $+ (_to_poly y);
+    _to_poly (x*y) = (_to_poly x) $* (_to_poly y);
+    _to_poly (x^0) = (_to_poly x);
+    _to_poly (x^(y::int)) = (_to_poly x) $* (_to_poly $ x^(y-1));
+
+    _to_poly x = [0,1] if x === var;
+    _to_poly x = [x] if numberp x;
+    _to_poly x = throw ("Unknown variable: " + str(x)) if varp x;
+end;
+
+poly_var x xs = [x^n * (xs ! n) | n=(0..(#xs - 1))];
+
+namespace;
+
+/*using namespace poly;*/
+/*[] / gs = [];*/
+/*(0:fs) / (0:gs) = fs / gs;*/
+/*(_:fs) / (0:gs) = error "division by 0 attempted";*/
+/*(f:fs) / (g:gs) = (f/g) : ((fs $- (f/g) $. gs) / (g:gs) &);*/
+/*(f:fs) / (g:gs) = (f/g) : (fs $- ( (f/g) $. gs )) / (g:gs);*/
+/*namespace;*/
+
+series_eval x xs = foldl1 (+) $ poly_var x xs;
+poly_to_expr = series_eval;
+
+// Symbol Taylor series metafunction
+evals UPoly x cs = listapply FinitePoly $
+            (poly::poly_var x cs);
+
+/*FinitePoly*/

@@ -1,0 +1,281 @@
+using dict;
+using calculus;
+using base::simp;
+
+nthdiff f x n = evals ndiff f x n;
+
+namespace powseries;
+
+// Used for evaluation of taylor expansion terms at a single
+// point.
+subst x e = subst x (hdict e) with
+  subst (x@_ y) e = (subst x e) (subst y e);
+  subst x e = if member e x then e!x else x;
+end;
+
+
+/*
+  ------------------------
+   Power Series Operations
+  ------------------------
+*/
+
+/*
+ References:
+
+ * McIlroy MD. The Music of Streams.
+   Information processing letters. 2001;77(2-4):189-195.
+
+ * David Amos: Haskell for Maths.
+   http://haskellformaths.blogspot.com
+
+*/
+
+// Check if the data stucture can be safely called in full. i.e.
+// it does not contain any potentially infinite thunks.
+finite x@(_:xs) = ~(thunkp xs) && (listp x || listnp x || tuplep x);
+finite _        = 1;
+
+indexable (x:xs) = 1;
+indexable _      = 0;
+
+// Series operations
+infixl 6 $+ ; // Addition
+infixl 6 $- ; // Subtraction
+infixl 7 $* ; // Multiplication
+infixl 7 $. ; // Scalar Multiplication
+infixl 6 $/ ; // Division
+infixl 6 $# ; // Composition
+
+// Cardinality, generalization of # operator to handle lazy data
+// structures
+prefix 2599 ##;
+
+// Addition of power series
+(a:as) $+ (b:bs) = (a+b) : (as $+ bs);
+as     $+ []     = as;
+[]     $+ bs     = bs;
+
+// Subtraction of power serie
+as $- bs = as $+ (map neg bs);
+
+// Scalar multiplication of power series
+a $. bs = map (a*) bs;
+
+// Append 0 term to power series
+shift [] = [];
+shift as = 0 : as;
+
+// Multiplication of power series
+[] $* _ = [];
+_ $* [] = [];
+(a:as) $* (b:bs) = [a*b] $+
+    shift (map (a*) bs $+
+    map (*b) as) $+
+    shift (shift (as $* bs));
+
+series f = f : repeat 0;
+[] $/ _ = [];
+
+(f:ft) $/ (g:gt) = qs : series(1/g) $. (ft $- (qs $. gt))
+    with qs = f/g end;
+
+/* Composition of power series is given by:
+    f(x) = \sum_{n=1}^\infty a_n x^n = a_1 x + a_2 x^2 + \cdots
+    g(x) = \sum_{n=0}^\infty b_n x^n = b_0 + b_1 x + b_2 x^2 + \cdots,
+    g(f(x)) = \sum_{n=0}^\infty b_n (f(x))^n = \sum_{n=0}^\infty c_n x^n
+*/
+[] $# gs = [];
+(f:ft) $# (gs@(g:gt)) = f : ( gt $* (ft $# gs) );
+
+// Power series differentiation and integration
+differentiate x = zipwith (*) (tail x) (1..inf);
+integrate c x = c : (zipwith (/) x (1..inf));
+
+## (x:xs) = inf if thunkp xs;
+## x = #x if listp x;
+
+factorial n::int    |
+factorial n::double |
+factorial n::bigint = loop 1 (bigint n) with
+  loop p n = if n>0 then loop (p*n) (n-1) else p;
+end;
+
+// Is the series the zero series
+zerop xs = all (\x -> `(x == 0)) xs;
+
+// Truncate trailing zero terms from power series
+truncate_zeros [] = [];
+truncate_zeros (x:xs) = [x] if zerop xs;
+                      = x: (truncate_zeros xs) otherwise;
+
+// Degree of the power series with trailing zeroes truncated. The
+// zero power series has degree `nan` by convention.
+deg xs = ##(truncate_zeros xs) if indexable xs && finite xs && ~zerop xs;
+       = nan if indexable xs && finite xs && zerop xs; // Zero series
+       = ##(xs) if indexable xs;
+       = nan othewise;
+
+/*
+  ----------------
+   Simplification
+  ----------------
+*/
+
+/*simplify_rational = reduce with*/
+    /*x%1 = x;*/
+    /*x%y = x if numberp y && y == 1;*/
+    /*x%y = x div y if all numberp [x,y] && x mod y == 0;*/
+/*end;*/
+
+is_undefined x = (contains x inf) || (contains x (-inf)) || (contains x nan);
+
+// Returns the nth term in the taylor_expansion of f(x) around the
+// point x0.
+
+// This is crazy inefficent, turn this into a recursive list
+// generator and apply basic_simplify on each item.
+taylor_term f x x0 n = term with
+    // \frac {f^{(n)}(a)}{n!} \, (x-a)^{n}
+    coef = (nthdiff f x n)
+           % (factorial n);
+
+    // Substitution d^n/dx^n f(x) -> d^n/dx^n f(x0)
+    term = subst coef [x=>x0] if ~(is_undefined coef);
+         = nan otherwise;
+end;
+
+// Returns the first nonzero term in the Taylor expansion of f(x)
+// around the point x0. Not guaranteed to terminate.
+taylor_nonzero f x x0 = term 0 with
+    ntaylor n = taylor_term f x x0 n;
+    term n = ntaylor n if ~(ntaylor n ! 0 === 0) && ~(ntaylor n !  0=== 0.0);
+           = term (n+1) otherwise;
+end;
+
+// Returns the first n terms in the taylor series of f(x)
+// around x0 as a list. If the series is not the defined at x
+// then return [f] which corresponds to the constant series f *
+// x^0. If the f has an unremovable discontinuity (lim f_n ->
+// inf) for some truncation of the series at n0 then all
+// subsequent terms are undefined.
+taylor _ _ _  _ (-1) = [];
+taylor f x x0 _s n = if ~(is_undefined term) 
+    then 
+        (taylor f x x0 _s (n-1)) + [term]
+    else [f]
+with
+    // Reduce the rule with the specified simplification rule
+    // `_s`.
+    term = _s $ simplify::basic_simplify $ taylor_term f x x0 n; 
+end;
+
+basic_taylor f x x0 n = taylor f x x0 (simplify::basic_simplify) n;
+num_taylor f x x0 n = taylor f x x0 (simplify::recursive_evalf) n;
+
+partialSums xs = scanl1 (+) xs;
+partialProducts xs = scanl1 (*) xs;
+
+// Evaluate the power series xs at a point `x` by joining taking
+// the summation of the product
+//
+//   (c0,x^0) + (c1,x^1) + ... =>
+//   c0*x^0 + c1*x^1 + ...
+series_eval x xs = foldl1 (+) $ zipwith (*) xs [x^n | n=(0..(#xs))];
+
+// Multiply each term by x^n yielding a full list of the Taylor
+// expansion. Note the use of the qualified symbol ::^ for
+// exponentiation.
+series_var x xs = [x ::^ n * (xs ! n) | n=(0..(#xs - 1))];
+    /*with x^0 = 1; x^1 = x; end;*/
+
+// Perform basic arithmetic on terms and chop any trailing zero
+// terms, this reduces the load when composing series.
+simplify_series xs = truncate_zeros $ map simplify::basic_simplify xs;
+
+// Evaluate taylor series for all subexpressions and compose the
+// series.
+series_taylor f x x0 n::int = simplify::basic_simplify $ tay f with
+    _tay _f = basic_taylor _f x x0 n;
+
+    tay (a+b) = tay a $+ tay b;
+    tay (a*b) = tay a $* tay b;
+
+    tay (f@_ s) = _tay (f s) if s === x && varp x;
+    tay (f@_ ser) =
+        (simplify_series $ (basic_taylor (f u) u x0 n))
+        $#
+        (simplify_series $ (tay ser))
+        /*when u = ser end*/
+        if ~(applp f) ;
+
+    tay e::int = [e];
+    tay e::double = [e];
+    tay e = [e] if ~(has e x);
+    /*tay e = [0,1] if varp e;*/
+    tay f = _tay f;
+end;
+
+namespace;
+
+/*
+  ---------------------
+   Sequence Operations
+  ---------------------
+*/
+
+namespace seq;
+// Lower bound
+lbnd = foldl1 min;
+// Upper Bound
+ubnd = foldl1 max;
+
+primes = sieve (2..inf) with
+    sieve (p:qs)  = p : sieve [q | q = qs; q mod p] &;
+end;
+namespace;
+
+/*
+  ---------------------
+   Series Hooks
+  ---------------------
+*/
+
+// Move x^n terms into the numerator if possible, reduces the
+// apparent "complexity" of the expression
+prettyseries X = simplify::basic_simplify $ reduce X with
+    x*(a%b) = (x*a)%b;
+end;
+
+// Remove zero terms from a FiniteSeries
+rmzeroterms (FiniteSeries xs) = FiniteSeries $ filter (\a -> ~iszero a) xs;
+rmzeroterms x = x;
+
+// Convert FiniteSeries into an addition sequence without the
+// O(n) term
+truncateseries (FiniteSeries xs) = sum $ xs !! (0..(#xs-2));
+truncateseries x = x;
+
+/*
+The closed form for a Taylor expression is given by `Taylor`
+which symbolically evalutes to a FiniteSeries expression with a
+O(n) tail.
+*/
+evals Taylor f x x0 n = FiniteSeries $ prettyseries $
+    //  a_0 x^0 + a_1 x^1 + ... + O(n)
+    (powseries::series_var x (powseries::series_taylor f x x0 n)) + [(Order n)];
+
+tayapprox f x x0 n= simplify::basic_simplify $
+                    prettyseries $
+                    sum $
+                    powseries::series_var x
+    (powseries::series_taylor f x x0 n);
+
+taylor1 f = tayapprox f (lsvars f ! 0) 0 1 if uvarp f;
+          = f otherwise;
+
+taylor2 f = tayapprox f (lsvars f ! 0) 0 2 if uvarp f;
+          = f otherwise;
+
+taylor3 f = tayapprox f (lsvars f ! 0) 0 3 if uvarp f;
+          = f otherwise;

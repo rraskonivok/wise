@@ -28,8 +28,7 @@ class _Sneaky(object):
             self.interface = init_pure()
 
             if settings.DEBUG:
-                print 'Creating new interpreter instance because\
- pureobjects.py requested object.'
+                print 'Invoking interpreter because pureobjects.py requested object.'
 
         return self.interface[name]
 

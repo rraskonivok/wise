@@ -1,32 +1,175 @@
+/*
+  Wise
+  Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as
+  published by the Free Software Foundation, either version 3 of the
+  License, or (at your option) any later version.
+*/
+
 export PURE_STACK=1024;
+
+def extends x = x . reduce_with __locals__;
+
+/* ---------------------
+  Evaluation Functions 
+--------------------- */
+
+prefix 1000 evalb; // Evaluation to boolean
+prefix 1000 evali; // Evaluation to integer
+prefix 1000 evalf; // Evaluation to float
+prefix 1000 evals; // Evaluation to symbolic
+
+/* ------------------------
+  Prefix-Infix Conversion
+------------------------ */
 
 // For all x: i2p . p2i x = p2i . i2p x
 
 // Hack to overcome the fact that we can't overload the internal
 // `neg` function for integers
+
+i2p x::bigint |
 i2p x::double |
-i2p x::int = x if x > 0;
-           = Neg $ abs x if x < 0;
+i2p x::int    = x if x >= 0;
+              = Neg $ abs x otherwise;
+
+i2p mat::matrix = Mat $ map (MRow . list) $ rows (map i2p mat);
 
 // Convert Infix to Prefix
 i2p X = reduce X with
     x + y = add (i2p x) (i2p y);
-    x - y = add (i2p x) (Neg i2p y);
+    x - y = add (i2p x) (Neg $ i2p y);
     x * y = mul (i2p x) (i2p y);
-    x / y = rational (i2p x) (i2p y);
+
+    x / y = rat (i2p x) (i2p y);
+    x % y = rat (i2p x) (i2p y);
+
     x ^ y = powr (i2p x) (i2p y);
     - x   = Neg (i2p x);
 end;
 
 // Convert Prefix to Infix
 p2i X = reduce X with
-    Num x         = x;
-    Neg x         =  - x;
-    add x y       =  x + y; 
-    mul x y       =  x * y;
-    rational x y  =  x / y;
-    powr x y      =  x ^ y;
+    Num x         =    x   ;
+    Neg x         =  - x   ;
+    add x y       =  x + y ;
+    mul x y       =  x * y ;
+    rat x y       =  x % y ;
+    powr x y      =  x ^ y ;
+
+    // Disregard partial evaluations
+    evalb x = x;
+    evali x = x;
+    evalf x = x;
+    evals x = x;
+
+    Mat xs = matrix xs;
+    MRow xs = xs;
 end;
+
+/* ------------------------
+  Substitution
+------------------------ */
+
+using dict;
+subst x e = subst x (hdict e) with
+  subst (x@_ y) e = (subst x e) (subst y e);
+  subst x e = if member e x then e!x else x;
+end;
+
+/*
+  ----------------------
+   Expression Detection
+  ----------------------
+*/
+
+//Check if an expression `x` has a subexpression `e`.
+contains x e = detect x with
+    detect (func@_ a) = ((func$a) === e) || (detect func) || (detect a);
+    detect x = 1 if x === e;
+             = 0 otherwise;
+end;
+
+//Check if an expression `x` has a subatom `e`.
+has x e = detect x e with
+    detect (x@_ y) e = (detect x e) || (detect y e);
+    detect x e = 1 if (x === e) && atomp x;
+               = 0 otherwise;
+end;
+
+// Walk the expression tree `x` and return 1 if any element has
+// the given property `p`.
+hasprop x p = detect x e with
+    detect (x@_ y) e = (detect x e) || (detect y e);
+    detect x e = 1 if (p x === 1);
+               = 0 otherwise;
+end;
+
+// Strip function `head` from expression `ex` returning its
+// arguments in it's place.
+chop_head head ex = _strip ex with
+    // Matches function of arbitrary arguments using currying
+    // f a b c -> (f a b) c
+    // (f a b) -> (f a) b
+    // (f a)   -> f a
+
+    _strip (func@_ a) = if func === head 
+        then a
+        else (_strip func) $ (_strip a);
+    _strip x = x;
+end;
+
+splice_head f g ex = _repl ex with
+    _repl (func@_ a) = (_repl func) $ (_repl a);
+    _repl x = if x === f then g else x;
+end;
+
+/* --------------------------
+  Expression Complexity
+---------------------------- */
+
+// Return the complexity of the expression by the number of
+// termins in it.
+complexity e = count_terms e 0  with
+    count_terms (x@_ y) a = (count_terms x a) + (count_terms y a);
+    count_terms x a = 1;
+end;
+
+complexity_sort a b = complexity a <= complexity b;
+
+// Order a list of expressions by their complexity from least to
+// greatest.
+complex_order xs = sort complexity_sort xs;
+
+/* --------------------------
+  Overload Default Arithmetic
+---------------------------- */
+
+namespace cast_division;
+infixl (::/) /;
+def a/b              = a ::% b;
+namespace;
+
+/* --------------------------
+  Guard Macros
+---------------------------- */
+
+// `(x == y) is equivelent to (x == y) === 1
+// This lets us do pseudo duck-typing
+prefix 1001 `;
+
+` expr = 1 if (expr === true);
+       = 0 otherwise;
+
+iszero x = `(x == 0);
+isone x = `(x == 1);
+isnegone x = `(x == -1);
+
+/* --------------------------
+  Dynamic Rule Generation
+---------------------------- */
 
 // The prototype operator is used to initialize rules dynamially
 infixl 1001 -->;
@@ -38,3 +181,11 @@ rhs (l --> r) = str r;
 
 // Create an instance of our prototype rule
 instance proto = eval $ (lhs proto) + " = " + (rhs proto);
+
+/* --------------------------
+  Misc. Utilities
+---------------------------- */
+
+// Apply a list of arguments
+listapply f [] = f;
+listapply f (x:xs) = listapply (f x) xs;

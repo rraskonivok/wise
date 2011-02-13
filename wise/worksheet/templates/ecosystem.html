@@ -26,34 +26,33 @@
   <div class="content">
     <div class="inner">
       <ul class="package list">
+          {% for package in packages %}
           <li>
-      {% for package in packages %}
-          <h3 onclick="toggle_next(this)">{{package.name}}</h3>
-          <span>
-              <hr/>
-              <p>Date: {{ package.date }}</p>
-              <p>Author: {{ package.author }}</p>
-              <p>Version: {{ package.version }}</p>
-              <p>
-                  <a href="/graph/{{ package.name }}">Visualize Structure</a> |
-                  <a href="#">Export JSON</a>
-              </p>
-                  <a href="#" onclick="toggle_next(this)">Provides</a>
-                  <table style="display: none">
-                  <tr>
-                      {% for symbol in package.symbols %}
-                      <td>{{ symbol }}</td>
-                      {% if forloop.counter|divisibleby:"5" %}
-                        </tr><tr>
-                      {% endif %}
-                      </td>
-                      {% endfor %}
-                  </tr>
-                  </table>
-          </span>
-          </ul>
-      {% endfor %}
+              <h3 onclick="toggle_next(this)">{{package.name}}</h3>
+              <span>
+                  <hr/>
+                  <p>Date: {{ package.date }}</p>
+                  <p>Author: {{ package.author }}</p>
+                  <p>Version: {{ package.version }}</p>
+                  <p>
+                      <a href="/graph/{{ package.name }}">Visualize Structure</a> |
+                      <a href="#">Export JSON</a>
+                  </p>
+                      <a href="#" onclick="toggle_next(this)">Provides</a>
+                      <table style="display: none">
+                      <tr>
+                          {% for symbol in package.symbols %}
+                          <td>{{ symbol }}</td>
+                          {% if forloop.counter|divisibleby:"5" %}
+                            </tr><tr>
+                          {% endif %}
+                          </td>
+                          {% endfor %}
+                      </tr>
+                      </table>
+              </span>
           </li>
+          {% endfor %}
       </ul>
     </div>
   </div>

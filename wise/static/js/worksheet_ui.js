@@ -1,3 +1,13 @@
+/*
+ Wise
+ Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as
+ published by the Free Software Foundation, either version 3 of the
+ License, or (at your option) any later version.
+*/
+
 function palette(num) {
     if(num == 1) {
         $('#math_palette').show();
@@ -13,46 +23,8 @@ function palette(num) {
     }
 }
 
-function show_cmdline() {
-   $('.cmd').fadeIn();
-   $('#cmdinput').focus();
-   cmd_visible = 1;
-}
-
-function hide_cmdline() {
-   $('.cmd').fadeOut();
-   $('#cmdinput').focus();
-   cmd_visible = 0;
-}
-
 function toggle_cmdline() {
-    //Flip visibility bit
-
-    if(cmd_visible) {
-        hide_cmdline();
-    } else {
-        show_cmdline();                 
-    }
-    
-    cmd_visible = cmd_visible ^ 1;
-}
-
-active_tooltips = [];
-
-function make_tooltips(obj) {
-
-    if(!obj) {
-       obj = $('*[title]'); 
-    }
-
-    $(obj).qtip({ 
-        style: { 
-            name: 'cream', 
-            tip: true,
-        }, 
-        hide: { when: { event: 'inactive' }, delay: 1000 }
-    });
-    active_tooltips.push($(obj).qtip);
+    Wise.CmdLine.toggleVisible();
 }
 
 function hide_tooltips() {
@@ -64,7 +36,26 @@ function base_mode() {
     $('#quasimode-indicator').fadeTo('fast',0.1);
     $('#basemode-indicator').fadeTo('fast',1);
     $("#selectionlist").empty();
-    hide_tooltips();
     Wise.Selection.clear();
-    hide_cmdline();
+    Wise.CmdLine.hide();
 }
+
+//TODO: This still doesn't work
+//$(window).scroll(function() {
+//    var $sidebar = $("#worksheet_sidebar");
+//    var offset = $sidebar.offset();
+//    var topPadding = 20;
+//    var $window = $(window);
+//
+//    if ($window.scrollTop() > offset.top) {
+//        $sidebar.css({
+//            top: $window.scrollTop() - offset.top + topPadding,
+//        });
+//    } else {
+//        $sidebar.css({
+//           top: 20,
+//        });
+//    }
+//});
+
+

@@ -76,7 +76,7 @@ MathJax.Hub.Config({
   //  inefficient to include jax that may not actually be used on the page.  These
   //  are found in the MathJax/jax directory.
   //  
-  jax: ["input/TeX","output/HTML-CSS"],
+  jax: ["input/MathML","output/HTML-CSS"],
   
   //
   //  A comma-separated list of extensions to load at startup.  The default
@@ -84,7 +84,7 @@ MathJax.Hub.Config({
   //  
   //  Example:    extensions: ["tex2jax.js","TeX/AMSmath.js","TeX/AMSsymbols.js"],
   //
-  extensions: ["tex2jax.js"],
+  extensions: ["mml2jax.js"],
   
   //
   //  Patterns to remove from before and after math script tags.  If you are not
@@ -399,7 +399,7 @@ MathJax.Hub.Config({
     //  This controls the global scaling of mathematics as compared to the 
     //  surrounding text.  Values between 100 and 133 are usually good choices.
     //
-    scale: 150,
+    scale: 100,
     
     //
     //  This is a list of the fonts to look for on a user's computer in
@@ -460,7 +460,7 @@ MathJax.Hub.Config({
     //  Set this to false to disable the menu.  When true, the MathMenu 
     //  items below configure the actions of the menu.
     //  
-    showMathMenu: false,
+    showMathMenu: true,
 
     //
     //  This allows you to define or modify the styles used to display

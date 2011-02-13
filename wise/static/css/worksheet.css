@@ -212,6 +212,7 @@ math .selected {
 .cmd {
     position: fixed;
     bottom: 50px;
+    z-index: 2;
     /* 70% of 960px */
     width: 70%;
     min-width: 672px;
@@ -221,6 +222,7 @@ math .selected {
 
 .cmd input {
     height: 50px;
+    width: 100%;
     font-size: 15pt;
     font-family: Monaco, sans-serif;
     border-style: solid;
