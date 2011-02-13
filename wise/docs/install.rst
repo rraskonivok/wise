@@ -21,7 +21,7 @@ Install
 
    and the Python package managmenent tools::
 
-        $ sudo apt-get install python-setuptools python-dev build-essential
+        $ sudo apt-get install python-setuptools build-essential
         $ sudo easy_install -U pip
         $ sudo pip install -U virtualenv
 
