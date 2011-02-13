@@ -88,13 +88,13 @@ using namespace constants;
     evalf n = double n if numberp n;
     evalf x = x if varp x;
 
-    evalf (Sin n) = sin n;
-    evalf (Cos n) = cos n;
+    evalf (Sin n) = sin n if numberp n;
+    evalf (Cos n) = cos n if numberp n;
 
     evals (Sin 0) = 0;
     evals (Cos 0) = 1;
-    evals (Sin (n::int*Pi)) = 0;
-    evals (Cos (n::int*Pi)) = (-1)^n;
+    evals (Sin (n::int*M_PI)) = 0;
+    evals (Cos (n::int*M_PI)) = (-1)^n;
 using namespace;
 
 

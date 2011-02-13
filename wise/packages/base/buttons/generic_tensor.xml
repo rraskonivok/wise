@@ -1,0 +1,16 @@
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML">
+    <mrow>
+      <mmultiscripts>
+        <mi>
+          <mi>T</mi>
+        </mi>
+        <mrow>
+          <mi>a</mi>
+        </mrow>
+        <mprescripts/>
+        <mrow>
+          <mi>b</mi>
+        </mrow>
+      </mmultiscripts>
+    </mrow>
+</math>
