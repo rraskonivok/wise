@@ -52,6 +52,9 @@ basic_simplify = reduce with
 
     x * y = x if isone y;
     x * y = y if isone x;
+    x * y = -x if isnegone y;
+    x * y = -y if isnegone x;
+
     x + y = x if iszero y;
     x + y = y if iszero x;
 

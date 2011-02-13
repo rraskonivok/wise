@@ -19,6 +19,8 @@ prefix 1000 evals; // Evaluation to symbolic
 
 // Hack to overcome the fact that we can't overload the internal
 // `neg` function for integers
+
+i2p x::bigint |
 i2p x::double |
 i2p x::int    = x if x >= 0;
               = Neg $ abs x otherwise;
@@ -170,3 +172,4 @@ listapply f (x:xs) = listapply (f x) xs;
 
 iszero x = `(x == 0);
 isone x = `(x == 1);
+isnegone x = `(x == -1);

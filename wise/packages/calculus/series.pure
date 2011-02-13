@@ -95,11 +95,11 @@ integrate c x = c : (zipwith (/) x (1..inf));
 ## (x:xs) = inf if thunkp xs;
 ## x = #x if listp x;
 
-factorial n::int    |
-factorial n::double |
-factorial n::bigint = loop 1 (bigint n) with
-  loop p n = if n>0 then loop (p*n) (n-1) else p;
-end;
+/*factorial n::int    |*/
+/*factorial n::double |*/
+/*factorial n::bigint = loop 1 (bigint n) with*/
+  /*loop p n = if n>0 then loop (p*n) (n-1) else p;*/
+/*end;*/
 
 // Is the series the zero series
 zerop xs = all (\x -> `(x == 0)) xs;
@@ -244,7 +244,7 @@ namespace;
 // Symbol Taylor series metafunction
 /*using namespace powseries;*/
 
-prettyseries X = reduce (simplify::basic_simplify X) with
+prettyseries X = simplify::basic_simplify $ reduce X with
     x*(a%b) = (x*a)%b;
 end;
 

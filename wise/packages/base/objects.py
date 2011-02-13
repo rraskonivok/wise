@@ -484,9 +484,12 @@ class Product(InfixOperation):
     def __init__(self,fst,snd):
         self.terms = [fst, snd]
 
+        blacklist = (Power)
+
         for term in self.terms:
             if term.terms and len(term.terms) > 1:
-                term.show_parenthesis = True
+                if not isinstance(term,blacklist):
+                    term.show_parenthesis = True
 
         self.operand = self.terms
 
