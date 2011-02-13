@@ -40,6 +40,10 @@ class truncateseries(PublicRule):
     """
     pure = 'truncateseries'
 
+# --------------------
+# Taylor Approximation
+# --------------------
+
 class taylor1(PublicRule):
     """
     """

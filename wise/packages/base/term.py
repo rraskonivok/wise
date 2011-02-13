@@ -218,7 +218,6 @@ class Placeholder(Term):
     css_class = 'placeholder'
     html = load_haml_template('placeholder.tpl')
     pure = 'ph'
-    latex = '$\\text{Placeholder}$'
 
     def __init__(self):
         pass

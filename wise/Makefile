@@ -8,5 +8,8 @@ clean:
 	$(MAKE) -C pure clean
 	$(MAKE) -C cache clean
 
+flush:
+	$(MAKE) -C cache flush
+
 doc:
 	pycco -p worksheet/*.py -d docs

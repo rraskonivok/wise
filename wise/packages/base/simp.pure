@@ -82,7 +82,7 @@ recursive_evalf = propogate_thru (evalf);
 namespace;
 
 // -------------------------------
-// Algebraic Simplification Stack
+// Term Properties
 // -------------------------------
 
 sump (x+y) = 1 ; sump x = 0 ;
@@ -112,6 +112,10 @@ cmp (x1@_ y1) x2 = if x1===x2 then 0 else cmp x1 x2;
 cmp x1 (x2@_ y2) = if x1===x2 then 1 else cmp x1 x2;
 cmp x y = str x < str y if atomp x && atomp y ;
 cmp x y = ~(cmp y x) otherwise ;
+
+// -------------------------------
+// Generic Term Reording
+// -------------------------------
 
 span _ xs@[]      =  (xs, xs);
 span p xs@(x:xs1) =  (x:ys,zs) when (ys,zs) = span p xs1 end if p x;
@@ -171,7 +175,7 @@ mvarp x = ~uvarp x;
 
 deepsame a b = same a b;
 
-fullsimp = eval $ reduce with 
+fullsimp X = eval $ reduce X with 
     0^x = 0 ;
     1^x = 1 ;
     x^0 = 1 ;

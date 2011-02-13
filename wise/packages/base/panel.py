@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from django.template import Template, Context
 from wise.worksheet.panel import MathMLPanel
 
@@ -7,6 +9,8 @@ from utils import latex
 # The instance of the panels is completely irrelevant, you can
 # name them whatever you want. worksheet/panels.py extracts all
 # instances of any sublcass of wise.worksheet.panel.Panel
+
+ph = objects.Placeholder()
 
 #--------------------
 # Elementary Operations
@@ -62,8 +66,8 @@ Matrix = MathMLPanel(name="Matrix", objects=mat_ops,
 
 generic_tensor = objects.AbstractTensor(
     objects.Variable('T'),
-    objects.Idx(objects.Placeholder()),
-    objects.Idx(objects.Placeholder())
+    objects.Idx(ph),
+    objects.Idx(ph)
 )
 
 tens_ops = (
@@ -105,6 +109,16 @@ numtheory = (
 
 NumTheory = MathMLPanel(name='Number Theory', objects=numtheory)
 
+#-------------------------
+# Polynomials
+#-------------------------
+
+poly = (
+        ('buttons/poly.xml',objects.FinitePoly(ph,[ph,ph])),
+)
+
+Poly = MathMLPanel(name='Polynomials', objects=poly)
+
 #--------------------
 # Variables
 #--------------------
@@ -139,3 +153,19 @@ Letters = MathMLPanel(name="Letters",
 Greeks = MathMLPanel(name="Greeks",
                      objects=make_greeks(),
                      use_template=True)
+
+#--------------------
+# Constants
+#--------------------
+
+constants = (
+    (mml_var('π'), objects.Pi()),
+    (mml_var('ⅇ'), objects.E()),
+    (mml_var('ⅈ'), objects.ImaginaryUnit()),
+    (mml_var('∞'), objects.Infinity()),
+)
+
+Constants = MathMLPanel(name="Constants",
+                        objects=constants,
+                        use_template=True)
+

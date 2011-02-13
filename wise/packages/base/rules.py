@@ -119,12 +119,6 @@ panel['Relational'] = (
 # Commutative Algebra
 # -------------------
 
-class algebra_normal(PublicRule):
-    """Reduce addition, multiplication, and division to the their
-    respective normal forms.
-    """
-    pure = 'algebra_normal'
-
 class commute_elementary(PublicRule):
     """Commute binary addition and multiplication."""
     pure = 'commute_elementary'
@@ -153,7 +147,6 @@ class iter_left(PublicRule):
 
 panel['Commutative Algebra'] = (
 
-        ('Algebraic Normal Form'     , algebra_normal),
         ('Commute Elementary'        , commute_elementary),
         ('Expand Multiplication'     , algebra_expand),
 #        ('Pull Left'                 , PublicRule('pull_left')),
@@ -205,9 +198,27 @@ class seperate_rational(PublicRule):
     pure = 'seperate_rational'
 
 panel['Rational'] = (
-
         ('Split Rational'            , split_rational),
-        ('Combine Ratiional'         , combine_rational),
-        ('Seperate Ratiional'        , seperate_rational),
+        ('Combine Rational'         , combine_rational),
+        ('Seperate Rational'        , seperate_rational),
+)
 
+# -------------------
+# Simplification
+# -------------------
+
+class algebra_normal(PublicRule):
+    """Reduce addition, multiplication, and division to the their
+    respective normal forms.
+    """
+    pure = 'algebra_normal'
+
+class simplify_rational(PublicRule):
+    """
+    """
+    pure = 'simplify_rational'
+
+panel['Simplification'] = (
+        ('Simplify Rational'         , simplify_rational),
+        ('Algebraic Normal Form'     , algebra_normal),
 )

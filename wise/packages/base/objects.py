@@ -34,6 +34,10 @@ def initialize():
         'num' : Numeric,
         'var' : Variable,
         'ph' : Placeholder,
+        'M_PI': Pi,
+        'M_E': E,
+        'M_I': ImaginaryUnit,
+        'M_INF': Infinity,
     }
 
     return super_classes, nullary_types
@@ -233,45 +237,48 @@ class Constant(Term):
     A symbol to be used as the argument of the type symbol to
     convey a type for the common constants.
     """
-
-    #Constants should be able to be represented by multiple symbols
-    representation = None
     html = load_haml_template('constant.tpl')
 
-#    def __init__(self,*symbol):
-#        self.args = self.representation.args
-#        self.latex = self.representation.latex
+    def __init__(self):
+        self.latex = self.symbol
+
+    def _pure_(self):
+        return self.po
 
 class ImaginaryUnit(Constant):
     """
     This symbol represents the square root of -1.
     """
 
-    latex = 'i'
     symbol = 'ⅈ'
-    pure = 'I'
-    args = "'i'"
+    pure = 'M_I'
 
 class Pi(Constant):
     """
-    A symbol to convey the notion of pi, approximately 3.142. The
+    A symbol to convey the notion of pi, approximately 3.141. The
     ratio of the circumference of a circle to its diameter.
     """
 
-    latex = 'π'
-    symbol = 'π'
-    pure = 'Pi'
-    args = "'pi'"
+    symbol = latex.greek_unicode['pi']
+    pure = 'M_PI'
+
+class E(Constant):
+    """
+	This symbol represents the base of the natural logarithm,
+    approximately 2.718.
+    """
+
+    symbol = 'ⅇ'
+    pure = 'M_E'
 
 class Infinity(Constant):
     """
     A symbol to represent the notion of infinity.
     """
 
-    latex = '\\infty'
-    symbol = 'inf'
-    pure = 'inf'
-    args = "'inf'"
+    symbol = '∞'
+    pure = 'M_INF'
+
 
 #-------------------------------------------------------------
 # Algebraic Quantities
@@ -392,9 +399,9 @@ class Order(PrefixOperation):
 class FinitePoly(InfixOperation):
     symbol = ','
     pure = "FinitePoly"
+    html = load_haml_template('poly.tpl')
 
     def __init__(self, x, *xs):
-        print type(x), type(xs), type(xs[0])
         if isinstance(xs[0],list):
             self.variable = x
             self.coefs = xs[0]
@@ -409,7 +416,6 @@ class FinitePoly(InfixOperation):
         return self.po(purify(self.variable), cs)
 
     def get_html(self):
-        self.html = load_haml_template('poly.tpl')
 
         objects = [o.get_html() for o in self.coefs]
 

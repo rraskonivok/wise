@@ -8,7 +8,7 @@
   License, or (at your option) any later version.
 */
 
-using math;
+using maths;
 using system;
 using simp;
 
@@ -34,30 +34,31 @@ nonfix False;
   -----------------------
 */
 
-nonfix Pi;    // Constant Pi
-nonfix Exp1;  // Constant e
-nonfix IUnit; // Constant i
-nonfix Unit;  // 1
-nonfix Zero;  // 0
-
-
+nonfix M_PI;    // Constant pi
+nonfix M_E;     // Constant e
+nonfix M_I;     // Constant i
+nonfix M_INF;   // infinity
 
 namespace constants;
-    // Declare constants with single letter names as const to
-    // avoid namespace collisions.
-    const E = Exp1;
-    const I = I;
+    nonfix PI;
+    nonfix E;
+    nonfix I;
+    nonfix Inf;
+
+    def PI = M_PI;
+    def E = M_E;
+    def I = M_I;
+    def Inf = M_INF;
 namespace;
 
-//Evaluate out to the constant defined in the default math
-//libraires.
-evalf Pi = pi;
-evalf Exp1 = e;
-evalf IUnit = i;
-evalf Unit = 1.0;
-evalf Zero = 0.0;
+// Evaluate out to the constant defined by math.h
+using namespace nconstants;
+evalf M_PI = pi;
+evalf M_E = e;
+evalf M_I = i;
+using namespace;
 
-evalf (a%b) = double $ (double a)/(double b);
+/*evalf (a%b) = double $ (double a)/(double b);*/
 
 /*
   -----------------------
@@ -69,25 +70,19 @@ evalf (a%b) = double $ (double a)/(double b);
     /*f@_ u = evalf (f u) if atomp u || numberp u;*/
 /*end;*/
 
-/*prefix 1000 factorial*/
-            /*Exp*/
-            /*Ln*/
-            /*Log;*/
-
 using namespace constants;
     // Specific Values of Exp
     evalf (Exp 0) = 1.0;
     evalf (Exp 1) = evalf E;
     evalf (Exp (complex x y)) = Exp x with
-        Exp (I * Pi) = -1;
+        Exp (M_I * M_PI) = -1;
     end;
     evalf (Exp x) = exp x if numberp x;
                   = Exp x otherwise;
 
     // Specific Values of Ln
-    evalf (Ln Exp1) = 1;
+    evalf (Ln M_E) = 1;
     evalf (Ln x) = ln x if numberp x && x ~= 0;
-                 = nan if numberp x && x == 0;
                  = Ln x otherwise;
 
     evalf n = double n if numberp n;

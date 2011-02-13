@@ -27,7 +27,7 @@ def tokenize(str):
             (L)?                # Long
             ''', VERBOSE),
         Spec('op', r'[()\[\]\-,:]'),
-        Spec('name', r'[A-Za-z_][A-Za-z]*'),
+        Spec('name', r'[A-Za-z_][A-Za-z_]*'),
     ]
     useless = ['space']
     t = make_tokenizer(specs)

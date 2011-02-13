@@ -95,11 +95,11 @@ integrate c x = c : (zipwith (/) x (1..inf));
 ## (x:xs) = inf if thunkp xs;
 ## x = #x if listp x;
 
-/*factorial n::int    |*/
-/*factorial n::double |*/
-/*factorial n::bigint = loop 1 (bigint n) with*/
-  /*loop p n = if n>0 then loop (p*n) (n-1) else p;*/
-/*end;*/
+factorial n::int    |
+factorial n::double |
+factorial n::bigint = loop 1 (bigint n) with
+  loop p n = if n>0 then loop (p*n) (n-1) else p;
+end;
 
 // Is the series the zero series
 zerop xs = all (\x -> `(x == 0)) xs;
@@ -241,16 +241,18 @@ namespace;
   ---------------------
 */
 
-// Symbol Taylor series metafunction
-/*using namespace powseries;*/
-
+// Move x^n terms into the numerator if possible, reduces the
+// apparent "complexity" of the expression
 prettyseries X = simplify::basic_simplify $ reduce X with
     x*(a%b) = (x*a)%b;
 end;
 
+// Remove zero terms from a FiniteSeries
 rmzeroterms (FiniteSeries xs) = FiniteSeries $ filter (\a -> ~iszero a) xs;
 rmzeroterms x = x;
 
+// Convert FiniteSeries into an addition sequence without the
+// O(n) term
 truncateseries (FiniteSeries xs) = sum $ xs !! (0..(#xs-2));
 truncateseries x = x;
 

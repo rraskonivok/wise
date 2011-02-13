@@ -7,7 +7,7 @@
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-from wise.translators.mathobjects import python_trans, translate_pure
+from wise.translators.mathobjects import python_trans, translate_pure, pure_trans
 from wise.worksheet.utils import *
 
 from parser import sexp_parse, pure_parse
@@ -233,6 +233,13 @@ class Branch(object):
         map(f, self.args)
         return lst
 
+def is_nullary_symbol(atom):
+    try:
+        pure_trans[atom]
+        return True
+    except KeyError:
+        return False
+
 def map_nullary(parsed):
     """
     Recursively convert nullary and primative functions to prefix
@@ -253,6 +260,8 @@ def map_nullary(parsed):
             return [map_nullary(satom) for satom in atom]
         elif atom == 'ph':
             return Branch('ph',[])
+        elif is_nullary_symbol(atom):
+            return Branch(atom,[])
         else:
             return Branch('var',[atom])
 

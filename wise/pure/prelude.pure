@@ -1,3 +1,13 @@
+/*
+  Wise
+  Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as
+  published by the Free Software Foundation, either version 3 of the
+  License, or (at your option) any later version.
+*/
+
 export PURE_STACK=1024;
 
 def extends x = x . reduce_with __locals__;
@@ -111,7 +121,7 @@ chop_head head ex = _strip ex with
     _strip x = x;
 end;
 
-spice_head f g ex = _repl ex with
+splice_head f g ex = _repl ex with
     _repl (func@_ a) = (_repl func) $ (_repl a);
     _repl x = if x === f then g else x;
 end;
@@ -139,13 +149,23 @@ complex_order xs = sort complexity_sort xs;
 
 namespace cast_division;
 infixl (::/) /;
-def a/b              = a%b;
+def a/b              = a ::% b;
 namespace;
 
+/* --------------------------
+  Guard Macros
+---------------------------- */
+
+// `(x == y) is equivelent to (x == y) === 1
+// This lets us do pseudo duck-typing
 prefix 1001 `;
 
 ` expr = 1 if (expr === true);
        = 0 otherwise;
+
+iszero x = `(x == 0);
+isone x = `(x == 1);
+isnegone x = `(x == -1);
 
 /* --------------------------
   Dynamic Rule Generation
@@ -169,7 +189,3 @@ instance proto = eval $ (lhs proto) + " = " + (rhs proto);
 // Apply a list of arguments
 listapply f [] = f;
 listapply f (x:xs) = listapply (f x) xs;
-
-iszero x = `(x == 0);
-isone x = `(x == 1);
-isnegone x = `(x == -1);
