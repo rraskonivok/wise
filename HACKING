@@ -1,7 +1,3 @@
-Sooo, you want to hack on Wise. Right now its sorted up ugly
-twisted spaghetti code that I'm untangeling but it it fairly
-well documented.
-
 Feel free to fork the project Github at
 
     https://github.com/sdiehl/wise
@@ -42,6 +38,7 @@ Maths Stuff:
 
     * base/term.py
     * base/objects.py
+    * base/*.pure
 
 If you want to make your own package then take a look at
 /pkgtemplate as a starting point.
