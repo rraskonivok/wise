@@ -437,8 +437,8 @@ class FiniteSeries(InfixOperation):
         self.operand = self.terms
 
     def _pure_(self):
-       pterms = map(lambda o: o._pure_() , self.terms)
-       return self.po(*pterms)
+       lst = pureobjects.PureList(*purify(self.terms))
+       return self.po(lst)
 
 class Addition(InfixOperation):
     """
@@ -992,33 +992,6 @@ class Union(InfixOperation):
 #-------------------------------------------------------------
 # Transcendental Functions
 #-------------------------------------------------------------
-
-class Taylor(Term):
-    """
-    This symbol represents the exponentiation function.
-    """
-    symbol = 'Taylor'
-    pure = 'Taylor'
-    html = load_haml_template('funcapp.tpl')
-
-    def __init__(self, f, x, x0, n):
-        self.terms = [f,x,x0,n]
-
-    def _pure_(self):
-        return self.po(*purify(self.terms))
-
-    def get_html(self):
-        objects = [o.get_html() for o in self.terms]
-
-        c = template.Context({
-            'id': self.id,
-            'operand': objects,
-            'symbol': self.symbol,
-            'type': self.classname,
-            'operand': objects,
-        })
-
-        return self.html.render(c)
 
 class Exp(PrefixOperation):
     """

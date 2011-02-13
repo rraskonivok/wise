@@ -25,7 +25,7 @@ end;
 
  * McIlroy MD. The Music of Streams.
    Information processing letters. 2001;77(2-4):189-195.
- 
+
  * David Amos: Haskell for Maths.
    http://haskellformaths.blogspot.com
 
@@ -49,7 +49,7 @@ infixl 6 $# ; // Composition
 
 // Cardinality, generalization of # operator to handle lazy data
 // structures
-prefix 2599 ##; 
+prefix 2599 ##;
 
 // Addition of power series
 (a:as) $+ (b:bs) = (a+b) : (as $+ bs);
@@ -77,7 +77,7 @@ _ $* [] = [];
 series f = f : repeat 0;
 [] $/ _ = [];
 
-(f:ft) $/ (g:gt) = qs : series(1/g) $. (ft $- (qs $. gt)) 
+(f:ft) $/ (g:gt) = qs : series(1/g) $. (ft $- (qs $. gt))
     with qs = f/g end;
 
 /* Composition of power series is given by:
@@ -95,6 +95,12 @@ integrate c x = c : (zipwith (/) x (1..inf));
 ## (x:xs) = inf if thunkp xs;
 ## x = #x if listp x;
 
+factorial n::int    |
+factorial n::double |
+factorial n::bigint = loop 1 (bigint n) with
+  loop p n = if n>0 then loop (p*n) (n-1) else p;
+end;
+
 // Is the series the zero series
 zerop xs = all (\x -> `(x == 0)) xs;
 
@@ -108,25 +114,19 @@ truncate_zeros (x:xs) = [x] if zerop xs;
 deg xs = ##(truncate_zeros xs) if indexable xs && finite xs && ~zerop xs;
        = nan if indexable xs && finite xs && zerop xs; // Zero series
        = ##(xs) if indexable xs;
-       = nan otherwise;
+       = nan othewise;
 
-/* 
+/*
   ----------------
    Simplification
-  ---------------- 
+  ----------------
 */
 
-// Use the internal sin/cos functions to return floating point
-// values
-/*evalf (Sin x) = sin x if numberp x;*/
-/*evalf (Cos x) = cos x if numberp x;*/
-
-simplify_rational = reduce with
-    x%1 = x;
-    x%y = x if numberp y && y == 1;
-    x%y = x div y if all numberp [x,y] && x mod y == 0;
-end;
-
+/*simplify_rational = reduce with*/
+    /*x%1 = x;*/
+    /*x%y = x if numberp y && y == 1;*/
+    /*x%y = x div y if all numberp [x,y] && x mod y == 0;*/
+/*end;*/
 
 is_undefined x = (contains x inf) || (contains x (-inf)) || (contains x nan);
 
@@ -177,16 +177,17 @@ partialSums xs = scanl1 (+) xs;
 partialProducts xs = scanl1 (*) xs;
 
 // Evaluate the power series xs at a point `x` by joining taking
-// the summation of the product 
+// the summation of the product
 //
 //   (c0,x^0) + (c1,x^1) + ... =>
-//   c0*x^0 + c1*x^1 + ... 
+//   c0*x^0 + c1*x^1 + ...
 series_eval x xs = foldl1 (+) $ zipwith (*) xs [x^n | n=(0..(#xs))];
 
 // Multiply each term by x^n yielding a full list of the Taylor
-// expansion.
-series_var x xs = [x^n * (xs ! n) | n=(0..(#xs - 1))] with x^0 =
-1; x^1 = x; end;
+// expansion. Note the use of the qualified symbol ::^ for
+// exponentiation.
+series_var x xs = [x ::^ n * (xs ! n) | n=(0..(#xs - 1))];
+    /*with x^0 = 1; x^1 = x; end;*/
 
 // Perform basic arithmetic on terms and chop any trailing zero
 // terms, this reduces the load when composing series.
@@ -196,35 +197,26 @@ simplify_series xs = truncate_zeros $ map simplify::basic_simplify xs;
 // series.
 series_taylor f x x0 n::int = simplify::basic_simplify $ tay f with
     _tay _f = basic_taylor _f x x0 n;
+
     tay (a+b) = tay a $+ tay b;
     tay (a*b) = tay a $* tay b;
 
-    tay (f@_ s) = _tay (f $ s) if s === x && varp x;
-    tay (f@_ ser) = 
+    tay (f@_ s) = _tay (f s) if s === x && varp x;
+    tay (f@_ ser) =
         (simplify_series $ (basic_taylor (f u) u x0 n))
-        $# 
+        $#
         (simplify_series $ (tay ser))
         /*when u = ser end*/
         if ~(applp f) ;
+
     tay e::int = [e];
     tay e::double = [e];
     tay e = [e] if ~(has e x);
-    tay e = [0,1] if varp x;
+    /*tay e = [0,1] if varp e;*/
     tay f = _tay f;
 end;
+
 namespace;
-
-/*namespace specialseries;*/
-
-/*using namespace powseries;*/
-/*expSeries = map ((%) 1) (scanl (*) 1 (1..inf));*/
-/*[>sinSeries = zipWith (*) (cycle [0,1,0,-1]) expSeries&;<]*/
-/*[>cosSeries = zipWith (*) (cycle [1,0,-1,0]) expSeries&;<]*/
-/*sin_approx x = sum $ (taylor (Sin y) y 0 15) with y = x end;*/
-/*cos_approx x = sum $ (taylor (Cos y) y 0 15) with y = x end; */
-/*namespace;*/
-
-namespace seq;
 
 /*
   ---------------------
@@ -232,6 +224,7 @@ namespace seq;
   ---------------------
 */
 
+namespace seq;
 // Lower bound
 lbnd = foldl1 min;
 // Upper Bound
@@ -242,29 +235,45 @@ primes = sieve (2..inf) with
 end;
 namespace;
 
-/*namespace reduce_factorials;*/
-factorial n::int    |
-factorial n::double |
-factorial n::bigint = loop 1 (bigint n) with
-  loop p n = if n>0 then loop (p*n) (n-1) else p;
-end;
-/*namespace;*/
+/*
+  ---------------------
+   Series Hooks
+  ---------------------
+*/
 
-using namespace reduce_factorials;
+// Symbol Taylor series metafunction
+/*using namespace powseries;*/
+
+prettyseries X = reduce (simplify::basic_simplify X) with
+    x*(a%b) = (x*a)%b;
+end;
+
+rmzeroterms (FiniteSeries xs) = FiniteSeries $ filter (\a -> ~iszero a) xs;
+rmzeroterms x = x;
+
+truncateseries (FiniteSeries xs) = sum $ xs !! (0..(#xs-2));
+truncateseries x = x;
 
 /*
 The closed form for a Taylor expression is given by `Taylor`
 which symbolically evalutes to a FiniteSeries expression with a
 O(n) tail.
 */
+evals Taylor f x x0 n = FiniteSeries $ prettyseries $
+    //  a_0 x^0 + a_1 x^1 + ... + O(n)
+    (powseries::series_var x (powseries::series_taylor f x x0 n)) + [(Order n)];
 
-// Symbol Taylor series metafunction
-evals Taylor f x x0 n = listapply FiniteSeries $
-        (
-            (powseries::series_var x)
-            (powseries::basic_taylor f x x0 n)
-        ) + [Order n] // List of terms
-;
+tayapprox f x x0 n= simplify::basic_simplify $
+                    prettyseries $
+                    sum $
+                    powseries::series_var x
+    (powseries::series_taylor f x x0 n);
 
-// A series specified specifically by it's terms up to n order.
-FiniteSeries order terms;
+taylor1 f = tayapprox f (lsvars f ! 0) 0 1 if uvarp f;
+          = f otherwise;
+
+taylor2 f = tayapprox f (lsvars f ! 0) 0 2 if uvarp f;
+          = f otherwise;
+
+taylor3 f = tayapprox f (lsvars f ! 0) 0 3 if uvarp f;
+          = f otherwise;

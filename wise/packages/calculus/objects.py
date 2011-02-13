@@ -1,10 +1,11 @@
 from django import template
 from wise.worksheet.utils import load_haml_template
 from wise.packages.loader import load_package_module
+from wise.worksheet.utils import purify
 base_objects = load_package_module('base','objects')
 
 def initialize():
-    super_classes = [Integral, Diff]
+    super_classes = [Integral, Diff, Taylor]
     nullary_types = {}
 
     return super_classes, nullary_types
@@ -61,6 +62,33 @@ class Diff(base_objects.Term):
             'id': self.id,
             'operand': self.operand.get_html(),
             'variable': self.variable.get_html(),
+        })
+
+        return self.html.render(c)
+
+class Taylor(base_objects.Term):
+    """
+    This symbol represents the exponentiation function.
+    """
+    symbol = 'Taylor'
+    pure = 'Taylor'
+    html = load_haml_template('funcapp.tpl')
+
+    def __init__(self, f, x, x0, n):
+        self.terms = [f,x,x0,n]
+
+    def _pure_(self):
+        return self.po(*purify(self.terms))
+
+    def get_html(self):
+        objects = [o.get_html() for o in self.terms]
+
+        c = template.Context({
+            'id': self.id,
+            'operand': objects,
+            'symbol': self.symbol,
+            'type': self.classname,
+            'operand': objects,
         })
 
         return self.html.render(c)

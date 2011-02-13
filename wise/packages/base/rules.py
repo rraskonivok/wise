@@ -165,6 +165,20 @@ panel['Commutative Algebra'] = (
 )
 
 # -------------------
+# Trigonometry
+# -------------------
+
+class simplify_trig(PublicRule):
+    """Reduce addition, multiplication, and division to the their
+    respective normal forms.
+    """
+    pure = 'simplify_trig'
+
+panel['Trigonometry'] = (
+        ('Simplify Trig Functions'             , simplify_trig),
+)
+
+# -------------------
 # Rational
 # -------------------
 

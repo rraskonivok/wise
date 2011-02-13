@@ -95,9 +95,15 @@ using namespace constants;
 
     evalf (Sin n) = sin n;
     evalf (Cos n) = cos n;
+
+    evals (Sin 0) = 0;
+    evals (Cos 0) = 1;
+    evals (Sin (n::int*Pi)) = 0;
+    evals (Cos (n::int*Pi)) = (-1)^n;
 using namespace;
 
-/* 
+
+/*
   -----------------------
   Equational Operations
   -----------------------
@@ -197,7 +203,7 @@ with
     (a/b) / (c/d) = (a*c)/(b*d);
 end;
 
-/* 
+/*
   ----------------------
    Rational Manipulation
   ----------------------
@@ -211,9 +217,9 @@ to_rational x = x/1;
 
 split_rational X = reduce X
 with
-        (-a)/b = -(a/b);
-        (a+b)/c = (a/c) + (b/c);
-        (a*b)/(c*d) = (a/c)*(b/d);
+        (-a) % b = -(a / b);
+        (a+b) % c = (a / c) + (b / c);
+        (a*b) % (c*d) = (a / c)*(b / d);
 end;
 
 seperate_rational X = reduce X

@@ -49,14 +49,19 @@ basic_simplify = reduce with
     x % y = x if numberp y && y == 1;
     x * y = 0 if (numberp x && x == 0) ||
                  (numberp y && y == 0);
-    x * y = x if numberp y && y == 1;
-    x * y = y if numberp x && x == 1;
-    x + y = x if numberp y && y == 0;
-    x + y = y if numberp x && x == 0;
+
+    x * y = x if isone y;
+    x * y = y if isone x;
+    x + y = x if iszero y;
+    x + y = y if iszero x;
+
     0^x = 0 if numberp x;
     x^0 = 1;
     x^1 = x;
     -(-x) = x;
+    Sin 0 = 0;
+    Cos 0 = 1;
+    Exp 0 = 1;
 end;
 
 // Propogate an operator through an expression by applying it to
@@ -201,7 +206,9 @@ fullsimp = eval $ reduce with
     a+(b+c) = a+b+c ;
 
     x - y = x + (-1 * y) ;
-    x % y = x * (y^(-1)) ;
+    x % 1 = x;
+    0 % _ = 0;
+    x % y = x * (y^(-1)) if ~numberp y;
 end;
 
 applwhile pred f x = app (f x) (f $ f x) with
@@ -214,3 +221,11 @@ end;
     /*when rx = reorder X end;*/
 
 algebra_normal x = applwhile (===) fullsimp x;
+
+simplify_trig X = reduce X with
+    Sin 0 = 0;
+    Cos 0 = 1;
+    Sin (n::int*Pi) = 0;
+    Cos (n::int*Pi) = (-1)^n;
+    Cos (-x) = Cos x;
+end;

@@ -11,3 +11,10 @@ calc = (
 )
 
 Calculus = MathMLPanel(name="Calculus", objects=calc)
+
+series = (
+        ('Taylor',  objects.Taylor),
+)
+
+Series = MathMLPanel(name="Series", objects=series,
+        use_template='True')

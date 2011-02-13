@@ -167,3 +167,6 @@ instance proto = eval $ (lhs proto) + " = " + (rhs proto);
 // Apply a list of arguments
 listapply f [] = f;
 listapply f (x:xs) = listapply (f x) xs;
+
+iszero x = `(x == 0);
+isone x = `(x == 1);
