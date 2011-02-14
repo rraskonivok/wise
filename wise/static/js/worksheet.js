@@ -11,8 +11,6 @@
 ///////////////////////////////////////////////////////////
 // Initalization
 ///////////////////////////////////////////////////////////
-$(document).ajaxError(function () {
-    Notifications.raise('AJAX_FAIL');
 
 $(document).ajaxError(function (e, xhr, settings, exception) {
     Notifications.raise('AJAX_FAIL');
@@ -152,7 +150,7 @@ function init_nodes() {
 }
 
 ///////////////////////////////////////////////////////////
-// Initialize the Term DB
+// Selection Handling
 ///////////////////////////////////////////////////////////
 
 function selection_matches_pattern(pattern) {
