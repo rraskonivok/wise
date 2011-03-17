@@ -40,8 +40,9 @@ cdef class PureEnv:
         """
         cdef pure_expr *y
         y = cpure.pure_eval(s)
+
         if y == NULL:
-            print "Could not evaluate:", s
+            raise PureEvalError(cpure.lasterr())
         else:
             return PureExpr().se(y)
 
@@ -363,3 +364,10 @@ def restore_level():
     Restore previous level in the interpreter.
     """
     cpure.pure_restore()
+
+class PureEvalError(Exception):
+    def __init__(self,expr):
+        self.value = 'Pure Eval Error: %s' % expr
+
+    def __str__(self):
+        return self.value

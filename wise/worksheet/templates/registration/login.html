@@ -1,4 +1,26 @@
 {% extends "base.tpl" %}
+{% load humanize %}
+
+{# Overload Header #}
+{% block header %}
+{% endblock %}
+
+{% block inline_css %}
+<style>
+    #box {
+        width: 50% !important;
+        min-width: 100px !important;
+    }
+</style>
+{% endblock %}
+
+{% block inline_js %}
+<script>
+    $(document).ready(function() {
+        $("#box").removeClass('hidden');
+    });
+</script>
+{% endblock %}
 
 {% block box %}
 <div class="block" id="block-login">
@@ -6,7 +28,9 @@
     <h3>Login</h3>
 
     <form method="post" action=".">
-      {{ form.as_p }}
+      <table>
+      {{ form.as_table }}
+      </table>
 
       <input type="submit" value="Log in" />
       <input type="hidden" name="next" value="{{ next }}" />
@@ -16,8 +40,9 @@
 <!--    <p><a href="{% url auth_password_reset %}">Forgot
     Password</a> | -->
 
-    <p>Don't have an account? <a href="{% url registration_register %}">Register</a></p>
-    {% endblock %}
+    <p>Don't have an account? <a href="{% url privatebeta_invite %}">Request Invite</a></p>
+    {# <p>Don't have an account? <a href="{% url registration_register %}">Register</a></p> #}
 
     </div>
 </div>
+{% endblock %}

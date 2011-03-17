@@ -1,4 +1,26 @@
-{% extends 'base.tpl' %}
+{% extends "base.tpl" %}
+{% load humanize %}
+
+{* Overload Header *}
+{% block header %}
+{% endblock %}
+
+{% block inline_css %}
+<style>
+    #box {
+        width: 50% !important;
+        min-width: 100px !important;
+    }
+</style>
+{% endblock %}
+
+{% block inline_js %}
+<script>
+    $(document).ready(function() {
+        $("#box").removeClass('hidden');
+    });
+</script>
+{% endblock %}
 
 {% block box %}
 <div class="block" id="block-login">

@@ -1,60 +1,71 @@
 {% extends "base.tpl" %}
+{% load humanize %}
 
-{% block main %}
-<div class="block" id="block-tables">
-  <div class="secondary-navigation">
-    <ul class="wat-cf">
-      <li class="first active"><a href="#">My Worksheets</a></li>
-    </ul>
-  </div>
-  <div class="content">
-    <h2 class="title">My Workspaces</h2>
-    <div class="inner">
-      <form action="#" class="form">
-        <table class="table">
-          <tr>
-            <th class="first"><input type="checkbox" class="checkbox toggle" /></th>
-            <th>Title</th>
-            <th>Public</th>
-            <th>Last Edited</th>
-            <th>Tags</th>
-            <th class="last">&nbsp;</th>
-          </tr>
-          {% load humanize %}
-          {% for workspace in workspaces %}
-          <tr class="odd">
-              <td><input type="checkbox" class="checkbox" name="id" value="{{ workspace.id }}" /></td>
+{% block inline_css %}
+<style>
+    #box {
+        width: 75%;
+    }
 
-              <td><b><a href="ws/{{ workspace.id }}">{{ workspace.name|escape }}</a></b></td>
+    .table {
+        width: 100%;
+    }
+</style>
+{% endblock %}
 
-              <td>{{ workspace.public|yesno|title }}</td>
+{% block inline_js %}
+<script>
+    $(document).ready(function() {
+        $("#box").removeClass('hidden');
+    });
+</script>
+{% endblock %}
 
-              <td>{{ workspace.timestamp|naturalday|title }}</td>
+{% block box %}
+        <h1>Worksheets</h1>
+          <form action="#" class="form">
+            <table class="table">
+              <tr>
+                <!--<th class="first"><input type="checkbox" class="checkbox toggle" /></th>-->
+                <th>Title</th>
+                <th>Public</th>
+                <th>Last Edited</th>
+                <!--<th>Tags</th>-->
+                <th class="last">Actions</th>
+              </tr>
 
-              <td>{{ workspace.tags|escape }}</td>
+              {% for workspace in workspaces %}
+              <tr class="odd">
+                  <!--<td><input type="checkbox" class="checkbox" name="id" value="{{ workspace.id }}" /></td>-->
 
-              <td class="last">
-                <a href="{% url worksheet_read workspace.id %}">read</a> |
-                <a href="{% url worksheet_update workspace.id %}">edit</a> |
-                <a href="{% url worksheet_delete workspace.id %}">delete</a>
-              </td>
-          </tr>
-          {% endfor %}
-        </table>
-        <div class="actions-bar wat-cf">
-          <div class="actions">
-              <a href="{% url worksheet_create %}">
-                <button class="button" type="submit">
-                  <img src="/static/img/icons/add.png" alt="Add" /> Add
-                </button>
-            </a>
+                  <td><b><a href="ws/{{ workspace.id }}">{{ workspace.name|escape }}</a></b></td>
+
+                  <td>{{ workspace.public|yesno|title }}</td>
+                  <td>{{ workspace.timestamp|naturalday|title }}</td>
+                  <!--<td>{{ workspace.tags|escape }}</td>-->
+
+                  <td class="last">
+                    <a class="caps" href="{% url worksheet_read workspace.id %}">read</a> |
+                    <a class="caps" href="{% url worksheet_update workspace.id %}">properties</a> |
+                    <a class="caps" href="{% url worksheet_delete workspace.id %}">delete</a> |
+                    <a class="caps" href="{% url worksheet_read workspace.id %}">permalink</a>
+                  </td>
+              </tr>
+              {% endfor %}
+            </table>
+          </form>
+
+          <div class="actions-bar wat-cf">
+            <div class="actions">
+                  <button class="button" type="submit" onclick="window.location = '{%url worksheet_create %}'">
+                      <img src="{{ STATIC_URL }}img/icons/add.png" alt="New Worksheet" />New Worksheet
+                  </button>
+            </div>
+            <!--
+            <div class="pagination">
+              <span class="disabled prev_page">« Previous</span><span class="current">1</span><a rel="next" class="next_page" href="#">Next »</a>
+            </div>
+            -->
           </div>
-          <div class="pagination">
-            <span class="disabled prev_page">« Previous</span><span class="current">1</span><a rel="next" class="next_page" href="#">Next »</a>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
+
 {% endblock %}

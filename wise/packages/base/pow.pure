@@ -1,0 +1,48 @@
+simplify_power X = reduce X with
+    x^(n::constant) * x^(m::constant) = x^(n+m);
+    x^(n::constant) % x^(m::constant) = x^(n-m);
+
+    // This must be last since x^1 ~= x which will braek some of
+    // the pattern matching.
+    x^1 = x;
+end;
+
+rational_to_power X = reduce X with
+    x%y = x*(y^(-1));
+end;
+
+power_to_rational X = reduce X with
+    x^(n::negative) = 1%x^(abs n);
+end;
+
+bring_under_radical X = reduce X with
+    a * (Nroot n x) |
+    (Nroot n x) * a = Nroot n (a^n * x);
+end;
+
+radical_to_power X = reduce X with
+    Nroot n x = x^(1/n);
+end;
+
+// This is of course equivelent to
+//  x^(1/n)*x^(1/m) = x^(1/n+1/m)
+//  x^(1/n)*y^(1/n) = (x*y)^(1/n)
+// but sometimes we want to work with radicals
+combine_radicals X = reduce X with
+    (Nroot n x) * (Nroot m x) = Nroot (n+m) x;
+    (Nroot n x) * (Nroot n y) = Nroot n (x*y);
+end;
+
+simplify_radicals X = reduce X with
+    (Nroot n x) * (Nroot m x) = Nroot (n+m) x;
+    (Nroot n x) * (Nroot n y) = Nroot n (x*y);
+    /*(Nroot n (x^n::even)) = Abs x;*/
+    /*(Nroot n (x^n::odd)) = x;*/
+end;
+
+power_to_exponential X = reduce X with
+    x^y           = Exp (y * Ln x);
+end;
+
+evalf (Nroot n::number x::number) = x^(1/n);
+evalf (Sqrt x::number) = sqrt x;

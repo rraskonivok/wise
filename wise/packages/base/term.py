@@ -45,6 +45,7 @@ class Term(object):
 
     side = None # 0 if on LHS, 1 if on RHS
     toplevel = False
+    assumptions = None
 
     #############################################################
     ######### Pure Translation ##################################
@@ -80,7 +81,8 @@ class Term(object):
     # methods exist
 
     def __init__(self,*args,**kwargs):
-        raise Exception('Anonymous Term was caught with arguments ' + (args,kwargs))
+        raise Exception('Anonymous Term was caught with arguments '
+            + (args,kwargs))
 
     @property
     def description(self):
@@ -161,6 +163,7 @@ class Term(object):
                     "type": self.classname,
                     "toplevel": self.toplevel,
                     "args": self.args,
+                    'assum': self.assumptions,
                     "children": [term.id for term in self.terms]})
 
         for term in self.terms:

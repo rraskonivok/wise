@@ -225,8 +225,8 @@ def ws(request, ws_id):
         # Initialize the new Cell instance
         ncell = basecell.Cell(top_exprs, [],
            index = index,
-           cid = 'cell'+str(index),
-           id = cell.id
+           id = cell.id,
+           sid = cell.id
         )
 
         html_cells.append(html(ncell))
@@ -316,6 +316,9 @@ def dict(request, data='pure'):
     elif data == 'pure':
         from wise.translators.mathobjects import get_pure_lookup
         pretty = pformat(get_pure_lookup().table._fwd)
+    elif data == 'purelist':
+        from wise.translators.mathobjects import get_pure_lookup
+        pretty = json.dumps(get_pure_lookup().table.keys())
     elif data == 'rules':
         from wise.translators.mathobjects import rules
         pretty = pformat(rules)

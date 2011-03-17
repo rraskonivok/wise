@@ -9,13 +9,17 @@
 */
 
 
+function no_match(args) {
+    notify("Cannot resolve arguments to rule.");
+}
+
 function add_shift(e) {
 
     // TODO: use currying for this
     function add_rule(args) {
         return function() {
             apply_rule('eq_add', args);
-        }
+        };
     }
 
     fst = Wise.Selection.at(0);
@@ -26,6 +30,7 @@ function add_shift(e) {
     selection_pattern = Match(
             [ 'Equation', String ], add_rule( [fst, snd] ),
             [ String, 'Equation' ], add_rule( [snd, fst] ),
+            ['Equation']          , no_match,
             [ String ],             add_rule( [get_root(fst), fst] )
     );
 
@@ -63,6 +68,7 @@ function mul_shift(e) {
     selection_pattern = Match(
             [ 'Equation', String ], add_rule( [fst, snd] ),
             [ String, 'Equation' ], add_rule( [snd, fst] ),
+            ['Equation']          , no_match,
             [ String ],             add_rule( [get_root(fst), fst] )
     );
 
@@ -86,6 +92,7 @@ function div_shift(e) {
     selection_pattern = Match(
             [ 'Equation', String ], add_rule( [fst, snd] ),
             [ String, 'Equation' ], add_rule( [snd, fst] ),
+            ['Equation']          , no_match,
             [ String ],             add_rule( [get_root(fst), fst] )
     );
 
@@ -232,7 +239,7 @@ function is_placeholder(node) {
 
 function is_not_placeholder(node) {
     return node.get('type') != 'Placeholder';
-} 
+}
 
 function is_toplevel(node) {
     return node.get('toplevel');
@@ -310,9 +317,7 @@ function subs(obj) {
     if(Wise.Selection.length > 0) {
         apply_transform('base/PlaceholderSubstitute',[Wise.Selection.at(0), obj]);
     } else {
-       $('#selectionlist').effect("highlight", {
-         color: '#E6867A'
-       }, 500);
+        return;
     }
 }
 

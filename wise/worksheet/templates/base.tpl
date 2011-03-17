@@ -1,6 +1,5 @@
 {% load bundler_tags %}
 {% load html %}
-
 {% if xhtml %}
 {% doctype "xhtmlmath" %}
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
@@ -26,61 +25,52 @@
   {% block includes %}
   {% endblock %}
 
+  {% block inline_css %}
+  {% endblock %}
+
   {% block globals %}
   {% endblock %}
 
 </head>
 <body>
-
-  <div id="container">
-
     {% block header %}
-    <div id="header">
-      <h1><a href="/">Wise</a></h1>
-
-      {% if user.is_authenticated %}
-      <div id="user-navigation">
-        <ul class="wat-cf">
-          <li><b><a href="{% url profile %}">{{ user.username }}</a></b></li>
-          {% if user.is_staff %}
-          <li><a href="/admin">Admin</a></li>
-          {% endif %}
-          <li><a class="logout" href="{%url auth_logout %}">Logout</a></li>
-        </ul>
-      </div>
-      <div id="main-navigation">
-        <ul class="wat-cf">
-          {% block main-navigation %}
-            <ul class="wat-cf">
-              <li class="first active"><a href="{% url home %}">Main Page</a></li>
-              <li class=""><a href="/ecosystem">Ecosystem</a></li>
-              <li class=""><a href="#">Worksheet</a></li>
-              <li class=""><a href="/share">Share</a></li>
-            </ul>
-          {% endblock %}
-        </ul>
-      </div>
-      {% endif %}
-    </div>
+        <div id="headerbar">
+            <a href="{% url home %}" class="headernav">My Worksheets</a> 
+            <span class="headerright">
+            {% if user.is_authenticated %}
+                <span class="headernav">
+                <b><a href="{% url profile %}">{{ user.username }}</a></b>
+                </span>
+                {% if user.is_staff %}
+                <span class="headernav">
+                    <a href="{% url admin:index %}">Admin</a>
+                </span>
+                {% endif %}
+                <span class="headernav">
+                <a class="logout" href="{%url auth_logout %}">Logout</a>
+                </span>
+            {% endif %}
+            </span>
+        </div>
     {% endblock %}
 
-    <div id="wrapper" class="wat-cf">
-      <div id="main">
-        {% block main %}
-        {% endblock %}
-
-        {% block content %}
-        {% endblock %}
-      </div>
-        {% block sidebar %}
-        {% endblock %}
-      <div id="box">
+    <!-- Partial Page Content -->
+    <div id="box" class="hidden">
         {% block box %}
         {% endblock %}
-      </div>
     </div>
-  </div>
-  {% block inline-script %}
+
+    <!-- Full Page Content -->
+    <div id="container" class="hidden">
+        {% block main %}
+        {% endblock %}
+    </div>
+
+
+  {% block inline_js %}
+  {% endblock %}
+
+  {% block analytics %}
   {% endblock %}
 </body>
 </html>

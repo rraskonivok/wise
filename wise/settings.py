@@ -25,12 +25,12 @@ MANAGERS = ADMINS
 # configuration.
 DATABASES = {
     'default': {
-        'ENGINE': 'sqlite3',# Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'wise.db',  # Or path to database file if using sqlite3.
-        'USER': '',         # Not used with sqlite3.
-        'PASSWORD': '',     # Not used with sqlite3.
-        'HOST': '',         # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '',         # Set to empty string for default. Not used with sqlite3.
+        'ENGINE'   : 'sqlite3', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME'     : 'wise.db', # Or path to database file if using sqlite3.
+        'USER'     : '',        # Not used with sqlite3.
+        'PASSWORD' : '',        # Not used with sqlite3.
+        'HOST'     : '',        # Set to empty string for localhost. Not used with sqlite3.
+        'PORT'     : '',        # Set to empty string for default. Not used with sqlite3.
     }
 }
 
@@ -42,6 +42,10 @@ PACK_MODULE = ROOT_MODULE + '.' + PACKAGE_DIR
 
 # `base` is the minimum needed to run
 INSTALLED_MATH_PACKAGES = ['base','calculus']
+
+# Where to redirect upon succesfull login
+HOME_URL = '/statichome'
+LOGIN_URL = '/accounts/login'
 
 #---------------------------
 # Message Queues
@@ -111,6 +115,8 @@ USE_ETAGS = False
 # the script static/copy_admin_resources.sh to do this. This
 # script will build /static/admin
 ADMIN_MEDIA_PREFIX = '/static/admin/'
+# If you use grappelli in production then uncomment the next line
+# ADMIN_MEDIA_PREFIX = '/grappelli'
 
 # Change this to something special and don't share it with
 # anyone, Django uses this to salt password hashes
@@ -141,9 +147,11 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'middleware.XHTMLMiddleware',
     'middleware.BlockedIpMiddleware',
-#    'privatebeta.middleware.PrivateBetaMiddleware',
+    #'privatebeta.middleware.PrivateBetaMiddleware',
+    'axes.middleware.FailedLoginMiddleware'
 #    'middleware.ErrorMiddleware',
 #    'debug_toolbar.middleware.DebugToolbarMiddleware',
+
 )
 
 #---------------------------
@@ -208,16 +216,22 @@ INSTALLED_APPS = [
     # In order to use admin with gunicorn you'll need to grab the
     # admin resources from your local install. Use the script
     # static/copy_admin_resources.sh to do this. Or you can
-    # install the grapelli admin interface with:
+    # install the grappelli admin interface with:
     # `pip install -E wise grappelli`
     'piston',
-    #'privatebeta',
+    'privatebeta',
     'media_bundler',
     'registration',
     # Optional Applications - mostly for development
     #'debug_toolbar',
     #'django_extensions',
+
+    # Optional, used to block automated login attemps
+    'axes'
 ]
+
+ACCOUNT_ACTIVATION_DAYS = 1
+REGISTRATION_OPEN = True
 
 #---------------------------
 # Optional Apps

@@ -1,0 +1,10 @@
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML">
+    <mi>r</mi>
+    <msup>
+        <mi>e</mi>
+        <mrow>
+        <mo>i</mo>
+        <mo>x</mo>
+        </mrow>
+    </msup>
+</math>

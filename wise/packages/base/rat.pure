@@ -1,0 +1,124 @@
+/*
+  Wise
+  Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as
+  published by the Free Software Foundation, either version 3 of the
+  License, or (at your option) any later version.
+*/
+
+// Rational hinting function
+IsRational (x%y) = 1;
+
+/*
+  -----------------------
+  Rational Rewriting
+  -----------------------
+*/
+
+// These rules are mostly adapted from the math.pure form the
+// Pure standard library but wrapped up in reduce stacks.
+
+// Simplify a rational expression reducing any nested rational
+// expressions and reducing the numerator and denominator to
+// simplest form.
+simplify_rational X = reduce X with
+    x::bigint % 0L		= x div 0L;
+    x::bigint % y::bigint 
+                        = (-x)%(-y) 
+                   if y<0;
+                          = (x div d) % (y div d)
+                   if d > 1 when d = gcd x y end;
+
+    x::int % y::bigint = bigint x % y;
+    x::bigint % y::int = x % bigint y;
+    x::int % y::int    = bigint x % bigint y;
+
+    (x1%y1)%(x2%y2)    = (x1*y2)%(y1*x2);
+    (x1%y1)%x2         = x1%(y1*x2);
+    x1%(x2%y2)         = (x1*y2)%x2;
+    /*(x1%y1)%(z)        = x1%(y1*z);*/
+    /*z%(x1%y1)          = (z*y1)%(x1);*/
+    -(x%y)		       = (-x)%y;
+
+    // Combine multiple rational quantities
+    (x1%y1)+(x2%y2)	= (x1*y2+x2*y1) % (y1*y2);
+    (x1%y1)-(x2%y2)	= (x1*y2-x2*y1) % (y1*y2);
+    (x1%y1)*(x2%y2)	= (x1*x2) % (y1*y2);
+
+    // Reduce unary rational quantities 
+    (x1%x1)         = 1;
+end;
+
+// Expand rational to include entire expression.
+// Example: (1/x + x) = (x^2+1)/x
+make_rational X = reduce X with
+    (x1%y1)+x2 = (x1+x2*y1) % y1 if ~rationalp x2;
+    (x1%y1)-x2 = (x1-x2*y1) % y1 if ~rationalp x2;
+    (x1%y1)*x2 = (x1*x2)    % y1 if ~rationalp x2;
+
+    x1+(x2%y2) = (x1*y2+x2) % y2 if ~rationalp x1;
+    x1-(x2%y2) = (x1*y2-x2) % y2 if ~rationalp x1;
+    x1*(x2%y2) = (x1*x2)    % y2 if ~rationalp x1;
+end;
+
+// Convert exact rational numbers to floating point values. This
+// converts all symbolic exact division (%) into inexact
+// division (/).
+numeric_rational X = reduce X with
+    // / and ^ always yield inexact results.
+    (x1%y1)/(x2%y2) = (x1/y1) / (x2/y2);
+    (x1%y1)^(x2%y2) = (x1/y1) ^ (x2/y2);
+
+    (x1%y1)+x2      = (x1/y1)+x2 if numberp x2;
+    (x1%y1)-x2      = (x1/y1)-x2 if numberp x2;
+    (x1%y1)*x2      = (x1/y1)*x2 if numberp x2;
+    (x1%y1)/x2      = (x1/y1)/x2 if numberp x2;
+    (x1%y1)^x2      = (x1/y1)^x2 if numberp x2;
+
+    x1+(x2%y2)      = x1+(x2/y2) if numberp x1;
+    x1-(x2%y2)      = x1-(x2/y2) if numberp x1;
+    x1*(x2%y2)      = x1*(x2/y2) if numberp x1;
+    x1/(x2%y2)      = x1/(x2/y2) if numberp x1;
+    x1^(x2%y2)      = x1^(x2/y2) if numberp x1;
+    (x1%y2)         = (x/y)      if all numberp [x,y];
+end;
+
+combine_rational X = reduce X
+with
+    -(a%b)        = (-a)%b;
+    (a%c) + (b%c) = (a+b)%c;
+    (a%b) + (c%d) = (a*d+b*c)%(b*d);
+    (a%b) / (c%d) = (a*c)%(b*d);
+end;
+
+// Convert a quantitit to an equivelent numerical value. For
+// numerical quantities it tries to find a value x=p/q for symbolic
+// quantities x/1 .
+
+// Lift `rational` across arguments of complex values
+rational (x+:y)	= rational x +: rational y;
+rational (x<:y)	= rational x <: rational y;
+
+rationalize x          = x if rationalp x;
+rationalize x::int     = rational x;
+rationalize x::double  = rational x;
+rationalize x::bigint  = rational x;
+rationalize x::complex = rational x;
+rationalize x          = x/1;
+
+// Split addition, multiplication, and negation quantities in the
+// numerator of a rational expression.
+split_rational X = reduce X
+with
+    (-a) % b      = -(a % b);
+    (a+b) % c     = (a % c) + (b % c);
+    (a*b) % (c*d) = (a % c)*(b % d);
+end;
+
+// Seperate rational
+seperate_numerator X = reduce X
+with
+    a % b = a * (1 % b) if a ~== 1;
+end;

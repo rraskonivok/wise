@@ -1,0 +1,62 @@
+#!/bin/bash
+
+VIRTUALENV=~/.virtualenvs/wise
+GUNICORN=/usr/bin/gunicorn_django
+ROOT=~/GIT/wise/wise
+PID=gunicorn.pid
+
+. $VIRTUALENV/bin/activate
+
+
+case "$1" in
+  start)
+    #if [ -f $PID ]; then rm $PID fi
+    echo -n "Starting Wise ... "
+    python gunicorn_django.py -c gunicorn.conf --pid=$PID -D
+
+    if [ $? -gt 0 ]; then
+      echo "FAIL"
+    else
+      echo "DONE"
+    fi
+. ~/.virtualenvs/wise/bin/activate
+
+    ;;
+  stop)
+    echo -n "Stopping Wise ... "
+    if [ -f $PID ]; then
+        kill -KILL `cat $PID`
+
+        if [ $? -gt 0 ]; then
+          echo "FAIL"
+        else
+          echo  "DONE"
+        fi
+
+        #rm $PID
+    else
+        echo "FAIL"
+    fi
+
+    ;;
+  restart)
+
+    echo -n "Restarting Wise ... "
+    if [ -f $PID ]; then
+        kill -HUP `cat $PID`
+
+        if [ $? -gt 0 ]; then
+          echo "FAIL"
+        else
+          echo  "DONE"
+        fi
+
+        #rm $PID
+    else
+        echo "FAIL"
+    fi
+    ;;
+  *)
+    echo "usage: $0 {start|stop|restart}"
+esac
+exit 0

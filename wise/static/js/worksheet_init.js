@@ -17,10 +17,11 @@ function test_mathml() {
     return !!test1 && !!test2 && !!test3;
 }
 
+// Initialize the worksheet boot sequence
 function init() {
 
+    // Test for MathML support, if not then prompt the user
     if(test_mathml()) {
-
         boot();
 
     } else {
@@ -34,6 +35,7 @@ function init() {
                 modal: true,
                 position: 'center',
                 buttons: {
+                    // Ignore browser check and proceed
                     "Proceed Anyways": function() {
                         $( this ).dialog( "close" );
                         boot();
@@ -50,9 +52,13 @@ function init() {
 }
 
 function boot() {
-    //TODO: move this into its own worker thread
+    // Build the node database
     init_nodes();
+
+    // Bind keyboard shortcuts
     init_keyboard_shortcuts();
+
+    // Load sidebar palettes
     load_math_palette();
     load_rules_palette();
 
@@ -61,6 +67,7 @@ function boot() {
         el: $("#worksheet_sidebar")
     });
 
+    // Error logging
     Wise.Log = new Logger();
 
     Wise.Log.view =  new LoggerView({
@@ -68,15 +75,50 @@ function boot() {
         model: Wise.Log,
     });
 
-    if(Wise.Settings.get('SERVER_HEARTBEAT')) {
-        setInterval( "heartbeat()", 10000 );
-    }
+    // Heartbeat function
+    //if(Wise.Settings.get('SERVER_HEARTBEAT')) {
+    //    setInterval( "heartbeat()", 10000 );
+    //}
 
+    // Error logging
     Wise.CmdLine = new CmdLineView({
         el: $("#cmd"),
     });
 
+    $("#container").show();
+
+    layout = rearrange();
+    //layout.resetOverflow();
+
+    mkautocomplete();
+
+    $(".noselect").disableSelection();
     $("#worksheet").show();
+
+    // Handle unsaved changes before leaving page
+    window.onbeforeunload = function(e)
+    {
+        e = e || window.event;
+        if (Wise.Worksheet.hasChangesToCommit())
+        {
+            // For IE and Firefox
+            if (e)
+            {
+                e.returnValue = "You have unsaved changes.";
+            }
+            // For Safari
+            return "You have unsaved changes.";
+        }
+    };
+
+    new WorkspaceController();
+    Backbone.history.start();
+
+    // Disable right click context menu
+    $(document).bind("contextmenu",function(e){
+        return false;
+    });
+
 }
 
 function init_keyboard_shortcuts() {

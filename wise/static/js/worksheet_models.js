@@ -21,11 +21,15 @@ var WorksheetModel = Backbone.Collection.extend({
     this.invoke('saveCell');
   },
 
+  hasChangesToCommit: function() {
+    return _.any(this.invoke('hasChangesToCommit'));
+  },
+
 });
 
 var Cell = Backbone.Model.extend({
 
-  url: function(){
+  url: function() {
      return this.get('resource_uri') || '/api/cell/';
   },
 
@@ -56,14 +60,14 @@ var Cell = Backbone.Model.extend({
   saveCell: function () {
     if (this.hasChanged() || this.isNew()) {
       this.save({
-        success: Notifications.raise('COMMIT_SUCCESS'),
+        //success: Notifications.raise('COMMIT_SUCCESS'),
       });
     }
 //    this.saveAssumptions();
     this.saveExpressions();
   },
 
-  // Iterate through each Expression associated 
+  // Iterate through each Expression associated
   // with this cell and commit if their sexp
   // have changed since thel last commit
   saveExpressions: function () {
@@ -72,18 +76,24 @@ var Cell = Backbone.Model.extend({
         // Highlight the expression to give the user
         // some visual feedback on what was just
         // committed
-        
+
         expr.root.view.el.effect("highlight", {}, 1500);
 
         expr.set({
           sexp: expr.sexp()
         });
         expr.save({
-          success: Notifications.raise('COMMIT_SUCCESS'),
+          //success: Notifications.raise('COMMIT_SUCCESS'),
         });
 
       }
     });
+  },
+
+  hasChangesToCommit: function() {
+    return _.any(
+        _.invoke(this._expressions,'hasChanged')
+    );
   },
 
   /*
@@ -149,10 +159,11 @@ var Expression = Node.extend({
   },
 
   unselect: function () {
+    Wise.Selection.remove(this);
+
     this.set({
       selected: false
     });
-    Wise.Selection.remove(this);
     this.view.el.removeClass('selected');
   },
 
@@ -249,6 +260,7 @@ function build_tree_from_json(json_input, top_class) {
       //            cid:      term.id,
       type: term.type,
       toplevel: term.toplevel,
+      assumptions: term.assum,
       args: term.args,
       id: term.sid,
       resource_uri: term.resource_uri,
@@ -300,17 +312,21 @@ function build_tree_from_json(json_input, top_class) {
 }
 
 function build_cell_from_json(json_input) {
+  // cell spec as injected into the page as JSON
   var cell_spec = json_input[0];
   var eqs_json = json_input[1];
   var asms_json = json_input[2];
 
-  var new_cell = new Cell();
-
-  new_cell.cid = cell_spec.cid;
-
-  new_cell.set({
-    id: cell_spec.id
+  var new_cell = new Cell({
+      "resource_uri": cell_spec.resource_uri,
+      "id"          : cell_spec.id,
   });
+
+  new_cell.cid = "cell" + cell_spec.index;
+
+  //new_cell.set({
+    //id: cell_spec.id
+  //});
 
   // The new HTML element, must exist in the DOM
   var nel = $('#' + new_cell.cid);
@@ -433,6 +449,7 @@ function graft_fragment_from_json(old_node, json_input, transformation) {
   return treefrag;
 }
 
+//TODO: why haven't we deleted this???
 var graft_tree_from_json = graft_fragment_from_json;
 
 ///////////////////////////////////////////////////////////

@@ -12,36 +12,18 @@
 //  * Cohen J S. Computer Algebra and Symbolic Computation.
 //  * Scheme code at https://github.com/dharmatech
 
-namespace simplify;
-
-simplify_complex X = reduce X
-with
-    // Complex Addition
-    (complex x y) + (complex u v) = complex (x+u) (y+v);
-    - (complex x y) = complex (-x) (-y);
-
-    // Complex Multiplication
-    (complex a b) * (complex c d) = complex (a*c-b*d) (b*c+a*d);
-
-    // Complex Division
-    (complex a b) / (complex c d) = (complex ((a*c+b*d) / (c^2 + d^2)) ((b*c-a*d) / (c^2 + d^2)) )
+simplify_negation X = reduce X with
+    -(-x) = x;
+    c::constant * (-x) = (-c) * x;
 end;
 
+namespace simplify;
+
 /*
+   -------------------------
     Automatic Simplification
    -------------------------
 */
-
-rational_to_power = reduce with
-    x/y = x*(y^(-1));
-end;
-
-rat_simp = reduce with
-    1/(1/x) = x;
-    0/x = 0;
-    x/1 = x;
-    x/(y/z) = (x*z)/y;
-end;
 
 // Reduce simple expressions involving 1 and 0
 basic_simplify = reduce with
@@ -50,18 +32,19 @@ basic_simplify = reduce with
     x * y = 0 if (numberp x && x == 0) ||
                  (numberp y && y == 0);
 
-    x * y = x if isone y;
-    x * y = y if isone x;
-    x * y = -x if isnegone y;
-    x * y = -y if isnegone x;
+    x * y = x if y `== 1;
+    x * y = y if x `== 1;
+    x * y = -x if y `== -1;
+    x * y = -y if x `== -1;
 
-    x + y = x if iszero y;
-    x + y = y if iszero x;
+    x + y = x if y `== 0;
+    x + y = y if x `== 0;
 
     0^x = 0 if numberp x;
     x^0 = 1;
     x^1 = x;
     -(-x) = x;
+
     Sin 0 = 0;
     Cos 0 = 1;
     Exp 0 = 1;
@@ -70,6 +53,7 @@ end;
 // Propogate an operator through an expression by applying it to
 // the leaves of the expression tree and recursively upwards.
 // At the moment only propogate through n={0,1,2,3} n-ary expressions.
+
 propogate_thru rule expr = _rule (expr) with
     _rule (f@_ x y z) = rule $ f (_rule x) (_rule y) (_rule z) if ~(f === _rule);
     _rule (f@_ x y) = rule $ f (_rule x) (_rule y) if ~(f === _rule);
@@ -85,69 +69,118 @@ namespace;
 // Term Properties
 // -------------------------------
 
-sump (x+y) = 1 ; sump x = 0 ;
-base (x^y) = x ;
-base x = x ;
+//  See: https://github.com/dharmatech
+
+sump (x+y)     = 1 ;
+sump x = 0 ;
+
+base (x^y)     = x ;
+base x         = x ;
 exponent (x^y) = y ;
-exponent x = 1 ;
+exponent x     = 1 ;
 
-term (-n*x) = x if numberp n;
-term (n*x) = x if numberp n ;
+term (-x)      = term x;
+term (n*x)     = x if numberp n ;
+term (-n*x)    = x if numberp n;
 term ((x*y)*z) = (term (x*y)) * z ;
-term x = x ;
+term x         = x ;
 
-constant (-n*x) = -n if numberp n;
-constant (n*x) = n if numberp n ;
+constant (-n*x)    = -n if numberp n;
+constant (n*x)     = n if numberp n ;
 constant ((x*y)*z) = (constant (x*y)) ;
-constant (-x) = -1;
-constant x = 1 ;
+constant (-x)      = -1;
+constant x         = 1 ;
 
-cmp x y = x < y if numberp x && numberp y ;
-cmp x y = 1 if numberp x && ~(numberp y) ;
-cmp (a^b) (c^d) = if a === c then cmp b d else cmp a c ;
-cmp a (b^c) = if a === b then cmp 1 c else cmp a b ;
-cmp (a^b) c = if a === b then cmp b 1 else cmp a c ;
-cmp (x1@_ y1) (x2@_ y2) = if x1===x2 then cmp y1 y2 else cmp x1 x2;
-cmp (x1@_ y1) x2 = if x1===x2 then 0 else cmp x1 x2;
-cmp x1 (x2@_ y2) = if x1===x2 then 1 else cmp x1 x2;
-cmp x y = str x < str y if atomp x && atomp y ;
-cmp x y = ~(cmp y x) otherwise ;
+cmp x y                 = x < y if numberp x && numberp y ;
+cmp x y                 = 1 if numberp x && ~(numberp y) ;
+cmp (a^b) (c^d)         = if a === c then cmp b d else cmp a c ;
+cmp a (b^c)             = if a === b then cmp 1 c else cmp a b ;
+cmp (a^b) c             = if a === b then cmp b 1 else cmp a c ;
+cmp (x1@_ y1) (x2@_ y2) = if x1 === x2 then cmp y1 y2 else cmp x1 x2;
+cmp (x1@_ y1) x2        = if x1 === x2 then 0 else cmp x1 x2;
+cmp x1 (x2@_ y2)        = if x1 === x2 then 1 else cmp x1 x2;
+cmp x y                 = str x < str y if atomp x && atomp y ;
+cmp x y                 = ~(cmp y x) otherwise ;
 
 // -------------------------------
-// Generic Term Reording
+// Graded Signatures
 // -------------------------------
-
-span _ xs@[]      =  (xs, xs);
-span p xs@(x:xs1) =  (x:ys,zs) when (ys,zs) = span p xs1 end if p x;
-                  =  ([],xs) otherwise;
-
-groupBy _  []           =  [];
-groupBy eq (x:xs)       =  (x:ys) : (groupBy eq zs) when
-                           (ys,zs) = span (eq x) xs end;
-
-eqSig x y = sig x === sig y;
-sigpart = groupBy eqSig;
-
-sig x = sort cmp $ lsvars x;
 
 // This is O(crazy) at the moment, I'll optimize later
 mdeg a::int b::int = (a*b << 2);
-graded a = if sum a == 1 
-           then 1 + index a 1 
+graded a = if sum a == 1
+           then 1 + index a 1
            else _graded a 0;
 
 _graded []     _ = 1;
 _graded (x:xs) n = (x * n << 2) + _graded xs (n+1);
 
-reorder X = map sum
-            $ sigpart 
-            $ sort gorder
-            $ lst X 
-with
-    sigx = sig X;
-    isig e = [has e x | x = sigx];
+// -------------------------------
+// Generic Term Reording
+// -------------------------------
 
-    gorder a b = 
+sigpart = groupBy eqSig;
+
+asig x = sort cmp $ lsvars x;
+
+simplesig X = _sig X with
+    // Multiplication Expressions
+    _sig (-a)                        = term a;
+    _sig (a::symbolic * b::symbolic) = sort lexo [_sig a,_sig b];
+    _sig (a           * b::symbolic) = term b;
+    _sig (a::symbolic * b          ) = term a;
+
+    // Exponential Expressions
+    _sig (a::symbolic ^ n::number )  = (a,n);
+
+    // Variables
+    _sig a       = a if varp a;
+
+    // Single variable functions
+    _sig (f@_ x) = [f,x] if varp f;
+
+    // Numeric terms
+    _sig a::number = a;
+
+    // Other terms -- assign unique hash
+    _sig x       = hash x;
+end;
+
+hashsimpsig a b = hash (simplesig a) > hash (simplesig b);
+eqSig x y = simplesig x === simplesig y;
+
+// Flatten an expression and sort terms lexicographically
+
+// Example:
+// flatten_lex (+) (2*x+x+y+(2*x)); // [x,y,2*x,2*x]
+flatten_lex op ex = sort lexo $ flatten op ex;
+flatten_sig op ex = sort (hashsimpsig) $ flatten op ex;
+
+reflatten op ex = foldl1 op $ flatten_lex op ex;
+
+// Split toplevel addition and combine terms which have the same
+// lexicographic order.
+// Example:
+// groupLikeTerms (x+y+y+z+z+x); // [[x,x],[y,y],[z,z]]
+// reflowLiketerms (x+y+y+z+z+x); // [[x+x],[y+y],[z+z]]
+groupLikeTerms op x = groupBy (eqSig) $ flatten_sig op x;
+reflowLikeTerms op x = map (foldl1 op) $ groupLikeTerms op x;
+
+compressLikeTerms op x = map combine (groupLikeTerms op x) with
+    combine xs = (foldl1 (+) $ map constant xs) * term (xs ! 0) ;
+end;
+
+compressAddition X = sum $ compressLikeTerms (+) X;
+
+reorder X = map sum
+            $ sigpart
+            $ sort gorder
+            $ lst X
+with
+    sigx = asig X;
+    isig e = [e has x | x = sigx];
+
+    gorder a b =
         graded (isig a) <
         graded (isig b);
 
@@ -155,56 +188,47 @@ with
     lst a = [a] if varp x;
 end;
 
-lsvars X = members $ pick X with
-    pick (x@_ y) = (pick x) + (pick y) if applp x;
-                 = (pick y) otherwise;
-    pick x = hset [x] if atomp x;
-           = emptyhset otherwise;
-end;
+fullsimp X = reduce X with 
+    0*x = 0;
+    1*x = x;
 
-lsatoms X = members $ pick X with
-    pick (x@_ y) = (pick x) + (pick y);
-    pick x = hset [x] if atomp x && fixity x >= 30000;
-           = emptyhset otherwise;
-end;
+    /*0^x = 0 ;*/
+    /*1^x = 1 ;*/
+    /*x^0 = 1 ;*/
+    /*x^1 = x ;*/
 
-// Univariate
-uvarp x = #lsvars x == 1;
-// Multivariate
-mvarp x = ~uvarp x;
+    Nroot n x = x^(1%n);
 
-deepsame a b = same a b;
-
-fullsimp X = eval $ reduce X with 
-    0^x = 0 ;
-    1^x = 1 ;
-    x^0 = 1 ;
-    x^1 = x ;
+    x^(1%n) * x^(1%n) = x;
 
     (r^s)^w = r^(s*w) if numberp w ;
     (x*y)^w = (x^w)*(y^w) if numberp w ;
 
-    0*x = 0 ;
+    x*(-y) = -x*y;
+
+    -(-x*y)  = (x*y);
+    -(-x)  = x;
+
     x*y = (base x) ^ ((exponent x) + (exponent y))
-        if deepsame (base x) (base y) ;
+        if (base x) ::=== (base y) ;
 
     a*x*y = a * ( (base x) ^ ((exponent x) + (exponent y)) )
-        if deepsame (base x) (base y) ;
+        if (base x) ::=== (base y) ;
 
     x*y = y*x if cmp y x ;
 
     x*y*z = x*z*y if cmp z y ;
     x*(y*z) = x*y*z;
 
-
     0+x = x ;
-    a+b = ((constant a) + (constant b)) * (term a) 
-        if deepsame (term a) (term b)
-        && ~all numberp [a,b];
 
-    a+b+c = a + (((constant b) + (constant c)) * (term b))
-        if deepsame (term b) (term c)
-        && ~all numberp [a,b];
+    a+b = ((constant a) + (constant b)) * (term a)
+        if (term a) ::=== (term b)
+        && ::~ all numberp [a,b];
+
+    /*a+b+c = a + (((constant b) + (constant c)) * (term b))*/
+        /*if (term b) ::=== (term c)*/
+        /*&& ~all numberp [b,c];*/
 
     a+b = b+a
         if (cmp b a) && ~(sump a) ;
@@ -218,16 +242,14 @@ fullsimp X = eval $ reduce X with
     x % y = x * (y^(-1)) if ~numberp y;
 end;
 
-applwhile pred f x = app (f x) (f $ f x) with
-    app a b = a if pred a b;
-            = app b (f b) otherwise;
-end;
-
 /*algebra_normal X = eval $*/
     /*applwhile (===) fullsimp rx*/
     /*when rx = reorder X end;*/
 
-algebra_normal x = applwhile (===) fullsimp x;
+algebra_normal X = eval $ fullsimp . compressAddition $ X;
+
+// Old Code
+// Remove soon
 
 simplify_trig X = reduce X with
     Sin 0 = 0;
@@ -236,3 +258,23 @@ simplify_trig X = reduce X with
     Cos (n::int*Pi) = (-1)^n;
     Cos (-x) = Cos x;
 end;
+
+simplify_complex X = reduce X
+with
+    // Complex Addition
+    (complex x y) + (complex u v) = complex (x+u) (y+v);
+    - (complex x y) = complex (-x) (-y);
+
+    // Complex Multiplication
+    (complex a b) * (complex c d) = complex (a*c-b*d) (b*c+a*d);
+
+    // Complex Division
+    (complex a b) / (complex c d) = (complex ((a*c+b*d) / (c^2 + d^2)) ((b*c-a*d) / (c^2 + d^2)) )
+end;
+
+/*rat_simp = reduce with*/
+    /*1/(1/x) = x;*/
+    /*0/x = 0;*/
+    /*x/1 = x;*/
+    /*x/(y/z) = (x*z)/y;*/
+/*end;*/

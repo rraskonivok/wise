@@ -1,4 +1,7 @@
 mrow#{{id}} title="{{type}}"
+    {% if parenthesis %}
+    <mo stretchy="true">(</mo>
+    {% endif %}
 
     {{ re }}
 
@@ -6,5 +9,8 @@ mrow#{{id}} title="{{type}}"
 
     {{ im }}
 
-    <mi>i</mi>
+    <mi>ⅈ</mi>
 
+    {% if parenthesis %}
+    <mo stretchy="true">)</mo>
+    {% endif %}

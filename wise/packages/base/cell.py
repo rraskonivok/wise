@@ -8,7 +8,7 @@ class Cell(object):
 
     index = None
     id = None
-    cid = None
+    sid = None
     css_class = None
 
     def __init__(self, eqs, asms, **kwargs):
@@ -24,16 +24,16 @@ class Cell(object):
         raise exception.PureError('No Pure representation of %s.' % self.classname)
 
     def _latex_(self):
-        raise exception.PureError('No LaTeX representation of %s.' % self.classname)
+        raise Exception('No LaTeX representation of %s.' % self.classname)
 
     def _sage_(self):
-        raise exception.PureError('No Sage representation of %s.' % self.classname)
+        raise Exception('No Sage representation of %s.' % self.classname)
 
     def get_html(self):
         c = template.Context({
             'id': self.id,
             'index': self.index,
-            'cid': self.cid,
+            'sid': self.sid,
             'expressions': [eq.get_html() for eq in self.expressions],
             'assumptions': [asm.get_html() for asm in self.assumptions],
             'class': self.css_class,
@@ -45,10 +45,16 @@ class Cell(object):
         if not lst:
             lst = []
 
+        if self.sid:
+            resource_uri = '/api/cell/' + str(self.sid)
+        else:
+            resource_uri = None
+
         lst.append({'index': self.index,
                     'assumptions': [asm.id for asm in self.assumptions],
                     'id' : self.id,
-                    'cid': 'cell'+str(self.index),
+                    'sid': self.sid,
+                    'resource_uri': resource_uri,
                     'eqs': [eq.id for eq in self.expressions]
                     })
 

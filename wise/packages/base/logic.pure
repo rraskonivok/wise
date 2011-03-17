@@ -11,14 +11,103 @@ infixl (or) ⊕;
 infixl (or) →;
 prefix (~) ¬;
 
-def ¬ p = ~p;
+def ¬ p   = ~p;
 def p ∧ q = p and q;
 def p ∨ q = p or q;
 
 // Definitions are in conjunctive normal form
-def p xor q = ((~p) or (~q)) and (p or q);
-def p xnor q = ((~p) or q) and (p or (~q));
-def p iff q = p xnor q;
+def p xor q     = ((~p) or (~q)) and (p or q);
+def p xnor q    = ((~p) or q) and (p or (~q));
+def p iff q     = p xnor q;
 def p implies q = (~p) or q;
-def p → q = p implies q;
-def p nand q = (~p) or (~q);
+def p → q       = p implies q;
+def p nand q    = (~p) or (~q);
+
+
+x has e = detect x with
+    detect (x@_ y) = (detect x) || (detect y);
+    detect x = 1 if (x === e) && atomp x;
+             = 0 otherwise;
+end;
+
+subst x e = subst x (hdict e) with
+  subst (x@_ y) e = (subst x e) (subst y e);
+  subst x e = if member e x then e!x else x;
+end;
+
+isVar (Variable x)              = true;
+isVar _                         = false ;
+
+isConst (Constant b)            = true;
+isConst _                       = false ;
+
+isNeg (Negation t1)             = true;
+isNeg _                         = false ;
+
+isCon (Conjunction (t1, t2 ))   = true;
+isCon _                         = false ;
+
+isDis (Disjunction (t1 , t2 ))  = true;
+isDis _                         = false ;
+
+isImp ( Implication (t1 , t2 )) = true;
+isImp _                         = false ;
+
+destNeg (Negation t1)            = t1;
+destCon (Conjunction (t1,t2))    = (t1 , t2);
+destDis (Disjunction (t1 , t2 )) = (t1 , t2);
+destImp (Implication (t1 , t2 )) = (t1 , t2);
+
+prefix (~) Not;
+nonfix True False;
+infixl (and) Or And;
+
+tocnf x = reduce x with
+    x And y And x = (x And x) And y if x ~== y ;
+    x Or  y Or  x = (x Or x) Or y   if x ~== y ;
+
+    Not False    = True;
+    True Or x    = True;
+    x Or True    = True;
+    x Or (Not x) = True;
+    (Not x) Or x = True;
+
+    Not True      = False;
+    False And x   = False;
+    x And False   = False;
+    x And (Not x) = False;
+    (Not x) And x = False;
+
+    Not (Not x) = x; // Double negation
+    True And x  = x;
+    x And True  = x;
+    False Or x  = x;
+    x Or False  = x;
+    x Or x      = x;
+    x And x     = x;
+
+    Not (Exists x (p@_ x)) = ForAll x (Not (p x));
+    Not (ForAll x (p@_ x)) = Exists x (Not (p x));
+
+    (x And y) Or z = (x Or z) And (y Or z);
+    (x Or y) And z = (x Or z) Or (y Or z);
+
+    Not (x And y)  = (Not x) Or  (Not y);
+    Not (x Or  y)  = (Not x) And (Not y);
+
+
+    // ∀ x P(x) -> Q(x) = ~P(x) ∨ Q(x)
+    Implies 
+        (ForAll x (f@_ x))
+        (g@_ x)
+    = (Not (f x)) Or (g x);
+
+end;
+
+Y = Implies 
+    (ForAll x) (f x)
+    (g x);
+
+Z = Implies 
+    (ForAll y) (f y)
+    (g y);

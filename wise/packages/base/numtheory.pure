@@ -1,0 +1,44 @@
+// Fast Fibonacci numbers
+fibe 0=0;
+fibe n::bigint  = argument n is too large;
+fibe n::int = if (n and 1)
+              then fibe (- n) else (- (fibe (- n))) if n<0;
+            = fibs (pred n) ! 1
+              with
+                fibs 0 = 0L,1L;
+                fibs 1 = 1L,1L;
+                fibs n::int = if n and 1
+                              then b2+a2,(sq (a+b))-a2
+                              else b2-(sq (b-a)),b2+a2
+                              with sq x::bigint = x*x end
+              when a,b = fibs (n>>1); a2 = a*a; b2 = b*b end
+              end;
+
+// Lookup table for `factorial`
+factorial 0  = 1L;
+factorial 1  = 1L;
+factorial 2  = 2L;
+factorial 3  = 6L;
+factorial 4  = 24L;
+factorial 5  = 120L;
+factorial 6  = 720L;
+factorial 7  = 5040L;
+factorial 8  = 40320L;
+factorial 9  = 362880L;
+factorial 10 = 3628800L;
+factorial 11 = 39916800L;
+factorial 12 = 479001600L;
+factorial 13 = 6227020800L;
+factorial 14 = 87178291200L;
+factorial 15 = 1307674368000L;
+factorial 16 = 20922789888000L;
+factorial 17 = 355687428096000L;
+factorial 18 = 6402373705728000L;
+factorial 19 = 121645100408832000L;
+factorial 20 = 2432902008176640000L;
+
+factorial n = loop 1 (bigint n) with
+  loop p n = if n>0 then loop (p*n) (n-1) else p;
+end;
+
+evalf (Factorial n) = factorial n;

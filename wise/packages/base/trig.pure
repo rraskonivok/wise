@@ -1,0 +1,49 @@
+/*
+  Wise
+  Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as
+  published by the Free Software Foundation, either version 3 of the
+  License, or (at your option) any later version.
+*/
+
+evalf Sin   x::real  = sin x;
+evalf Cos   x::real  = cos x;
+evalf Tan   x::real  = tan x;
+evalf Asin  x::real  = asin x if x <= 1 && x >= -1;
+evalf Acos  x::real  = acos x if x <= 1 && x >= -1;
+evalf Atan  x::real  = atan x;
+evalf Sinh  x::real  = sinh x;
+evalf Cosh  x::real  = cosh x;
+evalf Tanh  x::real  = tanh x;
+evalf Asinh x::real  = asinh x;
+evalf Acosh x::real  = acosh x if x >= 1;
+evalf Atanh x::real  = atanh x if x <= 1 && x >= -1;
+
+namespace intervals;
+
+ooi;
+cci;
+coi;
+oci;
+
+namespace;
+
+// Open interval
+// openi;
+
+// Open interval
+// closedi;
+
+// Left Closed, Right Open Interval
+// clopi;
+
+// Left Open, Right Closed Interval
+// opcli;
+
+// Add a global command:
+// Rule ( ReduceStack, Precedence ) and then dynamically compile
+// the rules using __reduce__ statements.
+// This way we can extend stacks as we see fit. Ala Yacas, call
+// it something awesome like Extensible Ruleset

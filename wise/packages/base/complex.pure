@@ -1,0 +1,234 @@
+/*
+   -------------------------
+   Numeric Complex Numbers
+   -------------------------
+*/
+
+// These rules are mostly adapted from the math.pure form the
+// Pure standard library but wrapped up in reduce stacks.
+
+// Polar complex numbers
+
+// Use nconstants::pi
+using namespace nconstants;
+r::int<:t	    |
+r::bigint<:t	|
+r::double<:t	= -r <: t+pi if r<0;
+
+r<:t::int	    |
+r<:t::bigint	|
+r<:t::double	= r <: atan2 (sin t) (cos t) if t<-pi || t>pi;
+                = r <: pi if t==-pi;
+
+complex z@(x+:y) | complex z@(r<:t) = z;
+complex x::int | complex x::bigint = x+:0;
+complex x::double = x+:0.0;
+
+polar (x+:y)	= sqrt (x*x+y*y) <: atan2 y x;
+rect  (r<:t)	= r*cos t +: r*sin t;
+
+polar z@(_<:_)	= z;
+rect  z@(_+:_)	= z;
+
+/* For convenience, make these work with real values, too. */
+polar x::int | polar x::bigint = x<:0;
+polar x::double = x<:0.0;
+
+rect x::int | rect x::bigint = x+:0;
+rect x::double = x+:0.0;
+
+cis t::int | cis t::bigint | cis t::double = rect (1<:t);
+
+abs (x+:y)	= sqrt (x*x+y*y);
+abs (r<:t)	= r;
+
+arg (x+:y)	= atan2 y x;
+arg (r<:t)	= t;
+
+arg x::int	|
+arg x::bigint	|
+arg x::double	= atan2 0 x;
+
+re (x+:y)	= x;
+re (r<:t)	= r*cos t;
+
+re x::int	|
+re x::bigint	|
+re x::double	= x;
+
+im (x+:y)	= y;
+im (r<:t)	= r*sin t;
+
+im x::int	= 0;
+im x::bigint	= 0L;
+im x::double	= 0.0;
+
+conj (x+:y)	= x +: -y;
+conj (r<:t)	= r <: -t;
+
+conj x::int	|
+conj x::bigint	|
+conj x::double	= x;
+
+/* Complex sqrt. */
+sqrt (x+:y)	= sqrt r*(cos t +: sin t)
+		  when r = sqrt (x*x+y*y); t = atan2 y x/2 end;
+sqrt (r<:t)	= sqrt r <: t/2;
+
+/* Complex exponential and logarithms. */
+exp (x+:y)	= exp x * (cos y +: sin y);
+exp (r<:t)	= exp (r*cos t) <: r*sin t;
+
+ln z@(x+:y)	= ln (abs z) +: arg z;
+ln (r<:t)	= polar (ln r +: t);
+
+log z@(x+:y)	|
+log z@(r<:t)	= ln z / ln 10;
+
+/* Complex trig functions. */
+
+sin (x+:y)	= sin x*cosh y +: cos x*sinh y;
+cos (x+:y)	= cos x*cosh y +: -sin x*sinh y;
+tan (x+:y)	= (sin (2*x) +: sinh (2*y)) / (cos (2*x)+cosh (2*y));
+
+// These are best computed in rect and then converted back to polar.
+sin z@(r<:t)	= polar (sin (rect z));
+cos z@(r<:t)	= polar (cos (rect z));
+tan z@(r<:t)	= polar (tan (rect z));
+
+// Use complex logarithms for the inverses.
+asin z@(x+:y)	|
+asin z@(r<:t)	= -i*ln (i*z+sqrt (1-z*z));
+acos z@(x+:y)	|
+acos z@(r<:t)	= -i*ln (z+i*sqrt (1-z*z));
+atan z@(x+:y)	|
+atan z@(r<:t)	= (ln (1+i*z)-ln (1-i*z))/(2*i);
+
+/* Complex hyperbolic functions. */
+sinh (x+:y)	= sinh x*cos y +: cosh x*sin y;
+cosh (x+:y)	= cosh x*cos y +: sinh x*sin y;
+tanh (x+:y)	= (sinh (2*x) +: sin (2*y)) / (cosh (2*x)+cos (2*y));
+
+sinh z@(r<:t)	= polar (sinh (rect z));
+cosh z@(r<:t)	= polar (cosh (rect z));
+tanh z@(r<:t)	= polar (tanh (rect z));
+
+asinh z@(x+:y)	|
+asinh z@(r<:t)	= ln (z+sqrt (z*z+1));
+acosh z@(x+:y)	|
+acosh z@(r<:t)	= ln (z+sqrt (z-1)*sqrt (z+1));
+// Alternative definition by Kahan. Any reason to prefer that one?
+// acosh z@(x+:y)	|
+// acosh z@(r<:t)	= 2*ln (sqrt ((z+1)/2)+sqrt ((z-1)/2));
+atanh z@(x+:y)	|
+atanh z@(r<:t)	= (ln (1+z)-ln (1-z))/2;
+
+/* Complex arithmetic. */
+
+-(x+:y)		= -x +: -y;
+-(r<:t)		= r <: t+pi;
+
+(x1+:y1) + (x2+:y2)	= x1+x2 +: y1+y2;
+z1@(r1<:t1)+z2@(r2<:t2)	= polar (rect z1 + rect z2);
+
+(x1+:y1) - (x2+:y2)	= x1-x2 +: y1-y2;
+z1@(r1<:t1)-z2@(r2<:t2)	= polar (rect z1 - rect z2);
+
+(x1+:y1) * (x2+:y2)	= x1*x2-y1*y2 +: x1*y2+y1*x2;
+(r1<:t1) * (r2<:t2)	= r1*r2 <: t1+t2;
+
+(x1+:y1) / (x2+:y2)	= (x1*x2+y1*y2)/d +: (y1*x2-x1*y2)/d
+			  when d = x2*x2+y2*y2 end;
+(r1<:t1) / (r2<:t2)	= r1/r2 <: t1-t2;
+
+/* Mixed rect/polar and polar/rect forms always return a rect result. */
+z1@(x1+:y1)+z2@(r2<:t2)	= z1 + rect z2;
+z1@(r1<:t1)+z2@(x2+:y2)	= rect z1 + z2;
+
+z1@(x1+:y1)-z2@(r2<:t2)	= z1 - rect z2;
+z1@(r1<:t1)-z2@(x2+:y2)	= rect z1 - z2;
+
+z1@(x1+:y1)*z2@(r2<:t2)	= z1 * rect z2;
+z1@(r1<:t1)*z2@(x2+:y2)	= rect z1 * z2;
+
+z1@(x1+:y1)/z2@(r2<:t2)	= z1 / rect z2;
+z1@(r1<:t1)/z2@(x2+:y2)	= rect z1 / z2;
+
+/* Mixed complex/real and real/complex forms yield a rect or polar result,
+   depending on what the complex input was. */
+(x1+:y1)+x2	= x1+x2 +: y1 if realp x2;
+x1+(x2+:y2)	= x1+x2 +: y2 if realp x1;
+z1@(r1<:t1)+x2	= z1 + polar x2 if realp x2;
+x1+z2@(r2<:t2)	= polar x1 + z2 if realp x1;
+
+(x1+:y1)-x2	= x1-x2 +: y1 if realp x2;
+x1-(x2+:y2)	= x1-x2 +: -y2 if realp x1;
+z1@(r1<:t1)-x2	= z1 - polar x2 if realp x2;
+x1-z2@(r2<:t2)	= polar x1 - z2 if realp x1;
+
+z1@(x1+:y1)*x2	= z1 * rect x2 if realp x2;
+x1*z2@(x2+:y2)	= rect x1 * z2 if realp x1;
+(r1<:t1)*x2	= r1*x2 <: t1 if realp x2;
+x1*(r2<:t2)	= x1*r2 <: t2 if realp x1;
+
+z1@(x1+:y1)/x2	= z1 / rect x2 if realp x2;
+x1/z2@(x2+:y2)	= rect x1 / z2 if realp x1;
+(r1<:t1)/x2	= r1/x2 <: t1 if realp x2;
+x1/(r2<:t2)	= x1/r2 <: -t2 if realp x1;
+
+/* Complex powers. */
+z1@(_+:_)^x2	|
+z1@(_<:_)^x2	= exp (ln z1*x2) if numberp x2;
+x1^z2@(_+:_)	= exp (ln (rect x1)*z2) if realp x1;
+x1^z2@(_<:_)	= exp (ln (polar x1)*z2) if realp x1;
+
+/* Equality. */
+(x1+:y1) == (x2+:y2)	= x1==x2 && y1==y2;
+(r1<:t1) == (r2<:t2)	= r1==r2 && t1==t2;
+
+(x1+:y1) ~= (x2+:y2)	= x1~=x2 || y1~=y2;
+(r1<:t1) ~= (r2<:t2)	= r1~=r2 || t1~=t2;
+
+z1@(_+:_)==z2@(_<:_)	= z1 == rect z2;
+z1@(_<:_)==z2@(_+:_)	= rect z1 == z2;
+
+z1@(_+:_)~=z2@(_<:_)	= z1 ~= rect z2;
+z1@(_<:_)~=z2@(_+:_)	= rect z1 ~= z2;
+
+(x1+:y1)==x2		= x1==x2 && y1==0 if realp x2;
+x1==(x2+:y2)		= x1==x2 && y2==0 if realp x1;
+z1@(r1<:t1)==x2		= z1 == (x2<:0) if realp x2;
+x1==z2@(r2<:t2)		= (x1<:0) == z2 if realp x1;
+
+(x1+:y1)~=x2		= x1~=x2 || y1~=0 if realp x2;
+x1~=(x2+:y2)		= x1~=x2 || y2~=0 if realp x1;
+z1@(r1<:t1)~=x2		= z1 ~= (x2<:0) if realp x2;
+x1~=z2@(r2<:t2)		= (x1<:0) ~= z2 if realp x1;
+
+// complex operands (these must both use the same representation, otherwise
+// the result won't be exact)
+z1@(_+:_)%z2@(_<:_)	|
+z1@(_<:_)%z2@(_+:_)	= z1/z2;
+(x1+:y1)%(x2+:y2)	= (x1*x2+y1*y2)%d +: (y1*x2-x1*y2)%d
+			    when d = x2*x2+y2*y2 end;
+(r1<:t1)%(r2<:t2)	= r1%r2 <: t1-t2;
+
+// mixed complex/real cases
+(x1+:y1)%x2		= (x1*x2)%d +: (y1*x2)%d
+			    when d = x2*x2 end if realp x2;
+x1%(x2+:y2)		= (x1*x2)%d +: (-x1*y2)%d
+			    when d = x2*x2+y2*y2 end if realp x1;
+(r1<:t1)%x2		= r1%x2 <: t1 if realp x2;
+x1%(r2<:t2)		= x1%r2 <: -t2 if realp x1;
+
+/* Note that these normalization rules will yield inexact results when
+   triggered. Thus you have to take care that your polar representations stay
+   normalized if you want to do computations with exact complex rationals in
+   polar notation. */
+r@(_%_)<:t	= -r <: t+pi if r<0;
+r<:t@(_%_)	= r <: atan2 (sin t) (cos t) if t<-pi || t>pi;
+		= r <: pi if t==-pi;
+
+cis (x%y)	 = rect (1<:x/y);
+
+using namespace;

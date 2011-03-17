@@ -1,0 +1,80 @@
+{% extends "base.tpl" %}
+{% load humanize %}
+
+{* Overload Header *}
+{% block header %}
+{% endblock %}
+
+{% block inline_css %}
+<style>
+    #box {
+        width: 50% !important;
+        min-width: 100px !important;
+    }
+</style>
+{% endblock %}
+
+{% block inline_js %}
+<script>
+    $(document).ready(function() {
+        $("#box").removeClass('hidden');
+    });
+</script>
+{% endblock %}
+
+{% block box %}
+<div class="block" id="block-login">
+    <div class="content login">
+
+        <div class="block" id="block-login">
+            <div class="content login">
+            <h3>Request Invite</h3>
+
+            {% if form.errors %}
+            <div class="flash">
+                <div class="message notice">
+                    {% for error in form.email.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="inner">
+
+            <p>Thanks for your interest in Wise. At this time the
+            public version is in beta testing. To request an invite
+            please provide an email address and one of the following:</p>
+
+            <p>
+            Github username<br/>
+            Twitter username<br/>
+            An academic email address (.edu)<br/>
+            </p>
+
+            </div>
+
+            <form action="{% url privatebeta_invite %}" method="post">
+                <table>
+                <tr>
+                    <td>{{ form.email.label_tag }}</td>
+                    <td>{{ form.email }}</td>
+                </tr>
+                <tr>
+                    <td>Github / Twitter </td>
+                    <td>{{ form.info }}</td>
+                </tr>
+                </table>
+
+              <input class="button" type="submit" value="Request Invite" />
+              <input type="hidden" name="next" value="{{ next }}" />
+              {% csrf_token %}
+            </form>
+
+            <p>Already have an account? <a href="{% url auth_login %}">Login</a>
+            {% endblock %}
+
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,87 +1,26 @@
 {% extends "base.tpl" %}
 {% load bundler_tags %}
 
-{% block main-navigation %}
-<ul class="wat-cf">
-  <li class="first"><a href="/">Main Page</a></li>
-  <li class=""><a href="/ecosystem">Ecosystem</a></li>
-  <li class="active"><a>Worksheet</a></li>
-  <li class=""><a href="/share">Share</a></li>
-</ul>
+{# Overload Header #}
+{% block header %}
 {% endblock %}
 
 {# --------------------------
-Worksheet specific javascript
+   Worksheet specific javascript
 -------------------------- #}
+
 {% block includes %}
 
- <!-- Using /ws/mathjax/ ( which is just a url rewrite to
- /static/js/mathjax ) avoids Firefox strange same-origin
- policy for otf web fonts -->
-<!-- <script type="text/javascript"
-    src="/ws/mathjax/MathJax.js"></script>-->
-
+<!-- <script type="text/javascript" src="/ws/mathjax/MathJax.js"></script>-->
 {% load_bundle "worksheet_css" %}
 {% load_bundle "worksheet_js" %}
 
 {% endblock %}
 
 {# --------------------------
-Worksheet Palettes
+    Worksheet Palettes
 -------------------------- #}
 {% block sidebar %}
-
-<div id="worksheet_sidebar">
-
-    <div class="buttons">
-        <button class='math'>
-            <img src="/static/img/icons/sigma.png"/>
-        </button>
-
-        <button class='rules'>
-            <img src="/static/img/icons/transform.png"/>
-        </button>
-
-        <button class='notebook'>
-            <img src="/static/img/icons/notebook.png"/>
-        </button>
-
-        <button class='settings'>
-            <img src="/static/img/icons/settings.png"/>
-        </button>
-
-        <button class='keys'>
-            <img src="/static/img/icons/keys.png"/>
-        </button>
-
-        <button id="log_indicator" class='terminal'>
-            <img src="/static/img/icons/terminal.png"/>
-        </button>
-
-        <button class='snapshot'>
-            <img src="/static/img/icons/snapshot.png"/>
-        </button>
-    </div>
-
-    <div id="assum_palette" class="palette hidden"></div>
-    <div id="math_palette" class="palette hidden"></div>
-    <div id="rules_palette" class="palette hidden"></div>
-    <div id="settings_palette" class="palette hidden"></div>
-
-    <div id="keys_palette" class="palette hidden">
-        <h3>Keyboard Shortcuts</h3>
-        <dl class="list">
-        </dl>
-    </div>
-
-    <div id="terminal_palette" class="palette hidden">
-        <h3>Error Log</h3>
-        <div class="history"></div>
-        <div id="errlog"></div>
-    </div>
-
-</div>
-
 {% endblock %}
 
 {# --------------------------
@@ -118,65 +57,219 @@ Init Function + Global Vars
 </script>
 
 {% endblock %}
-
+g
 {% block inline-script %}
 {% endblock %}
 
 {# --------------------------
-Equations
+    Equations
 -------------------------- #}
 
 {% block main %}
 
+    <!-- Center -->
+    <div class="ui-layout-center">
 
-<div id="dialog" class="hidden">
-    It appears that your browser doesn't support MathML. To make
-    sure, if mathematics displayed on the right does not match the image
-    on the left then your browser does not support enough MathML to
-    use the worksheet.
 
-    <table style="width: 100%; text-align: center;">
-        <tr>
-        <td>
-            <img src="/static/img/mathml_test.png"/>
-        </td>
-        <td>
-            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-              <mrow>
-                <msup>
-                  <mi>x</mi>
-                  <mn>2</mn>
-                </msup>
-                <msup>
-                  <mi>y</mi>
-                  <mn>2</mn>
-                </msup>
-              </mrow>
-            </math>
-        </td>
-        </tr>
-    </table>
+        <div id="worksheet" class="hidden">
+            {% for cell in cells %}
+                {{cell|safe}} 
+            {% endfor %}
+        </div>
 
-    <p>
-    <!--
-    <input type="checkbox"> Don't show me this message again.</input>
-    -->
-    </p>
-</div>
+    </div>
 
-<div id="selectionlist">
-</div>
+    <!-- North -->
+    <div class="ui-layout-north">
+        <div id="header">
 
-<div id="cmd" class="cmd hidden">
-    <form id="cmdline" action="#">
-        <input id="cmdinput" type="text"></input>
-    </form>
-</div>
+            <!-- Superfish -->
+            <ul class="sf-menu"> 
+                <li class="current"> 
+                    <a href="#a">Go</a> 
+                    <ul> 
+                        <li> 
+                            <a href="{%url home %}">My Worksheets</a> 
+                        </li> 
+                    </ul> 
+                </li>
+                <li class="current"> 
+                    <a href="#a">File</a> 
+                    <ul> 
+                        <li> 
+                            <a href="#save">Commit Changes</a> 
+                        </li> 
+                        <li> 
+                            <a href="#aa">Revert</a> 
+                        </li> 
+                    </ul> 
+                </li> 
+                <li> 
+                    <a href="#">Settings</a> 
+                </li> 
+                <li> 
+                    <a href="#">Export</a>
+                    <ul> 
+                        <li> 
+                            <a href="#aa">.wise</a> 
+                        </li> 
+                        <li>
+                            <a href="#aa">.txt</a> 
+                        </li>
+                        <li>
+                            <a href="#aa">.mml</a> 
+                        </li>
+                    </ul> 
+                </li>	
 
-<div id="worksheet" class="hidden">
-    {% for cell in cells %}
-        {{cell|safe}} 
-    {% endfor %}
-</div>
+                <li> 
+                    <a href="#">Help</a> 
+                </li>	
+
+                <li> 
+                    <a href="#">Debug</a> 
+                    <ul> 
+                        <li><a href="#">Show sexp</a></li> 
+                        <li><a href="#">Show object</a></li> 
+                        <li><a href="#">Rebuild sexp</a></li> 
+                        <li><a href="javascript:heartbeat()">Server heatbeat</a></li> 
+                    </ul> 
+                </li>	
+            </ul> 
+
+            <!-- User Info -->
+            <div class="userinfo">
+                {% if user.is_authenticated %}
+                    <a href="{% url profile %}">{{ user.username }}</a>
+                    {% if user.is_staff %}
+                    <a href="/admin">Admin</a>
+                    {% endif %}
+                    <a class="logout" href="{%url auth_logout %}">Logout</a>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+
+    <!-- South -->
+    <div class="ui-layout-south">
+        <div id="quickbar">
+        </div>
+    </div>
+
+    <!-- East -->
+    <div class="ui-layout-east">
+
+        <div id="worksheet_sidebar">
+
+            <div class="buttons">
+                <button class='math noselect'>
+                    <img src="{{ STATIC_URL }}img/icons/sigma.png"/>
+                </button>
+
+                <button class='rules noselect'>
+                    <img src="{{ STATIC_URL }}img/icons/transform.png"/>
+                </button>
+
+                <!--<button class='notebook'>-->
+                    <!--<img src="/static/img/icons/notebook.png"/>-->
+                <!--</button>-->
+
+                <!--<button class='settings'>-->
+                    <!--<img src="/static/img/icons/settings.png"/>-->
+                <!--</button>-->
+
+                <button class='keys noselect'>
+                    <img src="{{ STATIC_URL }}img/icons/keys.png"/>
+                </button>
+
+                <button id="log_indicator" class='terminal noselect'>
+                    <img src="{{ STATIC_URL }}img/icons/terminal.png"/>
+                </button>
+
+                <!--<button class='snapshot'>-->
+                    <!--<img src="/static/img/icons/snapshot.png"/>-->
+                <!--</button>-->
+            </div>
+
+            <div id="assum_palette" class="palette hidden"></div>
+            <div id="math_palette" class="palette hidden"></div>
+            <div id="rules_palette" class="palette hidden">
+                <form id="searchform">
+                    <input id="rulesearch" type="search"></input>
+                </form>
+
+                <div id="rules">
+                </div>
+            </div>
+            <div id="settings_palette" class="palette hidden"></div>
+
+            <div id="keys_palette" class="palette hidden">
+                <h3>Keyboard Shortcuts</h3>
+                <dl class="list">
+                </dl>
+            </div>
+
+            <div id="terminal_palette" class="palette hidden">
+                <h3>Error Log</h3>
+                <div class="history"></div>
+                <div id="errlog"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- West -->
+    <!--<div class="ui-layout-west">West</div>-->
+
+    <!-- Floating Selection List -->
+    <div id="selectionlist">
+    </div>
+
+    <!-- Command Line (Absolutely Positioned) -->
+    <div id="cmd" class="cmd hidden">
+        <div id="cmderror" class="hidden">
+            <div class="ui-state-error ui-corner-all" style="padding: 0 .7em;"> 
+                <p>
+                <span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span> 
+                <strong>Error:</strong>
+                    <span id="cmderrormsg">Sample ui-state-error style.</span>
+                </p>
+            </div>
+        </div>
+        <form id="cmdline" action="#">
+            <input id="cmdinput" type="text"></input>
+        </form>
+    </div>
+
+    <!-- MathML Compatability Notice -->
+    <div id="dialog" class="hidden">
+            It appears that your browser doesn't support MathML. To make
+            sure, if mathematics displayed on the right does not match the image
+            on the left then your browser does not support enough MathML to
+            use the worksheet.
+
+            <table style="width: 100%; text-align: center;">
+                <tr>
+                <td>
+                    <img src="{{ STATIC_URL }}img/mathml_test.png"/>
+                </td>
+                <td>
+                    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                      <mrow>
+                        <msup>
+                          <mi>x</mi>
+                          <mn>2</mn>
+                        </msup>
+                        <msup>
+                          <mi>y</mi>
+                          <mn>2</mn>
+                        </msup>
+                      </mrow>
+                    </math>
+                </td>
+                </tr>
+            </table>
+    </div>
 
 {% endblock %}

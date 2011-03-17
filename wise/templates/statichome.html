@@ -1,0 +1,265 @@
+<!DOCTYPE HTML> 
+<html lang="en"> 
+<head> 
+<title>Wise</title> 
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+<meta http-equiv="Content-Language" content="en-us"> 
+<meta name="description" content=""> 
+<meta name="keywords" content=""> 
+
+<link  href="http://fonts.googleapis.com/css?family=Crimson+Text:regular,400italic,600,600italic,700,700italic" rel="stylesheet" type="text/css" >
+<link href='http://fonts.googleapis.com/css?family=Droid+Serif' rel='stylesheet' type='text/css'>
+<!--<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script> -->
+ 
+<style type="text/css">
+
+/* Reset CSS */
+html{color:#000;background:#FFF;}body,div,dl,dt,dd,ul,ol,li,pre,code,form,fieldset,legend,input,button,textarea,p,blockquote,th,td{margin:0;padding:0;}table{border-collapse:collapse;border-spacing:0;}fieldset,img{border:0;}address,caption,cite,code,dfn,em,th,var,optgroup{font-style:inherit;font-weight:inherit;}del,ins{text-decoration:none;}li{list-style:none;}caption,th{text-align:left;}q:before,q:after{content:'';}abbr,acronym{border:0;font-variant:normal;}sup{vertical-align:baseline;}sub{vertical-align:baseline;}legend{color:#000;}input,button,textarea,select,optgroup,option{font-family:inherit;font-size:inherit;font-style:inherit;font-weight:inherit;}input,button,textarea,select{font-size:100%;}
+a {outline: none;} /* Gets rid of Firefox's dotted borders */
+a img {border: none;} /* Gets rid of IE's blue borders */
+
+body {
+    font-family: 'Droid Serif', Georgia, serif;
+    font-size: 12pt;
+    height: 100%;
+    width: 100%;
+    padding: 10px;
+    background: -webkit-gradient(linear, left top, left bottom, from(#F0F1EB), to(white));
+    background: -moz-linear-gradient(top, #F0F1EB, white);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#F0F1EB, endColorstr=#FFF);
+   -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#F0F1EB, endColorstr=#FFF)";
+    overflow-x: hidden;
+}
+
+h1 {
+  color: #000;
+}
+
+strong {
+  color: black;
+}
+
+#foot {
+  font-size: 12px;
+  padding-top: 25px;
+  text-align: center;
+}
+
+#main {
+  margin: 0 auto;
+  width: 878px;
+}
+
+.vid {
+  float: right;
+  margin-right: 20px;
+  margin-top: 20px;
+}
+
+.label {
+  float: right;
+  font-weight: bold;
+  margin-right: 20px;
+  margin-top: 20px;
+  line-height: 200px;
+}
+
+#top {
+  height: 230px;
+  padding-top: 25px;
+}
+
+#menu {
+  margin-top: 30px;
+  height: 48px;
+  padding-top: 21px;
+  padding-right: 20px;
+  text-align: right;
+  font-weight: bold;
+}
+
+#menu a, a.selected, #logobox {
+  margin-left: 10px;
+}
+
+#logobox {
+  display: inline-block;
+  width: 200px;
+  height: 25px;
+}
+
+a {
+  color: #333;
+  text-decoration: none;
+  -webkit-transition: color 300ms ease-in 0s, border-bottom 200ms ease-in 0s;
+  -moz-transition: color 300ms ease-in 0s, border-bottom 200ms ease-in 0s;
+  -o-transition: color 300ms ease-in 0s, border-bottom 200ms ease-in 0s;
+  transition: color 300ms ease-in 0s, border-bottom 200ms ease-in 0s;
+}
+
+#menu a:hover {
+  border-bottom: 3px solid black;
+}
+
+#get {
+  margin-top: 25px;
+  padding: 10px 20px;
+  border-top: 2px dotted #ddd;
+  border-bottom: 2px dotted #ddd;
+}
+
+.feature {
+  float: left;
+  background: url('../images/check.png') left center no-repeat;
+  padding: 2px 25px;
+  padding-right: 10px;
+  margin: 4px 2px;
+  line-height: 20px;
+  height: 20px;
+}
+
+#get-left {
+  width: 603px;
+  float: left;
+  padding-bottom: 15px;
+}
+
+#get-right {
+  width: 235px;
+  float: left;
+  text-align: center;
+  padding-top: 15px;
+}
+
+#get-right a {
+    margin-bottom: 30px;
+    border: 1px dashed #555;
+    padding: 5px;
+}
+
+#get-right a:hover {
+    background-color: #ccc;
+}
+
+#overview {
+  height: 200px;
+}
+
+.overview-item {
+  width: 399px;
+  padding: 20px;
+  float: left;
+}
+
+.clear {
+  height: 0px;
+  clear: both;
+}
+
+.logo {
+  font-family: 'Crimson Text', serif;
+  font-size: 50pt;
+  font-weight: 400;
+  text-shadow: 4px 4px 4px #bbb;
+  float: left;
+  margin-left: 30px;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  user-select: none; 
+}
+
+.italic {
+  font-style: italic;
+}
+
+
+</style>
+ 
+ 
+</head> 
+ 
+<body> 
+ 
+<div id="main"> 
+    <span class="logo"><span class="italic">Wis</span>&epsilon;</span>
+
+  <div id="menu"> 
+      <div id="logobox"></div> 
+    0.1.2
+    <a href="http://sdiehl.github.com/wise/overview">Docs</a> 
+    <a href="http://sdiehl.github.com/wise/install.html">Install</a> 
+    <a href="https://github.com/sdiehl/wise/archives/master">Download</a> 
+    <a href="https://github.com/sdiehl/wise">Github</a> 
+  </div> 
+
+<div id="banner"></div> 
+  <div id="get"> 
+    <div id="get-left"> 
+        <div class="feature">
+        <strong>Wise</strong> is a web framework for doing
+        simple symbolic calculations and sharing web documents 
+        with mathematical content.
+        </div> 
+    </div> 
+    <div id="get-right">
+        <a href="/invite" id="use">Try online</a><br/>
+        </div>
+    <div class="clear"></div> 
+  </div> 
+  <div> 
+    <div class="vid"> 
+      <iframe src="http://player.vimeo.com/video/20334749?title=0&amp;byline=0&amp;portrait=0" width="400" height="250" frameborder="0"></iframe> 
+    </div> 
+    <div class="label">Watch the Screencast</div> 
+    <div class="clear"></div> 
+  </div> 
+  
+  <div id="overview"> 
+    <div class="overview-item"><strong>Functional Backend</strong> 
+      <p>The mathematical logic in Wise is all written in the
+      functional programming language
+      <strong><a href="http://code.google.com/p/pure-lang">Pure</a></strong>, a dynamically typed language with Haskell style
+      syntax and native term rewriting functionality.
+    </div> 
+    <div class="overview-item"><strong>Two Dimensional Interaction</strong> 
+      <p>Mathematical expressions can be entered and manipulated
+      using a graphical interface. The system is modeled after  
+      “Click and Prove” interfaces found in some theorem provers.
+    </div> 
+    <div class="overview-item"><strong>Extensible</strong> 
+        <p>New mathematics can be added without ever writing a
+        single line of Python. Wise attempts to automatically
+        build a graphical interface around new symbolic
+        functionality.
+        </p>
+    </div> 
+    <div class="overview-item"><strong>Open Source Stack</strong> 
+        <p>Wise runs on top of Python/Django with the notebook
+        written in Javascript and jQuery. MathML
+        is used to render mathematics directly in the browser.
+        Content can also be semantically annotated using OpenMath 
+        CDs.</p>
+    </div> 
+  </div> 
+  
+</div> 
+<div class="clear" id="foot">
+    ©2010-2011 <a href="http://www.stephendiehl.com">Stephen Diehl</a>
+ 
+<script type="text/javascript"> 
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-11237397-6']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script> 
+</body> 
+</html> 

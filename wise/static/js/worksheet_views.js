@@ -103,14 +103,14 @@ var LoggerView = Backbone.View.extend({
       "click .expandtrace": "toggleTrace",
     },
 
-    colors: ['yellow',      // Warnings 
+    colors: ['yellow',      // Warnings
              'lightsalmon', // Errors
              'red'          // Fatal Errors
             ],
 
     colorstate: 0,
     activetrace: null,
-    
+
     initialize: function() {
         _.bindAll(this, 'newError','makeStackTrace');
         this.model.bind('add',this.newError);
@@ -204,24 +204,26 @@ var SidebarView = Backbone.View.extend({
   },
 
    initialize: function() {
-        // Make the buttons jQuery-ui buttons
-        //this.$('.buttons button').button();
-
+        this.toggleState = 0;
        _.bindAll(this, 'toggleMath', 'onDisableMath');
         Wise.Settings.bind('change:DISABLE_MATH', this.onDisableMath); 
-
    },
 
    onDisableMath: function(model, state) {
         // If the server is unavailble to perform operations then
         // disable related panels
-
-        this.$('.math').button({disabled: state});
-        this.$('.rules').button({disabled: state});
+        //this.$('.math').button({disabled: state});
+        //this.$('.rules').button({disabled: state});
    },
 
    expandAllMath: function() {
-        this.$('#math_palette .panel_frame').toggle();
+        if(this.toggleState) {
+            this.$('#math_palette .panel_frame').hide();
+        } else {
+            this.$('#math_palette .panel_frame').show();
+        }
+
+        this.toggleState ^= 1;
    },
 
    toggleMath: function() {
@@ -320,7 +322,7 @@ var CellView = Backbone.View.extend({
   },
 
   events: {
-    "click .node-outline": "collapse",
+    "contextmenu .node-outline": "collapse",
     "click .hide": "toggleAssums",
     "click .add": "insertion_menu",
     "click .del": "destroy",
@@ -356,8 +358,9 @@ var CellView = Backbone.View.extend({
     new_line('eq', this.model.cid);
   },
 
-  collapse: function() {
-    this.$('.equations').toggle(); 
+  collapse: function(e) {
+    this.$('.equations').toggle();
+    return false;
   },
 
   toggleAssums: function() {
@@ -447,7 +450,7 @@ var NodeSelectionView = Backbone.View.extend({
   className: "nodeselectbutton",
 
   events: {
-    "click .ui-icon-circle-close": "unselectNode",
+    "click": "unselectNode",
     "mouseover": "highlight",
     "mouseout": "unhighlight",
   },
@@ -483,7 +486,7 @@ var NodeSelectionView = Backbone.View.extend({
 
   // If 'selected' is changed on the model then destory self
   unselect: function (e, val) {
-    if (val == false) {
+    if (val === false) {
       this.remove();
     }
   },
@@ -524,14 +527,29 @@ var CmdLineView = Backbone.View.extend({
         _.bindAll(this, 'hide','show');
     },
 
+    error: function(errormsg) {
+        $("#cmderrormsg").text(errormsg);
+        $("#cmderror").fadeIn();
+    },
+
     evaluate: function(e) {
         var input = this.$('#cmdinput');
-        use_infix( input.val() );
-        this.hide();
+        var success = use_infix( input.val() );
+
+        if ( success ) {
+            this.hide();
+        }
+
+        // keeps form from being submitted
         return false;
     },
 
+    hideError: function() {
+        $("#cmderror").fadeOut();
+    },
+
     hide: function() {
+        $("#cmderror").hide();
         this.el.hide();
         this.$('#cmdinput').blur();
         this.$('#cmdinput').val("");

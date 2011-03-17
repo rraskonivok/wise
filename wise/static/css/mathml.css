@@ -24,3 +24,7 @@ mfrac>*{
 mst>* {
     padding: 5px;
 }
+
+.hiddenmath { 
+   opacity: 0.1; 
+}

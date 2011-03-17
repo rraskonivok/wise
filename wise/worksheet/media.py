@@ -29,11 +29,12 @@ MEDIA_BUNDLES = (
      "url": MEDIA_URL + "css/",
      "minify": False,
      "files": (
+        'fonts.css',
         'math.css',
         'mathml.css',
-#        'opera_mathml.css',
         'worksheet.css',
-        'fonts.css',
+        'autocomplete.css',
+        'superfish.css',
      )},
 
     # Base Javascript libraries, mostly jQuery plugins, backbone
@@ -47,15 +48,15 @@ MEDIA_BUNDLES = (
         'jquery.js',
 #        'xml.js',
         'jquery-ui.js',
-#        'jquery.ui.position.js',
 #        'dimensions.js',
+        'layout.js',
         'json2.js',
         'underscore.js',
         'backbone.js',
         'async.js',
-        'qtip.js',
         'pnotify.js',
         'keys.js',
+        'hoverintent.js',
      )},
 
     {"type": "javascript",
@@ -77,5 +78,6 @@ MEDIA_BUNDLES = (
         'globals.js',
         'keyshortcuts.js',
         'worksheet_init.js',
+        'autocomplete.js',
      )},
 )

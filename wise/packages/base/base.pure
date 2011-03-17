@@ -9,9 +9,15 @@
 */
 
 using maths;
-using system;
-using simp;
+using classify;
 
+using pow;
+using rat;
+using complex;
+using trig;
+using numtheory;
+
+using simp;
 using poly;
 using indexed;
 
@@ -30,6 +36,36 @@ nonfix False;
 
 /*
   -----------------------
+  Predicates
+  -----------------------
+*/
+
+using predicates;
+
+/*
+  -----------------------
+  Sign Hinting
+  -----------------------
+*/
+
+// 1  Positive
+// 0  Zero
+// -1 Negative
+
+Sign x::number          = sgn x;
+Sign (abs x)            = abs (Sign x); // Evaluates to 0 if x==0
+Sign ( x^(n::even) )    = abs (Sign x);
+
+evalb IsPositive x = Sign x > 0 if Sign haspattern x;
+                   = IsPositive x otherwise;
+
+evalb IsNegative x = 1 if Sign x < 0;
+                   = IsNegative x otherwise;
+
+evalb IsZero x     = 1 if Sign x == 0;
+                   = IsZero x otherwise;
+
+/* -----------------------
   Numeric Constants
   -----------------------
 */
@@ -58,17 +94,11 @@ evalf M_E = e;
 evalf M_I = i;
 using namespace;
 
-/*evalf (a%b) = double $ (double a)/(double b);*/
-
 /*
   -----------------------
   Numeric Function Values
   -----------------------
 */
-
-/*evalf' = reduce with*/
-    /*f@_ u = evalf (f u) if atomp u || numberp u;*/
-/*end;*/
 
 using namespace constants;
     // Specific Values of Exp
@@ -88,15 +118,14 @@ using namespace constants;
     evalf n = double n if numberp n;
     evalf x = x if varp x;
 
-    evalf (Sin n) = sin n if numberp n;
-    evalf (Cos n) = cos n if numberp n;
+    /*evalf (Sin n) = sin n if numberp n;*/
+    /*evalf (Cos n) = cos n if numberp n;*/
 
     evals (Sin 0) = 0;
     evals (Cos 0) = 1;
     evals (Sin (n::int*M_PI)) = 0;
     evals (Cos (n::int*M_PI)) = (-1)^n;
 using namespace;
-
 
 /*
   -----------------------
@@ -113,7 +142,7 @@ eqp _            = 0;
 eq_add (eq lhs rhs) x = eq (lhs+x) (rhs+x);
 eq_sub (eq lhs rhs) x = eq (lhs+(-x)) (rhs+(-x));
 eq_mul (eq lhs rhs) x = eq (lhs*x) (rhs*x);
-eq_div (eq lhs rhs) x = eq (lhs/x) (rhs/x);
+eq_div (eq lhs rhs) x = eq (lhs%x) (rhs%x);
 eq_map (eq lhs rhs) op = eq (op $ lhs) (op $ rhs);
 
 // Zero out RHS.
@@ -126,9 +155,9 @@ eq_lzero (eq lhs rhs) = eq 0 (-lhs) if `(rhs == 0);
                       = eq 0 (rhs - lhs) if ~(numberp lhs) || `(lhs ~= 0);
                       = eq lhs rhs otherwise;
 
-
 // Reflexivity, binds universally
 eq_ref x = (eq x x);
+
 // Symmetric and Transitive, bind on equations
 eq_sym (eq lhs rhs) = (eq rhs lhs);
 eq_tran (eq l1 r1) (eq l2 r2) = (eq l1 l2) if r1 === r2;
@@ -141,21 +170,20 @@ eq_tran (eq l1 r1) (eq l2 r2) = (eq l1 l2) if r1 === r2;
 eq_normal (eq lhs rhs) = (eq rhs lhs) if (complexity lhs) < (complexity rhs);
                        = (eq lhs rhs) otherwise;
 
-// Null test to determine whether we can positively assert that
-// the LHS and RHS of the equation are equal.
-eq_test (eq lhs rhs) = 1 if (lhs === rhs);
-                     = 1 if `(lhs == rhs);
-                     = nan otherwise;
+// Use pattern matching to determine whether two sides of an
+// equation are possibly equal.
+eq_test (eq x x) = 1;
 
 /*
+    --------------------
     Complex Numbers
     --------------------
 */
 
-evals real complex x y = x;
-evals real x = Re x;
-evals imag complex x y = y;
-evals imag x = Im x;
+evals Real complex x y = x;
+evals Real x = Re x;
+evals Imag complex x y = y;
+evals Imag x = Im x;
 
 /*__show__ (complex x y) = sprintf "%s + i %s" (str x, str y) if all atomp [x,y];*/
                        /*= sprintf "(%s) + i(%y)" (str x, str y) otherwise;*/
@@ -177,52 +205,12 @@ complex_trig_expand = reduce with
 end;
 
 complex_polar_to_rect = reduce with
-    mul r (exp (mul I theta)) = complex;
+    mul r (exp (mul M_I theta)) = complex;
 end;
 
-complex_split (complex x y) = x + (I * y);
-
-/* 
-    Combine rational quantities by the rules:
-    -\frac{a}{b} = \frac{-a}{b}
-    \frac{a}{b} + \frac{c}{d} = \frac{ad+bc}{bd}
-    \frac{a}{b} \cdot \frac{c}{d} = \frac{ac}{bd}
-    \frac{a}{b} \div \frac{c}{d} = \frac{ad}{bc}
-*/
-
-combine_rational X = reduce X
-with
-    -(a/b) = (-a)/b;
-    (a/c) + (b/c) = (a+b)/c;
-    (a/b) + (c/d) = (a*d+b*c)/(b*d);
-    (a/b) / (c/d) = (a*c)/(b*d);
-end;
+complex_split (complex x y) = x + (M_I * y);
 
 /*
-  ----------------------
-   Rational Manipulation
-  ----------------------
-*/
-
-// Convert numerical primitives to rational types.
-to_rational X::int = rational X;
-to_rational X::double = rational X;
-to_rational X::bigint = rational X;
-to_rational x = x/1;
-
-split_rational X = reduce X
-with
-        (-a) % b = -(a / b);
-        (a+b) % c = (a / c) + (b / c);
-        (a*b) % (c*d) = (a / c)*(b / d);
-end;
-
-seperate_rational X = reduce X
-with
-    a/b = a*(1/b) if ~(a === 1);
-end;
-
-/* 
   ----------------------------------
   Commutative Variable Manipulation
   ----------------------------------
@@ -230,7 +218,7 @@ end;
 
 commute_elementary (x+y) = y+x;
 commute_elementary (x-y) = (-y)+x;
-commute_elementary (x*y) = y*x;
+commute_elementary (x::commutative * y::commutative) = y*x;
 commute_elementary x = x;
 
 associate_add_left = reduce with
@@ -310,16 +298,14 @@ with
 end;
 
 /*
-    ----
+    --------------------
     Misc
-    ----
+    --------------------
 */
 
 
 // Factorial function via accumulator outputs a bigint;
-evalf (factorial n) = loop 1 (bigint n) with
-  loop p n = if n>0 then loop (p*n) (n-1) else p;
-end;
+evalf (Fact n::nonnegative_int) = factorial n;
 
 /*__show__ (factorial x) = sprintf "%s!" (str x) if atomp x;*/
                   /*= sprintf "(%s)!" (str x) otherwise;*/
@@ -329,8 +315,8 @@ nfunc f n p = nfunc (f p) (n-1) p if n > 1;
 
 ntuple n p = nfunc Tuple n p;
 
-GammaF(1/2) = Sqrt pi;
-GammaF(0.5) = Sqrt pi;
+GammaF(1/2) = Sqrt M_PI;
+GammaF(0.5) = Sqrt M_PI;
 
 expand_abs = reduce with
     abs (mul x*y) = abs(x) * abs(y);

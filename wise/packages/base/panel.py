@@ -17,17 +17,18 @@ ph = objects.Placeholder()
 #--------------------
 
 ops = (
-        ('buttons/add.xml',       objects.Addition),
-        ('buttons/mul.xml',       objects.Product),
-        ('buttons/pow.xml',       objects.Power),
-        ('buttons/neg.xml',       objects.Negate),
-        ('buttons/div.xml',       objects.Rational),
-        ('buttons/complex.xml',   objects.ComplexCartesian),
-        ('buttons/sqrt.xml',      objects.Sqrt),
-        ('buttons/exp.xml',       objects.Exp),
-        ('buttons/log.xml',       objects.Ln),
-        ('buttons/nroot.xml',     objects.NRoot),
-        ('buttons/abs.xml',       objects.Abs),
+        ('buttons/add.xml'          , objects.Addition)         ,
+        ('buttons/mul.xml'          , objects.Product)          ,
+        ('buttons/pow.xml'          , objects.Power)            ,
+        ('buttons/neg.xml'          , objects.Negate)           ,
+        ('buttons/div.xml'          , objects.Rational)         ,
+        ('buttons/complex.xml'      , objects.ComplexCartesian) ,
+        ('buttons/complexpolar.xml' , objects.ComplexPolar)     ,
+        ('buttons/sqrt.xml'         , objects.Sqrt)             ,
+        ('buttons/exp.xml'          , objects.Exp)              ,
+        ('buttons/log.xml'          , objects.Ln)               ,
+        ('buttons/nroot.xml'        , objects.NRoot)            ,
+        ('buttons/abs.xml'          , objects.Abs)              ,
 )
 
 Algebraic = MathMLPanel(name="Algebraic", objects=ops)

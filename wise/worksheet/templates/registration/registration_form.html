@@ -1,15 +1,42 @@
 {% extends "base.tpl" %}
-{% load i18n %}
+
+{* Overload Header *}
+{% block header %}
+{% endblock %}
+
+{% block inline_css %}
+<style>
+    #box {
+        width: 25% !important;
+        min-width: 100px !important;
+    }
+</style>
+{% endblock %}
+
+{% block inline_js %}
+<script>
+    $(document).ready(function() {
+        $("#box").removeClass('hidden');
+    });
+</script>
+{% endblock %}
 
 {% block box %}
 <div class="block" id="block-login">
+    <h1>Register</h1>
     <div class="content login">
-    <h3>Login</h3>
+
+    <form class="form group" method="post" action=".">
+        <table>
+      {{ form.as_table }}
+      </table>
+
+      <input type="submit" value="Create Account" />
+    </form>
 
 
-<form method="post" action=".">
-  {{ form.as_p }}
+   <p><a href="{% url auth_password_reset %}">Already Have An Account?</a>
 
-  <input type="submit" value="{% trans 'Submit' %}" />
-</form>
+    </div>
+</div>
 {% endblock %}

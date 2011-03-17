@@ -20,19 +20,26 @@ diffp _ = 0;
 
 evals (diff f x) = diff_normal (diff f x);
 
-diff_normal = reduce with
-    diff x x = 1;
+diff_normal X = reduce X with
+    1*x = x;
+    0*x = 0;
+    x*1 = x;
+    x*0 = 0;
 
-    diff (-f) x = - diff f x;
-    diff (c::int) x = 0;
-    diff (c::int *u) x = c * (diff u x);
+    diff (c::constant) x = 0;
+    diff (-f) x = simplify_negation $ - diff f x;
+
+    // Pull constants out of derivative
+    diff (f * c::constant) x = c * (diff f x);
+    diff (c::constant * f) x = c * (diff f x);
 
     // Power Rule
-    diff (x^(n::int)) x = n * (x^(n-1)) if n ~= 0;
-                        = 0 otherwise;
+    diff x x = 1;
+    diff (x^(n::constant)) x = n * (x^(n-1)) if n ~= 0;
+                             = 0 otherwise;
 
-    diff (x^(n::double)) x = n * (x^(n-1)) if n ~= 0;
-                           = 0 otherwise;
+    diff (x^(n::constant)) x = n * (x^(n-1)) if n ~= 0;
+                             = 0 otherwise;
 
     diff (x^x) x = x^x * (1+ Ln x);
 
@@ -58,10 +65,11 @@ diff_normal = reduce with
     diff (u*v) x = (diff u x) * v + u * (diff v x);
 
     // Quotient rule
-    diff (u/v) x = (((diff u x)*v) - (u*(diff v x)))/(v^2);
+    diff (u::constant % v) x = simplify_rational $ (-(u*(diff v x))) % (v^2);
+    diff (u%v) x = simplify_rational $ (((diff u x)*v) - (u*(diff v x))) % (v^2);
 
     // Chain rule
-    diff (func@_ u) x = (diff (func u) u) * (diff u x) if ~(diffp (func u));
+    diff (f@_ u) x = (diff (f u) u) * (diff u x) if ~(diffp (f u));
                       = 0 otherwise;
 end;
 
@@ -71,7 +79,7 @@ end;
 
 // At some point I'll throw together an implementation of the 
 // Risch-Norman algorithm, but until then just fall back on 
-// table lookup.
+// pattern matching and table lookup.
 
 evals (ndiff f x 0) = f;
 evals (ndiff f x n) = evals (foldl diff f (repeatn n x));
@@ -80,9 +88,28 @@ evals (integrate f x) = int_normal (integrate f x);
 int_normal = reduce with
     integrate (1/Sqrt(1+x^2)) x = Asinh x;
     integrate (1/Sqrt(x^2+1)) x = Asinh x;
-    integrate x x = x^2;
-    integrate (x^(n::int)) x = x^(n+1)/(n+1) if n ~= -1;
-    integrate (x^(-1)) x = ln x;
-    integrate (f+g) x = integrate f x + integrate g x;
-    integrate (x^(n::double)) x = x^(n+1)/(n+1) if n ~= -1;
+    integrate x x               = (x^2) % 2;
+    integrate (x^(n::int)) x    = x^(n+1) % (n+1) if n ~= -1;
+    integrate (x^(n::double)) x = x^(n+1) % (n+1) if n ~= -1;
+
+    // General forms
+    integrate (-f) x              = simplify_negation $ - (integrate f x);
+    integrate (f+g) x             = integrate f x + integrate g x;
+    integrate (f % c::constant) x = simplify_rational $ (integrate f x) % c;
+
+    // Pull constants out of integral
+    integrate (f * c::constant) x = c * (integrate f x);
+    integrate (c::constant * f) x = c * (integrate f x);
+
+    // Logarithmic integrals
+    integrate (x^(-1)) x        = Ln x;
+    integrate (1 % x) x           = Ln x;
+
+    // Trigonometric integrals
+    integrate (x^(-1)) x        = Ln x;
+    integrate (Sin x) x           = - ( Cos x );
+    integrate (Cos x) x           = Sin x;
+
+    // Constant integrals
+    integrate f x = f*x if f freeof x;
 end;

@@ -8,12 +8,32 @@
   License, or (at your option) any later version.
 */
 
-export PURE_STACK=1024;
 
-def extends x = x . reduce_with __locals__;
+using dict;
 
 /* ---------------------
-  Evaluation Functions 
+  Types & Predicates
+--------------------- */
+
+// For compatability reasons, Pure 4.7 changes atomp -> symbolp
+atomp = symbolp;
+
+
+/* ---------------------
+  List Operations
+--------------------- */
+
+// Adapted from the Haskell standard library
+span _ xs@[]      = (xs, xs);
+span p xs@(x:xs1) = (x:ys,zs) when (ys,zs) = span p xs1 end if p x;
+                  = ([],xs) otherwise;
+
+groupBy _  []      = [];
+groupBy eq (x:xs)  = (x:ys) : (groupBy eq zs) when
+                     (ys,zs) = span (eq x) xs end;
+
+/* ---------------------
+  Evaluation Functions
 --------------------- */
 
 prefix 1000 evalb; // Evaluation to boolean
@@ -21,33 +41,85 @@ prefix 1000 evali; // Evaluation to integer
 prefix 1000 evalf; // Evaluation to float
 prefix 1000 evals; // Evaluation to symbolic
 
+// Simple fallthrough rules for evals
+evals x = x if varp x;
+evals x::number = x;
+
+evalp (evalb _) = 1;
+evalp (evali _) = 1;
+evalp (evalf _) = 1;
+evalp (evals _) = 1;
+
+// Evaluation functions should only match against explicit
+// algebraic types not against patterns.
+//
+// GOOD     : evalf (Sin x) = ...
+// GOOD     : evalf (Sin x + x^2) = ...
+// BAD      : evalf x::numberp
+// VERY BAD : evalf x
+//
+// All evaluation functions should not match against _ .
+
+revalb = strip_evaulations . propogate_thru (evalb);
+revali = strip_evaulations . propogate_thru (evali);
+revalf = strip_evaulations . propogate_thru (evalf);
+revals = strip_evaulations . propogate_thru (evals);
+
+strip_evaulations = reduce with
+    evalb x = x;
+    evali x = x;
+    evalf x = x;
+    evals x = x;
+end;
+
 /* ------------------------
   Prefix-Infix Conversion
 ------------------------ */
 
-// For all x: i2p . p2i x = p2i . i2p x
+const PREC_MAX = fixity [];
+// (0 = infix, 1 = infixl, 2 = infixr, 3 = prefix, 4 = postfix).
+fixtype x = (fixity x) div 10000;
 
-// Hack to overcome the fact that we can't overload the internal
-// `neg` function for integers
-
-i2p x::bigint |
-i2p x::double |
-i2p x::int    = x if x >= 0;
-              = Neg $ abs x otherwise;
-
-i2p mat::matrix = Mat $ map (MRow . list) $ rows (map i2p mat);
+// For all x:
+//    i2p . p2i x = p2i . i2p x
 
 // Convert Infix to Prefix
-i2p X = reduce X with
-    x + y = add (i2p x) (i2p y);
-    x - y = add (i2p x) (Neg $ i2p y);
-    x * y = mul (i2p x) (i2p y);
+// This converts a infix style expression to a Lisp style prefix
+// form
+//
+// Example:
+// i2p (x+y+z);   // (add x (add y z)
+i2p X = propogate_thru (_i2p) X;
 
-    x / y = rat (i2p x) (i2p y);
-    x % y = rat (i2p x) (i2p y);
+// Hack to overcome the fact that we can't overload the internal
+// `neg` function for integers since they are automatically
+// converted into signed C integers.
 
-    x ^ y = powr (i2p x) (i2p y);
-    - x   = Neg (i2p x);
+// nan technically satifies the 'numberp' predicate, which is
+// odd, but whatever
+_i2p x::bigint |
+_i2p x::double |
+_i2p x::int    = x if nanp x;
+               = x if x >= 0;
+               = Neg $ abs x otherwise;
+
+_i2p mat::matrix = Mat $ map (MRow . list) $ rows (map i2p mat);
+
+_i2p X = reduce X with
+    x + y         = add x y;
+    x - y         = add x (Neg y);
+    x * y         = mul x y;
+
+    x / y         = rat x y;
+    x % y         = rat x y;
+
+    x ^ y         = powr x y;
+    - x           = Neg x;
+    x+:y          = ComplexCartesian x y;
+    x<:y          = ComplexPolar x y;
+
+    // Prettify sqrt
+    Nroot 2 x     = Sqrt x;
 end;
 
 // Convert Prefix to Infix
@@ -58,54 +130,123 @@ p2i X = reduce X with
     mul x y       =  x * y ;
     rat x y       =  x % y ;
     powr x y      =  x ^ y ;
+    Sqrt x        = Nroot 2 x;
 
-    // Disregard partial evaluations
-    evalb x = x;
-    evali x = x;
-    evalf x = x;
-    evals x = x;
+    ComplexCartesian x y = x +:y;
+    ComplexPolar     x y = x <:y;
 
-    Mat xs = matrix xs;
-    MRow xs = xs;
+    // Strip evaluations
+    evalb x       = x;
+    evali x       = x;
+    evalf x       = x;
+    evals x       = x;
+
+    // TODO: this is too slow, just use the C level matrix
+    // constructors in Cython
+    Mat xs        = matrix xs;
+    MRow xs       = rowvector xs;
 end;
 
 /* ------------------------
   Substitution
 ------------------------ */
 
-using dict;
+// TODO: add a sequential substitution command
 subst x e = subst x (hdict e) with
   subst (x@_ y) e = (subst x e) (subst y e);
   subst x e = if member e x then e!x else x;
 end;
 
+// TODO: FIX ME since it breaks the /./ sugar
+/*subst rules t = eval $ sprintf "(%s) with %s end" (str t, join ";" */
+    /*[sprintf "%s = %s" (str l,str r) | l=>r = rules]); */
+
+// TODO: Use the new __with__ command in 4.7
+/*subst_atomic t rules atom = eval $*/
+    /*sprintf "reduce (%s) with %s end" (str t, join ";"*/
+    /*[sprintf "%s = %s if varp %s" (str l,str r,str atom) | l=>r = rules]);*/
+
+// Syntatic sugar for substition commands.
+infix 0 /.;
+infix 0 /./;
+t /. rules = subst rules t;
+t /./ rules = reduce_with rules t;
+
 /*
   ----------------------
-   Expression Detection
+  Lex Ordering
   ----------------------
 */
 
-//Check if an expression `x` has a subexpression `e`.
-contains x e = detect x with
-    detect (func@_ a) = ((func$a) === e) || (detect func) || (detect a);
-    detect x = 1 if x === e;
-             = 0 otherwise;
+// The precedence of atoms is given by
+//  Numeric   fixity -1
+//     |
+//  Atoms     fixity -1
+//     |
+//  Funcapps  fixity >0
+namespace lex;
+infix (::>) < > <= >= == ~= ;
+
+ord x y = x ::> y           if numberp x && numberp y;
+        = 1                 if numberp x && ~numberp y;
+        = 0                 if atomp x && numberp y;
+
+        // Order lexicographically i.e. a > b  , ab > acb
+        = __C::strcmp (str x) (str y) < 0   if atomp x && atomp y;
+        = 1                 if atomp x && ~atomp y;
+        = 0                 if ~atomp x && atomp y;
+
+        // Non atomic expressions fall through here, i.e.
+        // x > (x*y)
+        = __C::strcmp (str x) (str y) < 0   otherwise;
+
+eq x y = ord x y ::== ord y x;
+
+x > y = ord x y;
+x < y = ~ord x y;
+x == y = eq x y;
+namespace;
+
+lexo = lex::ord;
+
+/*
+  ----------------------
+  Algebraic Signatures
+  ----------------------
+*/
+
+// Return a list of all variables in the expression
+lsvars X = sort lexo $ map val $ members $ pick X with
+    pick (x@_ y) = (pick x) + (pick y) if applp x;
+                 = (pick y) otherwise;
+     // Map to str so that (<) is defined, not sure
+     // how to define custom ordering for set
+    pick x = set [str x] if atomp x;
+           = emptyset otherwise;
 end;
 
-//Check if an expression `x` has a subatom `e`.
-has x e = detect x e with
-    detect (x@_ y) e = (detect x e) || (detect y e);
-    detect x e = 1 if (x === e) && atomp x;
-               = 0 otherwise;
+varlist = lsvars;
+numvars = (#) . lsvars;
+
+
+lsatoms X = map val $ members $ pick X with
+    pick (x@_ y) = (pick x) + (pick y);
+    pick x = set [str x] if atomp x && arity x == -1;
+           = emptyhset otherwise;
 end;
 
-// Walk the expression tree `x` and return 1 if any element has
-// the given property `p`.
-hasprop x p = detect x e with
-    detect (x@_ y) e = (detect x e) || (detect y e);
-    detect x e = 1 if (p x === 1);
-               = 0 otherwise;
+// Returns the signature consisting of all elements of arity > 0,
+// this consists of all operations in the expression.
+sig X = pick X with
+    pick (x@_ y) = (pick x) + (pick y);
+    pick x = set [str x] if funp x || arity x > -1;
+           = emptyset otherwise;
 end;
+
+// Univariate
+uvarp x = #lsvars x == 1;
+// Multivariate
+mvarp x = ~uvarp x;
 
 // Strip function `head` from expression `ex` returning its
 // arguments in it's place.
@@ -115,7 +256,7 @@ chop_head head ex = _strip ex with
     // (f a b) -> (f a) b
     // (f a)   -> f a
 
-    _strip (func@_ a) = if func === head 
+    _strip (func@_ a) = if func === head
         then a
         else (_strip func) $ (_strip a);
     _strip x = x;
@@ -125,6 +266,106 @@ splice_head f g ex = _repl ex with
     _repl (func@_ a) = (_repl func) $ (_repl a);
     _repl x = if x === f then g else x;
 end;
+
+
+/* --------------------------
+  Expression Trees
+---------------------------- */
+
+// See Cohen: Computer Algebra and Symbolic Computation
+
+// 1. If u is an atomic expression, kind(u) returns the type of expression.
+// 2. If u is a compound expression, kind(u) returns the operator at
+// the root of the expression tree.
+kind (x@_ y) = (kind x) if applp x;
+             = x otherwise;
+kind x       = x;
+
+// Returns the ith operand of u. Index starts at 1.
+operand (x@_ y) n = operand x n if (nargs x) == n;
+                  = y otherwise;
+
+op = operand;
+
+// Flatten an expression into a list from the top down splitting
+// splitting at each occurance of a binary operator `op`.
+
+// Examples:
+// flatten (*) (x*y*z); // [x,y,z]
+// flatten (+) (x+y+z); // [x,y,z]
+// flatten (+) (x+(y*2)+z); // [x,(y*2),z]
+flatten op ex = lst ex with
+    lst (o@_ a b) = lst(a) + lst(b) if o === op;
+    lst a = [a] if varp x;
+end;
+
+/*
+  ----------------------
+  Expression Detection
+  ----------------------
+*/
+
+// Declaring these are infix operators makes the code more
+// expressive, `(x+y) has x` is easier than `has (x+y) x` because
+// I would never remember the argument order!
+infixl 1000 has;
+infixl 1000 contains;
+infixl 1000 freeof;
+/*infixl 1000 hasany;*/
+infixl 1000 hasanyp;
+
+// These can also be used very nicely in list comprehensions.
+// map (has x) [x,y+x,Sin x,z]              // [1,1,1,0]
+// map (Sin (x+y) contains) [x,x+y,y+x,z]   // [1,1,0,0]
+// map (Sin (x+y) contains) [Sin,(+),(*),x] // [1,1,0,1]
+
+// Check if an expression `x` has a subexpression `e`. This
+// matches function applications as well as atoms
+// So `x contains (+)` is valid usage.
+x contains e = detect x with
+    detect (func@_ a) = ((func$a) === e) || (detect func) || (detect a);
+    detect x = 1 if x === e;
+             = 0 otherwise;
+end;
+
+//Check if an expression `x` has a subatom `e`.
+x has e = detect x with
+    detect (x@_ y) = (detect x) || (detect y);
+    detect x = 1 if (x === e) && atomp x;
+             = 0 otherwise;
+end;
+
+x freeof e = ~(x has e);
+
+/*x hasany e = detect x with*/
+    /*detect (x@_ y) = (detect x) || (detect y);*/
+    /*detect x = 1 if (x === e);*/
+             /*= 0 otherwise;*/
+/*end;*/
+
+// Walk the expression tree `x` and return 1 if any element has
+// the given property `p`.
+x hasanyp p = detect x with
+    detect (x@_ y) = (detect x) || (detect y);
+    detect x = 1 if p x === 1;
+             = 0 otherwise;
+end;
+
+propogate_thru rule expr = _rule (expr) with
+    _rule (f@_ x y z)   = rule $ f (_rule x) (_rule y) (_rule z) if ~(f === _rule);
+    _rule (f@_ x y)     = rule $ f (_rule x) (_rule y) if ~(f === _rule);
+    _rule (f@_ x)       = rule $ f (_rule x) if ~(f === _rule);
+    _rule x             = rule x;
+end;
+
+/* --------------------------
+  Rewrite Utilites
+---------------------------- */
+
+infixl 1000 haspattern;
+rule haspattern x = canrewrite rule x;
+
+canrewrite rule x = nargs (rule $ x) == -1;
 
 /* --------------------------
   Expression Complexity
@@ -143,49 +384,240 @@ complexity_sort a b = complexity a <= complexity b;
 // greatest.
 complex_order xs = sort complexity_sort xs;
 
-/* --------------------------
-  Overload Default Arithmetic
----------------------------- */
+/* -----------------------------
+  Overloading Default Arithmetic
+----------------------------- */
 
-namespace cast_division;
+// Overloads exact division to inexact division.
+namespace exact_division;
 infixl (::/) /;
-def a/b              = a ::% b;
+def a/b = a ::% b;
+namespace;
+
+namespace arith;
+infixl (::+) +;
+infixl (::*) *;
+infixl (::/) /;
+infixl (::-) -;
+infixl (::%) %;
+def (+) = (::+);
+def (*) = (::*);
+def (/) = (::/);
+def (-) = (::-);
+def (%) = (::%);
 namespace;
 
 /* --------------------------
   Guard Macros
 ---------------------------- */
 
-// `(x == y) is equivelent to (x == y) === 1
-// This lets us do pseudo duck-typing
-prefix 1001 `;
+// `(x == y) is equivelent to `(x == y) === 1`
+// This lets you call == on arbitary objects without the fear of
+// `failed_cond`. Instead it simply asserts that two objects are
+// not equal if an equivelence relations is not defined between
+// them.
 
-` expr = 1 if (expr === true);
-       = 0 otherwise;
+prefix 1000 `;
+infix (==) `==;
 
-iszero x = `(x == 0);
-isone x = `(x == 1);
-isnegone x = `(x == -1);
+/*def x `== x = 1;*/
+def x `== y = (x == y) === true;
+def ` expr = expr === true;
 
 /* --------------------------
   Dynamic Rule Generation
 ---------------------------- */
 
-// The prototype operator is used to initialize rules dynamially
-infixl 1001 -->;
-prototype x y = x --> y;
+/*infix 0 -->;*/
+infix 13000 %%;
 
-// Extract the lhs/rhs of a prototype
-lhs (l --> r) = str l;
-rhs (l --> r) = str r;
+nonfix __default__;
+def __default__ = 1.0e10;
 
-// Create an instance of our prototype rule
-instance proto = eval $ (lhs proto) + " = " + (rhs proto);
+def lambda x y = __lambda__ [x] y;
+
+head (x --> y) = x;
+tail (x --> y) = y;
+
+extract ( _ %% _ --> _ _ _ __with__ rules ) = rules;
+extract [ _ --> _ _ _ __with__ rules ] = rules;
+extract _                              = throw "Invalid function defition name";
+
+
+// Stack Generation
+// ----------------
+
+// Deconstructors
+
+depth (_ %% x --> _) = x;
+depth _              = 0;
+
+assign (_ %% y) = y;
+
+cmp_depth x __default__ = 0;
+cmp_depth __default__ y = 1;
+cmp_depth x y = depth x < depth y;
+
+stackMatch match ((a %% p) --> tl) = a === match;
+stackMatch _ _                     = 0 otherwise;
+
+stackList x = // Extract the rules out of the __with__ statement
+              catmap extract $ 
+              // Sort using depth deconstructor
+              sort cmp_depth $
+              // Find all stack rules mathching the given symbol
+              filter (stackMatch x) (get_fundef (%%));
+
+buildStackRewrite xs = eval $ '(\X -> reduce X __with__ r) with r = stackList xs end;
+
+// Example:
+// --------
+//    // These must be declared as nonfix so we can pattern
+//    // match against them. Kind of ugly, but it's the 
+//    // cleanest option.
+
+//    nonfix foo_r;
+//
+//    foo_r
+//    %% 1 =
+//    reduce X with
+//        f 1 = 1;
+//    end;
+//
+//    foo_r
+//    %% 2 =
+//    reduce X with
+//        f 2 = 2;
+//    end;
+//
+//    foo_r
+//    %% __default__ =
+//    reduce X with
+//        f _ = 0;
+//    end;
+
+//    foo = buildStackRewrite foo_r;
+
+
+// Rule Composition
+// ----------------
+
+ruleList xs = catmap (extract . get_fundef) xs;
+buildRewrite xs = eval $ '(\X -> reduce X __with__ r) with r = ruleList xs end;
+
+// Example:
+// --------
+
+//    rule1 X = reduce X with 
+//        f 2 = 2;
+//    end;
+//    
+//    rule2 X = reduce X with 
+//        f 1 = 1;
+//        f x = 0;
+//    end;
+//    
+//    const rule = buildRewrite [rule1,rule2];
 
 /* --------------------------
-  Misc. Utilities
+  Function Application
 ---------------------------- */
 
-// Apply a list of arguments
+// Pure is very syntatically extensible. And we shall make
+// use of this extensively.
+
+// Apply a list of arguments to a function
 listapply f [] = f;
 listapply f (x:xs) = listapply (f x) xs;
+
+// Repeated composition of function.
+// Example: (\x -> x^2) @@ 3 $ 2 = 256
+infixl (.) @@;
+f @@ n::int = foldl1 (.) $ repeatn n f;
+
+// Apply a function `f` to `x` until `pred (f^(n-1)) (f^n)` is
+// true.
+appluntil pred f x = app (f x) (f . f $ x) with
+    app a b = a if pred a b;
+            = app b (f b) otherwise;
+end;
+
+// Apply a function `f` to `x` until the numeric difference 
+// between f^(n-1) and f^n is less than epsilon.
+// Example: 
+//      fixednum (1e-15) cos 1; // 0.739085133215161
+fixednum epsilon f x = app (f x) (f . f $ x) with
+    app a b = a if abs(b - a) < epsilon;
+            = app b (f b) otherwise;
+end;
+
+// Be ca
+fixedpoint = appluntil (===);
+
+/* --------------------------
+  Placholders & Slots
+---------------------------- */
+
+nonfix __;
+/*slotted expr (x:xs) = repl X with*/
+    /*repl (x@_ __) = repl x;*/
+/*end;*/
+
+/* --------------------------
+  Pretty Printing
+---------------------------- */
+
+let PPRINT = 0;
+
+// To enable pretty printing in an interactive session:
+// > clear PPRINT
+// > let PPRINT = 1;
+
+/*__show__ x::matrix*/
+/*= strcat [printd j (x!(i,j))|i=0..n-1; j=0..m-1] + "\n"*/
+/*with printd 0 = sprintf "\n%10.5f"; printd _ = sprintf "%10.5f" end*/
+/*when n,m = dim x end if dmatrixp x && PPRINT;*/
+
+/*= strcat [printd j (x!(i,j))|i=0..n-1; j=0..m-1] + "\n"*/
+/*with printd 0 = sprintf "\n%5i"; printd _ = sprintf "%5i" end*/
+/*when n,m = dim x end if imatrixp x && PPRINT;*/
+
+/*= strcat [printd j (x!(i,j))|i=0..n-1; j=0..m-1] + "\n"*/
+/*with printd 0 = sprintf "\n%s"; printd _ = sprintf "%s" end*/
+/*when n,m = dim x end if smatrixp x;*/
+
+/* --------------------------
+  Generalized Variables
+---------------------------- */
+
+
+infix 13000 hasprop;
+
+infixl 13000 is isnot;
+
+x is y = x=>y;
+
+/*__show__ (Gv var _) = str var;*/
+
+isgv (Gv _ _) = 1;
+isgv (Gv _)   = 1;
+isgv _        = 0;
+type gv x     = isgv x;
+
+props (Gv _ p) = p;
+props _        = throw "Cannot access properties";
+
+
+x::gv hasprop p  = (props x) ! p;
+_     hasprop p  = emptyhdict;
+
+/*assume ex = subst ex [*/
+    /*x=>(Gv x $ hdict [commutative=>1])*/
+    /*];*/
+
+assume ex = subst ex [
+    x=>(Gv x $ hdict [commutative=>1])
+    ];
+
+/*assume ex assms = [x is comm*/
+/*assume (x) [(x is commutative), (y is commutative)];*/

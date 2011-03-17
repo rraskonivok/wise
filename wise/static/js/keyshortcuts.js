@@ -214,12 +214,6 @@ Wise.Accelerators = new Backbone.Collection([
     },
 
     {
-        keys: 'o',
-        name: 'New Cell',
-        action: function() { new_line('eq', Wise.last_cell) },
-    },
-
-    {
         keys: 'b',
         name: 'Increment Rows',
         action: _rule('inccols'),
@@ -233,7 +227,7 @@ Wise.Accelerators = new Backbone.Collection([
 
     {
         keys: 'shift+t',
-        name: 'Tranpose',
+        name: 'Transpose',
         action: _rule('transpose'),
     },
 

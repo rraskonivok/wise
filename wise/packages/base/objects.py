@@ -137,6 +137,8 @@ class ComplexCartesian(Complex):
     cd = 'complex1'
     cd_name = 'complex_cartesian'
 
+    pure = 'ComplexCartesian'
+
     def __init__(self, re, im):
         self.re = re
         self.im = im
@@ -165,11 +167,13 @@ class ComplexPolar(Complex):
     theta).
     """
 
-    html = load_haml_template('complex.tpl')
+    html = load_haml_template('complexpolar.tpl')
     pure = 'complex_polar'
 
     cd = 'complex1'
     cd_name = 'complex_polar'
+
+    pure = 'ComplexPolar'
 
     def __init__(self, re, im):
         self.re = re
@@ -512,23 +516,23 @@ class Product(InfixOperation):
 
 class NRoot(Operation):
     """
-    A binary operator which represents its first argument
-    "lowered" to its n'th root where n is the second argument.
+    A binary operator which represents its second argument
+    "lowered" to its n'th root where n is the first argument.
     """
 
     html = load_haml_template('root.tpl')
     cd = 'arith1'
-    cd_name = 'nroot'
+    cd_name = 'Nroot'
 
-    pure = 'NRoot'
+    pure = 'Nroot'
 
-    def __init__(self, base, exponent):
+    def __init__(self, exponent, base):
         self.base = base
         self.exponent = exponent
-        self.terms = [self.base, self.exponent]
+        self.terms = [self.exponent, self.base]
 
     def _pure_(self):
-        return self.po(self.base._pure_() , self.exponent._pure_())
+        return self.po(*purify(self.terms))
 
     def get_html(self):
         c = template.Context({
@@ -699,7 +703,7 @@ class Abs(OutfixOperation):
     cd = 'arith1'
     cd_name = 'abs'
 
-    pure = 'abs'
+    pure = 'Abs'
 
 class Inverse(SupOperation):
     cd = 'arith2'
@@ -1143,5 +1147,9 @@ class FreeFunction(Term):
 class Quote(PrefixOperation):
     symbol = '!'
     pure = 'quote'
+
+class Nan(Term):
+    symbol = 'NaN'
+    pure = 'nan'
 
 #vim: ai ts=4 sts=4 et sw=4

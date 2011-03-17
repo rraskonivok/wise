@@ -166,31 +166,43 @@ panel['Commutative Algebra'] = (
 # -------------------
 
 class split_rational(PublicRule):
-    """
-   Seperates rational expressions according to the rules:
-   $$\\frac{a+b}{c} = \\frac{a}{c} + \\frac{b}{c}$$
    """
-
-    pure = 'split_rational'
+   """
+   pure = 'split_rational'
 
 class combine_rational(PublicRule):
-    """
-   Seperates rational expressions according to the rules:
-   $$\\frac{a}{c} + \\frac{b}{c} =  \\frac{a+b}{c} $$
    """
-    pure = 'combine_rational'
+   """
+   pure = 'combine_rational'
 
-class seperate_rational(PublicRule):
-    """
-   Seperates rational expressions according to the rules:
-   $$\\frac{a}{c}  = a \cdot \\frac{1}{c} $$
+class seperate_numerator(PublicRule):
    """
-    pure = 'seperate_rational'
+   """
+   pure = 'seperate_numerator'
+
+class simplify_rational(PublicRule):
+    """
+    """
+    pure = 'simplify_rational'
+
+class rationalize(PublicRule):
+    """
+    """
+    pure = 'rationalize'
+
+class make_rational(PublicRule):
+    """
+    """
+    pure = 'make_rational'
 
 panel['Rational'] = (
-        ('Split Rational'            , split_rational),
-        ('Combine Rational'         , combine_rational),
-        ('Seperate Rational'        , seperate_rational),
+        ('Make Rational'               , make_rational)      ,
+        ('Split Rational'              , split_rational)     ,
+        ('Combine Rational'            , combine_rational)   ,
+        ('Seperate Numerator'          , seperate_numerator) ,
+        ('Convert to Numeric Fraction' , seperate_numerator) ,
+        ('Simplify Rational'           , simplify_rational)  ,
+        ('Rationalize'                 , rationalize)        ,
 )
 
 # -------------------
@@ -203,11 +215,6 @@ class algebra_normal(PublicRule):
     """
     pure = 'algebra_normal'
 
-class simplify_rational(PublicRule):
-    """
-    """
-    pure = 'simplify_rational'
-
 class simplify_trig(PublicRule):
     """Reduce addition, multiplication, and division to the their
     respective normal forms.
@@ -215,7 +222,6 @@ class simplify_trig(PublicRule):
     pure = 'simplify_trig'
 
 panel['Simplification'] = (
-        ('Simplify Rational'         , simplify_rational),
         ('Simplify Trig Functions'   , simplify_trig),
         ('Algebraic Normal Form'     , algebra_normal),
 )

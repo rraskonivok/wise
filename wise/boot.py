@@ -12,7 +12,7 @@ from worksheet.utils import logger
 
 # No wise includes up here, load everyting lazily
 
-# Note: All these functions are nilpotent unless you specify
+# Note: All these functions are idempotent unless you specify
 # force=True, i.e running them multiple times won't create
 # multiple lookup tables or start multiple interpreters
 

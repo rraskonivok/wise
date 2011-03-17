@@ -1,0 +1,108 @@
+/*
+  -----------------------
+  Predicates
+  -----------------------
+*/
+
+// The Pure Prelude defines the following types | predicates:
+// integer   | intp
+// rational  | rationap
+// real      | realp
+// complex   | complepx
+// number    | numberp
+// fun       | funp
+// lambda    | lambdap
+// thunk     | thunkp
+// var       | varp
+// symbol    | symbolp
+// closure   | closurep
+// type      | typep
+// matrix    | matrixp
+
+// --- Numeric Predicaets ---
+type odd x::int     = x mod 2;
+type even x::int    = ~oddp x;
+
+oddp = typep ('odd);
+evenp = typep ('even);
+
+type zero x::number     = x == 0;
+type nonzero x::number  = ~zerop x;
+type nonzero x::matrix  = 1;
+
+zerop = typep ('zero);
+nonzerop = typep ('nonzero);
+
+onep = `(x == 1);
+
+// --- Sign Predicaets ---
+
+// It's important to note that these are just pattern matching on
+// signed quantities, not determinations of sign. The predicate
+// simply determines wether it matches positive pattern i.e.
+// the  quantity *IS DEFINED* positive. Thus we have
+// results like `positivep x = 0` `negativep x = 0` `zerop x = 
+// 0` which results from the sign of x not being defined.
+
+type positive x::number     = x > 0;
+
+// Try to determine the sign by the hinting function `Sign` and
+// if it is not defined then fall back to evalf which is a
+// potentially expensive operation.
+type positive x             = `(Sign x == 1) || `((revalf x) > 0);
+type negative x::number     = x < 0;
+
+type negative x             = `(Sign x == -1) || `((revalf x) < 0);
+type nonnegative x::number  = ~negativep x;
+
+positivep = typep ('positive);
+negativep = typep ('negative);
+nonnegativep = typep ('nonnegative);
+
+// The x::int is equivelent adding a && intp x guard.
+type positive_int x::int    = positivep x;
+type negative_int x::int    = negativep x;
+type nonzero_int  x::int    = nonzerop  x;
+type nonnegative_int x::int = nonnegativep x;
+
+// --- Constant Predicates ---
+
+// An expression is constant if it contains no free variables.
+// pi, e, inf, ... are constants.
+constantp x::number = 1;
+constantp x         = numvars x == 0;
+
+type constant x    = constantp x;
+type symbolic x    = ~numberp x;
+
+type infinite x    = infp x;
+type finite   x    = ~infp x;
+
+// --- Algebraic Predicates ---
+
+type commutative x::number      = 1;
+type commutative x::matrix      = 0;
+type commutative x::constant    = 1;
+type commutative x::gv          = 1 if (props x) ! (commutative);
+
+commutativep = typep ('commutative);
+
+// --- Matrix Predicates ---
+
+// These are chosen not to overload the constuctor functions
+// (vector, colvector, rowvector)
+type vec   x::matrix    = vectorp x;
+type cvec  x::matrix    = colvectorp x;
+type rvec  x::matrix    = rowvectorp x;
+
+type squarematrix x::matrix = dim x ! 0 == dim x ! 1;
+squarematrixp = typep ('squarematrix);
+
+// --- Logical Predicates ---
+
+type boolean True   = 1;
+type boolean False  = 1;
+
+booleanp = typep ('boolean);
+
+

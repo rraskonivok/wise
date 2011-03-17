@@ -5,12 +5,13 @@ anyjson==0.3
 carrot==0.10.7
 celery==2.1.4
 distribute==0.6.14
+django-axes==1.2.3-rc1
 django-celery==2.1.4
 django-indexer==0.2.1
 django-paging==0.2.2
 django-picklefield==0.1.9
 django-registration==0.7
-django-sentry==1.5.3
+django-sentry==1.6.5
 django-templatetag-sugar==0.1
 gunicorn==0.12.0
 pyparsing==1.5.5

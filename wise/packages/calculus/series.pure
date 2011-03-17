@@ -128,7 +128,7 @@ deg xs = ##(truncate_zeros xs) if indexable xs && finite xs && ~zerop xs;
     /*x%y = x div y if all numberp [x,y] && x mod y == 0;*/
 /*end;*/
 
-is_undefined x = (contains x inf) || (contains x (-inf)) || (contains x nan);
+is_undefined x = (x contains inf) || (x contains (-inf)) || (x contains nan);
 
 // Returns the nth term in the taylor_expansion of f(x) around the
 // point x0.
@@ -211,7 +211,7 @@ series_taylor f x x0 n::int = simplify::basic_simplify $ tay f with
 
     tay e::int = [e];
     tay e::double = [e];
-    tay e = [e] if ~(has e x);
+    tay e = [e] if e freeof x;
     /*tay e = [0,1] if varp e;*/
     tay f = _tay f;
 end;
@@ -248,7 +248,7 @@ prettyseries X = simplify::basic_simplify $ reduce X with
 end;
 
 // Remove zero terms from a FiniteSeries
-rmzeroterms (FiniteSeries xs) = FiniteSeries $ filter (\a -> ~iszero a) xs;
+rmzeroterms (FiniteSeries xs) = SparseFiniteSeries $ filter (\a -> ~iszero a) xs;
 rmzeroterms x = x;
 
 // Convert FiniteSeries into an addition sequence without the

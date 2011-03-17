@@ -39,6 +39,7 @@ cdef extern from "pure/runtime.h":
 
     pure_interp *pure_create_interp(int argc, char *argv[])
     char *str(pure_expr *x)
+    char *lasterr()
 
     #Constructors
     int32_t pure_sym(char *s)

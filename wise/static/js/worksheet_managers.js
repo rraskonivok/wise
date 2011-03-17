@@ -14,12 +14,15 @@ var NodeSelectionManager = Backbone.Collection.extend({
         // Tell all the models they are no longer selected, this
         // will also cause any selection bar DOM elements to kill
         // themselves
-        _.each(this.models, 
-            function(model) {
-               model.unselect();
-            }
-        );
-//        this.remove(this.models);
+        
+        // Create a clone of the models since _.each alters the
+        // elements in places
+        var list = this.models.slice(0);
+        
+        _.each(list, function( selected ) {
+            selected.unselect();
+            Wise.Selection.remove( selected );
+        });
     },
 
     // Convenience wrappers to get the sexp of the 
@@ -31,4 +34,18 @@ var NodeSelectionManager = Backbone.Collection.extend({
     types: function() {
         return this.pluck('type');
     },
+});
+
+// TODO: rename menu controller
+var WorkspaceController = Backbone.Controller.extend({
+
+    routes: {
+        "save": "save", // #save
+    },
+
+    save: function() {
+        Wise.Worksheet.saveAll();
+        window.location.hash = null;
+    },
+
 });

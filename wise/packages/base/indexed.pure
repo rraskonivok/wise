@@ -79,16 +79,13 @@ Summmation f (x:xs) (b:bs) = 0;
 
 evals Sum (x:xs) = sum $ x:xs;
 
-lex a b = str a < str b;
-lexo xs = sort lex xs;
-
 /*
   ----------------------
   Abstract Tensors
   ----------------------
 */
 
-ATensor x co cv = Tensor x (Idx lexo co) (Idx lexo cv);
+ATensor x co cv = Tensor x (Idx co) (Idx cv);
 
 tensor_type x::double |
 tensor_type x::int = (0,0) if numberp x;

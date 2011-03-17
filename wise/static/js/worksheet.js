@@ -14,9 +14,7 @@
 
 $(document).ajaxError(function (e, xhr, settings, exception) {
     Notifications.raise('AJAX_FAIL');
-
     var content = xhr.responseText;
-
 
     // Disable math operations until we restablish a connection
     //Wise.Settings.set({DISABLE_MATH: true});
@@ -75,9 +73,7 @@ function rebuild_node() {
 }
 
 function server_up() {
-  // The server is up because I assert it to be true
   Wise.Settings.set({DISABLE_MATH: false});
-
 }
 
 function sleep(milliseconds) {
@@ -239,7 +235,9 @@ function heartbeat() {
     url: '/hb',
     dataType: 'html',
     type: 'GET',
-    success: function (response) {},
+    success: function () {
+      notify("Server is up.");
+    },
     timeout: function () {
       error("Not responding");
     },
@@ -260,9 +258,9 @@ function apply_rule(rule, operands, callback) {
 
     if (Wise.Selection.isEmpty()) {
       //error("Selection is empty.");
-      $('#selectionlist').effect("highlight", {
-        color: '#E6867A'
-      }, 500);
+      //$('#selectionlist').effect("highlight", {
+        //color: '#E6867A'
+      //}, 500);
 
       return;
     }
@@ -295,13 +293,6 @@ function apply_rule(rule, operands, callback) {
     data: data,
     datatype: 'json',
     success: function (response) {
-        console.log(response);
-
-        if(!response.namespace_index) {
-            alert('null');
-            $("#worksheet").html(response);
-        }
-
         if (response.error) {
           Wise.Log.error(response.error);
           return;
@@ -354,14 +345,10 @@ function apply_rule(rule, operands, callback) {
 
 }
 
-
-function apply_def(def, selections) {
-}
-
 function use_infix(code) {
-  // Sends raw Pure code to the server and attempts to create
-  // new nodes from the result, this function is *NOT* secure
-  // since Pure can execute arbitrary shell commands
+  // Sends raw (with proper security restrictions) Pure code 
+  // to the server and attempts to create new nodes from the 
+  // result
   if (Wise.Selection.isEmpty()) {
     $('#selectionlist').effect("highlight", {
       color: '#E6867A'
@@ -377,7 +364,7 @@ function use_infix(code) {
 
   var operands = Wise.Selection.toArray();
 
-  postdata = {};
+  var postdata = {};
   postdata.namespace_index = NAMESPACE_INDEX;
   postdata.code = code;
 
@@ -393,23 +380,20 @@ function use_infix(code) {
       }
 
       if (response.error) {
-        Wise.Log.error(response.error);
+        Wise.CmdLine.error(response.error);
         return;
+
+      } else {
+        Wise.CmdLine.hide();
+        Wise.CmdLine.hideError();
       }
 
       if(!response.namespace_index) {
           Wise.Log.error('Null namespace index');
           return;
       }
-      NAMESPACE_INDEX = response.namespace_index;
 
-      //if (!data.new_html) {
-      //  error("Statement is not well-formed");
-      //  $("#cmdinput").css('background-color', '#D4A5A5');
-      //  return;
-      //} else {
-      //  hide_cmdline();
-      //}
+      NAMESPACE_INDEX = response.namespace_index;
 
       for (var i = 0; i < response.new_html.length; i++) {
         var preimage = operands[i];
@@ -433,6 +417,7 @@ function use_infix(code) {
       }
     }
   });
+
 }
 
 function apply_transform(transform, operands) {
@@ -598,6 +583,7 @@ function new_cell() {
 
         if (response.error) {
           Wise.Log.error(response.error);
+          return;
         }
 
         if (response.new_html) {
@@ -622,6 +608,7 @@ function new_cell() {
           cell.view = view;
 
           Wise.last_cell = cell;
+
         }
 
     }
@@ -660,13 +647,56 @@ function load_rules_palette() {
     url: '/rule_request/',
     dataType: "html",
     success: function (data) {
-      $("#rules_palette").replaceWith(data);
-      $("#rules_palette").hide();
+      $("#rules").replaceWith(data);
 
       $(".panel_category", "#rules_palette").bind('click', function () {
         $(this).next().toggle();
         return false;
       }).next().hide();
+
+      //$('#rulesearch').keyup(function () {
+          //var query = $("#rulesearch").val();
+          //if (!query) {
+              //$('#rulelist *').show();
+          //} else {
+              //$('#rulelist *').not(":contains('" + query + "')").hide();
+          //}
+      //});
+
+      $('#searchform').submit(function () {
+          var query = $("#rulesearch").val();
+          if (!query) {
+              $('#rulelist *').show();
+          } else {
+              $('#rulelist *').show();
+              $('#rulelist *').not(":contains('" + query + "')").hide();
+          }
+          return false;
+      });
+
+		$(".panel_frame","#rulelist").sortable({
+            scroll: false,
+			connectWith: '#quickbar',
+			forcePlaceholderSize: true,
+			helper: function(e,li) {
+				copyHelper= li.clone().insertAfter(li);
+                // Append to the body to let it pass between
+                // jquery layout panels
+                return $(li).clone().appendTo('body').show();
+			},
+			stop: function() {
+				copyHelper && copyHelper.remove();
+			}
+		}).disableSelection();
+
+		$("#quickbar").sortable({
+            scroll: false,
+			receive: function(e,ui) {
+                $("#quickbar span").unbind();
+                $("#quickbar span").attr('title','');
+				copyHelper= null;
+			}
+		}).disableSelection();
 
     }
   });
@@ -683,14 +713,59 @@ function load_math_palette() {
       //Make the palette sections collapsable
       $(".panel_category", "#math_palette").bind('click', function () {
         $(this).next().toggle();
+        $(this).next().addClass("expanded");
         return false;
       }).next().hide();
 
-      $("#math_palette").resizable({
-        handles: 's'
-      });
+      $('.uniform_button',"#math_palette").addClass("vtip");
 
-      $('#math_palette td').button();
+      var width = "150";
+      var xOffset = -10 - width; // x distance from mouse
+      var yOffset = 10; // y distance from mouse
+
+      // Add math font preload
+      $(".vtip").unbind().hover(
+          function(e) {
+              this.t = this.title;
+              this.title = '';
+              this.top = (e.pageY + yOffset); this.left = (e.pageX + xOffset);
+
+              $('body').append( '<p id="vtip">' + this.t + '</p>' );
+              $('p#vtip').css({
+                  "top":  this.top,
+                  "left": this.left,
+                  "width": 200
+              }).fadeIn("slow");
+
+          },
+          function() {
+              this.title = this.t;
+              $("p#vtip").fadeOut("slow").remove();
+          }
+      ).mousemove(
+          function(e) {
+              this.top = (e.pageY + yOffset);
+              this.left = (e.pageX + xOffset);
+
+              $("p#vtip").css("top", this.top+"px").css("left", this.left+"px");
+          }
+      );
+
+	$("td","#math_palette").sortable({
+        scroll: false,
+		connectWith: '#quickbar',
+		forcePlaceholderSize: true,
+		helper: function(e,li) {
+			copyHelper= li.clone().insertAfter(li);
+            // Append to the body to let it pass between
+            // jquery layout panels
+            return $(li).clone().appendTo('body').show();
+		},
+		stop: function() {
+			copyHelper && copyHelper.remove();
+		}
+	});
+
 
     }
   });
@@ -700,9 +775,94 @@ function load_math_palette() {
 ///////////////////////////////////////////////////////////
 // Command Line
 ///////////////////////////////////////////////////////////
+
 //$('#cmdline').submit(function () {
 //  use_infix($("#cmdinput").val());
 //  $("#cmdinput").blur();
 //  // Inject into scratchpad
 //  return false;
 //});
+//
+
+//var keywords = ['Abs',
+//'Acos'            ,
+//'Acosh'           ,
+//'Asin'            ,
+//'Asinh'           ,
+//'Atan'            ,
+//'Atanh'           ,
+//'ComplexCartesian',
+//'ComplexPolar'    ,
+//'Cos'             ,
+//'Cosh'            ,
+//'Exp'             ,
+//'FinitePoly'      ,
+//'FiniteSeries'    ,
+//'GammaF'          ,
+//'Idx'             ,
+//'Ln'              ,
+//'MRow'            ,
+//'M_E'             ,
+//'M_I'             ,
+//'M_INF'           ,
+//'M_PI'            ,
+//];
+
+
+function mkautocomplete() {
+    $.getJSON('/dict/purelist',
+        function(data) {
+            // _compact in case null finds its way into 'data'
+            keywords = _.compact(data);
+            $("#cmdinput").autocomplete(keywords, {
+                width: 320,
+                max: 4,
+                highlight: false,
+                multiple: true,
+                multipleSeparator: " ",
+                scroll: true,
+                scrollHeight: 300
+            });
+        }
+    );
+}
+
+function makeEditor(o) {
+    var editor = ace.edit(o);
+    editor.setTheme("ace/theme/eclipse");
+}
+
+function rearrange() {
+    // Specify global variable layout
+    layout = $("#container").layout({ 
+    applyDefaultStyles: true 
+
+    ,   north__showOverflowOnHover: true
+
+    ,   fxName: "none"
+    ,	fxSpeed_open:			    750
+    ,	fxSpeed_close:			    1500
+
+	,	east__resizable:		    false
+	,	east__spacing_open:	        20
+	,	east__spacing_closed:	    20
+    ,	east__slideTrigger_open:    "mouseover"
+	,	east__size:				    300
+	,	east__minSize:			    200
+	,	east__maxSize:              Math.floor(screen.availWidth / 2)
+
+	,	south__resizable:		    true
+	,	south__slideable:		    false
+	,	south__spacing_open:	    5
+	,	south__spacing_closed:	    20
+	,	south__minSize:			    50
+	,	south__size:				50
+
+	,	north__resizable:		    false
+	,	north__slideable:		    false
+	,	north__closable:		    false
+	,	north__size:		        30
+
+	,	west__minSize:			    100
+    });
+}

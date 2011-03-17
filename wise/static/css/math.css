@@ -25,26 +25,47 @@
    Node Styling
    ----------------- */
 
+math .selected {
+    margin: -2px;
+    border: 2px solid #B30505;
+}
+
+.toplevel.selected {
+}
+
+.selected < .placeholder {
+    background-color: #B30505;
+}
+
 .placeholder {
-    border: 1px dashed #d4a5a5 !important;
+    border: 1px dashed #B30505 !important;
+
+    height: 10px !important;
+    width: 10px !important;
+
     padding-left: 10px;
     padding-right: 10px;
+
     vertical-align: middle;
-    height: 10px !important;
-    max-height: 10px;
 }
 
 .cell {
     /* Frame around cell */
-    border-right: 5px solid #ccc;
-    border-top: 5px solid #ccc;
+    /*border-right: 5px solid #ccc;*/
+    /*border-top: 5px solid #ccc;*/
+
+	-webkit-box-shadow: 0 5px 5px rgba(0,0,0,.2);
+	-moz-box-shadow: 0 5px 5px rgba(0,0,0,.2);
 
     /* Collapsed height */
-    min-height: 50px;
+    /*min-height: 50px;*/
 
     position: relative;
     padding-top: 10px;
     padding-bottom: 5px;
+    margin-bottom: 25px;
+    background-color: #FFFDF7; 
+
 }
 
 .cell .assumptions {

@@ -1,0 +1,5 @@
+is_mon (x^n::nonnegative_int) = 1 if varp x;
+is_mon x                      = 1 if varp x;
+                              = 0 otherwise;
+
+is_poly xs = all is_mon $ flatten (+) xs;

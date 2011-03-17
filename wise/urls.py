@@ -1,10 +1,19 @@
+from random import randint
+
 from django.conf.urls.defaults import *
 from django.contrib import admin
 from django.conf import settings
 from django.contrib.auth.views import password_change
-from django.contrib.auth.decorators import login_required as secure
+from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-from django.views.generic.simple import direct_to_template
+from django.views.generic.simple import direct_to_template, redirect_to
+
+def secure_class_view(regex, view, name=None):
+    return url(
+        regex,
+        login_required(view.as_view()),
+        name=name
+    )
 
 # Generic Class Views
 from worksheet.views import (HomeView, WorksheetDelete,
@@ -13,20 +22,25 @@ from worksheet.views import (HomeView, WorksheetDelete,
 admin.autodiscover()
 
 urlpatterns = patterns('',
-     url(r'^$',
-         secure(
-             HomeView.as_view()
-         ),
+
+     url(
+         r'^$',
+         'django.views.generic.simple.redirect_to',
+         {'url': settings.HOME_URL },
          name='index'
      ),
 
-     url(r'^home$',
-         secure(
-             HomeView.as_view()
-         ),
-         name='home'
+     url(r'^statichome/$',
+         direct_to_template,
+         {'template': 'statichome.html'},
+         name='statichome'
      ),
 
+     secure_class_view(
+         r'^home$',
+         HomeView,
+         name='home'
+     ),
 
      # REST API  uses django-piston
      (r'^api/', include('wise.api.urls')),
@@ -61,10 +75,9 @@ urlpatterns = patterns('',
      # Worksheet CRUD
 
          # CREATE
-         url(r'^ws/create/$',
-            secure(
-                WorksheetCreate.as_view()
-            ),
+         secure_class_view(
+            r'^ws/create/$',
+            WorksheetCreate,
             name='worksheet_create'
          ),
 
@@ -75,18 +88,16 @@ urlpatterns = patterns('',
                  name="worksheet_read"),
 
          # UPDATE
-         url(r'^ws/(?P<pk>\d+)/update/$',
-            secure(
-                WorksheetEdit.as_view()
-            ),
+         secure_class_view(
+            r'^ws/(?P<pk>\d+)/update/$',
+            WorksheetEdit,
             name='worksheet_update'
          ),
 
          # DELETE
-         url(r'^ws/(?P<pk>\d+)/delete/$',
-            secure(
-                WorksheetDelete.as_view()
-            ),
+         secure_class_view(
+             r'^ws/(?P<pk>\d+)/delete/$',
+            WorksheetDelete,
             name='worksheet_delete'
          ),
 
@@ -103,16 +114,15 @@ urlpatterns = patterns('',
      (r'^cmds/use_infix/$', 'wise.worksheet.ajax.use_infix'),
      (r'^cmds/draw_graph/$', 'wise.worksheet.ajax.use_infix'),
 
-     # Uncomment the next line to enable the admin:
-     url(r'^admin/', include(admin.site.urls), name='admin'),
+     # Uncomment the next line to enable the admin, append a
+     # random integer on the end to obscure the url. Not really
+     # more secure but it stops some automated bot attacks. Use
+     # reverse("admin:index") to get the url inside of templates
+     #url(r'^admin/%s' % randint(0,1e5), include(admin.site.urls))
+     url(r'^admin/', include(admin.site.urls))
 
-     # TODO: Firefox 4 has some issue with OpenType fonts being loaded
-     # from /static when the current page is /ws since it is one level
-     # up which violates it's same origin policy
-     #(r'^ws/mathjax/(?P<path>.*)$', 'django.views.static.serve',
-     #        {'document_root': settings.MEDIA_ROOT + '/mathjax'}),
 
-     #(r'^favicon\.ico$', 'django.views.generic.simple.redirect_to', 
+     #(r'^favicon\.ico$', 'django.views.generic.simple.redirect_to',
      #        {'url': '/static/img/favicon.ico'}),
 )
 
@@ -125,12 +135,21 @@ if settings.DEBUG:
                 {'document_root': settings.MEDIA_ROOT + '/js/tests'}),
     )
 
+     # Firefox 4 has some issue with OpenType fonts being loaded
+     # from /media when the current page is /ws since it is one level
+     # up which violates it's same origin policy
+    urlpatterns += patterns('',
+        (r'^fonts/(?P<path>.*)$', 'django.views.static.serve',
+                {'document_root': settings.MEDIA_ROOT + '/fonts'}),
+    )
 
+# Grapelli Admin Interface
 if 'grappelli' in settings.INSTALLED_APPS:
     urlpatterns += patterns('',
         (r'^grappelli/', include('grappelli.urls')),
     )
 
+# Django Sentry
 if 'sentry' in settings.INSTALLED_APPS:
     urlpatterns += patterns('',
      url(r'^sentry/', include('sentry.urls'), name='sentry'),

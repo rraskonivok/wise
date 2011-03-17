@@ -170,16 +170,73 @@ def rules_request(request):
 #
 #    return JsonResponse(mappings_list)
 
+blacklist = [
+    '='         , # "prevents" users from making stateful changes
+    'argc'      ,
+    'argv'      ,
+    'break'     ,
+    'bt'        ,
+    'cd'        ,
+    'clear'     ,
+    'const'     ,
+    'def'       ,
+    'del'       ,
+    'dump'      ,
+    'eval'      ,
+    'evalcmd'   ,
+    'extern'    ,
+    'help'      ,
+    'infix'     ,
+    'infixl'    ,
+    'infixr'    ,
+    'let'       ,
+    'ls'        ,
+    'mem'       ,
+    'namespace' ,
+    'nonfix'    ,
+    'outfix'    ,
+    'override'  ,
+    'postfix'   ,
+    'prefix'    ,
+    'pwd'       ,
+    'quit'      ,
+    'run'       ,
+    'save'      ,
+    'sysinfo'   ,
+    'type'      ,
+    'underride' ,
+    'using'
+]
+
 @login_required
 @ajax_request
 def use_infix(request):
     code = request.POST.get('code')
+
+    # Block the execution of any code which could alter the
+    # interpreter, this is marginally improves security
+    if any([s in code for s in blacklist]):
+        # Raise a warning since this could be a hacking attempt
+        # TODO: at some point tie this into django-axes and cut
+        # the user off if they try too much of this stuff
+        logging.warning('Attempt to use Pure keyword: ' + code)
+        return JsonResponse({'error': 'Invalid keyword'})
+
     namespace_index = int( request.POST.get('namespace_index') )
     uid = uidgen(namespace_index)
     quotify = False
 
     result = tasks.pure_exec.delay(code)
-    expr_tree = translate.parse_pure_exp(result.wait())
+    if result.failed():
+        # If failed then result is the PureEvalError instance
+        return JsonResponse({'error': unicode(result.result.value)})
+
+    try:
+        expr_tree = translate.parse_pure_exp(result.wait())
+    except exception.NoWrapper as e:
+        unknown = e.value
+        return JsonResponse({'error': 'Unknown symbol: %s' % unknown})
+
     expr_tree.uid_walk(uid, overwrite=True)
 
     return JsonResponse({'new_html': [html(expr_tree)],
@@ -286,6 +343,7 @@ def new_cell(request):
     else:
         cell_index = int(cell_index)
 
+    # Create new empty cell
     new_cell = Cell([],[])
     new_cell.index = cell_index + 1;
 

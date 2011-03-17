@@ -34,5 +34,10 @@ var Notifications = {
 };
 
 function alert(handle) {
-    Notifications.raise(handle);
+    if(handle.message) {
+        Notifications.raise(handle);
+    }
+    else {
+        console.log(handle);
+    }
 }
