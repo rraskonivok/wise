@@ -19,12 +19,6 @@ from wise.translators.mathobjects import rulesets, transforms
 from wise.worksheet import tasks
 from wise.worksheet.utils import *
 
-def heartbeat(request):
-    # Server is up and life is good
-    response = HttpResponse(status=200)
-    response['Cache-Control'] = 'no-cache'
-    return response
-
 from wise.packages import loader
 Cell = loader.load_package_module('base','cell').Cell
 EquationPrototype = loader.load_package_module('base','toplevel').EquationPrototype
@@ -34,6 +28,12 @@ EquationPrototype = loader.load_package_module('base','toplevel').EquationProtot
 # All ajax requests should return JSON
 # Use JsonResponse
 # ------------------------------------
+
+def heartbeat(request):
+    # Server is up and life is good
+    response = HttpResponse(status=200)
+    response['Cache-Control'] = 'no-cache'
+    return response
 
 @login_required
 @ajax_request

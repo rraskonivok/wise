@@ -22,8 +22,8 @@ from django.views.generic import ListView, DetailView
 from django.views.generic.edit import (UpdateView, DeleteView,
 CreateView)
 from wise.translators.pytopure import parse_sexp
-from wise.worksheet.forms import WorksheetForm
 from wise.worksheet import models
+from wise.worksheet.forms import WorksheetForm
 from wise.worksheet.utils import *
 from wise.packages import loader
 
@@ -67,7 +67,6 @@ class WorksheetEdit(UpdateView):
     model = models.Workspace
     queryset = models.Workspace.objects.all()
 
-    form = WorksheetForm
     template_name = "worksheet_edit.html"
     success_url = '/home'
 
@@ -75,13 +74,17 @@ class WorksheetEdit(UpdateView):
         return reverse('worksheet_detail', args=[obj.id])
 
 class WorksheetCreate(CreateView):
+    form_class = WorksheetForm
     model = models.Workspace
-    form = WorksheetForm
     template_name = "worksheet_edit.html"
     success_url = '/home'
 
-    def redirect_to(self, obj):
-        return reverse('authors_list')
+    def form_valid(self, form, *args, **kwargs):
+        self.object = form.save(*args, **kwargs)
+        return super(WorksheetCreate, self).form_valid(form)
+
+    #def form_valid(self, form):
+        #return super(WorksheetCreate, self).form_valid(form, owner=self.request.user)
 
 def new_worksheet_prototype(attrs):
     nworksheet = models.Workspace(**attrs).save()

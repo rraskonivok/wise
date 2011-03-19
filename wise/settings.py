@@ -167,9 +167,9 @@ MEDIA_ROOT = os.path.join(SITE_ROOT, 'static')
 if DEBUG == True:
     # In development mode serve static content out of static
     # using django.contrib.staticfiles
-    MEDIA_URL = '/static/'
+    MEDIA_URL = '/media/'
     STATIC_ROOT = "static/"
-    STATIC_URL = '/static/'
+    STATIC_URL = '/media/'
 
 elif DEBUG == False:
     # In production mode serve static content out of static
@@ -178,9 +178,9 @@ elif DEBUG == False:
     STATIC_ROOT = "media/"
     STATIC_URL = '/'
 
-STATICFILES_DIRS = (
-    MEDIA_ROOT,
-)
+#STATICFILES_DIRS = (
+    #MEDIA_ROOT,
+#)
 
 ROOT_URLCONF = 'wise.urls'
 ROOTDIR = os.path.abspath(os.path.dirname(__file__))

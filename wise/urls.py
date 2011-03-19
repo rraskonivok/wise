@@ -126,9 +126,6 @@ urlpatterns = patterns('',
      #        {'url': '/static/img/favicon.ico'}),
 )
 
-# Static Files
-urlpatterns += staticfiles_urlpatterns()
-
 if settings.DEBUG:
     urlpatterns += patterns('',
         (r'^tests/(?P<path>.*)$', 'django.views.static.serve',
@@ -142,6 +139,16 @@ if settings.DEBUG:
         (r'^fonts/(?P<path>.*)$', 'django.views.static.serve',
                 {'document_root': settings.MEDIA_ROOT + '/fonts'}),
     )
+
+    urlpatterns += patterns('',
+        (r'^media/(?P<path>.*)$', 'django.views.static.serve',
+                {'document_root': settings.MEDIA_ROOT + '/',
+                 'show_indexes': True
+                }),
+    )
+else:
+    # Static Files
+    urlpatterns += staticfiles_urlpatterns()
 
 # Grapelli Admin Interface
 if 'grappelli' in settings.INSTALLED_APPS:
