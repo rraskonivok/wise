@@ -63,7 +63,7 @@ var Cell = Backbone.Model.extend({
         //success: Notifications.raise('COMMIT_SUCCESS'),
       });
     }
-//    this.saveAssumptions();
+    //this.saveAssumptions();
     this.saveExpressions();
   },
 
@@ -72,7 +72,7 @@ var Cell = Backbone.Model.extend({
   // have changed since thel last commit
   saveExpressions: function () {
     _.each(this._expressions, function (expr) {
-      if (expr.hasChanged()) {
+      if (expr && expr.hasChanged()) {
         // Highlight the expression to give the user
         // some visual feedback on what was just
         // committed

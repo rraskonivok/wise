@@ -306,6 +306,11 @@ function remove_element() {
 
             elem.dom().remove();
             elem.delNode();
+            // Destroy the object in it's cell's expression list
+            // so that saveExpresions in the cell won't try and
+            // do a PUT request for it anymore
+            elem.getCell()._expressions[elem.get('index')] = null;
+
         } else {
             apply_transform('base/Delete', [elem]);
         }

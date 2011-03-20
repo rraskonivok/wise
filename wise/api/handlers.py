@@ -128,6 +128,21 @@ class ExpressionHandeler(BaseHandler):
         # into the model
         return {}
 
+    def delete(self, request, id=None):
+        #if not id:
+            #request_data = self.flatten_dict(request.data)
+            #id = request_data['id']
+
+        if id:
+            try:
+                expr = Expression.objects.get(id=id)
+                expr.delete()
+                return rc.DELETED
+            except ObjectDoesNotExist:
+                return rc.NOT_FOUND
+        else:
+            return rc.BAD_REQUEST
+
     @classmethod
     def resource_uri(self):
         return ('exps', [ 'id', ])
