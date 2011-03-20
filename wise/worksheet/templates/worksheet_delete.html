@@ -1,37 +1,33 @@
 {% extends "base.tpl" %}
+{% load humanize %}
 
-{% block main-navigation %}
-<ul class="wat-cf">
-    <li class="first active"><a href="{% url home %}">Main Page</a></li>
-  <li class=""><a href="/ecosystem">Ecosystem</a></li>
-  <li class=""><a href="#">Worksheet</a></li>
-  <li class=""><a href="/share">Share</a></li>
-</ul>
+{% block inline_css %}
+<style>
+    #box {
+        width: 75%;
+    }
+</style>
 {% endblock %}
 
-{# List the available worksheets #}
+{% block inline_js %}
+<script>
+    $(document).ready(function() {
+        $("#box").removeClass('hidden');
+    });
+</script>
+{% endblock %}
 
-{% block main %}
-<div class="block" id="block-tables">
-  <div class="secondary-navigation">
-    <ul class="wat-cf">
-      <li class="first active"><a href="#">My Worksheets</a></li>
-    </ul>
-  </div>
-  <div class="content">
-      <div class="inner">
+{% block box %}
 
       <h1>Delete Worksheet: {{ object }}?</h1>
 
       <form method="post" action="">
-        <div class="group navform wat-cf">
+
+        <div class="actions-bar wat-cf">
           <button class="button" type="submit">
-              <img src="/static/img/icons/cross.png" alt="Save"/>Delete
+              <img src="{{ STATIC_URL }}img/icons/cross.png" alt="Delete"/>Delete
           </button>
         </div>
       </form>
 
-    </div>
-  </div>
-</div>
 {% endblock %}

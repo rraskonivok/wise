@@ -46,6 +46,7 @@ INSTALLED_MATH_PACKAGES = ['base','calculus']
 # Where to redirect upon succesfull login
 HOME_URL = '/statichome'
 LOGIN_URL = '/accounts/login'
+LOGIN_REDIRECT_URL = '/home'
 
 #---------------------------
 # Message Queues
@@ -149,8 +150,8 @@ MIDDLEWARE_CLASSES = (
     'middleware.BlockedIpMiddleware',
     #'privatebeta.middleware.PrivateBetaMiddleware',
     'axes.middleware.FailedLoginMiddleware'
-#    'middleware.ErrorMiddleware',
-#    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    #'middleware.ErrorMiddleware',
+    #'debug_toolbar.middleware.DebugToolbarMiddleware',
 
 )
 

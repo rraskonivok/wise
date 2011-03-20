@@ -18,7 +18,11 @@
 {% endblock %}
 
 {% block box %}
+    {% if object %}
     <h1>{{ object }}</h1>
+    {% else %}
+    <h1>New Worksheet</h1>
+    {% endif %}
 
         {% if errors %}
         <div class="flash">
@@ -32,7 +36,6 @@
         <div class="group">
           <label class="label">Name</label>
           {{ form.name }}
-          {{ form.owner }}
         </div>
 
         <div class="group">

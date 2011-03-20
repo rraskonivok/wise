@@ -6,13 +6,13 @@ class WorksheetForm(ModelForm):
     class Meta:
         model = Workspace
         exclude = ('owner')
-        widgets = {
-            'name': Textarea(),
-        }
+        #widgets = {
+            #'name': Textarea(),
+        #}
 
-    def save(self, owner, commit=True, *args, **kwargs):
-        project = super(WorksheetForm,self).save(commit=False,*args, **kwargs)
-        project.owner = owner
+    def save(self, owner=None, commit=True, *args, **kwargs):
+        obj = super(WorksheetForm,self).save(commit=False,*args, **kwargs)
+        obj.owner = owner
         if commit:
-            project.save()
-        return project
+            obj.save()
+        return obj

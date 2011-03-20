@@ -1,5 +1,5 @@
 from piston.handler import BaseHandler
-from piston.utils import rc, require_mime, require_extended
+from piston.utils import rc
 
 from django.core.exceptions import ObjectDoesNotExist
 from wise.worksheet.models import Cell, Workspace, Expression, \
@@ -91,10 +91,10 @@ class ExpressionHandeler(BaseHandler):
     def create(self, request):
         request_data = self.flatten_dict(request.data)
 
-        cell_id = request_data['cell']
-        sexp = request_data['sexp']
+        cell_id    = request_data['cell']
+        sexp       = request_data['sexp']
         annotation = request_data['annotation']
-        index = request_data['index']
+        index      = request_data['index']
 
         parent_cell = Cell.objects.get(id=cell_id)
 
@@ -104,26 +104,29 @@ class ExpressionHandeler(BaseHandler):
                           index=index)
         expr.save()
 
-
         # Return the JSON of the new model for Backbone to inject
         # into the model
-        return expr
+        return {'id': expr.id}
 
-    def update(self, request, id):
+    def update(self, request, id = None):
         request_data = self.flatten_dict(request.data)
 
-        sexp = request_data['sexp']
+        if not id:
+            id = request_data['id']
+
+        sexp       = request_data['sexp']
         annotation = request_data['annotation']
-        index = request_data['index']
+        index      = request_data['index']
 
         expr = Expression.objects.get(id=id)
-        expr.sexp = sexp
+        expr.sexp  = sexp
+        expr.index = index
 
         expr.save()
 
         # Return the JSON of the new model for Backbone to inject
         # into the model
-        return expr
+        return {}
 
     @classmethod
     def resource_uri(self):
@@ -211,12 +214,13 @@ class WorkspaceHandeler(BaseHandler):
         else:
             return wss.all()
 
-    def create(self, request):
-        request_data = self.flatten_dict(request.data)
+    # Worksheets cannot be created in the API at the moment
+    #def create(self, request):
+    #    request_data = self.flatten_dict(request.data)
 
-        # Return the JSON of the new model for Backbone to inject
-        # into the model
-        return None
+    #    # Return the JSON of the new model for Backbone to inject
+    #    # into the model
+    #    return None
 
     @classmethod
     def resource_uri(self):

@@ -129,7 +129,7 @@ urlpatterns = patterns('',
 if settings.DEBUG:
     urlpatterns += patterns('',
         (r'^tests/(?P<path>.*)$', 'django.views.static.serve',
-                {'document_root': settings.MEDIA_ROOT + '/js/tests'}),
+            {'document_root': settings.MEDIA_ROOT + '/js/tests'}),
     )
 
      # Firefox 4 has some issue with OpenType fonts being loaded
@@ -137,14 +137,21 @@ if settings.DEBUG:
      # up which violates it's same origin policy
     urlpatterns += patterns('',
         (r'^fonts/(?P<path>.*)$', 'django.views.static.serve',
-                {'document_root': settings.MEDIA_ROOT + '/fonts'}),
+            {'document_root': settings.MEDIA_ROOT + '/fonts'}),
     )
 
     urlpatterns += patterns('',
         (r'^media/(?P<path>.*)$', 'django.views.static.serve',
-                {'document_root': settings.MEDIA_ROOT + '/',
-                 'show_indexes': True
-                }),
+            {'document_root': settings.MEDIA_ROOT + '/',
+             'show_indexes': True
+            }),
+    )
+
+    urlpatterns += patterns('',
+        (r'^static/admin/(?P<path>.*)$', 'django.views.static.serve',
+            {'document_root': settings.MEDIA_ROOT + '/admin',
+             'show_indexes': True
+        }),
     )
 else:
     # Static Files

@@ -14,13 +14,14 @@ import wise.meta_inspector
 
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import (HttpResponse, HttpResponseForbidden,
+    HttpResponseRedirect)
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.utils import simplejson as json
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import (UpdateView, DeleteView,
-CreateView)
+    CreateView)
 from wise.translators.pytopure import parse_sexp
 from wise.worksheet import models
 from wise.worksheet.forms import WorksheetForm
@@ -79,17 +80,13 @@ class WorksheetCreate(CreateView):
     template_name = "worksheet_edit.html"
     success_url = '/home'
 
-    def form_valid(self, form, *args, **kwargs):
-        self.object = form.save(*args, **kwargs)
-        return super(WorksheetCreate, self).form_valid(form)
-
-    #def form_valid(self, form):
-        #return super(WorksheetCreate, self).form_valid(form, owner=self.request.user)
-
-def new_worksheet_prototype(attrs):
-    nworksheet = models.Workspace(**attrs).save()
-    models.Cell(workspace=ws, index=0).save()
-    return nworksheet
+    # We get to overload this method because the generic
+    # CreateView needs to know about the owner field which we can
+    # only get from the request object, see WorksheetForm for
+    # more details
+    def form_valid(self, form):
+        self.object = form.save(owner=self.request.user)
+        return HttpResponseRedirect(self.get_success_url())
 
 #---------------------------
 # Ecosystem
