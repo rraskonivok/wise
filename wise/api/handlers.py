@@ -60,10 +60,19 @@ class CellHandeler(BaseHandler):
         return em
 
     def delete(self, request, id=None):
-        cell = Cell.objects.get(id=id)
-        cell.delete()
+        #if not id:
+            #request_data = self.flatten_dict(request.data)
+            #id = request_data['id']
 
-        return rc.DELETED
+        if id:
+            try:
+                cell = Cell.objects.get(id=id)
+                cell.delete()
+                return rc.DELETED
+            except ObjectDoesNotExist:
+                return rc.NOT_FOUND
+        else:
+            return rc.BAD_REQUEST
 
     @classmethod
     def resource_uri(self,**args):

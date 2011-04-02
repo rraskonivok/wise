@@ -17,22 +17,22 @@ var button_template = _.template("<button>{{label}}</button>");
 
 var toplevel_types = [
     {
-        label: 'Equation', 
+        label: 'Equation',
         sexp: 'eq',
     },
 
     {
-        label: 'Definition', 
+        label: 'Definition',
         sexp: 'def',
     },
 
     {
-        label: 'Greater Than', 
+        label: 'Greater Than',
         sexp: '(Gt (Placeholder ) (Placeholder ) )',
     },
 
     {
-        label: 'Less Than', 
+        label: 'Less Than',
         sexp: '(Lt (Placeholder ) (Placeholder ) )',
     },
 ]
@@ -323,14 +323,18 @@ var CellView = Backbone.View.extend({
 
   events: {
     "contextmenu .node-outline": "collapse",
-    "click .hide": "toggleAssums",
-    "click .add": "insertion_menu",
-    "click .del": "destroy",
-    "click .save": "saveCell",
+    "click .hide" : "toggleAssums",
+    "click .add"  : "insertion_menu",
+    "click .del"  : "destroyCell",
+    "click .save" : "saveCell",
   },
 
   insertion_menu: function() {
       this.insertion_menu.toggle();
+  },
+
+  destroyCell: function() {
+      this.model.deleteCell();
   },
 
   render: function () {

@@ -67,6 +67,11 @@ var Cell = Backbone.Model.extend({
     this.saveExpressions();
   },
 
+  deleteCell: function() {
+    this.view.el.remove();
+    this.destroy();
+  },
+
   // Iterate through each Expression associated
   // with this cell and commit if their sexp
   // have changed since thel last commit
@@ -82,6 +87,7 @@ var Cell = Backbone.Model.extend({
         expr.set({
           sexp: expr.sexp()
         });
+
         expr.save({
           //success: Notifications.raise('COMMIT_SUCCESS'),
         });
@@ -95,27 +101,6 @@ var Cell = Backbone.Model.extend({
         _.invoke(this._expressions,'hasChanged')
     );
   },
-
-  /*
-  saveAssumptions: function () {
-    _.each(this._assumptions, function (asm) {
-      if (asm.hasChanged()) {
-        // Highlight the expression to give the user
-        // some visual feedback on what was just
-        // committed
-        asm.root.dom().effect("highlight", {}, 1500);
-
-        asm.set({
-          sexp: asm.sexp()
-        });
-        asm.save({
-          success: Notifications.raise('COMMIT_SUCCESS'),
-        });
-
-      }
-    });
-  },
-  */
 
   sexps: function () {
     return _.invoke(this._expressions, 'sexp');

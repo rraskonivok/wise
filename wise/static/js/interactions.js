@@ -320,7 +320,10 @@ function remove_element() {
 
 function subs(obj) {
     if(Wise.Selection.length > 0) {
-        apply_transform('base/PlaceholderSubstitute',[Wise.Selection.at(0), obj]);
+        apply_transform(
+            'base/PlaceholderSubstitute',
+            [Wise.Selection.at(0), obj]
+        );
     } else {
         return;
     }
