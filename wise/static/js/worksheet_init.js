@@ -92,7 +92,7 @@ function boot() {
 
     mkautocomplete();
 
-    $(".noselect").disableSelection();
+    //$(".noselect").disableSelection();
     $("#worksheet").show();
 
     // Handle unsaved changes before leaving page
@@ -115,9 +115,42 @@ function boot() {
     Backbone.history.start();
 
     // Disable right click context menu
-    $(document).bind("contextmenu",function(e){
-        return false;
+    //$(document).bind("contextmenu",function(e){
+        //return false;
+    //});
+
+    $(".textatom").editable({
+        type: 'textarea',
+        editClass: 'textatom',
+        onEdit: function(content) {
+            textarea = $(this).find('textarea')[0];
+
+            textarea.style.height = 0;
+            textarea.style.height = textarea.scrollHeight + 'px';
+
+            $(this).find('textarea').unbind('keyup');
+
+            $(this).find('textarea').live('keyup',function() {
+                this.style.height = 0;
+                this.style.height = this.scrollHeight + 'px';
+            });
+        },
+
+        onSubmit: function(content) {
+            // Strip HTML tags from the new content,
+            var matchTag = /<(?:.|\s)*?>/g;
+            content.current = content.current.replace(matchTag, "");
+            $(this).text(content.current);
+        },
     });
+
+    //$('textarea').keyup(
+        //function (event) {
+            //this.style.height = 0;
+            //this.style.height = this.scrollHeight + 'px';
+            //alert('foo');
+        //}
+    //);
 
 }
 

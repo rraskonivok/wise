@@ -31,9 +31,12 @@ def initialize():
     super_classes = [Term, Relation]
 
     nullary_types = {
+        # Base primitives
         'num' : Numeric,
         'var' : Variable,
         'ph' : Placeholder,
+
+        # Constants
         'M_PI': Pi,
         'M_E': E,
         'M_I': ImaginaryUnit,
@@ -48,7 +51,7 @@ def initialize():
 
 class Variable(Term):
     """
-    A free variable
+    %s (Unbound variable)
     """
     pure = 'var'
 
@@ -65,6 +68,7 @@ class Variable(Term):
 
         self.symbol = symbol
         self.args = [str(symbol)]
+        self.__doc__ = str(symbol)
 
     def _pure_(self):
         return pureobjects.PureSymbol(self.symbol)
@@ -732,6 +736,7 @@ class Transpose(SupOperation):
 
 class Matrix(Term):
     """
+    Matrix
     """
     html = load_haml_template('matrix.tpl')
     pure = 'Mat'
@@ -1069,10 +1074,18 @@ class Atanh(PrefixOperation):
     pure = 'Atanh'
 
 class Gamma(PrefixOperation):
+    """
+    Gamma function
+    """
+
     symbol = 'Γ'
     pure = 'GammaF'
 
 class Zeta(PrefixOperation):
+    """
+    Riemann zeta function
+    """
+
     symbol = 'ζ'
     pure = 'RiemannZeta'
 
@@ -1081,6 +1094,9 @@ class Zeta(PrefixOperation):
 #-------------------------------------------------------------
 
 class FunctionAppl(PrefixOperation):
+    """
+    This symbol denotes a function constructor.
+    """
 
     def __init__(self, func, args):
         # the math spit out by func get_math is not well-formed
@@ -1090,6 +1106,10 @@ class FunctionAppl(PrefixOperation):
 
 #Free abstract function (of a single variable at this time)
 class FreeFunction(Term):
+    """
+    Symbol function_call can be used to call already defined
+    functions.
+    """
 
     def __init__(self,symbol):
         self.symbol = symbol
@@ -1106,47 +1126,8 @@ class FreeFunction(Term):
             return pureobjects.PureSymbol(self.symbol)(pureobjects.PureSymbol('u'))
 
 #-------------------------------------------------------------
-# Assumptions
-#-------------------------------------------------------------
-
-#class Assumption(PrefixOperation):
-#    html = load_haml_template('assumption.tpl')
-#    symbol = '?'
-#    pure = 'assum'
-#    toplevel = True
-#
-#    def json_flat(self,lst=None):
-#        if not lst:
-#            lst = []
-#
-#        lst.append({'id': self.id,
-#                    'type': self.classname,
-#                    'toplevel': self.toplevel,
-#                    'sid': self.sid,
-#                    'children': [term.id for term in self.terms]})
-#
-#        for term in self.terms:
-#            term.json_flat(lst)
-#
-#        return lst
-#
-#class AssumptionPrototype(Assumption):
-#    pure = None
-#
-#    def __init__(self):
-#        Assumption.__init__(self, ph())
-#
-#    @property
-#    def classname(self):
-#        return 'Assumption'
-
-#-------------------------------------------------------------
 # Non-mathematical Symbols
 #-------------------------------------------------------------
-
-class Quote(PrefixOperation):
-    symbol = '!'
-    pure = 'quote'
 
 class Nan(Term):
     symbol = 'NaN'

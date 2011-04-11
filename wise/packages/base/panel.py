@@ -38,6 +38,10 @@ Algebraic = MathMLPanel(name="Algebraic", objects=ops)
 #-------------------------
 
 def mat_constructor(rows, cols):
+    """
+    Returns a matrix with rows * cols filled with placeholders
+    """
+
     return objects.Matrix(
         *( objects.MRow(
             *(objects.Placeholder(),)*rows

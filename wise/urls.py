@@ -83,6 +83,8 @@ urlpatterns = patterns('',
 
          # READ
          (r'^ws/(?P<ws_id>\d+)/$', 'wise.worksheet.views.ws'),
+         (r'^ws/(?P<ws_id>\d+)/export/(?P<format>.*)$', 'wise.worksheet.views.ws_export'),
+
          url(r'^ws/(?P<ws_id>\d+)/read$',
                  'wise.worksheet.views.ws_read',
                  name="worksheet_read"),

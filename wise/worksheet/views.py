@@ -117,6 +117,33 @@ def ecosystem(request):
 # Worksheet
 #---------------------------
 
+class TextAtom(object):
+    id = 0
+
+    def __init__(self, text):
+        self.text = text
+
+    def get_html(self):
+
+        template = """
+<div id="cid%s-text">
+<div class="textatom">%s</div>
+</div>
+        """
+
+        return template % (self.id, self.text)
+
+    def json_flat(self):
+        resource_uri = ''
+
+        return [{
+            "id": self.id,
+            "type": 'text',
+            "toplevel": True,
+            "args": self.text,
+            "children": []
+        }]
+
 @login_required
 def ws_read(request, ws_id):
     ws = get_object_or_404(models.Workspace, pk=ws_id)
@@ -143,11 +170,14 @@ def ws_read(request, ws_id):
         #top_asms = []
 
         for eq in eqs:
-            # Build up the object from the sexp in the database
-            etree = parse_sexp(eq.sexp)
-            etree.annotation = eq.annotation
-            etree.uid_walk(uid)
-            top_exprs.append(etree)
+            if 'Text:' in eq.sexp:
+                top_exprs.append(TextAtom(eq.sexp))
+            else:
+                # Build up the object from the sexp in the database
+                etree = parse_sexp(eq.sexp)
+                etree.annotation = eq.annotation
+                etree.uid_walk(uid)
+                top_exprs.append(etree)
 
         # Initialize the new Cell instance
         ncell = basecell.Cell(top_exprs, [],
@@ -167,6 +197,43 @@ def ws_read(request, ws_id):
     )
 
     return response
+
+def ws_export(request, ws_id, format="wise"):
+    CELL_INDICATOR = "-- CELL: %d --"
+    ws = get_object_or_404(models.Workspace, pk=ws_id)
+
+    if ( ws.owner.id != request.user.id ):
+        return HttpResponseForbidden()
+
+    cells = models.Cell.objects.filter(workspace=ws_id)
+
+    output = ''
+
+    newline = "\n"
+    tripquote = lambda s: '"""%s"""' % s
+
+    for cell in cells:
+        eqs = models.Expression.objects.filter(cell=cell).order_by('index')
+        output += CELL_INDICATOR % cell.index + newline
+
+        for eq in eqs:
+            if "Text:" in eq.sexp:
+                output += tripquote(eq.sexp) + newline
+            else:
+                output += eq.sexp + newline
+
+
+    if format == "wise":
+        response = HttpResponse(output, mimetype="text/plain")
+        response['Content-Disposition'] = 'attachment; filename=%s.wise' % ws.name
+        return response
+
+    elif format == "txt":
+        response = HttpResponse(output, mimetype="text/plain")
+        return response
+
+    else:
+        HttpResponse("Unknown export format")
 
 #TODO: change the name of this to something more illuminating
 # i.e. WorksheetView
@@ -205,22 +272,16 @@ def ws(request, ws_id):
         #top_asms = []
 
         for eq in eqs:
-            # Build up the object from the sexp in the database
-            etree = parse_sexp(eq.sexp)
-            etree.uid_walk(uid)
+            if 'Text:' in eq.sexp:
+                top_exprs.append(TextAtom(eq.sexp))
+            else:
+                # Build up the object from the sexp in the database
+                etree = parse_sexp(eq.sexp)
+                etree.uid_walk(uid)
 
-            etree.sid = eq.id
-            etree.annotation = eq.annotation
-            top_exprs.append(etree)
-
-        #for asm in asms:
-        #    # Build up the object from the sexp in the database
-        #    etree = parse_sexp(asm.sexp)
-        #    etree.uid_walk(uid)
-
-        #    etree.sid = asm.id
-        #    etree.annotation = asm.annotation
-        #    top_asms.append(etree)
+                etree.sid = eq.id
+                etree.annotation = eq.annotation
+                top_exprs.append(etree)
 
         # Initialize the new Cell instance
         ncell = basecell.Cell(top_exprs, [],

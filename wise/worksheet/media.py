@@ -57,6 +57,9 @@ MEDIA_BUNDLES = (
         'pnotify.js',
         'keys.js',
         'hoverintent.js',
+        'sanitize.js',
+        'rte.js',
+        'editable.js',
      )},
 
     {"type": "javascript",

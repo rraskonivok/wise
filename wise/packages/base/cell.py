@@ -51,7 +51,6 @@ class Cell(object):
             resource_uri = None
 
         lst.append({'index': self.index,
-                    'assumptions': [asm.id for asm in self.assumptions],
                     'id' : self.id,
                     'sid': self.sid,
                     'resource_uri': resource_uri,

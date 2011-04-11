@@ -40,9 +40,9 @@ class Integral(base_objects.Term):
 
 class Diff(base_objects.Term):
     """
-    This symbol is used to represent indefinite integration of
-    unary functions. The first argument is the unary function the
-    second argument is a variable of integration.
+    This symbol is used to express ordinary differentiation of a
+    unary function. The first argument is the unary function the
+    second is the variable of differentiation.
     """
 
     show_parenthesis = True
@@ -68,8 +68,13 @@ class Diff(base_objects.Term):
 
 class Taylor(base_objects.Term):
     """
-    This symbol represents the exponentiation function.
+    This symbol is used to represent the Taylor expansion of an
+    function. The first argument is the function, the second is
+    the variable to expand in powers of, the third is the point
+    to expand around and the fourth is the number of terms to
+    approximate to.
     """
+
     symbol = 'Taylor'
     pure = 'Taylor'
     html = load_haml_template('funcapp.tpl')

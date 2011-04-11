@@ -6,7 +6,7 @@ div#cell{{index}}.cell
     div.equations
 
         {% for ex in expressions %}
-            {{ ex }}
+            {{ ex|safe }}
         {% endfor %}
 
     div.insertion_toolbar
@@ -17,4 +17,3 @@ div#cell{{index}}.cell
 
     .del.ui-icon.ui-icon-circle-minus
         PASS
-
