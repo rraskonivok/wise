@@ -776,39 +776,6 @@ function load_math_palette() {
 // Command Line
 ///////////////////////////////////////////////////////////
 
-//$('#cmdline').submit(function () {
-//  use_infix($("#cmdinput").val());
-//  $("#cmdinput").blur();
-//  // Inject into scratchpad
-//  return false;
-//});
-//
-
-//var keywords = ['Abs',
-//'Acos'            ,
-//'Acosh'           ,
-//'Asin'            ,
-//'Asinh'           ,
-//'Atan'            ,
-//'Atanh'           ,
-//'ComplexCartesian',
-//'ComplexPolar'    ,
-//'Cos'             ,
-//'Cosh'            ,
-//'Exp'             ,
-//'FinitePoly'      ,
-//'FiniteSeries'    ,
-//'GammaF'          ,
-//'Idx'             ,
-//'Ln'              ,
-//'MRow'            ,
-//'M_E'             ,
-//'M_I'             ,
-//'M_INF'           ,
-//'M_PI'            ,
-//];
-
-
 function mkautocomplete() {
     $.getJSON('/dict/purelist',
         function(data) {

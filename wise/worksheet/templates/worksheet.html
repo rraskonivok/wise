@@ -14,6 +14,11 @@
 <!-- <script type="text/javascript" src="/ws/mathjax/MathJax.js"></script>-->
 {% load_bundle "worksheet_css" %}
 {% load_bundle "worksheet_js" %}
+<script src="http://cdn.socket.io/stable/socket.io.js"></script>
+<script src="{{ STATIC_URL }}js/brequire.js"></script>
+
+<script src="{{ STATIC_URL }}js/base.js"></script>
+<script src="{{ STATIC_URL }}js/connection.js"></script>
 
 {% endblock %}
 
@@ -31,18 +36,18 @@ Init Function + Global Vars
     // The id of the Worksheet corresponding to its index in the
     // database
     var WORKSHEET_ID = {{ ws_id }};
-    
+
     // Count of how many "nodes"/cid tagged elements there are in the
     // DOM
     var NAMESPACE_INDEX = {{ namespace_index }};
-    
+
     // Count of how many cells are in the workspace
     var CELL_INDEX = {{ cell_index }};
-    
+
     // Raw json sent from the server when the page
     // initializes
     var JSON_TREE = $.parseJSON('{{ json_cells|safe }}');
-    
+
     // Lookup table of active equations which maps uid -> internal
     // tree object
     //var NODES = {};

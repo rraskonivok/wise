@@ -35,7 +35,7 @@ EquationPrototype = loader.load_package_module('base','toplevel').EquationProtot
 # ----------------------
 
 """
-apply_transfomration:
+apply_transformation:
 
 {
     task            : 'transform',
