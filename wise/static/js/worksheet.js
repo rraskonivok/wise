@@ -48,8 +48,8 @@ window.log = function () {
   }
 };
 
-if(!this.console) {
-    this.console = {
+if(!window.console) {
+    window.console = {
         log : window.log
     };
 }
@@ -128,7 +128,7 @@ $.fn.disableTextSelect = function () {
 };
 
 ///////////////////////////////////////////////////////////
-// Initialize the Term DB
+// Term Lookup Table
 ///////////////////////////////////////////////////////////
 
 // Takes the inital JSON that Django injects into the page in the

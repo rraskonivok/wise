@@ -177,7 +177,7 @@ def apply_rule(request):
     uid = uidgen(namespace_index)
     rule = request.POST.get('rule')
 
-    gevent.spawn(_co_rule, rule, sexps).join()
+    gevent.Greenlet(_co_rule, rule, sexps).start()
 
     return JsonResponse({})
     #result = tasks.rule_reduce.delay(rule, sexps)

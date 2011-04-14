@@ -16,8 +16,8 @@
 {% load_bundle "worksheet_js" %}
 <script src="http://cdn.socket.io/stable/socket.io.js"></script>
 <script src="{{ STATIC_URL }}js/brequire.js"></script>
-
 <script src="{{ STATIC_URL }}js/base.js"></script>
+<script src="{{ STATIC_URL }}js/messages.js"></script>
 <script src="{{ STATIC_URL }}js/connection.js"></script>
 
 {% endblock %}
@@ -46,7 +46,7 @@ Init Function + Global Vars
 
     // Raw json sent from the server when the page
     // initializes
-    var JSON_TREE = $.parseJSON('{{ json_cells|safe }}');
+    var JSON_TREE = {{ json_cells|safe }};
 
     // Lookup table of active equations which maps uid -> internal
     // tree object
