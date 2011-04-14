@@ -1,9 +1,7 @@
-# If you are using gevent workers with gunicorn then unhighlight
-# the next two lines:
 #try:
-#    from gevent import monkey; monkey.patch_all()
+   #from gevent import monkey; monkey.patch_all()
 #except:
-#    pass
+   #pass
 
 import os
 import djcelery

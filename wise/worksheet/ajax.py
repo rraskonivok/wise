@@ -8,6 +8,11 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
+import zmq
+import gevent
+import uuid
+
+from django.utils.simplejson import dumps, loads
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
@@ -20,14 +25,111 @@ from wise.worksheet import tasks
 from wise.worksheet.utils import *
 
 from wise.packages import loader
+
+# Load up Cell & Equation types from the 'base' package
 Cell = loader.load_package_module('base','cell').Cell
 EquationPrototype = loader.load_package_module('base','toplevel').EquationPrototype
 
-# ------------------------------------
-# Note:
-# All ajax requests should return JSON
-# Use JsonResponse
-# ------------------------------------
+# ----------------------
+# Message Protocol
+# ----------------------
+
+"""
+apply_transfomration:
+
+{
+    task            : 'transform',
+    args            : ['package', 'transform_name'],
+    operands        : []
+    namespace_index : 0,
+}
+
+apply_rule:
+
+{
+    task            : 'rule',
+    args            : ['package', 'rule_name'],
+    operands        : []
+    namespace_index : 0,
+}
+
+apply_eval:
+
+{
+    task            : 'eval',
+    args            : ['code'],
+    operands        : []
+    namespace_index : 0,
+}
+
+
+"""
+
+# Adapated from IPython
+class Message(object):
+
+    def __init__(self, msg_dict):
+        dct = self.__dict__
+        for k, v in msg_dict.iteritems():
+            if isinstance(v, dict):
+                v = Message(v)
+            dct[k] = v
+
+        #self.uuid = uuid.uuid4()
+
+    def __iter__(self):
+        return iter(self.__dict__.iteritems())
+
+    def __repr__(self):
+        return repr(self.__dict__)
+
+    def __str__(self):
+        return pprint.pformat(self.__dict__)
+
+    def __contains__(self, k):
+        return k in self.__dict__
+
+    def __getitem__(self, k):
+        return self.__dict__[k]
+
+    def to_json(self):
+        return dumps(self.__dict__)
+
+def _co_rule(rule, sexps, socketio=None):
+    print 'LAUNCHED COROUTINE'
+
+    context = zmq.Context()
+    sender = context.socket(zmq.REQ)
+    sender.bind("tcp://127.0.0.1:5000")
+    msg = {'rule': [rule,sexps] }
+
+    sender.send_pyobj(msg)
+    sender.recv_pyobj()
+
+    #socketio.send(sender.recv_pyobj())
+
+# ----------------------
+# Websocket Handler
+# ----------------------
+
+def socketio(request):
+    socketio = request.environ['socketio']
+
+    # Is everything shiny?
+    #if settings.DEBUG and 'socket.io' in request.environ['PATH_INFO']:
+        #return HttpResponse("Everything's shiny, Cap'n. Not to fret.")
+
+    while True:
+        message = socketio.recv()
+
+        if len(message) == 1:
+            print message
+            socketio.send('foo')
+        else:
+            print message
+
+    return HttpResponse()
+
 
 def heartbeat(request):
     # Server is up and life is good
@@ -75,100 +177,21 @@ def apply_rule(request):
     uid = uidgen(namespace_index)
     rule = request.POST.get('rule')
 
-    result = tasks.rule_reduce.delay(rule, sexps)
-    expr_tree = translate.parse_pure_exp(result.wait())
-    expr_tree.uid_walk(uid, overwrite=True)
+    gevent.spawn(_co_rule, rule, sexps).join()
 
-    return JsonResponse({'new_html': [html(expr_tree)],
-                         'new_json': [json_flat(expr_tree)],
-                         'namespace_index': uid.next()[3:]})
+    return JsonResponse({})
+    #result = tasks.rule_reduce.delay(rule, sexps)
+    #expr_tree = translate.parse_pure_exp(result.wait())
+    #expr_tree.uid_walk(uid, overwrite=True)
 
-@login_required
-@ajax_request
-def apply_def(request):
-    sexps = tuple(request.POST.getlist('selections[]'))
-
-    namespace_index = int( request.POST.get('namespace_index') )
-
-    if not namespace_index:
-        raise Exception('No namespace index given in request.')
-
-    # Spawn a new generator uid generator to walk the parse tree
-    uid = uidgen(namespace_index)
-
-    def_sexp = request.POST.get('def')
-
-    if not def_sexp:
-        raise Exception('No definiton specified.')
-
-    # Build up the Pure representation of the definition from
-    # the sexp
-    def_py = translate.parse_sexp(def_sexp,uid)
-    def_pure = purify(def_py)
-
-    args = [translate.parse_sexp(sexp, uid) for sexp in sexps]
-
-    for arg in args:
-        arg.idgen = uid
-
-    # Init a new lexical closure
-    # >>>>>>>>>>>>>>>>>>>>>>>>>>
-    pure_wrap.new_level()
-
-    # Init the local definition
-    def_pure()
-
-    # Evaluate the selection in the context of the definition
-    pure_expr = pure_wrap.p2i(purify(args[0]))
-    print 'Acting on', pure_expr
-
-    pure_wrap.restore_level()
-    # <<<<<<<<<<<<<<<<<<<<<<<<<<
-    # Close the closure and return to the main level
-
-    new = translate.pure_to_python(pure_wrap.i2p(pure_expr),args[0].idgen)
-
-    new.idgen = uid
-    new.ensure_id()
-
-    new_html = [html(new)]
-    new_json = [json_flat(new)]
-
-    return JsonResponse({'new_html': new_html,
-                         'new_json': new_json,
-                         'namespace_index': uid.next()[3:]})
-
+    #return JsonResponse({'new_html': [html(expr_tree)],
+                         #'new_json': [json_flat(expr_tree)],
+                         #'namespace_index': uid.next()[3:]})
 
 @login_required
 def rules_request(request):
     return render_haml_to_response('ruleslist.tpl',
             {'rulesets':rulesets.as_dict()})
-
-#@login_required
-#@ajax_request
-#def lookup_transform(request):
-#    typs = tuple(request.POST.getlist('selections[]'))
-#
-#    def str_to_mathtype(typ):
-#        return mathobjects.__dict__[typ]
-#
-#    domain = tuple( map(str_to_mathtype, typs) )
-#
-#    def compatible_pred(obj_types, fun_signature):
-#        if len(obj_types) != len(fun_signature): return False
-#        return all(issubclass(ot, ft) for ot, ft in zip(obj_types, fun_signature))
-#
-#    def get_comptables(obj_types, fun_signatures):
-#        return [t for t in fun_signatures if compatible_pred(obj_types, t.domain)]
-#
-#    compatible_mappings = get_comptables( domain, mathobjects.algebra.mappings)
-#
-#    if not compatible_mappings:
-#        return JsonResponse({'empty': True})
-#
-#    mappings_list = [(m.pretty , m.internal) for m in compatible_mappings]
-#
-#    return JsonResponse(mappings_list)
 
 blacklist = [
     '='         , # "prevents" users from making stateful changes

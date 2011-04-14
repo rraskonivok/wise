@@ -12,6 +12,8 @@ import panel
 import wise.boot
 import wise.meta_inspector
 
+from pprint import pformat
+
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import (HttpResponse, HttpResponseForbidden,
@@ -343,6 +345,11 @@ def generate_palette():
 # Development Tools
 #---------------------------
 
+@login_required
+def translate(request):
+    return render_to_response('translate.html')
+
+
 def objectgraph(request, package='base'):
     from worksheet.viz import package_to_graph
 
@@ -355,24 +362,10 @@ def objectgraph(request, package='base'):
     png=graph.draw(format='png')
     return HttpResponse(png, mimetype='image/png')
 
-@login_required
-def translate(request):
-    return render_to_response('translate.html')
-
-@login_required
-def dict(request, data='pure'):
-    """
-    Dump the translation dictionary to a JSON object, for
-    debugging purposes
-    """
-
-    from pprint import pformat
-
-    if not settings.DEBUG:
-        return HttpResponseForbidden()
+@memoize
+def _fetch_data(data):
 
     if data == 'python':
-        from wise.translators.mathobjects import get_python_lookup
         pretty = pformat(get_python_lookup().table._fwd)
     elif data == 'pure':
         from wise.translators.mathobjects import get_pure_lookup
@@ -391,6 +384,20 @@ def dict(request, data='pure'):
         pretty = pformat(cy_objects)
     else:
         pretty = "unknown output " + data
+
+    return pretty
+
+@login_required
+def internal_dict(request, data='pure'):
+    """
+    Dump the translation dictionary to a JSON object, for
+    debugging purposes
+    """
+
+    if not settings.DEBUG:
+        return HttpResponseForbidden()
+
+    pretty = _fetch_data(data)
 
     return HttpResponse(pretty, mimetype="text/plain")
 

@@ -8,7 +8,7 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
-from worksheet.utils import logger
+#from worksheet.utils import logger
 
 # No wise includes up here, load everyting lazily
 
@@ -27,7 +27,7 @@ def start_python_pure():
     build_pure_lookup()
     build_transform_lookup()
 
-    logger.info('Started Pure+Python Session')
+    #logger.info('Started Pure+Python Session')
 
 
 def start_cython():
@@ -43,7 +43,7 @@ def start_cython():
     build_cython_objects()
     build_rule_lookup()
 
-    logger.info('Started Cython Interface')
+    #logger.info('Started Cython Interface')
 
 def start_django():
     from django.core.management import setup_environ

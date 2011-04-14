@@ -8,6 +8,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic.simple import direct_to_template, redirect_to
 
+from worksheet.ajax import (
+        socketio
+)
+
 def secure_class_view(regex, view, name=None):
     return url(
         regex,
@@ -46,13 +50,20 @@ urlpatterns = patterns('',
      (r'^api/', include('wise.api.urls')),
 
      #(r'^test$', 'wise.worksheet.views.test'),
-     (r'dict/(?P<data>.*)$', 'wise.worksheet.views.dict'),
+     (r'dict/(?P<data>.*)$', 'wise.worksheet.views.internal_dict'),
      (r'^translate$', 'wise.worksheet.views.translate'),
      (r'graph/(?P<package>.*)$', 'wise.worksheet.views.objectgraph'),
      url(r'^ecosystem$',
          'wise.worksheet.views.ecosystem',
          name='ecosystem'
      ),
+
+    # Socket IO hook
+    url(
+        regex=r'^socket\.io',
+        view=socketio,
+        name='socketio'
+    ),
 
      # Heartbeat
      (r'^hb$', 'wise.worksheet.ajax.heartbeat'),
@@ -66,6 +77,7 @@ urlpatterns = patterns('',
              'registration/password_reset_form.html'},
          name='password_change'
      ),
+
      url(r'^accounts/profile/$',
          direct_to_template,
          {'template': 'registration/profile.html'},
@@ -103,6 +115,8 @@ urlpatterns = patterns('',
             name='worksheet_delete'
          ),
 
+
+
      # Math Palettes
      (r'^palette/$', 'wise.worksheet.views.palette'),
      (r'^rule_request/$', 'wise.worksheet.ajax.rules_request'),
@@ -111,7 +125,6 @@ urlpatterns = patterns('',
      (r'^cmds/new_line/$', 'wise.worksheet.ajax.new_line'),
      (r'^cmds/new_cell/$', 'wise.worksheet.ajax.new_cell'),
      (r'^cmds/apply_rule/$', 'wise.worksheet.ajax.apply_rule'),
-     (r'^cmds/apply_def/$', 'wise.worksheet.ajax.apply_def'),
      (r'^cmds/apply_transform/$', 'wise.worksheet.ajax.apply_transform'),
      (r'^cmds/use_infix/$', 'wise.worksheet.ajax.use_infix'),
      (r'^cmds/draw_graph/$', 'wise.worksheet.ajax.use_infix'),
@@ -121,11 +134,16 @@ urlpatterns = patterns('',
      # more secure but it stops some automated bot attacks. Use
      # reverse("admin:index") to get the url inside of templates
      #url(r'^admin/%s' % randint(0,1e5), include(admin.site.urls))
-     url(r'^admin/', include(admin.site.urls))
-
+     url(r'^admin/', include(admin.site.urls)),
 
      #(r'^favicon\.ico$', 'django.views.generic.simple.redirect_to',
      #        {'url': '/static/img/favicon.ico'}),
+
+     url(r'^experiment$',
+         direct_to_template,
+         {'template': 'experiment.html'},
+         name='experiments'
+     ),
 )
 
 if settings.DEBUG:
