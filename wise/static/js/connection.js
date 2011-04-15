@@ -1,22 +1,48 @@
 (function() {
+  var Message;
+  Message = require('messages').Message;
   module('connection', function(exports) {
+    var Connection, _HeartbeatMsg;
+    _HeartbeatMsg = new Message({
+      task: 'heartbeat',
+      args: [],
+      operands: [],
+      nsi: 1
+    });
     /*
     Websocket Connection
     Wraps socket.io
-    */    var Connection;
+    */
     Connection = (function() {
-      function Connection() {}
-      Connection.prototype.connect_socket = function() {
+      var heartbeat;
+      heartbeat = Message;
+      function Connection() {
         var socket;
-        socket = new io.Socket(WEBSOCKET_HOST, {
-          port: WEBSOCKET_PORT,
+        socket = new io.Socket('localhost', '8000', {
           transports: ['websocket', 'flashsocket', 'htmlfile', 'xhr-multipart', 'xhr-polling', 'jsonp-polling']
         });
         socket.connect();
-        return this.socket = socket;
+        this.socket = socket;
+      }
+      Connection.prototype.send = function(data) {
+        console.log('sent data');
+        return this.socket.send(JSON.stringify(data));
+      };
+      Connection.prototype.listen = function(signal) {};
+      Connection.prototype.isConnected = function() {
+        if (!this.socket) {
+          return false;
+        } else {
+          return this.socket.connected;
+        }
+      };
+      Connection.prototype.heartbeat = function(trial) {
+        this.socket || error('not connected');
+        return trial = trial + 1000 || 1000;
       };
       return Connection;
     })();
-    return exports.Connection = Connection;
+    exports.Connection = Connection;
+    return exports.websock = new Connection();
   });
 }).call(this);

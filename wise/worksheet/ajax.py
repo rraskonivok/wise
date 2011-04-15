@@ -95,17 +95,14 @@ class Message(object):
     def to_json(self):
         return dumps(self.__dict__)
 
-def _co_rule(rule, sexps, socketio=None):
-    print 'LAUNCHED COROUTINE'
+def _co_rule(msg, socketio=None):
 
     context = zmq.Context()
     sender = context.socket(zmq.REQ)
     sender.bind("tcp://127.0.0.1:5000")
-    msg = {'rule': [rule,sexps] }
 
     sender.send_pyobj(msg)
-    sender.recv_pyobj()
-
+    msg = sender.recv_pyobj()
     #socketio.send(sender.recv_pyobj())
 
 # ----------------------
@@ -120,13 +117,19 @@ def socketio(request):
         #return HttpResponse("Everything's shiny, Cap'n. Not to fret.")
 
     while True:
-        message = socketio.recv()
+        messages = socketio.recv()
 
-        if len(message) == 1:
-            print message
-            socketio.send('foo')
-        else:
-            print message
+        for msg in messages:
+            pmsg = loads(msg)
+
+            try:
+                task = pmsg['task']
+            except KeyError:
+                print 'Not well formed'
+                return HttpResponse()
+
+            if task == 'rule':
+                gevent.spawn(_co_rule, msg).start()
 
     return HttpResponse()
 
@@ -177,7 +180,7 @@ def apply_rule(request):
     uid = uidgen(namespace_index)
     rule = request.POST.get('rule')
 
-    gevent.Greenlet(_co_rule, rule, sexps).start()
+    #gevent.Greenlet(_co_rule, rule, sexps).start()
 
     return JsonResponse({})
     #result = tasks.rule_reduce.delay(rule, sexps)

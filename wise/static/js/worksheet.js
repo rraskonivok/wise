@@ -247,6 +247,7 @@ function heartbeat() {
   });
 }
 
+/*
 function apply_rule(rule, operands, callback) {
   var data = {};
   data.rule = rule;
@@ -344,6 +345,7 @@ function apply_rule(rule, operands, callback) {
   });
 
 }
+*/
 
 function use_infix(code) {
   // Sends raw (with proper security restrictions) Pure code 

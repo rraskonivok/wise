@@ -2,7 +2,8 @@
   module('base', function(exports) {
     exports.WEBSOCKET_PORT = 8000;
     exports.WEBSOCKET_HOST = 'localhost';
-    return exports.CLIENT_ID = null;
+    exports.CLIENT_ID = null;
+    return window.error = Notifications.raise;
   });
   /*
   Microtemplating via DOM extension

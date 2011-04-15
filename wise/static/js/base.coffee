@@ -4,6 +4,7 @@ module 'base', (exports) ->
     exports.WEBSOCKET_HOST = 'localhost'
     exports.CLIENT_ID = null
 
+    window.error = Notifications.raise
 
 ###
 Microtemplating via DOM extension
