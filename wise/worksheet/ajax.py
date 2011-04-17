@@ -8,8 +8,9 @@
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 
-import zmq
 import gevent
+from gevent_zeromq import zmq
+
 import uuid
 
 from django.utils.simplejson import dumps, loads
@@ -95,14 +96,29 @@ class Message(object):
     def to_json(self):
         return dumps(self.__dict__)
 
-def _co_rule(msg, socketio=None):
+context = zmq.Context()
+publisher = context.socket(zmq.PUSH)
+publisher.bind("tcp://127.0.0.1:5000")
 
+def message_listener(socketio, uid):
     context = zmq.Context()
-    sender = context.socket(zmq.REQ)
-    sender.bind("tcp://127.0.0.1:5000")
+    subscriber = context.socket(zmq.SUB)
+    subscriber.connect("tcp://127.0.0.1:5001")
 
-    sender.send_pyobj(msg)
-    msg = sender.recv_pyobj()
+    # setsockopt doesn't like unicode
+    subscriber.setsockopt(zmq.SUBSCRIBE, str(uid))
+
+    while True:
+        print 'LISTENING FOR', uid
+        msg = subscriber.recv()
+        if msg:
+            socketio.send({'message': msg.split(":")[1]})
+
+def _co_rule(socket, msg, uid):
+    print 'ENTERED COROUTINE FOR', uid
+    socket.send(msg)
+    #msg = sender.recv()
+
     #socketio.send(sender.recv_pyobj())
 
 # ----------------------
@@ -129,7 +145,9 @@ def socketio(request):
                 return HttpResponse()
 
             if task == 'rule':
-                gevent.spawn(_co_rule, msg).start()
+                uid = uuid.uuid4()
+                gevent.spawn(message_listener, socketio, uid)
+                gevent.spawn(_co_rule, publisher, msg, uid).join()
 
     return HttpResponse()
 

@@ -51,14 +51,14 @@ actions = {'rule', do_rule,
 def main():
 
     context = zmq.Context()
-    receive = context.socket(zmq.REP)
+    receive = context.socket(zmq.PULL)
     receive.connect("tcp://127.0.0.1:5000")
 
     print "Starting the kernel..."
     print ":: tcp://127.0.0.1:5000"
 
     while True:
-        msg = receive.recv_pyobj()
+        msg = receive.recv()
 
         if msg:
             print 'got job'
@@ -68,13 +68,14 @@ def main():
                 rule = msg['args']
                 operands = msg['operands']
                 do_rule(rule, operands)
-            except:
+            except Exception as e:
                 print 'err'
+                print e
 
             end_time = time.time()
 
             print end_time - start_time
-            receive.send_pyobj(end_time - start_time)
+            #receive.send('done')
 
 if __name__ == '__main__':
     main()

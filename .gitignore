@@ -16,3 +16,4 @@ wise/static/admin
 wise/media/*
 wise/pure/pure.c
 wise/cache/*_cache
+wise/wise.db
