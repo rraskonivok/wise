@@ -102,7 +102,7 @@ def main():
                 rule = jmsg['args']
                 operands = jmsg['operands']
                 result = do_rule(rule, operands)
-                #print result
+                print result
             except Exception as e:
                 print 'err'
                 print e

@@ -30,8 +30,7 @@
       return websock.send(msg);
     } else {
       error('Websocket dropped');
-      websock = new Connection();
-      return ApplyRule(rule, operands, callback);
+      return websock = new Connection();
     }
   };
   window.apply_rule = ApplyRule;

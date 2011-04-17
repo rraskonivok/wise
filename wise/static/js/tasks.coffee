@@ -38,6 +38,6 @@ ApplyRule = (rule, operands, callback) ->
     else
         error 'Websocket dropped'
         websock = new Connection()
-        ApplyRule(rule, operands, callback)
+        #ApplyRule(rule, operands, callback)
 
 window.apply_rule = ApplyRule
