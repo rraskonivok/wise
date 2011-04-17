@@ -1,4 +1,4 @@
-{websock} = require 'connection'
+{websock, Connection} = require 'connection'
 {Message} = require 'messages'
 
 ApplyRule = (rule, operands, callback) ->
@@ -33,7 +33,11 @@ ApplyRule = (rule, operands, callback) ->
 
     image = []
 
-    if websock.isConnected()
+    if websock.socket.connected
         websock.send(msg)
+    else
+        error 'Websocket dropped'
+        websock = new Connection()
+        ApplyRule(rule, operands, callback)
 
 window.apply_rule = ApplyRule

@@ -96,21 +96,22 @@ def main():
         jmsg = loads(msg)
 
         if msg:
-            print 'JOB: %s' % jmsg['uid']
             start_time = time.time()
 
             try:
                 rule = jmsg['args']
                 operands = jmsg['operands']
                 result = do_rule(rule, operands)
-                print result
+                #print result
             except Exception as e:
                 print 'err'
                 print e
 
             end_time = time.time()
 
-            print end_time - start_time
+            print '--'
+            print 'job:', jmsg['uid']
+            print 'time:', end_time - start_time
             #receive.send('done')
 
 if __name__ == '__main__':

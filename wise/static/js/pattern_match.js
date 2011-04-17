@@ -318,3 +318,4 @@ var Match = (function() {
     
     return Result;
 })();
+try{ exports.Match = Match } catch(e) {}; // Support for node.js

@@ -1,6 +1,6 @@
 (function() {
-  var ApplyRule, Message, websock;
-  websock = require('connection').websock;
+  var ApplyRule, Connection, Message, websock, _ref;
+  _ref = require('connection'), websock = _ref.websock, Connection = _ref.Connection;
   Message = require('messages').Message;
   ApplyRule = function(rule, operands, callback) {
     var image, msg, _operands;
@@ -26,8 +26,12 @@
       nsi: NAMESPACE_INDEX
     });
     image = [];
-    if (websock.isConnected()) {
+    if (websock.socket.connected) {
       return websock.send(msg);
+    } else {
+      error('Websocket dropped');
+      websock = new Connection();
+      return ApplyRule(rule, operands, callback);
     }
   };
   window.apply_rule = ApplyRule;

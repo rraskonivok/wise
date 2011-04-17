@@ -98,11 +98,10 @@ context = zmq.Context()
 publisher = context.socket(zmq.PUSH)
 publisher.bind("tcp://127.0.0.1:5000")
 
-def message_listener(socketio, uid):
-    context = zmq.Context()
-    subscriber = context.socket(zmq.SUB)
-    subscriber.connect("tcp://127.0.0.1:5001")
+subscriber = context.socket(zmq.SUB)
+subscriber.connect("tcp://127.0.0.1:5001")
 
+def message_listener(socketio, uid):
     # setsockopt doesn't like unicode
     subscriber.setsockopt(zmq.SUBSCRIBE, str(uid))
     completed = False
@@ -135,19 +134,18 @@ def socketio(request):
     while True:
         messages = socketio.recv()
 
-        for msg in messages:
-            pmsg = loads(msg)
+        if messages:
+            for msg in messages:
+                print msg
+                pmsg = loads(msg)
 
-            try:
-                task = pmsg['task']
-            except KeyError:
-                print 'Not well formed'
-                return HttpResponse()
+                if 'task' in pmsg:
+                    task = pmsg['task']
 
-            if task == 'rule':
-                uid = uuid.uuid4()
-                gevent.spawn(message_listener, socketio, uid)
-                gevent.spawn(_co_rule, publisher, pmsg, uid).join()
+                    if task == 'rule':
+                        uid = uuid.uuid4()
+                        gevent.spawn(message_listener, socketio, uid)
+                        gevent.spawn(_co_rule, publisher, pmsg, uid).join()
 
     return HttpResponse()
 
