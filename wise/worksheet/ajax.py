@@ -76,8 +76,6 @@ class Message(object):
                 v = Message(v)
             dct[k] = v
 
-        #self.uuid = uuid.uuid4()
-
     def __iter__(self):
         return iter(self.__dict__.iteritems())
 
@@ -107,16 +105,18 @@ def message_listener(socketio, uid):
 
     # setsockopt doesn't like unicode
     subscriber.setsockopt(zmq.SUBSCRIBE, str(uid))
+    completed = False
 
-    while True:
+    while not completed:
         print 'LISTENING FOR', uid
         msg = subscriber.recv()
         if msg:
             socketio.send({'message': msg.split(":")[1]})
+            completed = True
 
-def _co_rule(socket, msg, uid):
-    print 'ENTERED COROUTINE FOR', uid
-    socket.send(msg)
+def _co_rule(socket, pmsg, uid):
+    pmsg['uid'] = str(uid)
+    socket.send(dumps(pmsg))
     #msg = sender.recv()
 
     #socketio.send(sender.recv_pyobj())
@@ -147,7 +147,7 @@ def socketio(request):
             if task == 'rule':
                 uid = uuid.uuid4()
                 gevent.spawn(message_listener, socketio, uid)
-                gevent.spawn(_co_rule, publisher, msg, uid).join()
+                gevent.spawn(_co_rule, publisher, pmsg, uid).join()
 
     return HttpResponse()
 

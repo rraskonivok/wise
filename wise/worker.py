@@ -4,6 +4,7 @@
 from setproctitle import setproctitle
 setproctitle('wise-worker')
 
+import pprint
 import time
 import zmq
 
@@ -23,6 +24,38 @@ import wise.translators.pytopure as translate
 from wise.translators.pureobjects import i2p, p2i
 from wise.translators.mathobjects import rules
 from wise.translators.pure_wrap import PureInterface
+
+from django.utils.simplejson import dumps, loads
+
+# Adapated from IPython
+class Message(object):
+
+    def __init__(self, msg_dict):
+        dct = self.__dict__
+        for k, v in msg_dict.iteritems():
+            if isinstance(v, dict):
+                v = Message(v)
+            dct[k] = v
+
+        #self.uuid = uuid.uuid4()
+
+    def __iter__(self):
+        return iter(self.__dict__.iteritems())
+
+    def __repr__(self):
+        return repr(self.__dict__)
+
+    def __str__(self):
+        return pprint.pformat(self.__dict__)
+
+    def __contains__(self, k):
+        return k in self.__dict__
+
+    def __getitem__(self, k):
+        return self.__dict__[k]
+
+    def to_json(self):
+        return dumps(self.__dict__)
 
 # --------------
 # Load Interface
@@ -59,9 +92,11 @@ def main():
 
     while True:
         msg = receive.recv()
+        print str(Message(loads(msg)))
 
         if msg:
             print 'got job'
+            print str(msg)
             start_time = time.time()
 
             try:

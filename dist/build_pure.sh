@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-VERSION=0.46
+VERSION=0.47
 
 sudo apt-get install libgmp3-dev llvm g++
 wget http://pure-lang.googlecode.com/files/pure-$VERSION.tar.gz
