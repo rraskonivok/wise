@@ -77,9 +77,10 @@ def do_exec(s):
     pure_expr = interface().eval(code)
     return str(i2p(pure_expr))
 
-actions = {'rule', do_rule,
-           'exec', do_exec,
-          }
+actions = {
+    'rule', do_rule,
+    'exec', do_exec,
+}
 
 def main():
 
@@ -92,17 +93,17 @@ def main():
 
     while True:
         msg = receive.recv()
-        print str(Message(loads(msg)))
+        jmsg = loads(msg)
 
         if msg:
-            print 'got job'
-            print str(msg)
+            print 'JOB: %s' % jmsg['uid']
             start_time = time.time()
 
             try:
-                rule = msg['args']
-                operands = msg['operands']
-                do_rule(rule, operands)
+                rule = jmsg['args']
+                operands = jmsg['operands']
+                result = do_rule(rule, operands)
+                print result
             except Exception as e:
                 print 'err'
                 print e
