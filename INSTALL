@@ -83,7 +83,7 @@ Install
    the local database in the file `wise.db`.
 
 
-8. Run Wise::
+8. Run Wise and login with your admin account::
 
         (wise)$ gunicorn_django
-        (wise)$ firefox localhost:8000
+        (wise)$ firefox localhost:8000/home
