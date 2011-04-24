@@ -11,6 +11,7 @@
 import gevent
 from gevent_zeromq import zmq
 
+import time
 import uuid
 
 from django.utils.simplejson import dumps, loads
@@ -94,35 +95,92 @@ class Message(object):
     def to_json(self):
         return dumps(self.__dict__)
 
+# ----------------------
+# Websocket Handler
+# ----------------------
+
 context = zmq.Context()
 publisher = context.socket(zmq.PUSH)
 publisher.bind("tcp://127.0.0.1:5000")
 
-subscriber = context.socket(zmq.SUB)
-subscriber.connect("tcp://127.0.0.1:5001")
+subscriber = context.socket(zmq.PULL)
+subscriber.bind("tcp://127.0.0.1:5001")
 
-def message_listener(socketio, uid):
-    # setsockopt doesn't like unicode
-    subscriber.setsockopt(zmq.SUBSCRIBE, str(uid))
-    completed = False
+#import redis
+import hashlib
 
-    while not completed:
-        print 'LISTENING FOR', uid
-        msg = subscriber.recv()
-        if msg:
-            socketio.send({'message': msg.split(":")[1]})
-            completed = True
+complexity_threshold = 25
 
-def _co_rule(socket, pmsg, uid):
-    pmsg['uid'] = str(uid)
-    socket.send(dumps(pmsg))
-    #msg = sender.recv()
+def hash_result(pmsg):
+    ops = pmsg['operands']
+    # The usefullness of this hashing being usefull across the
+    # whole system goes as the Kolmogrov complexity of the sexp
+    # expressions it contains.
+    if any([len(s) > complexity_threshold for x in ops]):
+        hsh = hashlib.sha1(''.join(pmsg))
 
-    #socketio.send(sender.recv_pyobj())
+class RequestHandler:
 
-# ----------------------
-# Websocket Handler
-# ----------------------
+    #serializer = simplejson
+
+    def __init__(self, pmsg, socketio):
+        #self.task = pmsg['task']
+        #self.ops = pmsg['ops']
+        self.uid = str(uuid.uuid4())
+        self.pmsg = pmsg
+        self.pmsg['uid'] = self.uid
+
+        self.completed = False
+        self.socketio = socketio
+
+        self.push_sock = publisher
+        self.pull_sock = subscriber
+
+        self.start_time = time.time()
+        print 'inited'
+
+    def handle(self):
+        gevent.spawn(self.handle_response)
+        #self.controller = gevent.spawn(self.handle_controller)
+        gevent.spawn(self.handle_dispatch).join()
+
+    def handle_controller(self):
+        while True:
+            print 'CONTROLLING'
+            if not self.socketio:
+                self.request.kill()
+                self.response.kill()
+            gevent.sleep(10)
+
+    def handle_dispatch(self):
+        print 'DISPATCHING'
+        pmsg = self.pmsg
+        try:
+            print self.push_sock or 'No socket'
+            print dumps(pmsg) or 'No message'
+            self.push_sock.send(dumps(pmsg))
+        except e:
+            print str(e)
+        print 'SUCCESS'
+
+    def handle_response(self):
+        print 'LISTENING FOR'
+        print 'LISTENING FOR', self.uid
+
+        while not self.completed:
+            msg = self.pull_sock.recv_pyobj()
+
+            if msg['uid'] == self.uid:
+                print 'sending result', msg['result']
+                #socketio.send({'message': msg.split(":")[1]})
+                self.completed = True
+
+        self.complete()
+
+    def complete(self):
+        self.completed = True
+        print 'COMPLETED'
+        print 'time', time.time() - self.start_time
 
 def socketio(request):
     socketio = request.environ['socketio']
@@ -136,16 +194,11 @@ def socketio(request):
 
         if messages:
             for msg in messages:
-                print msg
                 pmsg = loads(msg)
-
-                if 'task' in pmsg:
-                    task = pmsg['task']
-
-                    if task == 'rule':
-                        uid = uuid.uuid4()
-                        gevent.spawn(message_listener, socketio, uid)
-                        gevent.spawn(_co_rule, publisher, pmsg, uid).join()
+                print pmsg
+                req = RequestHandler(pmsg, socketio)
+                print 'created handle'
+                req.handle()
 
     return HttpResponse()
 

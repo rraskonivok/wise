@@ -97,6 +97,20 @@ CELERY_ALWAYS_EAGER = WORKER_TYPE == 'sync'
 # then Initially you may need to run: manage.py createcachetable
 #CACHE_BACKEND = 'db://cache'
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+    #'default': {
+        #'BACKEND': 'redis_cache.RedisCache',
+        #'LOCATION': 'localhost:6379',
+        #'OPTIONS': {
+            #'DB': 1,
+            #'PASSWORD': 'foo',
+        #},
+    #},
+}
+
 #---------------------------
 # Django Enviroment
 #---------------------------
