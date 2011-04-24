@@ -33,11 +33,13 @@ ApplyRule = (rule, operands, callback) ->
 
     image = []
 
-    if websock.socket.connected
-        websock.send(msg)
-    else
-        error 'Websocket dropped'
-        websock = new Connection()
-        #ApplyRule(rule, operands, callback)
+    websock.send(msg)
+
+    #if websock.socket.connected
+        #websock.send(msg)
+    #else
+        #error 'Websocket dropped'
+        #websock = new Connection()
+        ##ApplyRule(rule, operands, callback)
 
 window.apply_rule = ApplyRule

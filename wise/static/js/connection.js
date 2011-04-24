@@ -18,11 +18,15 @@
       heartbeat = Message;
       function Connection() {
         var socket;
-        socket = new io.Socket('localhost', '8000', {
-          transports: ['websocket', 'flashsocket', 'htmlfile', 'xhr-multipart', 'xhr-polling', 'jsonp-polling']
+        socket = new io.Socket('127.0.0.1', '8000', {
+          transports: ['flashsocket', 'jsonp-polling']
         });
         socket.connect();
         this.socket = socket;
+        this.socket.on('message', function(msg) {
+          alert('new message');
+          return console.log(msg);
+        });
       }
       Connection.prototype.send = function(data) {
         console.log('sent data');

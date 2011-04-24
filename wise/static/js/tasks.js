@@ -26,12 +26,7 @@
       nsi: NAMESPACE_INDEX
     });
     image = [];
-    if (websock.socket.connected) {
-      return websock.send(msg);
-    } else {
-      error('Websocket dropped');
-      return websock = new Connection();
-    }
+    return websock.send(msg);
   };
   window.apply_rule = ApplyRule;
 }).call(this);

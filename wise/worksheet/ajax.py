@@ -13,6 +13,7 @@ from gevent_zeromq import zmq
 
 import time
 import uuid
+import hashlib
 
 from django.utils.simplejson import dumps, loads
 
@@ -107,19 +108,14 @@ subscriber = context.socket(zmq.PULL)
 subscriber.bind("tcp://127.0.0.1:5001")
 
 #import redis
-import hashlib
-
-complexity_threshold = 25
-
-def hash_result(pmsg):
-    ops = pmsg['operands']
-    # The usefullness of this hashing being usefull across the
-    # whole system goes as the Kolmogrov complexity of the sexp
-    # expressions it contains.
-    if any([len(s) > complexity_threshold for x in ops]):
-        hsh = hashlib.sha1(''.join(pmsg))
 
 class RequestHandler:
+
+    complexity_threshold = 5
+    complexity_metric = lambda s: s.count('(')
+
+    # TODO: use Redis
+    lookup = {}
 
     #serializer = simplejson
 
@@ -129,57 +125,74 @@ class RequestHandler:
         self.uid = str(uuid.uuid4())
         self.pmsg = pmsg
         self.pmsg['uid'] = self.uid
+        self.hsh = None
 
         self.completed = False
+        self.cache_result = False
         self.socketio = socketio
 
         self.push_sock = publisher
         self.pull_sock = subscriber
 
         self.start_time = time.time()
-        print 'inited'
+
+    def canhash(self):
+        ops = self.pmsg['operands']
+
+        # The usefullness of this hashing being usefull across the
+        # whole system goes as the Kolmogrov complexity of the sexp
+        # expressions it contains.
+        if any([complexity_metric(x) > self.complexity_threshold for x in ops]):
+            self.hsh = hashlib.sha1(''.join(pmsg))
+            if self.hsh in lookup:
+                self.completed = True
+                self.handle_response(cached=self.hsh)
+            else:
+                self.cache_result = True
+        else:
+            return None
 
     def handle(self):
         gevent.spawn(self.handle_response)
-        #self.controller = gevent.spawn(self.handle_controller)
+        gevent.spawn(self.handle_controller)
         gevent.spawn(self.handle_dispatch).join()
 
-    def handle_controller(self):
-        while True:
-            print 'CONTROLLING'
-            if not self.socketio:
-                self.request.kill()
-                self.response.kill()
+    #def handle_controller(self):
+        while not self.completed:
+            if not self.socketio.connected():
+                print 'Connection LOST'
             gevent.sleep(10)
 
     def handle_dispatch(self):
-        print 'DISPATCHING'
         pmsg = self.pmsg
-        try:
-            print self.push_sock or 'No socket'
-            print dumps(pmsg) or 'No message'
-            self.push_sock.send(dumps(pmsg))
-        except e:
-            print str(e)
-        print 'SUCCESS'
+        self.push_sock.send(dumps(pmsg))
 
-    def handle_response(self):
-        print 'LISTENING FOR'
-        print 'LISTENING FOR', self.uid
+    def handle_response(self, cached=False):
+        if cached:
+            print 'using cached value'
+            print self.lookup[cached]
 
-        while not self.completed:
+        while True:
             msg = self.pull_sock.recv_pyobj()
 
             if msg['uid'] == self.uid:
-                print 'sending result', msg['result']
-                #socketio.send({'message': msg.split(":")[1]})
-                self.completed = True
+                result = msg['result']
 
-        self.complete()
+                if self.socketio.connected():
+                    self.socketio.send({'uid': self.uid, 'result': result})
+                    print 'sent response back to client'
+                else:
+                    self.socketio.send({'uid': self.uid, 'result': result})
+                    print 'lost connect'
+
+                self.completed = True
+                self.complete()
+
+                #if self.cache_result:
+                    #self.lookup[self.hsh] = result
 
     def complete(self):
         self.completed = True
-        print 'COMPLETED'
         print 'time', time.time() - self.start_time
 
 def socketio(request):
@@ -187,7 +200,7 @@ def socketio(request):
 
     # Is everything shiny?
     #if settings.DEBUG and 'socket.io' in request.environ['PATH_INFO']:
-        #return HttpResponse("Everything's shiny, Cap'n. Not to fret.")
+        #return HttpResponse"Everything's shiny, Cap'n. Not to fret.")
 
     while True:
         messages = socketio.recv()
@@ -197,8 +210,8 @@ def socketio(request):
                 pmsg = loads(msg)
                 print pmsg
                 req = RequestHandler(pmsg, socketio)
-                print 'created handle'
                 req.handle()
+                socketio.send('foo')
 
     return HttpResponse()
 

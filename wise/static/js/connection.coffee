@@ -19,19 +19,23 @@ module 'connection', (exports) ->
 
         constructor: ->
             socket = new io.Socket(
-                'localhost'
+                '127.0.0.1'
                 '8000'
                 transports: [
-                     'websocket'
+                     #'websocket'
                      'flashsocket'
-                     'htmlfile'
-                     'xhr-multipart'
-                     'xhr-polling'
+                     #'htmlfile'
+                     #'xhr-multipart'
+                     #'xhr-polling'
                      'jsonp-polling']
             )
 
             socket.connect()
             @socket = socket
+
+            @socket.on 'message',(msg) ->
+                alert('new message')
+                console.log msg
 
         send: (data) ->
             console.log('sent data')
@@ -54,7 +58,6 @@ module 'connection', (exports) ->
                 #@socket.listen('heartbeat')
                 #error 'try again in $0 seconds'.t(trials)
                 #setTimeout(@heatbeat, trial)
-
 
     exports.Connection = Connection
     exports.websock = new Connection()
