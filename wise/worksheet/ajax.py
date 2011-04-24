@@ -142,7 +142,7 @@ class RequestHandler:
         # The usefullness of this hashing being usefull across the
         # whole system goes as the Kolmogrov complexity of the sexp
         # expressions it contains.
-        if any([complexity_metric(x) > self.complexity_threshold for x in ops]):
+        if all([complexity_metric(x) < self.complexity_threshold for x in ops]):
             self.hsh = hashlib.sha1(''.join(pmsg))
             if self.hsh in lookup:
                 self.completed = True
@@ -154,7 +154,7 @@ class RequestHandler:
 
     def handle(self):
         gevent.spawn(self.handle_response)
-        gevent.spawn(self.handle_controller)
+        #gevent.spawn(self.handle_controller)
         gevent.spawn(self.handle_dispatch).join()
 
     #def handle_controller(self):
@@ -205,13 +205,14 @@ def socketio(request):
     while True:
         messages = socketio.recv()
 
-        if messages:
-            for msg in messages:
-                pmsg = loads(msg)
-                print pmsg
-                req = RequestHandler(pmsg, socketio)
-                req.handle()
-                socketio.send('foo')
+        if len(messages) == 1:
+            msg = messages[0]
+            pmsg = loads(msg)
+
+            print pmsg
+            req = RequestHandler(pmsg, socketio)
+            req.handle()
+            socketio.send('foo')
 
     return HttpResponse()
 
