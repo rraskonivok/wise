@@ -18,19 +18,9 @@ module 'connection', (exports) ->
         heartbeat = Message
 
         constructor: ->
-            socket = new io.Socket(
-                '127.0.0.1'
-                '8000'
-                transports: [
-                     #'websocket'
-                     'flashsocket'
-                     #'htmlfile'
-                     #'xhr-multipart'
-                     #'xhr-polling'
-                     'jsonp-polling']
-            )
-
+            socket = new io.Socket(document.location.hostname)
             socket.connect()
+
             @socket = socket
 
             @socket.on 'message',(msg) ->

@@ -157,7 +157,7 @@ class RequestHandler:
         #gevent.spawn(self.handle_controller)
         gevent.spawn(self.handle_dispatch).join()
 
-    #def handle_controller(self):
+    def handle_controller(self):
         while not self.completed:
             if not self.socketio.connected():
                 print 'Connection LOST'
@@ -167,26 +167,20 @@ class RequestHandler:
         pmsg = self.pmsg
         self.push_sock.send(dumps(pmsg))
 
-    def handle_response(self, cached=False):
-        if cached:
-            print 'using cached value'
-            print self.lookup[cached]
+    def handle_response(self):
 
         while True:
             msg = self.pull_sock.recv_pyobj()
 
             if msg['uid'] == self.uid:
+                print "SENDING RESULT"
                 result = msg['result']
 
-                if self.socketio.connected():
-                    self.socketio.send({'uid': self.uid, 'result': result})
-                    print 'sent response back to client'
-                else:
-                    self.socketio.send({'uid': self.uid, 'result': result})
-                    print 'lost connect'
+                self.socketio.send({'uid': self.uid, 'result': result})
 
                 self.completed = True
                 self.complete()
+                break
 
                 #if self.cache_result:
                     #self.lookup[self.hsh] = result
@@ -212,7 +206,6 @@ def socketio(request):
             print pmsg
             req = RequestHandler(pmsg, socketio)
             req.handle()
-            socketio.send('foo')
 
     return HttpResponse()
 

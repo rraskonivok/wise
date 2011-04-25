@@ -18,9 +18,7 @@
       heartbeat = Message;
       function Connection() {
         var socket;
-        socket = new io.Socket('127.0.0.1', '8000', {
-          transports: ['flashsocket', 'jsonp-polling']
-        });
+        socket = new io.Socket(document.location.hostname);
         socket.connect();
         this.socket = socket;
         this.socket.on('message', function(msg) {
