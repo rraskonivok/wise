@@ -32,4 +32,9 @@ function base_mode() {
     //$("#selectionlist").empty();
     Wise.Selection.clear();
     Wise.CmdLine.hide();
+
+    // MUST RETURN FALSE, otherwise Firefox cancels the active
+    // XHR request, which may close the socket... which is very
+    // bad
+    return false;
 }

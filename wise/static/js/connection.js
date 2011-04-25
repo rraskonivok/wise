@@ -21,9 +21,9 @@
         socket = new io.Socket(document.location.hostname);
         socket.connect();
         this.socket = socket;
-        this.socket.on('message', function(msg) {
+        this.socket.on('message', function(data) {
           alert('new message');
-          return console.log(msg);
+          return console.log(data.result);
         });
       }
       Connection.prototype.send = function(data) {

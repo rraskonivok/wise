@@ -174,9 +174,10 @@ class RequestHandler:
 
             if msg['uid'] == self.uid:
                 print "SENDING RESULT"
-                result = msg['result']
+                result = dumps(msg['result'])
 
-                self.socketio.send({'uid': self.uid, 'result': result})
+                if result:
+                    self.socketio.send({'uid': self.uid, 'result': result})
 
                 self.completed = True
                 self.complete()

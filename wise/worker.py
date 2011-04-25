@@ -89,7 +89,7 @@ def do_rule(rule, sexps, nsi):
 
     # Create the uid generator and walk the new expression to
     # return the JSON
-    uid = uidgen(nsi)
+    uid = uidgen(int(nsi))
     expr_tree = translate.parse_pure_exp(result)
     expr_tree.uid_walk(uid, overwrite=True)
 
@@ -135,19 +135,14 @@ def main():
         if msg:
             start_time = time.time()
 
-            try:
-                rule = jmsg['args']
-                operands = jmsg['operands']
-                uid = jmsg['uid']
-                nsi = jmsg['nsi']
+            rule = jmsg['args']
+            operands = jmsg['operands']
+            uid = jmsg['uid']
+            nsi = jmsg['nsi']
 
-                result = do_rule(rule, operands, nsi)
-                print 'result', result
-                send_result(uid, result)
-            except Exception as e:
-                send_result(uid, 'error')
-                print 'err'
-                print e
+            result = do_rule(rule, operands, nsi)
+            print 'result', result
+            send_result(uid, result)
 
             end_time = time.time()
 

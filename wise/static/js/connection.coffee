@@ -11,7 +11,7 @@ module 'connection', (exports) ->
 
     ###
     Websocket Connection
-    Wraps socket.io 
+    Wraps socket.io
     ###
     class Connection
 
@@ -23,9 +23,9 @@ module 'connection', (exports) ->
 
             @socket = socket
 
-            @socket.on 'message',(msg) ->
+            @socket.on 'message',(data) ->
                 alert('new message')
-                console.log msg
+                console.log data.result
 
         send: (data) ->
             console.log('sent data')
