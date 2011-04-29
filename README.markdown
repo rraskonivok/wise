@@ -19,6 +19,5 @@ Wise includes source from many open source projects including:
 * jQuery / jQuery UI - <http://jquery.com/>
 * Django - <http://www.djangoproject.com/>
 * backbone.js - <http://documentcloud.github.com/backbone>
-* underscore.js - <http://documentcloud.github.com/underscore>
 * MathJax - <http://www.mathjax.org>
 * Funcparserlib - <http://code.google.com/p/funcparserlib>
