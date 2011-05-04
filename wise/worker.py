@@ -98,8 +98,8 @@ def do_rule(rule, sexps, nsi):
     _nsi  =  uid.next()[3:]
 
     return json.dumps({
-        'new_html'        : _html,
-        'new_json'        : _json,
+        'new_html'        : [_html],
+        'new_json'        : [_json],
         'namespace_index' : _nsi
     })
 

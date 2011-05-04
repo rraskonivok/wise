@@ -1,9 +1,12 @@
 (function() {
-  var ApplyRule, Connection, Task, websock, _ref;
+  var ApplyRule, Connection, ResultCallback, ResultQueue, Task, websock, _ref;
   _ref = require('connection'), websock = _ref.websock, Connection = _ref.Connection;
   Task = require('messages').Task;
+  ResultQueue = [];
+  ResultCallback = {};
+  window.ResultQueue = ResultQueue;
   ApplyRule = function(rule, operands, callback) {
-    var image, msg, _operands;
+    var image, msg, uid, _operands;
     if (!operands) {
       if (Wise.Selection.isEmpty()) {
         return;
@@ -19,15 +22,46 @@
         }
       });
     }
+    uid = createUUID();
     msg = new Task({
       task: 'rule',
       args: rule,
       operands: operands,
       nsi: NAMESPACE_INDEX,
-      uid: createUUID()
+      uid: uid
     });
     image = [];
-    return websock.send(msg);
+    websock.send(msg);
+    ResultQueue.push(uid);
+    return ResultCallback[uid] = function(result) {
+      var i, image_html, image_json, len, newnode, preimage;
+      result = JSON.parse(result);
+      window.result = result;
+      len = result.new_html.length - 1;
+      for (i = 0; (0 <= len ? i <= len : i >= len); (0 <= len ? i += 1 : i -= 1)) {
+        preimage = _operands[i];
+        image_json = result.new_json[i];
+        image_html = result.new_html[i];
+        console.log(preimage, image_json, image_html);
+      }
+      switch (image_html) {
+        case 'delete':
+          return preimage.remove();
+        case void 0:
+          return preimage.remove();
+        default:
+          newnode = graft(preimage, image_json, image_html);
+          Wise.last_expr = newnode.root;
+          return Wise.Selection.clear();
+      }
+    };
   };
+  websock.socket.on('message', function(msg) {
+    if (ResultQueue[0] === msg.uid) {
+      console.log('processing task', msg.uid);
+      ResultQueue.pop();
+      return ResultCallback[msg.uid].call(null, JSON.parse(msg.result));
+    }
+  });
   window.apply_rule = ApplyRule;
 }).call(this);

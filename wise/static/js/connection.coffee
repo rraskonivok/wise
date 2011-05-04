@@ -25,7 +25,7 @@ module 'connection', (exports) ->
 
             @socket.on 'message',(data) ->
                 alert('new message')
-                console.log JSON.parse(data.result)
+                #console.log JSON.parse(data.result)
 
         send: (data) ->
             console.log('sent data')
