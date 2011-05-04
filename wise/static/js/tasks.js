@@ -1,7 +1,7 @@
 (function() {
-  var ApplyRule, Connection, Message, websock, _ref;
+  var ApplyRule, Connection, Task, websock, _ref;
   _ref = require('connection'), websock = _ref.websock, Connection = _ref.Connection;
-  Message = require('messages').Message;
+  Task = require('messages').Task;
   ApplyRule = function(rule, operands, callback) {
     var image, msg, _operands;
     if (!operands) {
@@ -19,11 +19,12 @@
         }
       });
     }
-    msg = new Message({
+    msg = new Task({
       task: 'rule',
       args: rule,
       operands: operands,
-      nsi: NAMESPACE_INDEX
+      nsi: NAMESPACE_INDEX,
+      uid: createUUID()
     });
     image = [];
     return websock.send(msg);

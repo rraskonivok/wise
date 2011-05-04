@@ -23,7 +23,7 @@
         this.socket = socket;
         this.socket.on('message', function(data) {
           alert('new message');
-          return console.log(data.result);
+          return console.log(JSON.parse(data.result));
         });
       }
       Connection.prototype.send = function(data) {

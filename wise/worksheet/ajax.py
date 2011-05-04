@@ -122,9 +122,9 @@ class RequestHandler:
     def __init__(self, pmsg, socketio):
         #self.task = pmsg['task']
         #self.ops = pmsg['ops']
-        self.uid = str(uuid.uuid4())
+        self.uid = pmsg['uid']
         self.pmsg = pmsg
-        self.pmsg['uid'] = self.uid
+        #self.pmsg['uid'] = self.uid
         self.hsh = None
 
         self.completed = False

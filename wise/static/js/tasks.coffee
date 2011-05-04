@@ -1,5 +1,5 @@
 {websock, Connection} = require 'connection'
-{Message} = require 'messages'
+{Task} = require 'messages'
 
 ApplyRule = (rule, operands, callback) ->
 
@@ -24,11 +24,12 @@ ApplyRule = (rule, operands, callback) ->
             else
                 return obj.sexp()
 
-    msg = new Message
+    msg = new Task
         task     : 'rule'
         args     : rule
         operands : operands
         nsi      : NAMESPACE_INDEX
+        uid      : createUUID()
 
 
     image = []
