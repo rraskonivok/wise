@@ -34,26 +34,31 @@
     websock.send(msg);
     ResultQueue.push(uid);
     return ResultCallback[uid] = function(result) {
-      var i, image_html, image_json, len, newnode, preimage;
+      var i, image_html, image_json, len, newnode, preimage, _results;
       result = JSON.parse(result);
       window.result = result;
       len = result.new_html.length - 1;
+      window.NAMESPACE_INDEX = result.namespace_index;
+      console.log(window.NAMESPACE_INDEX, result.namespace_index);
+      _results = [];
       for (i = 0; (0 <= len ? i <= len : i >= len); (0 <= len ? i += 1 : i -= 1)) {
         preimage = _operands[i];
         image_json = result.new_json[i];
         image_html = result.new_html[i];
-        console.log(preimage, image_json, image_html);
+        _results.push((function() {
+          switch (image_html) {
+            case 'delete':
+              return preimage.remove();
+            case void 0:
+              return preimage.remove();
+            default:
+              newnode = graft(preimage, image_json, image_html);
+              Wise.last_expr = newnode.root;
+              return Wise.Selection.clear();
+          }
+        })());
       }
-      switch (image_html) {
-        case 'delete':
-          return preimage.remove();
-        case void 0:
-          return preimage.remove();
-        default:
-          newnode = graft(preimage, image_json, image_html);
-          Wise.last_expr = newnode.root;
-          return Wise.Selection.clear();
-      }
+      return _results;
     };
   };
   websock.socket.on('message', function(msg) {

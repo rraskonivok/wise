@@ -47,20 +47,21 @@ ApplyRule = (rule, operands, callback) ->
         result = JSON.parse(result)
         window.result = result
         len = result.new_html.length - 1
+        window.NAMESPACE_INDEX = result.namespace_index
+        console.log(window.NAMESPACE_INDEX, result.namespace_index)
 
         for i in [0..len]
             preimage   = _operands[i]
             image_json = result.new_json[i]
             image_html = result.new_html[i]
-            console.log preimage, image_json, image_html
 
-          switch image_html
-              when 'delete' then preimage.remove()
-              when undefined then preimage.remove()
-              else
-                  newnode = graft(preimage, image_json, image_html)
-                  Wise.last_expr = newnode.root
-                  Wise.Selection.clear()
+            switch image_html
+                when 'delete' then preimage.remove()
+                when undefined then preimage.remove()
+                else
+                    newnode = graft(preimage, image_json, image_html)
+                    Wise.last_expr = newnode.root
+                    Wise.Selection.clear()
 
 websock.socket.on 'message', (msg) ->
     # If result is the at the top of the queue then just do

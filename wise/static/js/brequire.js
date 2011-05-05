@@ -41,5 +41,5 @@
   };
   window.require = require;
   window.module = require.module;
-  window.exports = window;
+  window.exports >= window;
 }).call(this);

@@ -43,4 +43,4 @@ require.module = (path, fn) ->
 #### Exports
 window.require = require
 window.module = require.module
-window.exports = window
+window.exports _-> = window
