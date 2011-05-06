@@ -7,6 +7,22 @@ I'm always happy to receive feedback!
 Most of the code is Django boilerplate stuff and can be skimmed
 but the big program logic files are:
 
+Maths Stuff:
+----------------
+
+    * packages/base/term.py
+    * packages/base/objects.py
+    * packages/base/*.pure
+
+
+Pure Stuff:
+----------------
+
+    * pure/cpure.pyx
+    * translators/pure_wrap.py
+    * translators/pytopure.py
+
+
 Worksheet Stuff:
 ----------------
 
@@ -25,20 +41,6 @@ Worksheet Stuff:
     And the REST API is written with Django Piston
 
     * api/handlers.py
-
-Pure Stuff:
-----------------
-
-    * pure/cpure.pyx
-    * translators/pure_wrap.py
-    * translators/pytopure.py
-
-Maths Stuff:
-----------------
-
-    * base/term.py
-    * base/objects.py
-    * base/*.pure
 
 If you want to make your own package then take a look at
 /pkgtemplate as a starting point.
