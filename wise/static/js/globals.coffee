@@ -2,7 +2,7 @@
 # in state
 Settings = new Backbone.Model
 
-    DEBUG               : true
+    DEBUG               : window.DEBUG
     DISABLE_TYPESETTING : false
     DISABLE_MATH        : false
     SERVER_HEARTBEAT    : false
@@ -10,7 +10,7 @@ Settings = new Backbone.Model
 Application = Backbone.Model.extend
     version: '0.1.3'
 
-        # Created upon call of init()
+    # Created upon call of init()
     Worksheet    : null
     Nodes        : null
     Selection    : null
@@ -22,7 +22,9 @@ Application = Backbone.Model.extend
     last_expr    : null
 
     cmd_visible  : null
-    debug        : true
+    # Debug flag is injected into the page via Django and mirros
+    # the DEBUG flag set in settings.py
+    debug        : window.DEBUG
 
 Wise = new Application()
 Wise.Settings = Settings

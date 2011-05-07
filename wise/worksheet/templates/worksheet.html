@@ -54,6 +54,10 @@ Init Function + Global Vars
     // unit tests
     var HAS_BROWSER = true;
 
+    // Toggling the DEBUG flag off will suppress most output to
+    // the console and logger
+    var DEBUG = {{debug}};
+
     $(document).ready(function () {
         var init = require('init').init;
         init();

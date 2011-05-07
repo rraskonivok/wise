@@ -210,7 +210,8 @@ TEMPLATE_DEBUG = DEBUG
 USE_BUNDLES = False
 DEFER_JAVASCRIPT = False
 
-from worksheet.media import MEDIA_BUNDLES
+import worksheet.media
+MEDIA_BUNDLES = worksheet.media.MEDIA_BUNDLES
 
 #---------------------------
 # Apps

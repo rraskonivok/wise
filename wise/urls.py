@@ -58,6 +58,11 @@ urlpatterns = patterns('',
          name='ecosystem'
      ),
 
+     url(r'^unit$',
+         'wise.worksheet.views.unittest',
+         name='unittest'
+     ),
+
     # Socket IO hook
     url(
         regex=r'^socket\.io',

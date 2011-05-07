@@ -72,6 +72,19 @@ MEDIA_BUNDLES = (
      )},
 
     {"type": "javascript",
+     "name": "unittest_js",
+     "path": MEDIA_ROOT + "js/test/",
+     "url": MEDIA_URL + "js/tests/",
+     "minify": False,
+     "files": (
+        # External libraries
+        #'head.js',
+        'qunit.js',
+        'jquery.mockjax.min.js',
+        'jslitmus.js',
+     )},
+
+    {"type": "javascript",
      "name": "worksheet_js",
      "path": MEDIA_ROOT + "js/",
      "url": MEDIA_URL + "js/",

@@ -116,6 +116,16 @@ def ecosystem(request):
                               context_instance=RequestContext(request))
 
 #---------------------------
+# Unit Tests
+#---------------------------
+
+@login_required
+def unittest(request):
+    return render_to_response('unittest.html',
+                              {},
+                              context_instance=RequestContext(request))
+
+#---------------------------
 # Worksheet
 #---------------------------
 
@@ -303,6 +313,7 @@ def ws(request, ws_id):
         'cell_index': len(cells),
         'json_cells': json.dumps(json_cells),
         'xhtml': True,
+        'debug': 'true' if settings.DEBUG else 'false',
         },
         context_instance = RequestContext(request),
     )
