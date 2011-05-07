@@ -21,9 +21,9 @@ $(document).ajaxError(function (e, xhr, settings, exception) {
     Wise.Log.serverError('Operation failed, since server did not respond',content);
 });
 
-$(document).ready(function () {
-  init();
-});
+//$(document).ready(function () {
+  //init();
+//});
 
 $(document).ajaxStart(function () {
   $('#ajax_loading').show();
@@ -245,19 +245,6 @@ function heartbeat() {
       error("Not responding");
     },
   });
-}
-
-function createUUID() {
-    var s = [];
-    var hexDigits = "0123456789abcdef";
-    for (var i = 0; i < 32; i++) {
-        s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
-    }
-    s[12] = "4";
-    s[16] = hexDigits.substr((s[16] & 0x3) | 0x8, 1);
-
-    var uuid = s.join("");
-    return uuid;
 }
 
 /*

@@ -1,4 +1,6 @@
 (function() {
+  var createUUID;
+  createUUID = require('utils').createUUID;
   module('messages', function(exports) {
     var Message, Task;
     Message = function(data) {
@@ -15,7 +17,7 @@
         args: data.args || error('mssing args'),
         operands: data.operands || error('missing operands'),
         nsi: data.nsi || error('missing namespace_index'),
-        uid: data.uid || error('missing uuid')
+        uid: createUUID()
       };
     };
     exports.Message = Message;

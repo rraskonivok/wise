@@ -10,6 +10,8 @@ from django.template import Variable
 from media_bundler import bundler
 from media_bundler.conf import bundler_settings
 
+from django.utils.simplejson import dumps
+
 register = template.Library()
 
 
@@ -206,6 +208,39 @@ class MultiBundleNode(template.Node):
         return "\n".join(tags)
 
 
+class Filenames(template.Node):
+
+    """
+    Return a array encoded as JSON for the filenames in a
+    bundle.
+    """
+
+    bundle_type_handlers = {
+        "javascript": JavascriptNode,
+    }
+
+    def __init__(self, bundle_name_var, **kwargs):
+        self.bundle_name_var = Variable(bundle_name_var)
+
+        for attr_name, attr_value in kwargs.items():
+            if hasattr(self, attr_name):
+                setattr(self, attr_name, attr_value)
+
+    def render(self, context):
+        bundle_name = self.bundle_name_var.resolve(context)
+        bundle = bundler.get_bundles()[bundle_name]
+        type_handler = self.bundle_type_handlers[bundle.type]
+
+        def process_file(file_name):
+            node = type_handler(self.bundle_name_var,
+                                file_name)
+            node.TAG = '%s'
+            return node.render(context)
+
+        tags = [process_file(file_name) for file_name in bundle.files]
+        return dumps(tags)
+
+
 @register.tag
 def load_bundle(parser, token):
     try:
@@ -215,3 +250,13 @@ def load_bundle(parser, token):
         msg = "%r tag takes a single argument: bundle_name."
         raise template.TemplateSyntaxError(msg % tag_name)
     return MultiBundleNode(bundle_name)
+
+@register.tag
+def filenames(parser, token):
+    try:
+        tag_name, bundle_name = token.split_contents()
+    except ValueError:
+        tag_name = token.contents.split()[0]
+        msg = "%r tag takes a single argument: bundle_name."
+        raise template.TemplateSyntaxError(msg % tag_name)
+    return Filenames(bundle_name)

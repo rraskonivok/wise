@@ -6,7 +6,7 @@
   ResultCallback = {};
   window.ResultQueue = ResultQueue;
   ApplyRule = function(rule, operands, callback) {
-    var image, msg, uid, _operands;
+    var image, task, uid, _operands;
     if (!operands) {
       if (Wise.Selection.isEmpty()) {
         return;
@@ -22,16 +22,15 @@
         }
       });
     }
-    uid = createUUID();
-    msg = new Task({
+    task = new Task({
       task: 'rule',
       args: rule,
       operands: operands,
-      nsi: NAMESPACE_INDEX,
-      uid: uid
+      nsi: NAMESPACE_INDEX
     });
     image = [];
-    websock.send(msg);
+    uid = task.uid;
+    websock.send(task);
     ResultQueue.push(uid);
     return ResultCallback[uid] = function(result) {
       var i, image_html, image_json, len, newnode, preimage, _results;

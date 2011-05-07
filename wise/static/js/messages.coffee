@@ -1,3 +1,5 @@
+{createUUID} = require 'utils'
+
 module 'messages', (exports) ->
 
     Message = (data) ->
@@ -11,7 +13,7 @@ module 'messages', (exports) ->
         args     : data.args     || error('mssing args')
         operands : data.operands || error('missing operands')
         nsi      : data.nsi      || error('missing namespace_index')
-        uid      : data.uid      || error('missing uuid')
+        uid      : createUUID()
 
     exports.Message = Message
     exports.Task = Task

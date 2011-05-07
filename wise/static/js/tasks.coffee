@@ -29,18 +29,19 @@ ApplyRule = (rule, operands, callback) ->
             else
                 return obj.sexp()
 
-    uid = createUUID()
-    msg = new Task
+    task = new Task
         task     : 'rule'
         args     : rule
         operands : operands
         nsi      : NAMESPACE_INDEX
-        uid      : uid
 
 
     image = []
 
-    websock.send(msg)
+    # The uid for this given task, used to track during all queing
+    # processes
+    uid = task.uid
+    websock.send(task)
 
     ResultQueue.push(uid)
     ResultCallback[uid] = (result) ->

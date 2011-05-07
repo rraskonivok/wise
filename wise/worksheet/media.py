@@ -45,10 +45,12 @@ MEDIA_BUNDLES = (
      "url": MEDIA_URL + "js/",
      "minify": False,
      "files": (
+        # External libraries
+        'head.js',
+        'brequire.js',
+
         'jquery.js',
-#        'xml.js',
         'jquery-ui.js',
-#        'dimensions.js',
         'layout.js',
         'json2.js',
         'underscore.js',
@@ -57,7 +59,7 @@ MEDIA_BUNDLES = (
         'pnotify.js',
         'keys.js',
         'hoverintent.js',
-        'sanitize.js',
+        #'sanitize.js',
         'rte.js',
         'editable.js',
      )},
@@ -68,6 +70,7 @@ MEDIA_BUNDLES = (
      "url": MEDIA_URL + "js/",
      "minify": False,
      "files": (
+        'worksheet_init.js',
         'worksheet.js',
         'interactions.js',
         'worksheet_ui.js',
@@ -80,7 +83,14 @@ MEDIA_BUNDLES = (
         'pattern_match.js',
         'globals.js',
         'keyshortcuts.js',
-        'worksheet_init.js',
         'autocomplete.js',
+
+         # Generated coffeescript
+        'utils.js',
+        'socket.io.js',
+        'base.js',
+        'messages.js',
+        'connection.js',
+        'tasks.js'
      )},
 )
