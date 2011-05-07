@@ -21,10 +21,6 @@ $(document).ajaxError(function (e, xhr, settings, exception) {
     Wise.Log.serverError('Operation failed, since server did not respond',content);
 });
 
-//$(document).ready(function () {
-  //init();
-//});
-
 $(document).ajaxStart(function () {
   $('#ajax_loading').show();
 });

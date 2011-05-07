@@ -33,6 +33,10 @@
 
 </head>
 <body>
+    {% block loading %}
+    <div id="progressbar"></div>
+    {% endblock %}
+
     {% block header %}
         <div id="headerbar">
             <a href="{% url home %}" class="headernav">My Worksheets</a> 
@@ -65,7 +69,6 @@
         {% block main %}
         {% endblock %}
     </div>
-
 
   {% block inline_js %}
   {% endblock %}

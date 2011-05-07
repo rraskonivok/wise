@@ -30,7 +30,7 @@
 Init Function + Global Vars
 -------------------------- #}
 {% block globals %}
-<script>
+<script type="text/javascript">
     // The id of the Worksheet corresponding to its index in the
     // database
     var WORKSHEET_ID = {{ ws_id }};
@@ -46,10 +46,6 @@ Init Function + Global Vars
     // initializes
     var JSON_TREE = {{ json_cells|safe }};
 
-    // Lookup table of active equations which maps uid -> internal
-    // tree object
-    //var NODES = {};
-
     // Array of cells, index corresponds to order on page. Each
     // element contains another array of equations in that cell.
     var CELLS = [];
@@ -57,11 +53,21 @@ Init Function + Global Vars
     // If we have a UI to render too, false if we are running
     // unit tests
     var HAS_BROWSER = true;
+
+    $(document).ready(function () {
+
+        init(1);
+    });
+
 </script>
 
 {% endblock %}
-g
+
 {% block inline-script %}
+{% endblock %}
+
+{% block loading %}
+<div id="progressbar"></div>
 {% endblock %}
 
 {# --------------------------
@@ -244,6 +250,8 @@ g
             <input id="cmdinput" type="text"></input>
         </form>
     </div>
+
+
 
     <!-- MathML Compatability Notice -->
     <div id="dialog" class="hidden">

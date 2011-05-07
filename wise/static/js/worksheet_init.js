@@ -17,8 +17,52 @@ function test_mathml() {
     return !!test1 && !!test2 && !!test3;
 }
 
+function progress(val) {
+    $("#progressbar").progressbar({
+        value: val
+    });
+
+    if(val >= 100) {
+        $("#progressbar").addClass('hidden');
+    }
+}
+
+function prompt() {
+
+    $("#progressbar").removeClass('hidden');
+    progress(10);
+
+    $("#dialog").removeClass('hidden');
+    $("#dialog").dialog({
+        resizable: false,
+        height:300,
+        width: 350,
+        modal: true,
+        position: 'center',
+        buttons: {
+            // Ignore browser check and proceed
+            "Proceed Anyways": function() {
+                $( this ).dialog( "close" );
+                boot();
+            },
+            "Go Back": function() {
+                history.go(-1);
+            }
+        }
+    });
+}
+
 // Initialize the worksheet boot sequence
 function init() {
+
+    // Load sidebar palettes
+    load_math_palette();
+    progress(20);
+    load_rules_palette();
+    progress(30);
+
+    layout = rearrange();
+    //layout.resetOverflow();
 
     // Test for MathML support, if not then prompt the user
     if(test_mathml()) {
@@ -27,27 +71,9 @@ function init() {
     } else {
 
         if(!($.browser.mozilla)) {
-            $("#dialog").removeClass('hidden');
-            $("#dialog").dialog({
-                resizable: false,
-                height:300,
-                width: 350,
-                modal: true,
-                position: 'center',
-                buttons: {
-                    // Ignore browser check and proceed
-                    "Proceed Anyways": function() {
-                        $( this ).dialog( "close" );
-                        boot();
-                    },
-                    "Go Back": function() {
-                        history.go(-1);
-                    }
-                }
-            });
+            prompt();
         }
     }
-
 
 }
 
@@ -58,9 +84,6 @@ function boot() {
     // Bind keyboard shortcuts
     init_keyboard_shortcuts();
 
-    // Load sidebar palettes
-    load_math_palette();
-    load_rules_palette();
 
     // Initialize Views
     Wise.Sidebar = new SidebarView({
@@ -87,8 +110,6 @@ function boot() {
 
     $("#container").show();
 
-    layout = rearrange();
-    //layout.resetOverflow();
 
     mkautocomplete();
 
@@ -152,6 +173,7 @@ function boot() {
         //}
     //);
 
+    progress(100);
 }
 
 function init_keyboard_shortcuts() {
