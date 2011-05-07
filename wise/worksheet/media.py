@@ -52,7 +52,7 @@ MEDIA_BUNDLES = (
         'blackbird.js',
 
         'json2.js',
-        'jquery.js',
+        'jquery-mathml.js',
         'jquery-ui.js',
         'socket.io.js',
 
@@ -68,6 +68,7 @@ MEDIA_BUNDLES = (
         'rte.js',
         'editable.js',
         'autocomplete.js',
+        'pattern_match.js',
      )},
 
     {"type": "javascript",
@@ -85,7 +86,6 @@ MEDIA_BUNDLES = (
         'worksheet_views.js',
         'worksheet_models.js',
         'notifications.js',
-        'pattern_match.js',
         'globals.js',
         'keyshortcuts.js',
 
