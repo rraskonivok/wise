@@ -35,26 +35,31 @@ MEDIA_BUNDLES = (
         'worksheet.css',
         'autocomplete.css',
         'superfish.css',
+        'blackbird.css',
      )},
 
     # Base Javascript libraries, mostly jQuery plugins, backbone
     # and underscore
     {"type": "javascript",
      "name": "base_js",
-     "path": MEDIA_ROOT + "js/",
-     "url": MEDIA_URL + "js/",
+     "path": MEDIA_ROOT + "js/vendor/",
+     "url": MEDIA_URL + "js/vendor/",
      "minify": False,
      "files": (
         # External libraries
-        'head.js',
+        #'head.js',
         'brequire.js',
+        'blackbird.js',
 
+        'json2.js',
         'jquery.js',
         'jquery-ui.js',
-        'layout.js',
-        'json2.js',
+        'socket.io.js',
+
         'underscore.js',
         'backbone.js',
+        'layout.js',
+
         'async.js',
         'pnotify.js',
         'keys.js',
@@ -62,6 +67,7 @@ MEDIA_BUNDLES = (
         #'sanitize.js',
         'rte.js',
         'editable.js',
+        'autocomplete.js',
      )},
 
     {"type": "javascript",
@@ -82,12 +88,10 @@ MEDIA_BUNDLES = (
         'pattern_match.js',
         'globals.js',
         'keyshortcuts.js',
-        'autocomplete.js',
 
          # Generated coffeescript
         'init.js',
         'utils.js',
-        'socket.io.js',
         'base.js',
         'messages.js',
         'connection.js',

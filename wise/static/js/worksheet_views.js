@@ -9,11 +9,7 @@
 */
 
 
-_.templateSettings = {
-  interpolate: /\{\{(.+?)\}\}/g
-};
-
-var button_template = _.template("<button>{{label}}</button>");
+var button_template = "<button>$label</button>";
 
 var toplevel_types = [
     {
@@ -56,140 +52,6 @@ function collapse_trace(obj) {
     $('.trace:last iframe',obj).css('height','100%');
     $('.trace:last iframe',obj).css('width','100%');
 }
-
-var Logger = Backbone.Collection.extend({
-
-    fatal: function(msg) {
-        var err = {
-            message: msg, 
-            severity: 3,
-            trace: null,
-        };
-        this.add(err);
-    },
-
-    error: function(msg) {
-        var err = {
-            message: msg, 
-            severity: 2,
-            trace: null,
-        };
-        this.add(err);
-    },
-
-    warn: function(msg) {
-        var err = {
-            message: msg, 
-            severity: 1,
-            trace: null,
-        };
-        this.add(err);
-    },
-
-    serverError: function(msg, trace) {
-        var err = {
-            message: msg, 
-            severity: 1,
-            trace: trace,
-        };
-        this.add(err);
-    },
-
-});
-
-var LoggerView = Backbone.View.extend({
-
-    events: {
-      "click .expandtrace": "toggleTrace",
-    },
-
-    colors: ['yellow',      // Warnings
-             'lightsalmon', // Errors
-             'red'          // Fatal Errors
-            ],
-
-    colorstate: 0,
-    activetrace: null,
-
-    initialize: function() {
-        _.bindAll(this, 'newError','makeStackTrace');
-        this.model.bind('add',this.newError);
-    },
-
-    toggleTrace: function(e) {
-        if(this.active_trace) {
-            collapse_trace(this.active_trace);
-            this.active_trace = null;
-        }
-        else {
-            var obj = $(e.target).parent();
-            expand_trace(obj);
-            this.active_trace = obj;
-        }
-    },
-
-    newError: function(err) {
-        var error_template = _.template('<div class="errmsg">{{error}}<br/><span class="expandtrace">Expand</span>|<span class="collapsetrace">Collapse</span><div class="trace">{{trace}}</div></div>');
-
-        var severity = err.get('severity');
-
-        // Display the color indicator corresponding to the worst
-        // active error
-        if(severity >= this.colorstate) {
-            var color = this.colors[err.get('severity')-1];
-            $('#log_indicator').css('background-color', color); 
-            this.colorstate = severity;
-        }
-
-        $('#log_indicator').effect('highlight');
-
-        if(err.get('trace')) {
-           this.makeStackTrace(err); 
-           return;
-        }
-
-        this.$('.history').prepend(
-            error_template({
-                error: err.get('message'),
-            })
-        );
-    },
-
-    makeStackTrace: function(err) {
-        var error_template = _.template('<div class="errmsg">{{error}}<br/><span class="expandtrace">Expand</span><div class="trace">{{trace}}</div></div><hr/>');
-        error = error_template({
-            error: err.get('message'),
-            trace: '',
-        })
-
-        this.$('.history').prepend(
-            error
-        );
-
-        var iframe = document.createElement("iframe");
-        $('.trace:first','.history')[0].appendChild(iframe);
-
-        var doc = iframe.document;
-        if(iframe.contentDocument) {
-            doc = iframe.contentDocument;
-        } else if(iframe.contentWindow) {
-            doc = iframe.contentWindow.document;
-        }
-
-        // Put the content in the iframe
-        doc.open();
-        doc.writeln(err.get('trace'));
-        doc.close();
-
-        var storeArea = doc.getElementById("storeArea");
-
-    },
-
-    resetState: function(err) {
-        this.colorstate = 0;
-        $('#log_indicator').css('background-color', ""); 
-    },
-});
 
 var SidebarView = Backbone.View.extend({
 
@@ -272,7 +134,7 @@ var InsertionToolbar = Backbone.View.extend({
        for(var tt in toplevel_types) {
            tt = toplevel_types[tt];
 
-           var button = $(button_template({
+           var button = $(button_template.t({
                label: tt.label,
            }));
 

@@ -1,6 +1,12 @@
 (function() {
-  var Wise;
-  Wise = Backbone.Model.extend({
+  var Application, Settings, Wise;
+  Settings = new Backbone.Model({
+    DEBUG: true,
+    DISABLE_TYPESETTING: false,
+    DISABLE_MATH: false,
+    SERVER_HEARTBEAT: false
+  });
+  Application = Backbone.Model.extend({
     version: '0.1.3',
     Worksheet: null,
     Nodes: null,
@@ -8,16 +14,12 @@
     Sidebar: null,
     Accelerators: null,
     CmdLine: null,
-    Log: null,
     last_cell: null,
     last_expr: null,
-    cmd_visible: null
+    cmd_visible: null,
+    debug: true
   });
-  Wise.Settings = new Backbone.Model({
-    DEBUG: true,
-    DISABLE_TYPESETTING: false,
-    DISABLE_MATH: false,
-    SERVER_HEARTBEAT: false
-  });
+  Wise = new Application();
+  Wise.Settings = Settings;
   window.Wise = Wise;
 }).call(this);

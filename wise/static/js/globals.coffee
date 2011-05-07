@@ -1,4 +1,13 @@
-Wise = Backbone.Model.extend
+# Set up as a Backbone model so we can attach events to changes
+# in state
+Settings = new Backbone.Model
+
+    DEBUG               : true
+    DISABLE_TYPESETTING : false
+    DISABLE_MATH        : false
+    SERVER_HEARTBEAT    : false
+
+Application = Backbone.Model.extend
     version: '0.1.3'
 
         # Created upon call of init()
@@ -8,21 +17,13 @@ Wise = Backbone.Model.extend
     Sidebar      : null
     Accelerators : null
     CmdLine      : null
-    Log          : null
 
     last_cell    : null
     last_expr    : null
 
     cmd_visible  : null
+    debug        : true
 
-# Set up as a Backbone model so we can attach events to changes
-# in state
-Wise.Settings = new Backbone.Model
-
-    DEBUG               : true
-    DISABLE_TYPESETTING : false
-    DISABLE_MATH        : false
-    SERVER_HEARTBEAT    : false
-
-
+Wise = new Application()
+Wise.Settings = Settings
 window.Wise = Wise

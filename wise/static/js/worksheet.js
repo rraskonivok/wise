@@ -28,19 +28,19 @@ $(document).ajaxError(function (e, xhr, settings, exception) {
 // Nerf the console.log function so that it doesn't accidently
 // break if Firebug / JS Consle is turned off.
 // Source: http://paulirish.com/2009/log-a-lightweight-wrapper-for-consolelog/
-window.log = function () {
-  log.history = log.history || [];
-  log.history.push(arguments);
-  if (this.console) {
-    console.log(Array.prototype.slice.call(arguments));
-  }
-};
+//window.log = function () {
+//  log.history = log.history || [];
+//  log.history.push(arguments);
+//  if (this.console) {
+//    console.log(Array.prototype.slice.call(arguments));
+//  }
+//};
 
-if(!window.console) {
-    window.console = {
-        log : window.log
-    };
-}
+//if(!window.console) {
+//    window.console = {
+//        log : window.log
+//    };
+//}
 
 // Begin Debugging Stuff
 // ---------------------

@@ -53,8 +53,8 @@ module 'init', (exports) ->
     init_keyboard_shortcuts = ->
 
         doc = $(document)
-        key_template = _.template("<kbd>{{kstr}}</kbd>")
-        accel_template = _.template("<dt>{{label}}</dt><dd>{{keys}}</dd>")
+        key_template = "<kbd>$kstr</kbd>"
+        accel_template = "<dt>$label</dt><dd>$keys</dd>"
 
         if not Wise.Accelerators
             return
@@ -72,11 +72,11 @@ module 'init', (exports) ->
             key_strokes = shortcut.get('keys').split('+')
 
             accel = _.map key_strokes, (kstr) ->
-                key_template({kstr: kstr})
+                key_template.t({kstr: kstr})
 
             accel.join('+')
 
-            list_item = accel_template({
+            list_item = accel_template.t({
                 label: shortcut.get('name'),
                 keys: accel,
             })
@@ -108,14 +108,6 @@ module 'init', (exports) ->
         # Initialize Views
         Wise.Sidebar = new SidebarView({
             el: $("#worksheet_sidebar")
-        })
-
-        # Error logging
-        Wise.Log = new Logger()
-
-        Wise.Log.view = new LoggerView({
-            el: $('#terminal_palette'),
-            model: Wise.Log,
         })
 
         # Error logging
@@ -189,12 +181,29 @@ module 'init', (exports) ->
 
         progress(100)
 
+    init_logger = ->
+
+        # If debug mode is not enabled consume the blackbird
+        # logger functions
+        if not Wise.debug
+            log =
+              toggle: -> null
+              move: -> null
+              resize: -> null
+              clear: -> null
+              debug: -> null
+              info: -> null
+              warn: -> null
+              error: -> null
+              profile: -> null
 
     # --------------------
     # Initialize Worksheet
     # --------------------
     init = ->
-        # Load sidebar palettes
+        init_logger()
+
+        # Load sidebar palettes via AJAX
         load_math_palette()
         load_rules_palette()
 
