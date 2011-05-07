@@ -2,7 +2,7 @@
 # in state
 Settings = new Backbone.Model
 
-    DEBUG               : window.DEBUG
+    DEBUG               : undefined
     DISABLE_TYPESETTING : false
     DISABLE_MATH        : false
     SERVER_HEARTBEAT    : false
@@ -24,7 +24,7 @@ Application = Backbone.Model.extend
     cmd_visible  : null
     # Debug flag is injected into the page via Django and mirros
     # the DEBUG flag set in settings.py
-    debug        : window.DEBUG
+    debug        : undefined
 
 Wise = new Application()
 Wise.Settings = Settings

@@ -14,7 +14,7 @@ var CELL_INDEX = 2;
 
 // Raw json sent from the server when the page
 // initializes
-var JSON_TREE = $.parseJSON('[[{"index": 0, "eqs": ["cid0"], "assumptions": [], "id": 11, "cid": "cell0"}, [[{"toplevel": true, "children": ["cid1", "cid2"], "type": "Equation", "id": "cid0", "sid": 5}, {"toplevel": false, "args": ["x"], "type": "Variable", "id": "cid1", "children": []}, {"toplevel": false, "args": ["y"], "type": "Variable", "id": "cid2", "children": []}]], []], [{"index": 1, "eqs": [], "assumptions": [], "id": 12, "cid": "cell1"}, [], []]]');
+var JSON_TREE = JSON.parse('[[{"index": 0, "eqs": ["cid0"], "assumptions": [], "id": 11, "cid": "cell0"}, [[{"toplevel": true, "children": ["cid1", "cid2"], "type": "Equation", "id": "cid0", "sid": 5}, {"toplevel": false, "args": ["x"], "type": "Variable", "id": "cid1", "children": []}, {"toplevel": false, "args": ["y"], "type": "Variable", "id": "cid2", "children": []}]], []], [{"index": 1, "eqs": [], "assumptions": [], "id": 12, "cid": "cell1"}, [], []]]');
 
 // Lookup table of active equations which maps uid -> internal
 // tree object
@@ -25,3 +25,5 @@ var JSON_TREE = $.parseJSON('[[{"index": 0, "eqs": ["cid0"], "assumptions": [], 
 var CELLS = [];
 
 var HAS_BROWSER = false;
+
+var DEBUG = true;

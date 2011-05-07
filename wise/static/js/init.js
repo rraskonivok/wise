@@ -98,6 +98,7 @@
     };
     init_components = function() {
       init_nodes();
+      log.info("Created nodes.");
       init_keyboard_shortcuts();
       init_views();
       window.onbeforeunload = function(e) {
@@ -149,16 +150,21 @@
     };
     init = function() {
       var layout;
+      Wise.debug = window.DEBUG;
       init_logger();
-      load_math_palette();
-      load_rules_palette();
-      layout = rearrange();
-      if (test_mathml()) {
-        return init_components();
-      } else {
-        if (!$.browser.mozilla) {
-          return prompt();
+      if (HAS_BROWSER) {
+        load_math_palette();
+        load_rules_palette();
+        layout = rearrange();
+        if (test_mathml()) {
+          return init_components();
+        } else {
+          if (!$.browser.mozilla) {
+            return prompt();
+          }
         }
+      } else {
+        return init_components();
       }
     };
     return exports.init = init;

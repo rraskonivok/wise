@@ -1,5 +1,7 @@
 $(document).ready(function() {
 
+    require('init').init();
+
     module("Worksheet MVC");
 
     // cids assigned by Backbone are unique per session, and we
@@ -8,8 +10,9 @@ $(document).ready(function() {
     var eq = function(a, b, msg) {
         return ok(a.cid == b.cid, msg);
     };
+
     test("Worksheet Init", function() {
-        init();
+        ok(Wise,'base application exists');
         ok(Wise.Worksheet,'worksheet init');
         ok(Wise.Selection,'selection init');
         ok(Wise.Nodes,'nodes init');
@@ -34,22 +37,22 @@ $(document).ready(function() {
     });
 
     //TODO: use mockjax so we don't have to depend on the server
-    test("Worksheet Rules", function() {
-        Wise.Selection.clear();
-        // ( Equation ... 
-        var el1 = Wise.Nodes.at(0);
-        // ( Variable x)
-        var el2 = Wise.Nodes.at(1);
+    //test("Worksheet Rules", function() {
+    //    Wise.Selection.clear();
+    //    // ( Equation ... 
+    //    var el1 = Wise.Nodes.at(0);
+    //    // ( Variable x)
+    //    var el2 = Wise.Nodes.at(1);
 
-        // Wait for ajax request
-        stop(2000);
+    //    // Wait for ajax request
+    //    stop(2000);
 
-        apply_rule('eq_add',[el1, el2], function() {
-            equal(NAMESPACE_INDEX, 10, 'namespace incremented after ajax');
-            start();
-        });
+    //    apply_rule('eq_add',[el1, el2], function() {
+    //        equal(NAMESPACE_INDEX, 10, 'namespace incremented after ajax');
+    //        start();
+    //    });
 
-    });
+    //});
 
 
 

@@ -1,7 +1,7 @@
 (function() {
   var Application, Settings, Wise;
   Settings = new Backbone.Model({
-    DEBUG: window.DEBUG,
+    DEBUG: void 0,
     DISABLE_TYPESETTING: false,
     DISABLE_MATH: false,
     SERVER_HEARTBEAT: false
@@ -17,7 +17,7 @@
     last_cell: null,
     last_expr: null,
     cmd_visible: null,
-    debug: window.DEBUG
+    debug: void 0
   });
   Wise = new Application();
   Wise.Settings = Settings;

@@ -51,6 +51,10 @@ ApplyRule = (rule, operands, callback) ->
     # The uid for this given task, used to track during all queing
     # processes
     uid = task.uid
+
+    #if Wise.debug
+    log.profile(uid)
+
     websock.send(task)
 
     ResultQueue.push(uid)
@@ -73,6 +77,8 @@ ApplyRule = (rule, operands, callback) ->
                     newnode = graft(preimage, image_json, image_html)
                     Wise.last_expr = newnode.root
                     Wise.Selection.clear()
+
+        log.profile(uid)
 
 websock.socket.on 'message', (msg) ->
     # If result is the at the top of the queue then just do

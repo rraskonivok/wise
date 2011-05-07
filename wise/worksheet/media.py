@@ -38,8 +38,7 @@ MEDIA_BUNDLES = (
         'blackbird.css',
      )},
 
-    # Base Javascript libraries, mostly jQuery plugins, backbone
-    # and underscore
+    # Base Javascript libraries
     {"type": "javascript",
      "name": "base_js",
      "path": MEDIA_ROOT + "js/vendor/",
@@ -80,7 +79,7 @@ MEDIA_BUNDLES = (
         # External libraries
         #'head.js',
         'qunit.js',
-        'jquery.mockjax.min.js',
+        #'jquery.mockjax.min.js',
         'jslitmus.js',
      )},
 

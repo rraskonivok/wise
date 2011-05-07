@@ -160,6 +160,7 @@ module 'init', (exports) ->
 
         # Build the node database
         init_nodes()
+        log.info("Created nodes.")
 
         # Bind keyboard shortcuts
         init_keyboard_shortcuts()
@@ -201,20 +202,24 @@ module 'init', (exports) ->
     # Initialize Worksheet
     # --------------------
     init = ->
+        # Set the DEBUG flag on the main application
+        Wise.debug = window.DEBUG
         init_logger()
 
         # Load sidebar palettes via AJAX
-        load_math_palette()
-        load_rules_palette()
+        if HAS_BROWSER
+            load_math_palette()
+            load_rules_palette()
+            layout = rearrange()
+            # layout.resetOverflow();
 
-        layout = rearrange()
-        # layout.resetOverflow();
-
-        # Test for MathML support, if not then prompt the user
-        if test_mathml()
-            init_components()
+            # Test for MathML support, if not then prompt the user
+            if test_mathml()
+                init_components()
+            else
+                if not $.browser.mozilla
+                    prompt()
         else
-            if not $.browser.mozilla
-                prompt()
+            init_components()
 
     exports.init = init
