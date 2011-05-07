@@ -52,128 +52,22 @@ function prompt() {
     });
 }
 
-// Initialize the worksheet boot sequence
-function init() {
+///////////////////////////////////////////////////////////
+// Term Lookup Table
+///////////////////////////////////////////////////////////
 
-    // Load sidebar palettes
-    load_math_palette();
-    progress(20);
-    load_rules_palette();
-    progress(30);
+// Takes the inital JSON that Django injects into the page in the
+// variable JSON_TREE and calls build_tree_from_json to initialize
+// the term database
+function init_nodes() {
+    Wise.Worksheet = new WorksheetModel();
+    Wise.Selection = new NodeSelectionManager();
+    Wise.Nodes = new Backbone.Collection();
 
-    layout = rearrange();
-    //layout.resetOverflow();
-
-    // Test for MathML support, if not then prompt the user
-    if(test_mathml()) {
-        boot();
-
-    } else {
-
-        if(!($.browser.mozilla)) {
-            prompt();
-        }
-    }
-
-}
-
-function boot() {
-    // Build the node database
-    init_nodes();
-
-    // Bind keyboard shortcuts
-    init_keyboard_shortcuts();
-
-
-    // Initialize Views
-    Wise.Sidebar = new SidebarView({
-        el: $("#worksheet_sidebar")
+    _.each(JSON_TREE, function (cell_json) {
+        var new_cell = build_cell_from_json(cell_json);
+        Wise.Worksheet.add(new_cell);
     });
-
-    // Error logging
-    Wise.Log = new Logger();
-
-    Wise.Log.view =  new LoggerView({
-        el: $('#terminal_palette'),
-        model: Wise.Log,
-    });
-
-    // Heartbeat function
-    //if(Wise.Settings.get('SERVER_HEARTBEAT')) {
-    //    setInterval( "heartbeat()", 10000 );
-    //}
-
-    // Error logging
-    Wise.CmdLine = new CmdLineView({
-        el: $("#cmd"),
-    });
-
-    $("#container").show();
-
-
-    mkautocomplete();
-
-    //$(".noselect").disableSelection();
-    $("#worksheet").show();
-
-    // Handle unsaved changes before leaving page
-    window.onbeforeunload = function(e)
-    {
-        e = e || window.event;
-        if (Wise.Worksheet.hasChangesToCommit())
-        {
-            // For IE and Firefox
-            if (e)
-            {
-                e.returnValue = "You have unsaved changes.";
-            }
-            // For Safari
-            return "You have unsaved changes.";
-        }
-    };
-
-    new WorkspaceController();
-    Backbone.history.start();
-
-    // Disable right click context menu
-    //$(document).bind("contextmenu",function(e){
-        //return false;
-    //});
-
-    $(".textatom").editable({
-        type: 'textarea',
-        editClass: 'textatom',
-        onEdit: function(content) {
-            textarea = $(this).find('textarea')[0];
-
-            textarea.style.height = 0;
-            textarea.style.height = textarea.scrollHeight + 'px';
-
-            $(this).find('textarea').unbind('keyup');
-
-            $(this).find('textarea').live('keyup',function() {
-                this.style.height = 0;
-                this.style.height = this.scrollHeight + 'px';
-            });
-        },
-
-        onSubmit: function(content) {
-            // Strip HTML tags from the new content,
-            var matchTag = /<(?:.|\s)*?>/g;
-            content.current = content.current.replace(matchTag, "");
-            $(this).text(content.current);
-        },
-    });
-
-    //$('textarea').keyup(
-        //function (event) {
-            //this.style.height = 0;
-            //this.style.height = this.scrollHeight + 'px';
-            //alert('foo');
-        //}
-    //);
-
-    progress(100);
 }
 
 function init_keyboard_shortcuts() {

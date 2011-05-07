@@ -86,6 +86,7 @@ MEDIA_BUNDLES = (
         'autocomplete.js',
 
          # Generated coffeescript
+        'init.js',
         'utils.js',
         'socket.io.js',
         'base.js',

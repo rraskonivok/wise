@@ -21,14 +21,6 @@ $(document).ajaxError(function (e, xhr, settings, exception) {
     Wise.Log.serverError('Operation failed, since server did not respond',content);
 });
 
-$(document).ajaxStart(function () {
-  $('#ajax_loading').show();
-});
-
-$(document).ajaxStop(function () {
-  $('#ajax_loading').hide();
-});
-
 ///////////////////////////////////////////////////////////
 // Utilities
 ///////////////////////////////////////////////////////////
@@ -92,7 +84,7 @@ jQuery.fx.off = false;
 
 $.fn.exists = function () {
   return $(this).length > 0;
-}
+};
 
 $.fn.replace = function (htmlstr) {
   return $(this).replaceWith(htmlstr);
@@ -124,52 +116,8 @@ $.fn.disableTextSelect = function () {
 };
 
 ///////////////////////////////////////////////////////////
-// Term Lookup Table
-///////////////////////////////////////////////////////////
-
-// Takes the inital JSON that Django injects into the page in the
-// variable JSON_TREE and calls build_tree_from_json to initialize
-// the term database
-function init_nodes() {
-    Wise.Worksheet = new WorksheetModel();
-    Wise.Selection = new NodeSelectionManager();
-    Wise.Nodes = new Backbone.Collection();
-
-    _.each(JSON_TREE, function (cell_json) {
-        var new_cell = build_cell_from_json(cell_json);
-        Wise.Worksheet.add(new_cell);
-    });
-}
-
-///////////////////////////////////////////////////////////
-// Selection Handling
-///////////////////////////////////////////////////////////
-
-function selection_matches_pattern(pattern) {
-  // [Equation, Addition] , [Equation, Multiplication]
-  // _.isEqual(Equation, Equation) = true
-  // _.isEqual(Addition, Multiplication) = false
-  // _.all( [true, false] ) = false => does not match pattern
-  //TODO add support for matching by toplevel or number of
-  //children
-  var zipped = _.zip(Wise.Selection, pattern);
-  return _.map(zipped, _.isEqual);
-}
-
-///////////////////////////////////////////////////////////
 // UI Handling
 ///////////////////////////////////////////////////////////
-
-function ask(message, yescallback, nocallack) {
-  $("#dialog-ask").dialog({
-    closeOnEscape: true,
-    modal: true,
-    resizable: false,
-    buttons: {
-      Ok: yescallback,
-    }
-  });
-}
 
 function error(text) {
   $.pnotify({
@@ -242,106 +190,6 @@ function heartbeat() {
     },
   });
 }
-
-/*
-function apply_rule(rule, operands, callback) {
-  var data = {};
-  data.rule = rule;
-  data.namespace_index = NAMESPACE_INDEX;
-
-  // If nodes are not explicitely passed then use
-  // the workspace's current selection
-  if (!operands) {
-
-    if (Wise.Selection.isEmpty()) {
-      //error("Selection is empty.");
-      //$('#selectionlist').effect("highlight", {
-        //color: '#E6867A'
-      //}, 500);
-
-      return;
-    }
-    //Fetch the sexps for each of the selections and pass it
-    //as a JSON array
-    data.operands = Wise.Selection.sexps();
-    operands = Wise.Selection.toArray();
-
-  } else {
-    // Operands can a mix of Expression objects or literal string
-    // sexp in either case we pass the sexp to the sever
-    data.operands = _.map(operands, function (obj) {
-      if (obj.constructor == String) {
-        return obj;
-      } else {
-        return obj.sexp();
-      }
-    });
-  }
-
-  // Fade elements while we wait for the server's response
-  //_.each(operands, function(elem) {
-  //    elem.view.el.fadeTo('fast',0.5);
-  //});
-  var image = [];
-
-  $.ajax({
-    type: 'POST',
-    url: "/cmds/apply_rule/",
-    data: data,
-    datatype: 'json',
-    success: function (response) {
-        if (response.error) {
-          Wise.Log.error(response.error);
-          return;
-        }
-
-        if (!response) {
-          error('Server did not repsond to request.');
-          return;
-        }
-
-        if(!response.namespace_index) {
-            Wise.Log.error('Null namespace index');
-            return;
-        }
-
-        NAMESPACE_INDEX = response.namespace_index;
-
-        //Iterate over the elements in the image of the
-        //transformation, attempt to map them 1:1 with the
-        //elements in the domain. Elements mapped to 'null'
-        //are deleted.
-        for (var i = 0; i < response.new_html.length; i++) {
-          var preimage = operands[i];
-          var image_json = response.new_json[i];
-          var image_html = response.new_html[i];
-
-          switch(image_html) {
-              case 'pass':
-                  break;
-              case 'delete':
-                  preimage.remove();
-                  break;
-              case undefined:
-                  preimage.remove();
-                  break;
-              default:
-                  newnode = graft(preimage, image_json, image_html);
-                  Wise.last_expr = newnode.root;
-                  Wise.Selection.clear();
-
-                  if(callback) {
-                    callback(image);
-                  }
-          }
-
-        }
-
-    }
-  });
-
-}
-*/
 
 function use_infix(code) {
   // Sends raw (with proper security restrictions) Pure code 
@@ -611,29 +459,6 @@ function new_cell() {
 
     }
   });
-}
-
-///////////////////////////////////////////////////////////
-// Typesetting
-///////////////////////////////////////////////////////////
-
-//Typeset a DOM element when passed, if no element is passed
-//then typeset the entire page
-function mathjax_typeset(element) {
-  if(Worksheet.Settings.get('DISABLE_TYPESETTING')) {
-      return;
-  }
-
-  //Refresh math for a specific element
-  if (element) {
-    MathJax.Hub.Queue(["Typeset", MathJax.Hub, element[0]]);
-    MathJax.Hub.Queue();
-  }
-  //Refresh math Globally, shouldn't be called too much because
-  //it bogs down the browser
-  else {
-    MathJax.Hub.Process();
-  }
 }
 
 ///////////////////////////////////////////////////////////

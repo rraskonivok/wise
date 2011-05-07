@@ -55,8 +55,8 @@ Init Function + Global Vars
     var HAS_BROWSER = true;
 
     $(document).ready(function () {
-
-        init(1);
+        var init = require('init').init;
+        init();
     });
 
 </script>
