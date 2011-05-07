@@ -497,29 +497,29 @@ function load_rules_palette() {
           return false;
       });
 
-		$(".panel_frame","#rulelist").sortable({
-            scroll: false,
-			connectWith: '#quickbar',
-			forcePlaceholderSize: true,
-			helper: function(e,li) {
-				copyHelper= li.clone().insertAfter(li);
-                // Append to the body to let it pass between
-                // jquery layout panels
-                return $(li).clone().appendTo('body').show();
-			},
-			stop: function() {
-				copyHelper && copyHelper.remove();
-			}
-		}).disableSelection();
+      $(".panel_frame","#rulelist").sortable({
+          scroll: false,
+          connectWith: '#quickbar',
+          forcePlaceholderSize: true,
+          helper: function(e,li) {
+              copyHelper= li.clone().insertAfter(li);
+              // Append to the body to let it pass between
+              // jquery layout panels
+              return $(li).clone().appendTo('body').show();
+          },
+          stop: function() {
+              copyHelper && copyHelper.remove();
+          }
+      }).disableSelection();
 
-		$("#quickbar").sortable({
-            scroll: false,
-			receive: function(e,ui) {
-                $("#quickbar span").unbind();
-                $("#quickbar span").attr('title','');
-				copyHelper= null;
-			}
-		}).disableSelection();
+      $("#quickbar").sortable({
+          scroll: false,
+          receive: function(e,ui) {
+              $("#quickbar span").unbind();
+              $("#quickbar span").attr('title','');
+              copyHelper= null;
+          }
+      }).disableSelection();
 
     }
   });
@@ -574,20 +574,20 @@ function load_math_palette() {
           }
       );
 
-	$("td","#math_palette").sortable({
+    $("td","#math_palette").sortable({
         scroll: false,
-		connectWith: '#quickbar',
-		forcePlaceholderSize: true,
-		helper: function(e,li) {
-			copyHelper= li.clone().insertAfter(li);
+        connectWith: '#quickbar',
+        forcePlaceholderSize: true,
+        helper: function(e,li) {
+            copyHelper= li.clone().insertAfter(li);
             // Append to the body to let it pass between
             // jquery layout panels
             return $(li).clone().appendTo('body').show();
-		},
-		stop: function() {
-			copyHelper && copyHelper.remove();
-		}
-	});
+        },
+        stop: function() {
+            copyHelper && copyHelper.remove();
+        }
+    });
 
 
     }
@@ -630,29 +630,29 @@ function rearrange() {
     ,   north__showOverflowOnHover: true
 
     ,   fxName: "none"
-    ,	fxSpeed_open:			    750
-    ,	fxSpeed_close:			    1500
+    ,   fxSpeed_open:               750
+    ,   fxSpeed_close:              1500
 
-	,	east__resizable:		    false
-	,	east__spacing_open:	        20
-	,	east__spacing_closed:	    20
-    ,	east__slideTrigger_open:    "mouseover"
-	,	east__size:				    300
-	,	east__minSize:			    200
-	,	east__maxSize:              Math.floor(screen.availWidth / 2)
+    ,   east__resizable:            false
+    ,   east__spacing_open:         20
+    ,   east__spacing_closed:       20
+    ,   east__slideTrigger_open:    "mouseover"
+    ,   east__size:                 300
+    ,   east__minSize:              200
+    ,   east__maxSize:              Math.floor(screen.availWidth / 2)
 
-	,	south__resizable:		    true
-	,	south__slideable:		    false
-	,	south__spacing_open:	    5
-	,	south__spacing_closed:	    20
-	,	south__minSize:			    50
-	,	south__size:				50
+    ,   south__resizable:           true
+    ,   south__slideable:           false
+    ,   south__spacing_open:        5
+    ,   south__spacing_closed:      20
+    ,   south__minSize:             50
+    ,   south__size:                50
 
-	,	north__resizable:		    false
-	,	north__slideable:		    false
-	,	north__closable:		    false
-	,	north__size:		        30
+    ,   north__resizable:           false
+    ,   north__slideable:           false
+    ,   north__closable:            false
+    ,   north__size:                30
 
-	,	west__minSize:			    100
+    ,   west__minSize:              100
     });
 }
