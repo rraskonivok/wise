@@ -1,3 +1,13 @@
+###
+ Wise
+ Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as
+ published by the Free Software Foundation, either version 3 of the
+ License, or (at your option) any later version.
+###
+
 module 'init', (exports) ->
 
     test_mathml = ->
@@ -23,30 +33,77 @@ module 'init', (exports) ->
         progress(10)
 
         $("#dialog").removeClass('hidden')
-        $("#dialog").dialog {
+        $("#dialog").dialog
             resizable: false
             height:300
             width: 350
             modal: true
             position: 'center'
-            buttons: {
+            buttons:
                 # Ignore browser check and proceed
                 "Proceed Anyways": ->
                     $( this ).dialog( "close" )
-                    boot()
+                    init_components()
                 "Go Back": ->
                     history.go(-1)
-                }
-            }
 
-    # Boot sequence ( a side effect of init() )
-    boot = ->
+    # ---------------------------------
+    # Initalize Keyboard Bindings
+    # ---------------------------------
+    init_keyboard_shortcuts = ->
 
-        # Build the node database
-        init_nodes()
+        doc = $(document)
+        key_template = _.template("<kbd>{{kstr}}</kbd>")
+        accel_template = _.template("<dt>{{label}}</dt><dd>{{keys}}</dd>")
 
-        # Bind keyboard shortcuts
-        init_keyboard_shortcuts()
+        if not Wise.Accelerators
+            return
+
+        # TODO: this function is a good canidate for memoiziation
+        # with a localstorage cache
+        Wise.Accelerators.each( (shortcut) ->
+
+            keys = shortcut.get('keys')
+            doc.bind('keydown',
+                shortcut.get('keys'),
+                shortcut.get('action')
+            )
+
+            key_strokes = shortcut.get('keys').split('+')
+
+            accel = _.map key_strokes, (kstr) ->
+                key_template({kstr: kstr})
+
+            accel.join('+')
+
+            list_item = accel_template({
+                label: shortcut.get('name'),
+                keys: accel,
+            })
+
+            $("#keys_palette .list").append(list_item)
+        )
+
+    # ---------------------------------
+    # Initalize Expression Trees
+    # ---------------------------------
+
+    # Takes the inital JSON that Django injects into the page in the
+    # variable JSON_TREE and calls build_tree_from_json to initialize
+    # the term database
+    init_nodes = ->
+        Wise.Worksheet = new WorksheetModel()
+        Wise.Selection = new NodeSelectionManager()
+        Wise.Nodes = new Backbone.Collection()
+
+        for cell_json in JSON_TREE
+            new_cell = build_cell_from_json(cell_json)
+            Wise.Worksheet.add(new_cell)
+
+    # ---------------------------------
+    # Initalize Worksheet Views
+    # ---------------------------------
+    init_views = ->
 
         # Initialize Views
         Wise.Sidebar = new SidebarView({
@@ -72,19 +129,6 @@ module 'init', (exports) ->
 
         # $(".noselect").disableSelection()
         $("#worksheet").show()
-
-        # Handle unsaved changes before leaving page
-        window.onbeforeunload = (e) ->
-            e = e || window.event
-            if Wise.Worksheet.hasChangesToCommit()
-                # For IE and Firefox
-                if (e)
-                    e.returnValue = "You have unsaved changes."
-                # For Safari
-                return "You have unsaved changes."
-
-        new WorkspaceController()
-        Backbone.history.start()
 
         # Disable right click context menu
         #$(document).bind("contextmenu",function(e){
@@ -116,28 +160,52 @@ module 'init', (exports) ->
         #     },
         # });
 
+
+    # -----------------------
+    # Initalize Subcomponents
+    # -----------------------
+    init_components = ->
+
+        # Build the node database
+        init_nodes()
+
+        # Bind keyboard shortcuts
+        init_keyboard_shortcuts()
+
+        init_views()
+
+        # Handle unsaved changes before leaving page
+        window.onbeforeunload = (e) ->
+            e = e || window.event
+            if Wise.Worksheet.hasChangesToCommit()
+                # For IE and Firefox
+                if (e)
+                    e.returnValue = "You have unsaved changes."
+                # For Safari
+                return "You have unsaved changes."
+
+        new WorkspaceController()
+        Backbone.history.start()
+
         progress(100)
 
 
+    # --------------------
+    # Initialize Worksheet
+    # --------------------
     init = ->
-        load_math_palette()
-        progress(20)
-
         # Load sidebar palettes
         load_math_palette()
-        progress(20)
         load_rules_palette()
-        progress(30)
 
         layout = rearrange()
         # layout.resetOverflow();
 
         # Test for MathML support, if not then prompt the user
         if test_mathml()
-            boot()
+            init_components()
         else
             if not $.browser.mozilla
                 prompt()
 
-    exports.test_mathml = test_mathml
     exports.init = init

@@ -1,5 +1,13 @@
 (function() {
-  module('base', function(exports) {
+  /*
+   Wise
+   Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Affero General Public License as
+   published by the Free Software Foundation, either version 3 of the
+   License, or (at your option) any later version.
+  */  module('base', function(exports) {
     exports.WEBSOCKET_PORT = 8000;
     exports.WEBSOCKET_HOST = 'localhost';
     exports.CLIENT_ID = null;

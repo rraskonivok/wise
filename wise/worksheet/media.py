@@ -70,7 +70,6 @@ MEDIA_BUNDLES = (
      "url": MEDIA_URL + "js/",
      "minify": False,
      "files": (
-        'worksheet_init.js',
         'worksheet.js',
         'interactions.js',
         'worksheet_ui.js',
