@@ -1,43 +1,29 @@
-var Notifications = {
-  AJAX_FAIL: {
-    message: 'Worker did not respond to request.',
-    type: 'error'
-  },
-  
-  RULE_FAILED: {
-    message: 'Failed to apply rule.',
-    type: 'error'
-  },
-  
-  COMMIT_SUCCESS: {
-    message: 'Changes saved.',
-    type: 'notice',
-    icon: 'ui-icon ui-icon-disk',
-  },
+///////////////////////////////////////////////////////////
+// Notifications
+///////////////////////////////////////////////////////////
 
-  COMMIT_FAIL: {
-    message: 'Could not save.',
-    type: 'error',
-  },
-
-  raise: function(handle) {
-    var message = this[handle];
-
-    $.pnotify({
-        pnotify_title: message.title,
-        pnotify_text: message.message,
-        pnotify_type: message.type,
-        pnotify_nonblock: true,
-        pnotify_notice_icon: message.icon,
-    });
-  }
+var notify = {
+    info: 
+        function(text) { 
+            $.pnotify({
+                ''            : 'Regular Notice',
+                pnotify_text  : text,
+                pnotify_delay : 5000
+            });
+        },
+        
+    error: 
+        function(text) {
+            $.pnotify({
+                'Error'       : 'Regular Notice',
+                pnotify_text  : text,
+                pnotify_delay : 5000,
+                pnotify_type : 'error'
+            });
+        }
 };
 
-function alert(handle) {
-    if(handle.message) {
-        Notifications.raise(handle);
-    }
-    else {
-        console.log(handle);
-    }
-}
+// Consume the alert function and wrap out into a notification
+// For compatability reasons
+window.alert = notify.info;
+window.error = notify.error;

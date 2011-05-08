@@ -13,7 +13,7 @@
 ///////////////////////////////////////////////////////////
 
 $(document).ajaxError(function (e, xhr, settings, exception) {
-    Notifications.raise('AJAX_FAIL');
+    notify.info('Request failed.');
 
     // Django stack trace, if DEBUG is enabled
     var content = xhr.responseText;
@@ -43,31 +43,6 @@ $(document).ajaxError(function (e, xhr, settings, exception) {
 //       log : window.log
 //   };
 //}
-
-///////////////////////////////////////////////////////////
-// Notifications
-///////////////////////////////////////////////////////////
-
-function error(text) {
-  $.pnotify({
-    'Error': 'Regular Notice',
-    pnotify_text: text,
-    pnotify_delay: 5000
-  });
-}
-
-function notify(text) {
-  $.pnotify({
-    '': 'Regular Notice',
-    pnotify_text: text,
-    pnotify_delay: 5000
-  });
-}
-
-var notify = {
-    info: undefined,
-    error: undefined
-}
 
 ///////////////////////////////////////////////////////////
 // Server Queries
