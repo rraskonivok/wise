@@ -11,10 +11,12 @@
 {websock, Connection} = require 'connection'
 {Task} = require 'messages'
 
+# High water mark for ResultQueue, maximum number of queued
+# result callbacks
+ResultQueue_HWM = 5
+
 ResultQueue = []
 ResultCallback = {}
-
-window.ResultQueue = ResultQueue
 
 ApplyRule = (rule, operands, callback) ->
 
@@ -154,5 +156,11 @@ websock.socket.on 'message', (msg) ->
         ResultQueue.pop()
         ResultCallback[msg.uid].call(null, JSON.parse(msg.result))
 
+ResultFlush = () ->
+    ResultQueue = []
+    ResultCallback = {}
+
 window.apply_rule = ApplyRule
 window.use_infix = EvalCode
+window.ResultFlush = ResultFlush
+window.ResultQueue = ResultQueue

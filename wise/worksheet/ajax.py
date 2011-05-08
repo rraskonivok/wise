@@ -24,7 +24,6 @@ import wise.translators.pytopure as translate
 import wise.worksheet.exceptions as exception
 
 from wise.translators.mathobjects import rulesets, transforms
-from wise.worksheet import tasks
 from wise.worksheet.utils import *
 
 from wise.packages import loader
@@ -67,35 +66,6 @@ apply_eval:
 
 
 """
-
-# Adapated from IPython
-class Message(object):
-
-    def __init__(self, msg_dict):
-        dct = self.__dict__
-        for k, v in msg_dict.iteritems():
-            if isinstance(v, dict):
-                v = Message(v)
-            dct[k] = v
-
-    def __iter__(self):
-        return iter(self.__dict__.iteritems())
-
-    def __repr__(self):
-        return repr(self.__dict__)
-
-    def __str__(self):
-        return pprint.pformat(self.__dict__)
-
-    def __contains__(self, k):
-        return k in self.__dict__
-
-    def __getitem__(self, k):
-        return self.__dict__[k]
-
-    def to_json(self):
-        return dumps(self.__dict__)
-
 # ----------------------
 # Websocket Handler
 # ----------------------
@@ -216,57 +186,6 @@ def heartbeat(request):
     response = HttpResponse(status=200)
     response['Cache-Control'] = 'no-cache'
     return response
-
-@login_required
-@ajax_request
-def apply_rule(request):
-    """
-    Applies a Pure rule to tuple of elements. The codomain tuple
-    is always mapped to the same size of the domain tuple.
-
-    For example a rule to commute addition maps 1-tuples to
-    1-tuples.
-
-    `(Addition x y) →  (Addition y x)`
-
-    A rule to add an element to both sides of an equation maps
-    2-tuples to 2-tuples but one element of the image is null.
-
-    `( (Equation lhs rhs) , x ) →  ( (Equation lhs+x rhs+x) , pass )`
-
-    In this case the 'pass' element tells the worksheet to do
-    not expect a new element in the image of the rule and leave
-    that element inplace.
-    """
-
-    # The sexps of elements from worksheet, i.e. the
-    # preimage/operands of the rule
-    sexps = tuple(request.POST.getlist('operands[]'))
-
-    # The uniqe client id ( cid ) used to refer to objets in the
-    # workspace.
-    namespace_index = int( request.POST.get('namespace_index') )
-
-    if not namespace_index:
-        raise Exception('No namespace index given in request.')
-
-    if '' in sexps:
-        raise Exception('Empty sexp was passed.')
-
-    # Spawn a new generator uid generator to walk the parse tree
-    uid = uidgen(namespace_index)
-    rule = request.POST.get('rule')
-
-    #gevent.Greenlet(_co_rule, rule, sexps).start()
-
-    return JsonResponse({})
-    #result = tasks.rule_reduce.delay(rule, sexps)
-    #expr_tree = translate.parse_pure_exp(result.wait())
-    #expr_tree.uid_walk(uid, overwrite=True)
-
-    #return JsonResponse({'new_html': [html(expr_tree)],
-                         #'new_json': [json_flat(expr_tree)],
-                         #'namespace_index': uid.next()[3:]})
 
 @login_required
 def rules_request(request):

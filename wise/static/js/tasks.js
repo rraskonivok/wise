@@ -7,12 +7,12 @@
    it under the terms of the GNU Affero General Public License as
    published by the Free Software Foundation, either version 3 of the
    License, or (at your option) any later version.
-  */  var ApplyRule, Connection, EvalCode, ResultCallback, ResultQueue, Task, websock, _ref;
+  */  var ApplyRule, Connection, EvalCode, ResultCallback, ResultFlush, ResultQueue, ResultQueue_HWM, Task, websock, _ref;
   _ref = require('connection'), websock = _ref.websock, Connection = _ref.Connection;
   Task = require('messages').Task;
+  ResultQueue_HWM = 5;
   ResultQueue = [];
   ResultCallback = {};
-  window.ResultQueue = ResultQueue;
   ApplyRule = function(rule, operands, callback) {
     var image, task, uid, _operands;
     if (!operands) {
@@ -136,6 +136,12 @@
       return ResultCallback[msg.uid].call(null, JSON.parse(msg.result));
     }
   });
+  ResultFlush = function() {
+    ResultQueue = [];
+    return ResultCallback = {};
+  };
   window.apply_rule = ApplyRule;
   window.use_infix = EvalCode;
+  window.ResultFlush = ResultFlush;
+  window.ResultQueue = ResultQueue;
 }).call(this);
