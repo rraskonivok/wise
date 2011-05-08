@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-import os, sys
+import os
+#import sys
 
-from gevent import wsgi
-from gevent import socket
+#from gevent import wsgi
+#from gevent import socket
 from gevent import monkey
 
 monkey.patch_all()

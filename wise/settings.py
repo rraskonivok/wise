@@ -4,8 +4,6 @@ except:
    pass
 
 import os
-import djcelery
-djcelery.setup_loader()
 
 # A quick note about security. **WISE IS ALPHA SOFTWARE AND NOT
 # SECURE** (yet)
@@ -50,44 +48,7 @@ LOGIN_REDIRECT_URL = '/home'
 # Message Queues
 #---------------------------
 
-WORKER_TYPE = 'sync' # celery-redis, celery-rabbitmq
-
-# Note:
-# Celery is installed by default, BUT if you set
-# WORKER_TYPE=sync then you do not need to set up a message queue
-# or broker. All tasks will execute in the Django main event loop
-# additional configuration is needed.
-
-# Set one of these up if you so desire. RabbitMQ is faster, Redis
-# is simpler.
-
-# Redis
-# =====
-# Use redis as a queue
-#BROKER_BACKEND = "kombu.transport.pyredis.Transport"
-#BROKER_HOST = "localhost"
-#BROKER_PORT = 6379
-#BROKER_VHOST = "0"
-
-# Store results in redis
-#CELERY_RESULT_BACKEND = "redis"
-#REDIS_HOST = "localhost"
-#REDIS_PORT = 6379
-#REDIS_DB = "0"
-
-
-# RabbitMQ
-# ========
-#BROKER_HOST = "localhost"
-#BROKER_PORT = 5672
-#BROKER_USER = "user"
-#BROKER_PASSWORD = "pass"
-#BROKER_VHOST = "myvhost"
-#CELERY_RESULT_BACKEND = "amqp"
-
-#CELERY_DISABLE_RATE_LIMITS=True
-#CELERY_DB_REUSE_MAX=100
-CELERY_ALWAYS_EAGER = WORKER_TYPE == 'sync'
+WORKER_TYPE = 'sync'
 
 #---------------------------
 # Caches
@@ -226,7 +187,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'wise.worksheet',
     'gunicorn',
-    'djcelery',
     # In order to use admin with gunicorn you'll need to grab the
     # admin resources from your local install. Use the script
     # static/copy_admin_resources.sh to do this. Or you can
