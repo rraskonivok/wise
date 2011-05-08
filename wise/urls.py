@@ -129,10 +129,7 @@ urlpatterns = patterns('',
      # Worksheet Commands
      (r'^cmds/new_line/$', 'wise.worksheet.ajax.new_line'),
      (r'^cmds/new_cell/$', 'wise.worksheet.ajax.new_cell'),
-     (r'^cmds/apply_rule/$', 'wise.worksheet.ajax.apply_rule'),
      (r'^cmds/apply_transform/$', 'wise.worksheet.ajax.apply_transform'),
-     (r'^cmds/use_infix/$', 'wise.worksheet.ajax.use_infix'),
-     (r'^cmds/draw_graph/$', 'wise.worksheet.ajax.use_infix'),
 
      # Uncomment the next line to enable the admin, append a
      # random integer on the end to obscure the url. Not really
@@ -152,11 +149,6 @@ urlpatterns = patterns('',
 )
 
 if settings.DEBUG:
-    urlpatterns += patterns('',
-        (r'^tests/(?P<path>.*)$', 'django.views.static.serve',
-            {'document_root': settings.MEDIA_ROOT + '/js/tests'}),
-    )
-
      # Firefox 4 has some issue with OpenType fonts being loaded
      # from /media when the current page is /ws since it is one level
      # up which violates it's same origin policy
@@ -168,7 +160,7 @@ if settings.DEBUG:
     urlpatterns += patterns('',
         (r'^media/(?P<path>.*)$', 'django.views.static.serve',
             {'document_root': settings.MEDIA_ROOT + '/',
-             'show_indexes': True
+             'show_indexes': True if settings.DEBUG else False
             }),
     )
 

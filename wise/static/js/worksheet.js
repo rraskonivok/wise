@@ -81,17 +81,18 @@ function heartbeat() {
     dataType: 'html',
     type: 'GET',
     success: function () {
-      notify("Server is up.");
+      notify.info("Server is up.");
     },
     timeout: function () {
-      error("Not responding");
+      notify.error("Not responding");
     },
     error: function () {
-      error("Not responding");
-    },
+      notify.error("Not responding");
+    }
   });
 }
 
+/*
 function use_infix(code) {
   // Sends raw (with proper security restrictions) Pure code 
   // to the server and attempts to create new nodes from the 
@@ -166,6 +167,7 @@ function use_infix(code) {
   });
 
 }
+*/
 
 function apply_transform(transform, operands) {
   var postdata = {};

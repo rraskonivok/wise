@@ -391,13 +391,13 @@ var CmdLineView = Backbone.View.extend({
         $("#cmderror").fadeIn();
     },
 
+    setValue: function(value) {
+        $("#cmdinput").val(value);
+    },
+
     evaluate: function(e) {
         var input = this.$('#cmdinput');
         var success = use_infix( input.val() );
-
-        if ( success ) {
-            this.hide();
-        }
 
         // keeps form from being submitted
         return false;
