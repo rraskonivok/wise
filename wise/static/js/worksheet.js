@@ -14,6 +14,8 @@
 
 $(document).ajaxError(function (e, xhr, settings, exception) {
     Notifications.raise('AJAX_FAIL');
+
+    // Django stack trace, if DEBUG is enabled
     var content = xhr.responseText;
 
     // Disable math operations until we restablish a connection
