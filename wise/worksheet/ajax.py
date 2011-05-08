@@ -12,7 +12,6 @@ import gevent
 from gevent_zeromq import zmq
 
 import time
-import uuid
 import hashlib
 
 from django.utils.simplejson import dumps, loads

@@ -32,10 +32,6 @@ from wise.packages import loader
 
 from operator import itemgetter
 
-# Initialize the Python-Pure translation bridge
-if settings.WORKER_TYPE == 'sync':
-    wise.boot.start_cython()
-
 wise.boot.start_python_pure()
 panel.build_panels()
 
