@@ -48,6 +48,43 @@ module 'init', (exports) ->
                     history.go(-1)
 
     # ---------------------------------
+    # layout.js initalization
+    # ---------------------------------
+
+    # Use layout.js to split the page into sections, this
+    # specifies the parameters of those sections
+    init_layout = ->
+        # Specify global variable layout
+        window.layout = $("#container").layout
+           applyDefaultStyles         : true
+           north__showOverflowOnHover : true
+           fxName                     : "none"
+           fxSpeed_open               : 750
+           fxSpeed_close              : 1500
+
+           east__resizable            : false
+           east__spacing_open         : 20
+           east__spacing_closed       : 20
+           east__slideTrigger_open    : "mouseover"
+           east__size                 : 300
+           east__minSize              : 200
+           east__maxSize              : Math.floor(screen.availWidth / 2)
+
+           south__resizable           : true
+           south__slideable           : false
+           south__spacing_open        : 5
+           south__spacing_closed      : 20
+           south__minSize             : 50
+           south__size                : 50
+
+           north__resizable           : false
+           north__slideable           : false
+           north__closable            : false
+           north__size                : 30
+
+           west__minSize              : 100
+
+    # ---------------------------------
     # Initalize Keyboard Bindings
     # ---------------------------------
     init_keyboard_shortcuts = ->
@@ -117,7 +154,7 @@ module 'init', (exports) ->
 
         $("#container").show()
 
-        mkautocomplete()
+        init_autocomplete()
 
         # $(".noselect").disableSelection()
         $("#worksheet").show()
@@ -152,6 +189,24 @@ module 'init', (exports) ->
         #     },
         # });
 
+
+    init_autocomplete = ->
+
+        $.getJSON '/dict/purelist', (data) ->
+            keywords = _.compact(data) # strip any falsy values
+            $("#cmdinput").autocomplete keywords,
+                width             : 320
+                max               : 4
+                highlight         : false
+                multiple          : true
+                multipleSeparator : " "
+                scroll            : true
+                scrollHeight      : 300
+
+
+    makeEditor = (o) ->
+        editor = ace.edit(o)
+        editor.setTheme "ace/theme/eclipse"
 
     # -----------------------
     # Initalize Subcomponents
@@ -210,7 +265,7 @@ module 'init', (exports) ->
             # Load sidebar palettes via AJAX
             load_math_palette()
             load_rules_palette()
-            layout = rearrange()
+            layout = init_layout()
             # layout.resetOverflow();
 
             # Test for MathML support, if not then prompt the user
