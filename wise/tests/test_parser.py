@@ -117,15 +117,5 @@ class TestParser(unittest.TestCase):
         for sexp, output in tests:
             self.assertEqual(pure_parse(sexp), output)
 
-    def test_pure_mapping(self):
-
-        tests = [
-            (    '[x,y]', '(Tuple (Variable x) (Variable y))' ),
-            (    '[x,1]', '(Tuple (Variable x) (Numeric 1))' ),
-        ]
-
-        for sexp, output in tests:
-            self.assertIsNotNone(parse_pure_exp(sexp))
-
 if __name__ == '__main__':
     unittest.main()

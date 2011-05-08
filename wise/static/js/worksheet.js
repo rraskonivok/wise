@@ -42,14 +42,8 @@ $(document).ajaxError(function (e, xhr, settings, exception) {
 //   };
 //}
 
-// End Debugging Stuff
-//----------------------
-
-//Some JQuery Extensions
-//----------------------
-
 ///////////////////////////////////////////////////////////
-// UI Handling
+// Notifications
 ///////////////////////////////////////////////////////////
 
 function error(text) {
@@ -66,6 +60,11 @@ function notify(text) {
     pnotify_text: text,
     pnotify_delay: 5000
   });
+}
+
+var notify = {
+    info: undefined,
+    error: undefined
 }
 
 ///////////////////////////////////////////////////////////
@@ -518,66 +517,4 @@ function load_math_palette() {
     }
   });
 
-}
-
-///////////////////////////////////////////////////////////
-// Command Line
-///////////////////////////////////////////////////////////
-
-function mkautocomplete() {
-    $.getJSON('/dict/purelist',
-        function(data) {
-            // _compact in case null finds its way into 'data'
-            keywords = _.compact(data);
-            $("#cmdinput").autocomplete(keywords, {
-                width: 320,
-                max: 4,
-                highlight: false,
-                multiple: true,
-                multipleSeparator: " ",
-                scroll: true,
-                scrollHeight: 300
-            });
-        }
-    );
-}
-
-function makeEditor(o) {
-    var editor = ace.edit(o);
-    editor.setTheme("ace/theme/eclipse");
-}
-
-function rearrange() {
-    // Specify global variable layout
-    layout = $("#container").layout({ 
-    applyDefaultStyles: true 
-
-    ,   north__showOverflowOnHover: true
-
-    ,   fxName: "none"
-    ,   fxSpeed_open:               750
-    ,   fxSpeed_close:              1500
-
-    ,   east__resizable:            false
-    ,   east__spacing_open:         20
-    ,   east__spacing_closed:       20
-    ,   east__slideTrigger_open:    "mouseover"
-    ,   east__size:                 300
-    ,   east__minSize:              200
-    ,   east__maxSize:              Math.floor(screen.availWidth / 2)
-
-    ,   south__resizable:           true
-    ,   south__slideable:           false
-    ,   south__spacing_open:        5
-    ,   south__spacing_closed:      20
-    ,   south__minSize:             50
-    ,   south__size:                50
-
-    ,   north__resizable:           false
-    ,   north__slideable:           false
-    ,   north__closable:            false
-    ,   north__size:                30
-
-    ,   west__minSize:              100
-    });
 }

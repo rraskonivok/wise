@@ -8,7 +8,7 @@
    published by the Free Software Foundation, either version 3 of the
    License, or (at your option) any later version.
   */  module('init', function(exports) {
-    var init, init_autocomplete, init_components, init_keyboard_shortcuts, init_layout, init_logger, init_nodes, init_views, makeEditor, progress, prompt, test_mathml;
+    var init, init_autocomplete, init_components, init_keyboard_shortcuts, init_layout, init_logger, init_nodes, init_views, make_editor, progress, prompt, test_mathml;
     test_mathml = function() {
       var mml_namespace, test1, test2, test3;
       mml_namespace = "http://www.w3.org/1998/Math/MathML";
@@ -138,7 +138,7 @@
         });
       });
     };
-    makeEditor = function(o) {
+    make_editor = function(o) {
       var editor;
       editor = ace.edit(o);
       return editor.setTheme("ace/theme/eclipse");

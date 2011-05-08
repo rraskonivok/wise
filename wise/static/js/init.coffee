@@ -204,7 +204,7 @@ module 'init', (exports) ->
                 scrollHeight      : 300
 
 
-    makeEditor = (o) ->
+    make_editor = (o) ->
         editor = ace.edit(o)
         editor.setTheme "ace/theme/eclipse"
 
