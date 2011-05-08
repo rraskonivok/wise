@@ -20,20 +20,27 @@ application = django.core.handlers.wsgi.WSGIHandler()
 
 PORT = 8000
 
-if __name__ == '__main__':
+from wise.utils.serving import run_with_reloader
+
+@run_with_reloader
+def start_server():
     print('Listening on http://127.0.0.1:%s' % PORT)
-    SocketIOServer(('', PORT), application, resource="socket.io").serve_forever()
     #wsgi.WSGIServer(('', PORT), application, spawn=None).serve_forever()
+    server = SocketIOServer(('', PORT), application, resource="socket.io")
+    server.serve_forever()
 
-def use_socket():
-    SOCK = 'gevent.sock'
-    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+#def use_socket():
+#    SOCK = 'gevent.sock'
+#    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+#
+#    try:
+#        os.remove(SOCK)
+#    except OSError:
+#        pass
+#
+#    sock.bind(SOCK)
+#    os.chmod(SOCK,0770)
+#    sock.listen(256)
 
-    try:
-        os.remove(SOCK)
-    except OSError:
-        pass
-
-    sock.bind(SOCK)
-    os.chmod(SOCK,0770)
-    sock.listen(256)
+if __name__ == '__main__':
+    start_server()

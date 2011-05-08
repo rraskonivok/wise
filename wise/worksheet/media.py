@@ -102,9 +102,9 @@ MEDIA_BUNDLES = (
 
          # Generated coffeescript
         'init.js',
-        'accel.js',
-        'utils.js',
         'base.js',
+        'utils.js',
+        'accel.js',
         'messages.js',
         'connection.js',
         'tasks.js'
