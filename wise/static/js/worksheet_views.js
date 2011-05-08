@@ -397,7 +397,7 @@ var CmdLineView = Backbone.View.extend({
 
     evaluate: function(e) {
         var input = this.$('#cmdinput');
-        var success = use_infix( input.val() );
+        require('tasks').EvalCode( input.val() );
 
         // keeps form from being submitted
         return false;

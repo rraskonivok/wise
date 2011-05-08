@@ -99,10 +99,10 @@ MEDIA_BUNDLES = (
         'worksheet_models.js',
         'notifications.js',
         'globals.js',
-        'keyshortcuts.js',
 
          # Generated coffeescript
         'init.js',
+        'accel.js',
         'utils.js',
         'base.js',
         'messages.js',
