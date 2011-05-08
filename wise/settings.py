@@ -42,7 +42,7 @@ PACK_MODULE = ROOT_MODULE + '.' + PACKAGE_DIR
 INSTALLED_MATH_PACKAGES = ['base','calculus']
 
 # Where to redirect upon succesfull login
-HOME_URL = '/statichome'
+HOME_URL = '/home'
 LOGIN_URL = '/accounts/login'
 LOGIN_REDIRECT_URL = '/home'
 

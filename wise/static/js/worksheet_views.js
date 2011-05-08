@@ -55,15 +55,14 @@ function collapse_trace(obj) {
 
 var SidebarView = Backbone.View.extend({
 
-  events: {
-    "click .math": "toggleMath",
-    "dblclick .math": "expandAllMath",
+   events: {
+     "click .math": "toggleMath",
+     "dblclick .math": "expandAllMath",
 
-    "click .rules": "toggleRules",
-    "click .settings": "toggleSettings",
-    "click .terminal": "toggleTerminal",
-    "click .keys": "toggleKeys",
-  },
+     "click .rules": "toggleRules",
+     "click .settings": "toggleSettings",
+     "click .keys": "toggleKeys"
+   },
 
    initialize: function() {
         this.toggleState = 0;
@@ -106,12 +105,6 @@ var SidebarView = Backbone.View.extend({
    toggleKeys: function() {
         this.$('.palette').hide();
         this.$('#keys_palette').show();
-   },
-
-   toggleTerminal: function() {
-        this.$('.palette').hide();
-        this.$('#terminal_palette').show();
-        Wise.Log.view.resetState();
    },
 
 });

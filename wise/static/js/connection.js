@@ -22,15 +22,16 @@
     Wraps socket.io
     */
     Connection = (function() {
-      var heartbeat;
-      heartbeat = Message;
       function Connection() {
         var socket;
         socket = new io.Socket(document.location.hostname);
         socket.connect();
         this.socket = socket;
-        this.socket.on('message', function(data) {
-          return alert('new message');
+        this.socket.on('connect', function() {
+          return log.debug('Websocket Connected');
+        });
+        this.socket.on('disconnect', function() {
+          return log.error('Websocket Disconnected');
         });
       }
       Connection.prototype.send = function(data) {
@@ -44,10 +45,6 @@
         } else {
           return this.socket.connected;
         }
-      };
-      Connection.prototype.heartbeat = function(trial) {
-        this.socket || error('not connected');
-        return trial = trial + 1000 || 1000;
       };
       return Connection;
     })();

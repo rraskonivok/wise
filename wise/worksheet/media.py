@@ -11,6 +11,7 @@ MEDIA_BUNDLES = (
         'css/base.css',
         'css/themes/default/style.css',
         'ui/ui.css',
+        'css/blackbird.css',
      )},
 
     {"type": "css",
@@ -35,7 +36,6 @@ MEDIA_BUNDLES = (
         'worksheet.css',
         'autocomplete.css',
         'superfish.css',
-        'blackbird.css',
      )},
 
     # Base Javascript libraries

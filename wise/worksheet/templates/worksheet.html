@@ -64,7 +64,7 @@ Init Function + Global Vars
     $(document).ready(function () {
          // Catch all errors, and just tell the user it failed
         if(!window.DEBUG) {
-            try {
+             try {
                  require('init').init();
              } catch(err) {
                 log.error('Could not load');
@@ -110,58 +110,58 @@ Init Function + Global Vars
         <div id="header">
 
             <!-- Superfish -->
-            <ul class="sf-menu"> 
-                <li class="current"> 
-                    <a href="#a">Go</a> 
-                    <ul> 
-                        <li> 
-                            <a href="{%url home %}">My Worksheets</a> 
-                        </li> 
-                    </ul> 
+            <ul class="sf-menu">
+                <li class="current">
+                    <a href="#a">Go</a>
+                    <ul>
+                        <li>
+                            <a href="{%url home %}">My Worksheets</a>
+                        </li>
+                    </ul>
                 </li>
-                <li class="current"> 
-                    <a href="#a">File</a> 
-                    <ul> 
-                        <li> 
-                            <a href="#save">Commit Changes</a> 
-                        </li> 
-                        <li> 
-                            <a href="#aa">Revert</a> 
-                        </li> 
-                    </ul> 
-                </li> 
-                <li> 
-                    <a href="#">Settings</a> 
-                </li> 
-                <li> 
+                <li class="current">
+                    <a href="#a">File</a>
+                    <ul>
+                        <li>
+                            <a href="#save">Commit Changes</a>
+                        </li>
+                        <li>
+                            <a href="#aa">Revert</a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">Settings</a>
+                </li>
+                <li>
                     <a href="#">Export</a>
-                    <ul> 
-                        <li> 
-                            <a href="export/wise">.wise</a> 
-                        </li> 
+                    <ul>
                         <li>
-                            <a href="export/txt">.txt</a> 
+                            <a href="export/wise">.wise</a>
                         </li>
                         <li>
-                            <a href="#aa">.mml</a> 
+                            <a href="export/txt">.txt</a>
                         </li>
-                    </ul> 
-                </li>	
+                        <li>
+                            <a href="#aa">.mml</a>
+                        </li>
+                    </ul>
+                </li>
 
-                <li> 
-                    <a href="#">Help</a> 
-                </li>	
+                <li>
+                    <a href="#">Help</a>
+                </li>
 
-                <li> 
-                    <a href="#">Debug</a> 
-                    <ul> 
-                        <li><a href="#">Show sexp</a></li> 
-                        <li><a href="#">Show object</a></li> 
-                        <li><a href="#">Rebuild sexp</a></li> 
+                <li>
+                    <a href="#">Debug</a>
+                    <ul>
+                        <li><a href="#">Show sexp</a></li>
+                        <li><a href="#">Show object</a></li>
+                        <li><a href="#">Rebuild sexp</a></li>
                         <li><a href="javascript:heartbeat()">Server heatbeat</a></li> 
-                    </ul> 
-                </li>	
-            </ul> 
+                    </ul>
+                </li>
+            </ul>
 
             <!-- User Info -->
             <div class="userinfo">
@@ -209,10 +209,6 @@ Init Function + Global Vars
                     <img src="{{ STATIC_URL }}img/icons/keys.png"/>
                 </button>
 
-                <button id="log_indicator" class='terminal noselect'>
-                    <img src="{{ STATIC_URL }}img/icons/terminal.png"/>
-                </button>
-
                 <!--<button class='snapshot'>-->
                     <!--<img src="/static/img/icons/snapshot.png"/>-->
                 <!--</button>-->
@@ -236,11 +232,6 @@ Init Function + Global Vars
                 </dl>
             </div>
 
-            <div id="terminal_palette" class="palette hidden">
-                <h3>Error Log</h3>
-                <div class="history"></div>
-                <div id="errlog"></div>
-            </div>
         </div>
 
     </div>

@@ -18,102 +18,35 @@ $(document).ajaxError(function (e, xhr, settings, exception) {
 
     // Disable math operations until we restablish a connection
     //Wise.Settings.set({DISABLE_MATH: true});
-    Wise.Log.serverError('Operation failed, since server did not respond',content);
+    log.error('AJAX request failed.');
 });
 
 ///////////////////////////////////////////////////////////
-// Utilities
+// Console
 ///////////////////////////////////////////////////////////
 
 // Nerf the console.log function so that it doesn't accidently
 // break if Firebug / JS Consle is turned off.
 // Source: http://paulirish.com/2009/log-a-lightweight-wrapper-for-consolelog/
 //window.log = function () {
-//  log.history = log.history || [];
-//  log.history.push(arguments);
-//  if (this.console) {
-//    console.log(Array.prototype.slice.call(arguments));
-//  }
+// log.history = log.history || [];
+// log.history.push(arguments);
+// if (this.console) {
+//   console.log(Array.prototype.slice.call(arguments));
+// }
 //};
-
+//
 //if(!window.console) {
-//    window.console = {
-//        log : window.log
-//    };
+//   window.console = {
+//       log : window.log
+//   };
 //}
-
-// Begin Debugging Stuff
-// ---------------------
-function showmath() {
-  return Wise.Selection.at(0).sexp();
-}
-
-function shownode() {
-  if (Wise.Selection.isEmpty()) {
-    window.log('Select something idiot!');
-  }
-  return Wise.Selection.at(0);
-}
-
-function rebuild_node() {
-  //Shit went down, so rebuild the sexp
-  Wise.Selection.at(0).msexp();
-}
-
-function server_up() {
-  Wise.Settings.set({DISABLE_MATH: false});
-}
-
-function sleep(milliseconds) {
-  var start = new Date().getTime();
-  for (var i = 0; i < 1e7; i++) {
-    if ((new Date().getTime() - start) > milliseconds) {
-      break;
-    }
-  }
-}
 
 // End Debugging Stuff
 //----------------------
 
 //Some JQuery Extensions
 //----------------------
-
-// Disable any animations on the worksheet
-jQuery.fx.off = false;
-
-$.fn.exists = function () {
-  return $(this).length > 0;
-};
-
-$.fn.replace = function (htmlstr) {
-  return $(this).replaceWith(htmlstr);
-};
-
-$.fn.id = function () {
-  return $(this).attr('id');
-};
-
-$.fn.cid = function () {
-  return $(this).attr('id');
-};
-
-// Prevent selections from being dragged on the specifed elements
-$.fn.disableTextSelect = function () {
-  return this.each(function () {
-    if ($.browser.mozilla) { //Firefox
-      $(this).css('MozUserSelect', 'none');
-    } else if ($.browser.msie) { //IE
-      $(this).bind('selectstart', function () {
-        return false;
-      });
-    } else { //Opera, etc.
-      (this).mousedown(function () {
-        return false;
-      });
-    }
-  });
-};
 
 ///////////////////////////////////////////////////////////
 // UI Handling
@@ -132,14 +65,6 @@ function notify(text) {
     '': 'Regular Notice',
     pnotify_text: text,
     pnotify_delay: 5000
-  });
-}
-
-function dialog(text) {
-  $('#error_dialog').text(text);
-  $('#error_dialog').dialog({
-    modal: true,
-    dialogClass: 'alert'
   });
 }
 

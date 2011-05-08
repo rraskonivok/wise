@@ -206,8 +206,8 @@ module 'init', (exports) ->
         Wise.debug = window.DEBUG
         init_logger()
 
-        # Load sidebar palettes via AJAX
         if HAS_BROWSER
+            # Load sidebar palettes via AJAX
             load_math_palette()
             load_rules_palette()
             layout = rearrange()

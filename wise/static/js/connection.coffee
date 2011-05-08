@@ -25,17 +25,22 @@ module 'connection', (exports) ->
     ###
     class Connection
 
-        heartbeat = Message
-
         constructor: ->
             socket = new io.Socket(document.location.hostname)
             socket.connect()
 
             @socket = socket
 
-            @socket.on 'message',(data) ->
-                alert('new message')
-                #console.log JSON.parse(data.result)
+            #@socket.on 'message',(data) ->
+            #    log.info('new message')
+            #    console.log JSON.parse(data.result)
+
+            @socket.on 'connect', () ->
+                log.debug('Websocket Connected')
+
+            @socket.on 'disconnect', () ->
+                log.error('Websocket Disconnected')
+
 
         send: (data) ->
             console.log('sent data')
@@ -48,16 +53,6 @@ module 'connection', (exports) ->
                 return false
             else
                 return @socket.connected
-
-        heartbeat: (trial) ->
-            this.socket || error('not connected')
-            trial = trial + 1000 || 1000
-
-            #_heartbeat = ->
-                #@socket.send(_HeartbeatMsg)
-                #@socket.listen('heartbeat')
-                #error 'try again in $0 seconds'.t(trials)
-                #setTimeout(@heatbeat, trial)
 
     exports.Connection = Connection
     exports.websock = new Connection()
