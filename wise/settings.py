@@ -5,6 +5,8 @@ except:
 
 import os
 
+PORT = 8000
+
 # A quick note about security. **WISE IS ALPHA SOFTWARE AND NOT
 # SECURE** (yet)
 ADMINS = (
