@@ -8,16 +8,15 @@
  License, or (at your option) any later version.
 ###
 
-{Message} = require 'messages'
+{Task} = require 'messages'
 
 module 'connection', (exports) ->
 
-    _HeartbeatMsg = new Message
+    _HeartbeatMsg = new Task
         task     : 'heartbeat'
         args     : []
         operands : []
         nsi      : 1
-
 
     ###
     Websocket Connection
@@ -25,34 +24,36 @@ module 'connection', (exports) ->
     ###
     class Connection
 
+        inital_connect: false
+
+        initalalize: ->
+            _.bindAll(this, 'onConnect', 'onDisconnect')
+
+
         constructor: ->
             socket = new io.Socket(document.location.hostname)
             socket.connect()
+            @inital_connect = true
 
             @socket = socket
-
-            #@socket.on 'message',(data) ->
-            #    log.info('new message')
-            #    console.log JSON.parse(data.result)
+            log.debug('Websocket Connected')
 
             @socket.on 'connect', () ->
-                log.debug('Websocket Connected')
+                log.debug('Websocket Reconnected')
+                Wise.WorksheetView.unblock()
 
             @socket.on 'disconnect', () ->
                 log.error('Websocket Disconnected')
-
+                Wise.WorksheetView.block()
 
         send: (data) ->
             console.log('sent data')
             @socket.send(JSON.stringify(data))
 
-        listen: (signal) ->
-
-        isConnected: ->
+        isConnected: =>
             if not @socket
                 return false
             else
                 return @socket.connected
 
     exports.Connection = Connection
-    exports.websock = new Connection()

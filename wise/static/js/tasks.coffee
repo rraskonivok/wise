@@ -8,7 +8,6 @@
  License, or (at your option) any later version.
 ###
 
-{websock} = require 'connection'
 {Task}    = require 'messages'
 
 module 'tasks', (exports) ->
@@ -59,7 +58,7 @@ module 'tasks', (exports) ->
         #if Wise.debug
         log.profile(uid)
 
-        websock.send(task)
+        Wise.Socket.send(task)
 
         ResultQueue.push(uid)
         ResultCallback[uid] = (result) ->
@@ -112,7 +111,7 @@ module 'tasks', (exports) ->
         #if Wise.debug
         log.profile(uid)
 
-        websock.send(task)
+        Wise.Socket.send(task)
 
         ResultQueue.push(uid)
         ResultCallback[uid] = (result) ->
@@ -150,7 +149,7 @@ module 'tasks', (exports) ->
             log.profile(uid)
 
 
-    websock.socket.on 'message', (msg) ->
+    Wise.Socket.socket.on 'message', (msg) ->
         # If result is the at the top of the queue then just do
         # execute the callback and we're done
         if ResultQueue[0] == msg.uid

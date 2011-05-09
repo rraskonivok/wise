@@ -11,12 +11,14 @@ Application = Backbone.Model.extend
     version: '0.1.3'
 
     # Created upon call of init()
-    Worksheet    : null
-    Nodes        : null
-    Selection    : null
-    Sidebar      : null
-    Accelerators : null
-    CmdLine      : null
+    Worksheet     : null
+    WorksheetView : null
+    Nodes         : null
+    Selection     : null
+    Sidebar       : null
+    Accelerators  : null
+    CmdLine       : null
+    Socket        : null
 
     last_cell    : null
     last_expr    : null

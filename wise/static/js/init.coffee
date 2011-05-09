@@ -8,6 +8,8 @@
  License, or (at your option) any later version.
 ###
 
+{Connection} = require 'connection'
+
 module 'init', (exports) ->
 
     test_mathml = ->
@@ -149,7 +151,11 @@ module 'init', (exports) ->
 
         # Error logging
         Wise.CmdLine = new CmdLineView({
-            el: $("#cmd"),
+            el: $("#cmd")
+        })
+
+        Wise.WorksheetView = new WorksheetView({
+            el: ("#worksheet")
         })
 
         $("#container").show()
@@ -234,6 +240,8 @@ module 'init', (exports) ->
 
         new WorkspaceController()
         Backbone.history.start()
+
+        Wise.Socket = new Connection()
 
         progress(100)
 

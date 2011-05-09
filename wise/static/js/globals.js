@@ -9,11 +9,13 @@
   Application = Backbone.Model.extend({
     version: '0.1.3',
     Worksheet: null,
+    WorksheetView: null,
     Nodes: null,
     Selection: null,
     Sidebar: null,
     Accelerators: null,
     CmdLine: null,
+    Socket: null,
     last_cell: null,
     last_expr: null,
     cmd_visible: null,

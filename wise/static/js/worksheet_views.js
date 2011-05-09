@@ -8,50 +8,62 @@
  License, or (at your option) any later version.
 */
 
+// --------------------------
+// Templates
+// --------------------------
 
 var button_template = "<button>$label</button>";
 
 var toplevel_types = [
     {
         label: 'Equation',
-        sexp: 'eq',
+        sexp: 'eq'
     },
 
     {
         label: 'Definition',
-        sexp: 'def',
+        sexp: 'def'
     },
 
     {
         label: 'Greater Than',
-        sexp: '(Gt (Placeholder ) (Placeholder ) )',
+        sexp: '(Gt (Placeholder ) (Placeholder ) )'
     },
 
     {
         label: 'Less Than',
-        sexp: '(Lt (Placeholder ) (Placeholder ) )',
+        sexp: '(Lt (Placeholder ) (Placeholder ) )'
     },
 ]
 
-function expand_trace(obj) {
-    $('.trace:last',obj).css('position','fixed');
-    $('.trace:last',obj).css('left','0');
-    $('.trace:last',obj).css('bottom','0');
-    $('.trace:last',obj).css('z-index','500');
+// --------------------------
+// Worksheet View
+// --------------------------
 
-    $('.trace:last iframe',obj).css('height',document.height/2);
-    $('.trace:last iframe',obj).css('width',document.width);
-}
+var WorksheetView = Backbone.View.extend({
 
-function collapse_trace(obj) {
-    $('.trace:last',obj).css('position','relative');
-    $('.trace:last',obj).css('left','');
-    $('.trace:last',obj).css('top','');
-    $('.trace:last',obj).css('z-index','0');
+   initialize: function() {
+       _.bindAll(this, 'block', 'unblock');
+   },
 
-    $('.trace:last iframe',obj).css('height','100%');
-    $('.trace:last iframe',obj).css('width','100%');
-}
+   block: function() {
+        $(this.el).block({
+            message: '<h1>Processing</h1>',
+            css: { border: '3px solid #a00' }
+        });
+   },
+
+   unblock: function() {
+        $(this.el).unblock();
+   },
+
+
+});
+
+// --------------------------
+// Siebar View
+// --------------------------
+
 
 var SidebarView = Backbone.View.extend({
 
@@ -108,6 +120,11 @@ var SidebarView = Backbone.View.extend({
    },
 
 });
+
+// --------------------------
+// Cell Related Views
+// --------------------------
+
 
 var InsertionToolbar = Backbone.View.extend({
    tagName: 'div',
@@ -249,7 +266,10 @@ var CellView = Backbone.View.extend({
 
 });
 
-// Node Views as manifest as manipulative LaTeX in the worksheet
+// --------------------------
+// Node Related Views
+// --------------------------
+
 var NodeView = Backbone.View.extend({
 
   events: {
@@ -350,30 +370,11 @@ var NodeSelectionView = Backbone.View.extend({
     }
   },
 
-  highlight: function (e) {
-    //if (this.css3effect) {
-    //  $('.MathJax_Display').addClass('modal');
-    //  typsets = this.model.dom().find('.MathJax_Display');
-    //  _.each(typsets, function (t) {
-    //    $(t).removeClass('modal');
-    //  });
-    //  this.model.view.el.addClass('shadow');
-    //  this.model.view.el.removeClass('selected');
-    //} else if (this.highlighteffect) {
-    //  this.model.view.el.addClass('highlight');
-    //}
-  },
-
-  unhighlight: function (e) {
-    //if (this.css3effect) {
-    //  $('.MathJax_Display').removeClass('modal');
-    //  this.model.view.el.removeClass('shadow');
-    //} else if (this.highlighteffect) {
-    //  this.model.view.el.removeClass('highlight');
-    //}
-  },
-
 });
+
+// --------------------------
+// Command Line Views
+// --------------------------
 
 var CmdLineView = Backbone.View.extend({
     events: {

@@ -7,7 +7,9 @@
    it under the terms of the GNU Affero General Public License as
    published by the Free Software Foundation, either version 3 of the
    License, or (at your option) any later version.
-  */  module('init', function(exports) {
+  */  var Connection;
+  Connection = require('connection').Connection;
+  module('init', function(exports) {
     var init, init_autocomplete, init_components, init_keyboard_shortcuts, init_layout, init_logger, init_nodes, init_views, make_editor, progress, prompt, test_mathml;
     test_mathml = function() {
       var mml_namespace, test1, test2, test3;
@@ -119,6 +121,9 @@
       Wise.CmdLine = new CmdLineView({
         el: $("#cmd")
       });
+      Wise.WorksheetView = new WorksheetView({
+        el: "#worksheet"
+      });
       $("#container").show();
       init_autocomplete();
       return $("#worksheet").show();
@@ -159,6 +164,7 @@
       };
       new WorkspaceController();
       Backbone.history.start();
+      Wise.Socket = new Connection();
       return progress(100);
     };
     init_logger = function() {

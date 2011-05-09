@@ -7,11 +7,12 @@
    it under the terms of the GNU Affero General Public License as
    published by the Free Software Foundation, either version 3 of the
    License, or (at your option) any later version.
-  */  var Message;
-  Message = require('messages').Message;
+  */  var Task;
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  Task = require('messages').Task;
   module('connection', function(exports) {
     var Connection, _HeartbeatMsg;
-    _HeartbeatMsg = new Message({
+    _HeartbeatMsg = new Task({
       task: 'heartbeat',
       args: [],
       operands: [],
@@ -22,23 +23,30 @@
     Wraps socket.io
     */
     Connection = (function() {
+      Connection.prototype.inital_connect = false;
+      Connection.prototype.initalalize = function() {
+        return _.bindAll(this, 'onConnect', 'onDisconnect');
+      };
       function Connection() {
-        var socket;
+        this.isConnected = __bind(this.isConnected, this);;        var socket;
         socket = new io.Socket(document.location.hostname);
         socket.connect();
+        this.inital_connect = true;
         this.socket = socket;
+        log.debug('Websocket Connected');
         this.socket.on('connect', function() {
-          return log.debug('Websocket Connected');
+          log.debug('Websocket Reconnected');
+          return Wise.WorksheetView.unblock();
         });
         this.socket.on('disconnect', function() {
-          return log.error('Websocket Disconnected');
+          log.error('Websocket Disconnected');
+          return Wise.WorksheetView.block();
         });
       }
       Connection.prototype.send = function(data) {
         console.log('sent data');
         return this.socket.send(JSON.stringify(data));
       };
-      Connection.prototype.listen = function(signal) {};
       Connection.prototype.isConnected = function() {
         if (!this.socket) {
           return false;
@@ -48,7 +56,6 @@
       };
       return Connection;
     })();
-    exports.Connection = Connection;
-    return exports.websock = new Connection();
+    return exports.Connection = Connection;
   });
 }).call(this);

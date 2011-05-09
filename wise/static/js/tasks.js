@@ -7,8 +7,7 @@
    it under the terms of the GNU Affero General Public License as
    published by the Free Software Foundation, either version 3 of the
    License, or (at your option) any later version.
-  */  var Task, websock;
-  websock = require('connection').websock;
+  */  var Task;
   Task = require('messages').Task;
   module('tasks', function(exports) {
     var ApplyRule, EvalCode, ResultCallback, ResultFlush, ResultQueue, ResultQueue_HWM;
@@ -41,7 +40,7 @@
       image = [];
       uid = task.uid;
       log.profile(uid);
-      websock.send(task);
+      Wise.Socket.send(task);
       ResultQueue.push(uid);
       return ResultCallback[uid] = function(result) {
         var i, image_html, image_json, len, newnode, preimage;
@@ -93,7 +92,7 @@
       image = [];
       uid = task.uid;
       log.profile(uid);
-      websock.send(task);
+      Wise.Socket.send(task);
       ResultQueue.push(uid);
       return ResultCallback[uid] = function(result) {
         var i, image_html, image_json, len, newnode, preimage;
@@ -132,7 +131,7 @@
         return log.profile(uid);
       };
     };
-    websock.socket.on('message', function(msg) {
+    Wise.Socket.socket.on('message', function(msg) {
       if (ResultQueue[0] === msg.uid) {
         ResultQueue.pop();
         return ResultCallback[msg.uid].call(null, JSON.parse(msg.result));

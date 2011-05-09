@@ -68,6 +68,7 @@ MEDIA_BUNDLES = (
         'editable.js',
         'autocomplete.js',
         'pattern_match.js',
+        'blockui.js',
      )},
 
     {"type": "javascript",
@@ -101,12 +102,12 @@ MEDIA_BUNDLES = (
         'globals.js',
 
          # Generated coffeescript
-        'init.js',
         'base.js',
         'utils.js',
         'accel.js',
         'messages.js',
         'connection.js',
-        'tasks.js'
+        'tasks.js',
+        'init.js',
      )},
 )
