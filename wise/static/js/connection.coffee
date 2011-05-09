@@ -27,8 +27,7 @@ module 'connection', (exports) ->
         inital_connect: false
 
         initalalize: ->
-            _.bindAll(this, 'onConnect', 'onDisconnect')
-
+            _.bindAll(this, 'onConnect', 'onDisconnect','disconnect')
 
         constructor: ->
             socket = new io.Socket(document.location.hostname)
@@ -51,6 +50,9 @@ module 'connection', (exports) ->
         send: (data) ->
             console.log('sent data')
             @socket.send(JSON.stringify(data))
+
+        disconnect: ->
+            @socket.disconnect()
 
         isConnected: =>
             if not @socket

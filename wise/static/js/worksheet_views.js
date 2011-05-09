@@ -46,9 +46,11 @@ var WorksheetView = Backbone.View.extend({
        _.bindAll(this, 'block', 'unblock');
    },
 
-   block: function() {
+   block: function(msg) {
+        var message = msg || '<h1>Waiting for Connection...</h1>';
+
         $(this.el).block({
-            message: '<h1>Processing</h1>',
+            message: message,
             css: { border: '3px solid #a00' }
         });
    },

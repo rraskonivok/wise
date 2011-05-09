@@ -25,7 +25,7 @@
     Connection = (function() {
       Connection.prototype.inital_connect = false;
       Connection.prototype.initalalize = function() {
-        return _.bindAll(this, 'onConnect', 'onDisconnect');
+        return _.bindAll(this, 'onConnect', 'onDisconnect', 'disconnect');
       };
       function Connection() {
         this.isConnected = __bind(this.isConnected, this);;        var socket;
@@ -49,6 +49,9 @@
       Connection.prototype.send = function(data) {
         console.log('sent data');
         return this.socket.send(JSON.stringify(data));
+      };
+      Connection.prototype.disconnect = function() {
+        return this.socket.disconnect();
       };
       Connection.prototype.isConnected = function() {
         if (!this.socket) {
