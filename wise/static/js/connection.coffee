@@ -33,13 +33,15 @@ module 'connection', (exports) ->
         constructor: ->
             socket = new io.Socket(document.location.hostname)
             socket.connect()
-            @inital_connect = true
 
             @socket = socket
-            log.debug('Websocket Connected')
 
             @socket.on 'connect', () ->
-                log.debug('Websocket Reconnected')
+                if not @inital_connect
+                    @inital_connect = true
+                    log.debug('Websocket Connected')
+                else
+                    log.debug('Websocket Reconnected')
                 Wise.WorksheetView.unblock()
 
             @socket.on 'disconnect', () ->

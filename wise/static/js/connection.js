@@ -31,11 +31,14 @@
         this.isConnected = __bind(this.isConnected, this);;        var socket;
         socket = new io.Socket(document.location.hostname);
         socket.connect();
-        this.inital_connect = true;
         this.socket = socket;
-        log.debug('Websocket Connected');
         this.socket.on('connect', function() {
-          log.debug('Websocket Reconnected');
+          if (!this.inital_connect) {
+            this.inital_connect = true;
+            log.debug('Websocket Connected');
+          } else {
+            log.debug('Websocket Reconnected');
+          }
           return Wise.WorksheetView.unblock();
         });
         this.socket.on('disconnect', function() {
