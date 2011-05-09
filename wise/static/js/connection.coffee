@@ -41,14 +41,16 @@ module 'connection', (exports) ->
                     log.debug('Websocket Connected')
                 else
                     log.debug('Websocket Reconnected')
+                    notify.info('Connection Restablished.')
                 Wise.WorksheetView.unblock()
 
             @socket.on 'disconnect', () ->
                 log.error('Websocket Disconnected')
+                notify.error('Connection Lost')
                 Wise.WorksheetView.block()
 
         send: (data) ->
-            console.log('sent data')
+            #console.log('sent data')
             @socket.send(JSON.stringify(data))
 
         disconnect: ->

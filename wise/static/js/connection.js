@@ -38,16 +38,17 @@
             log.debug('Websocket Connected');
           } else {
             log.debug('Websocket Reconnected');
+            notify.info('Connection Restablished.');
           }
           return Wise.WorksheetView.unblock();
         });
         this.socket.on('disconnect', function() {
           log.error('Websocket Disconnected');
+          notify.error('Connection Lost');
           return Wise.WorksheetView.block();
         });
       }
       Connection.prototype.send = function(data) {
-        console.log('sent data');
         return this.socket.send(JSON.stringify(data));
       };
       Connection.prototype.disconnect = function() {

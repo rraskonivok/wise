@@ -1,3 +1,10 @@
+# Shpaml
+# Author: Steve Howell
+#
+# It's free public-domain software.  There is no license currently
+# attached to it, except whatever provisions apply to it by virtue
+# of being on bitbucket.
+
 import re
 
 __version__ = '0.99b'

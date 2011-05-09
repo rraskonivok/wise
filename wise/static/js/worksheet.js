@@ -17,11 +17,29 @@ $(document).ajaxError(function (e, xhr, settings, exception) {
 
     // Django stack trace, if DEBUG is enabled
     var content = xhr.responseText;
+    dialog_html(content);
 
     // Disable math operations until we restablish a connection
     //Wise.Settings.set({DISABLE_MATH: true});
     log.error('AJAX request failed.');
 });
+
+function dialog_html(html_contents) {
+    // Dump the Django stack trace given on a failed AJAX request out into a iframe
+    $("#dialog").dialog({resizable: true});
+
+   var $frame = $('<iframe style="width:200px; height:100px;"></iframe>');
+   $('#dialog').html( $frame );
+
+    setTimeout( function() {
+        var doc = $frame[0].contentWindow.document;
+        var $body = $('body',doc);
+        $body.html(html_contents);
+        $("#dialog iframe").css('height','100%');
+        $("#dialog iframe").css('width','100%');
+    }, 500 );
+
+}
 
 ///////////////////////////////////////////////////////////
 // Console
