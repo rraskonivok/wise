@@ -206,9 +206,10 @@
       Wise.debug = window.DEBUG;
       init_logger();
       if (HAS_BROWSER) {
+        layout = init_layout();
+        layout.resetOverflow();
         load_math_palette();
         load_rules_palette();
-        layout = init_layout();
         if (test_mathml()) {
           return init_components();
         } else {

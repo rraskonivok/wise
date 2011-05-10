@@ -1,23 +1,28 @@
-###
- Wise
- Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+# Wise
+# Copyright (C) 2010 Stephen Diehl <sdiehl@clarku.edu>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
 
- This program is free software: you can redistribute it and/or modify
- it under the terms of the GNU Affero General Public License as
- published by the Free Software Foundation, either version 3 of the
- License, or (at your option) any later version.
-###
-
-{Task}    = require 'messages'
+{Task} = require 'messages'
 
 module 'tasks', (exports) ->
 
-# High water mark for ResultQueue, maximum number of queued
-# result callbacks
+    # High water mark for ResultQueue, maximum number of queued
+    # result callbacks
     ResultQueue_HWM = 5
-
     ResultQueue = []
     ResultCallback = {}
+
+    # ---------------------------
+    # Rule Application          |
+    # -----------------------------------------------------------
+    # Take a rule and a set of objects and return the           |
+    # application # of the rule on the given objects. Map the   |
+    # resulting set one to one onto the preimage.               |
+    # -----------------------------------------------------------
 
     ApplyRule = (rule, operands, callback) ->
 
@@ -82,6 +87,13 @@ module 'tasks', (exports) ->
                         Wise.Selection.clear()
 
             log.profile(uid)
+
+    # ---------------------------
+    # Evaluation                |
+    # -----------------------------------------------------------
+    # Take a string of Pure code and evalutes it out into       |
+    # objects in the worksheet.                                 |
+    # -----------------------------------------------------------
 
     EvalCode = (code) ->
 
@@ -149,6 +161,9 @@ module 'tasks', (exports) ->
             log.profile(uid)
 
 
+    # ----------------
+    # Result Observer
+    # ----------------
     Wise.Socket.socket.on 'message', (msg) ->
         # If result is the at the top of the queue then just do
         # execute the callback and we're done

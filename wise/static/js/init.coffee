@@ -270,11 +270,12 @@ module 'init', (exports) ->
         init_logger()
 
         if HAS_BROWSER
+            layout = init_layout()
+            layout.resetOverflow()
+
             # Load sidebar palettes via AJAX
             load_math_palette()
             load_rules_palette()
-            layout = init_layout()
-            # layout.resetOverflow();
 
             # Test for MathML support, if not then prompt the user
             if test_mathml()
