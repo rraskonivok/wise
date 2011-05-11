@@ -29,6 +29,7 @@ Worksheet Stuff:
     Worksheet:
 
     * static/js/tree.js
+    * static/js/tasks.coffee
     * static/js/worksheet.js
     * static/js/worksheet_managers.js
     * static/js/worksheet_views.js

@@ -112,7 +112,7 @@ class RequestHandler:
         # whole system goes as the Kolmogrov complexity of the sexp
         # expressions it contains.
         if all([complexity_metric(x) < self.complexity_threshold for x in ops]):
-            self.hsh = hashlib.sha1(''.join(pmsg))
+            self.hsh = hashlib.sha1(''.join(self.pmsg))
             if self.hsh in lookup:
                 self.completed = True
                 self.handle_response(cached=self.hsh)
