@@ -2,6 +2,11 @@ html {
     overflow : hidden;
 }
 
+body {
+    /* Arial is Ugly , but then again so are most MS fonts */
+    font-family: Helvetica, Arial, Bitstream-Vera, sans-serif;
+}
+
 .noselect {
     -webkit-user-select: none;
     -khtml-user-select: none;
@@ -119,7 +124,6 @@ body {
 
 a.button, button.button {
   background-color: #f4f4f4;
-  background-image: url("/static/img/button-background.png");
   border: 1px solid #c3c4ba;
 }
 
@@ -141,7 +145,6 @@ a.button:hover, button.button:hover {
 a.button:active, button.button:active {
   outline: none;
   background-color: #ddd;
-  background-image: url("/static/img/button-background-active.png");
 }
 
 .actions-bar .pagination {

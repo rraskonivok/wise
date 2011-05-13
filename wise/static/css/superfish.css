@@ -72,15 +72,29 @@ ul.sf-menu li li li.sfHover ul {
 }
 
 .sf-menu li {
-    margin-left: 1px;
+    /*margin-left: 1px;*/
+    border: 1px solid #ccc;
+}
 
-	background:		#ccc;
-    opacity: 0.9;
+.sf-menu li ul {
+    border: 1px solid black;
 }
+
+/* Submenu */
 .sf-menu li li {
-	background:		#ccc;
-    opacity: 0.9;
+	background:		#fff;
+    border-bottom: 1px solid #ccc;
+    border-left: 10px solid #cfcfcf;
+    /*opacity: 0.9;*/
+
+    -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, .2);
+    -moz-box-shadow: 5px 5px 5px rgba(0, 0, 0, .2);
 }
+
+.sf-menu li li:hover {
+    border-left: 10px solid #ccc;
+}
+
 .sf-menu li li li {
 	background:		#ccc;
     opacity: 0.9;
@@ -88,7 +102,7 @@ ul.sf-menu li li li.sfHover ul {
 
 .sf-menu li:hover, .sf-menu li.sfHover,
 .sf-menu a:focus, .sf-menu a:hover, .sf-menu a:active {
-	background:		#999;
+    background:		#efefef;
 	outline:		0;
 }
 
@@ -141,6 +155,7 @@ li.sfHover > a > .sf-sub-indicator {
 	-moz-border-radius-topright: 17px;
 	-webkit-border-top-right-radius: 17px;
 	-webkit-border-bottom-left-radius: 17px;
+
 }
 .sf-shadow ul.sf-shadow-off {
 	background: transparent;

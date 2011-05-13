@@ -8,6 +8,7 @@ MEDIA_BUNDLES = (
      "url": MEDIA_URL,
      "minify": False,
      "files": (
+        'css/reset.css',
         'css/base.css',
         'css/themes/default/style.css',
         'ui/ui.css',
@@ -36,6 +37,7 @@ MEDIA_BUNDLES = (
         'worksheet.css',
         'autocomplete.css',
         'superfish.css',
+        'complex.css',
      )},
 
     # Base Javascript libraries

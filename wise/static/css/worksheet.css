@@ -89,7 +89,7 @@
 }
 
 #worksheet_sidebar .buttons button {
-    clear: right; 
+    clear: right;
     width: 25%;
 }
 
@@ -129,7 +129,7 @@
 	background: -moz-linear-gradient(top,  #fff,  #dcdcdc);
 }
 
-.panel_category { 
+.panel_category {
     cursor: pointer;
     clear: both;
     display: block;
@@ -139,9 +139,10 @@
     font-weight: bold;
     color: black !important;
     border-bottom: 1px solid #ccc;
-    font-family: serif;
+    /*font-family: serif;*/
     font-variant: small-caps;
 }
+
 
 .panel_frame {
     height: 100%;
@@ -260,7 +261,7 @@ kbd {
     width: 100%;
     font-size: 15pt;
 
-    font-family: Terminus, Monaco, courier, monospace;
+    font-family: Terminus, Incosolata, Monaco, courier, monospace;
 
     border-style: solid;
     border-color: #000000;

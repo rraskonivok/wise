@@ -30,6 +30,10 @@ math .selected {
     border: 2px solid #B30505;
 }
 
+.toplevel {
+    text-align: center;
+}
+
 .toplevel.selected {
 }
 
