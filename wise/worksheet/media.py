@@ -37,7 +37,7 @@ MEDIA_BUNDLES = (
         'worksheet.css',
         'autocomplete.css',
         'superfish.css',
-        'complex.css',
+        'layout.css',
      )},
 
     # Base Javascript libraries

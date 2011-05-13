@@ -1,0 +1,75 @@
+/*
+ * ------------------
+ * North
+ * ------------------
+*/
+
+.ui-layout-resizer-north {
+	background: #EDEDED;
+	background: -webkit-gradient(linear, left top, left bottom, from(#EDEDED), to(#D1D1D1));
+	background: -moz-linear-gradient(top, #EDEDED,  #D1D1D1);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#EDEDED', endColorstr='#D1D1D1');
+	border-top: 1px solid #AAAAAA;
+	border-bottom: 1px solid #AAAAAA;
+}
+
+/*
+ * ------------------
+ * South
+ * ------------------
+*/
+
+.ui-layout-resizer-south {
+	background: #EDEDED;
+	background: -webkit-gradient(linear, left top, left bottom, from(#EDEDED), to(#D1D1D1));
+	background: -moz-linear-gradient(top, #EDEDED,  #D1D1D1);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#EDEDED', endColorstr='#D1D1D1');
+	border-top: 1px solid #AAAAAA;
+	border-bottom: 1px solid #AAAAAA;
+}
+
+.ui-layout-toggler-south {
+	-webkit-box-shadow: inset 0 -6px 5px rgba(0,0,0,.1);
+	-moz-box-shadow: inset 0 -6px 5px rgba(0,0,0,.1);
+	box-shadow: inset 0 -6px 5px rgba(0,0,0,.1);
+	border-left: 1px solid #AAAAAA;
+	border-right: 1px solid #AAAAAA;
+	width: 18px !important;
+	background: #ffffff url(/media/ui/images/ui-icons_222222_256x240.png) -64px 0;
+}
+
+.ui-layout-toggler-south:hover {
+	background: #5e9ae2 url(/media/ui/images/ui-icons_ffffff_256x240.png) -64px 0;
+}
+
+.ui-layout-toggler-south-closed {
+	background: #ffffff url(/media/ui/images/ui-icons_222222_256x240.png) 1px 0;
+}
+
+.ui-layout-toggler-south-closed:hover {
+    url(/images/ui-icons_ffffff_256x240.png)
+	background: #5e9ae2 url(/media/ui/images/ui-icons_ffffff_256x240.png) 1px 0;
+}
+
+/*
+ * ------------------
+ * East
+ * ------------------
+*/
+
+.ui-layout-resizer-east {
+	background: #EDEDED;
+	background: -webkit-gradient(linear, left bottom, right bottom, from(#EDEDED), to(#D1D1D1));
+	background: -moz-linear-gradient(left, #EDEDED,  #D1D1D1);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#EDEDED', endColorstr='#D1D1D1', GradientType=1);
+	border-left: 1px solid #AAAAAA;
+	border-right: 1px solid #AAAAAA;
+}
+
+.ui-layout-toggler-east {
+    background: #ffffff;
+	border-top: 1px solid #AAAAAA;
+	border-bottom: 1px solid #AAAAAA;
+}
+
+

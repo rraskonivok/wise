@@ -207,8 +207,15 @@
       if (HAS_BROWSER) {
         layout = init_layout();
         layout.resetOverflow();
-        load_math_palette();
-        load_rules_palette();
+        async.series([
+          function() {
+            return load_rules_palette();
+          }, function() {
+            return load_math_palette();
+          }, function() {
+            return $("#worksheet_sidebar").tabs();
+          }
+        ]);
         if (test_mathml()) {
           return init_components();
         } else {

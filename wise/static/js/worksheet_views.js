@@ -63,7 +63,6 @@ var WorksheetView = Backbone.View.extend({
 // --------------------------
 // Siebar View
 // --------------------------
-
 var SidebarView = Backbone.View.extend({
 
 	events: {
@@ -89,33 +88,33 @@ var SidebarView = Backbone.View.extend({
 	},
 
 	expandAllMath: function() {
-		if (this.toggleState) {
-			this.$('#math_palette .panel_frame').hide();
-		} else {
-			this.$('#math_palette .panel_frame').show();
-		}
+		//if (this.toggleState) {
+			//this.$('#math_palette .panel_frame').hide();
+		//} else {
+			//this.$('#math_palette .panel_frame').show();
+		//}
 
 		this.toggleState ^= 1;
 	},
 
 	toggleMath: function() {
-		this.$('.palette').hide();
-		this.$('#math_palette').show();
+		//this.$('.palette').hide();
+		//this.$('#math_palette').show();
 	},
 
 	toggleRules: function() {
-		this.$('.palette').hide();
-		this.$('#rules_palette').show();
+		//this.$('.palette').hide();
+		//this.$('#rules_palette').show();
 	},
 
 	toggleSettings: function() {
-		this.$('.palette').hide();
-		this.$('#settings_palette').show();
+		//this.$('.palette').hide();
+		//this.$('#settings_palette').show();
 	},
 
 	toggleKeys: function() {
-		this.$('.palette').hide();
-		this.$('#keys_palette').show();
+		//this.$('.palette').hide();
+		//this.$('#keys_palette').show();
 	},
 
 });
@@ -123,7 +122,6 @@ var SidebarView = Backbone.View.extend({
 // --------------------------
 // Cell Related Views
 // --------------------------
-
 var InsertionToolbar = Backbone.View.extend({
 	tagName: 'div',
 
@@ -250,9 +248,9 @@ var CellView = Backbone.View.extend({
 		// and all its subexpressions
 		// If the cell has a correspondance in the database
 		// then destroy it
-		if (this.model.isNew() == false) {
+		if (this.model.isNew() === false) {
 			this.model.destroy({
-				success: Notifications.raise('COMMIT_SUCCESS'),
+				success: notify.info('COMMIT_SUCCESS')
 			});
 		}
 		$(this.el).remove();

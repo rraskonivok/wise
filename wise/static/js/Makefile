@@ -10,3 +10,6 @@ js: $(JS_MINIFIED)
 
 clean:
 	rm -f $(JS_MINIFIED)
+
+all.js: %.js
+    yuicompressor -o $@ $<

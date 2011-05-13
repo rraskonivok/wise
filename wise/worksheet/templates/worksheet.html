@@ -11,8 +11,6 @@
 
 {% block includes %}
 
-<link href='http://fonts.googleapis.com/css?family=Ubuntu' rel='stylesheet' type='text/css'></link>
-
 <!-- <script type="text/javascript" src="/ws/mathjax/MathJax.js"></script>-->
 {% load_bundle "worksheet_css" %}
 {% load_bundle "worksheet_js" %}
@@ -186,6 +184,7 @@ Init Function + Global Vars
                         <li><a href="#flushqueue">Flush task queue</a></li>
                         <li><a href="#reconnect">Toggle Websocket</a></li>
                         <li><a href="javascript:heartbeat()">Server heatbeat</a></li> 
+                        <li><a href="#">Websocket heatbeat</a></li> 
                     </ul>
                 </li>
             </ul>
@@ -215,6 +214,23 @@ Init Function + Global Vars
 
         <div id="worksheet_sidebar">
 
+            <ul>
+                <li><a href="#math_palette">Math</a></li>
+                <li><a href="#rules_palette">Proin dolor</a></li>
+            </ul>
+
+            <div id="math_palette" class="palette"></div>
+            <div id="rules_palette" class="palette">
+                <form id="searchform">
+                    <input id="rulesearch" type="search"></input>
+                </form>
+
+                <div id="rules">
+                </div>
+            </div>
+
+            <!--
+
             <div class="buttons">
                 <button class='math noselect button'>
                     <img src="{{ STATIC_URL }}img/icons/sigma.png"/>
@@ -224,37 +240,16 @@ Init Function + Global Vars
                     <img src="{{ STATIC_URL }}img/icons/transform.png"/>
                 </button>
 
-                <!--
-                <button class='notebook'>
-                    <img src="/static/img/icons/notebook.png"/>
-                </button>
-
-                <button class='settings'>
-                    <img src="/static/img/icons/settings.png"/>
-                </button>
-                -->
-
                 <button class='keys noselect button'>
                     <img src="{{ STATIC_URL }}img/icons/keys.png"/>
                 </button>
 
-                <!--
-                <button class='snapshot'>
-                    <img src="/static/img/icons/snapshot.png"/>
-                </button>
-                -->
             </div>
 
+            -->
+
+            <!--
             <div id="assum_palette" class="palette hidden"></div>
-            <div id="math_palette" class="palette hidden"></div>
-            <div id="rules_palette" class="palette hidden">
-                <form id="searchform">
-                    <input id="rulesearch" type="search"></input>
-                </form>
-
-                <div id="rules">
-                </div>
-            </div>
             <div id="settings_palette" class="palette hidden"></div>
 
             <div id="keys_palette" class="palette hidden">
@@ -262,6 +257,8 @@ Init Function + Global Vars
                 <dl class="list">
                 </dl>
             </div>
+
+            -->
 
         </div>
 
