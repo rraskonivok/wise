@@ -8,8 +8,11 @@ js: $(JS_MINIFIED)
 %.min.js: %.js
 	yuicompressor $< >$@
 
+all.js:
+	cat > $@ $(JS_TARGETS)
+
+all-min.js: $(JS_MINIFIED)
+	cat > $@ $^
+
 clean:
 	rm -f $(JS_MINIFIED)
-
-all.js: %.js
-    yuicompressor -o $@ $<
