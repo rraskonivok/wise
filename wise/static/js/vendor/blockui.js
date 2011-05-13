@@ -166,7 +166,7 @@ $.blockUI.defaults = {
 	focusInput: true,
 
 	// suppresses the use of overlay styles on FF/Linux (due to performance issues with opacity)
-	applyPlatformOpacityRules: true,
+	applyPlatformOpacityRules: false,
 	
 	// callback method invoked when fadeIn has completed and blocking message is visible
 	onBlock: null,

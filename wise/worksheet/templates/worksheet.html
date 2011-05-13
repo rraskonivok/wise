@@ -96,7 +96,7 @@ Init Function + Global Vars
 {% block main %}
 
     <!-- Center -->
-    <div class="ui-layout-center">
+    <div id="center" class="ui-layout-center">
 
 
         <div id="worksheet" class="hidden">
@@ -113,19 +113,30 @@ Init Function + Global Vars
 
             <!-- Superfish -->
             <ul class="sf-menu">
+                <li>
+                    <a class="noselect">Wise</a>
+                </li>
                 <li class="current">
-                    <a href="#a">Go</a>
+                    <a href="#a">
+                        <span class="ui-icon ui-icon-triangle-1-s"></span>
+                        Go
+                    </a>
+
                     <ul>
                         <li>
                             <a href="{%url home %}">My Worksheets</a>
                         </li>
                     </ul>
                 </li>
-                <li class="current">
-                    <a href="#a">File</a>
+                <li>
+                    <a href="#a">
+                        <span class="ui-icon ui-icon-triangle-1-s"></span>
+                        File
+                    </a>
                     <ul>
                         <li>
-                            <a href="#save">Commit Changes</a>
+                            <a href="#save">
+                                Commit Changes</a>
                         </li>
                         <li>
                             <a href="#aa">Revert</a>
@@ -133,10 +144,16 @@ Init Function + Global Vars
                     </ul>
                 </li>
                 <li>
-                    <a href="#">Settings</a>
+                    <a href="#settings">
+                        <span class="ui-icon ui-icon-triangle-1-s"></span>
+                        Settings
+                    </a>
                 </li>
                 <li>
-                    <a href="#">Export</a>
+                    <a href="#">
+                        <span class="ui-icon ui-icon-triangle-1-s"></span>
+                        Export
+                    </a>
                     <ul>
                         <li>
                             <a href="export/wise">.wise</a>
@@ -151,11 +168,17 @@ Init Function + Global Vars
                 </li>
 
                 <li>
-                    <a href="#">Help</a>
+                    <a href="#">
+                        <span class="ui-icon ui-icon-triangle-1-s"></span>
+                        Help
+                    </a>
                 </li>
 
                 <li>
-                    <a href="#">Debug</a>
+                    <a href="#">
+                        <span class="ui-icon ui-icon-triangle-1-s"></span>
+                        Debug
+                    </a>
                     <ul>
                         <li><a href="#">Show sexp</a></li>
                         <li><a href="#">Show object</a></li>

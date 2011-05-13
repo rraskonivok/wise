@@ -11,54 +11,52 @@
 // --------------------------
 // Templates
 // --------------------------
-
 var button_template = "<button>$label</button>";
 
-var toplevel_types = [
-    {
-        label: 'Equation',
-        sexp: 'eq'
-    },
+var toplevel_types = [{
+	label: 'Equation',
+	sexp: 'eq'
+},
 
-    {
-        label: 'Definition',
-        sexp: 'def'
-    },
+{
+	label: 'Definition',
+	sexp: 'def'
+},
 
-    {
-        label: 'Greater Than',
-        sexp: '(Gt (Placeholder ) (Placeholder ) )'
-    },
+{
+	label: 'Greater Than',
+	sexp: '(Gt (Placeholder ) (Placeholder ) )'
+},
 
-    {
-        label: 'Less Than',
-        sexp: '(Lt (Placeholder ) (Placeholder ) )'
-    },
+{
+	label: 'Less Than',
+	sexp: '(Lt (Placeholder ) (Placeholder ) )'
+},
 ]
 
 // --------------------------
 // Worksheet View
 // --------------------------
-
 var WorksheetView = Backbone.View.extend({
 
-   initialize: function() {
-       _.bindAll(this, 'block', 'unblock');
-   },
+	initialize: function() {
+		_.bindAll(this, 'block', 'unblock');
+	},
 
-   block: function(msg) {
-        var message = msg || '<h1>Waiting for Connection...</h1>';
+	block: function(msg) {
+		var message = msg || '<h1>Waiting for Connection...</h1>';
 
-        $(this.el).block({
-            message: message,
-            css: { border: '3px solid #a00' }
-        });
-   },
+		$('#center', this.el.selector).block({
+			message: message,
+			css: {
+				border: '3px solid #a00'
+			}
+		});
+	},
 
-   unblock: function() {
-        $(this.el).unblock();
-   },
-
+	unblock: function() {
+		$("#center", this.el.selector).unblock();
+	}
 
 });
 
@@ -66,60 +64,59 @@ var WorksheetView = Backbone.View.extend({
 // Siebar View
 // --------------------------
 
-
 var SidebarView = Backbone.View.extend({
 
-   events: {
-     "click .math": "toggleMath",
-     "dblclick .math": "expandAllMath",
+	events: {
+		"click .math": "toggleMath",
+		"dblclick .math": "expandAllMath",
 
-     "click .rules": "toggleRules",
-     "click .settings": "toggleSettings",
-     "click .keys": "toggleKeys"
-   },
+		"click .rules": "toggleRules",
+		"click .settings": "toggleSettings",
+		"click .keys": "toggleKeys"
+	},
 
-   initialize: function() {
-        this.toggleState = 0;
-       _.bindAll(this, 'toggleMath', 'onDisableMath');
-        Wise.Settings.bind('change:DISABLE_MATH', this.onDisableMath); 
-   },
+	initialize: function() {
+		this.toggleState = 0;
+		_.bindAll(this, 'toggleMath', 'onDisableMath');
+		Wise.Settings.bind('change:DISABLE_MATH', this.onDisableMath);
+	},
 
-   onDisableMath: function(model, state) {
-        // If the server is unavailble to perform operations then
-        // disable related panels
-        //this.$('.math').button({disabled: state});
-        //this.$('.rules').button({disabled: state});
-   },
+	onDisableMath: function(model, state) {
+		// If the server is unavailble to perform operations then
+		// disable related panels
+		//this.$('.math').button({disabled: state});
+		//this.$('.rules').button({disabled: state});
+	},
 
-   expandAllMath: function() {
-        if(this.toggleState) {
-            this.$('#math_palette .panel_frame').hide();
-        } else {
-            this.$('#math_palette .panel_frame').show();
-        }
+	expandAllMath: function() {
+		if (this.toggleState) {
+			this.$('#math_palette .panel_frame').hide();
+		} else {
+			this.$('#math_palette .panel_frame').show();
+		}
 
-        this.toggleState ^= 1;
-   },
+		this.toggleState ^= 1;
+	},
 
-   toggleMath: function() {
-        this.$('.palette').hide();
-        this.$('#math_palette').show();
-   },
+	toggleMath: function() {
+		this.$('.palette').hide();
+		this.$('#math_palette').show();
+	},
 
-   toggleRules: function() {
-        this.$('.palette').hide();
-        this.$('#rules_palette').show();
-   },
+	toggleRules: function() {
+		this.$('.palette').hide();
+		this.$('#rules_palette').show();
+	},
 
-   toggleSettings: function() {
-        this.$('.palette').hide();
-        this.$('#settings_palette').show();
-   },
+	toggleSettings: function() {
+		this.$('.palette').hide();
+		this.$('#settings_palette').show();
+	},
 
-   toggleKeys: function() {
-        this.$('.palette').hide();
-        this.$('#keys_palette').show();
-   },
+	toggleKeys: function() {
+		this.$('.palette').hide();
+		this.$('#keys_palette').show();
+	},
 
 });
 
@@ -127,50 +124,47 @@ var SidebarView = Backbone.View.extend({
 // Cell Related Views
 // --------------------------
 
-
 var InsertionToolbar = Backbone.View.extend({
-   tagName: 'div',
+	tagName: 'div',
 
-   //Reference to the cell, where objects are appended
-   model: null,
+	//Reference to the cell, where objects are appended
+	model: null,
 
-   initialize: function() {
-       _.bindAll(this, 'new_type');
-   },
+	initialize: function() {
+		_.bindAll(this, 'new_type');
+	},
 
-   render: function() {
-        if(!HAS_BROWSER) {
-            return;
-        }
+	render: function() {
+		if (!HAS_BROWSER) {
+			return;
+		}
 
-       for(var tt in toplevel_types) {
-           tt = toplevel_types[tt];
+		for (var tt in toplevel_types) {
+			tt = toplevel_types[tt];
 
-           var button = $(button_template.t({
-               label: tt.label,
-           }));
+			var button = $(button_template.t({
+				label: tt.label,
+			}));
 
-           button.bind('click',
-               async.apply(this.new_type, tt.sexp)
-           );
+			button.bind('click', async.apply(this.new_type, tt.sexp));
 
-           $(this.el).hide();
-           $(this.el).append(button);
-       }
+			$(this.el).hide();
+			$(this.el).append(button);
+		}
 
-       //Make buttons pretty
-       //this.$('button').parent().buttonset();
-       return this;
-   },
+		//Make buttons pretty
+		//this.$('button').parent().buttonset();
+		return this;
+	},
 
-   new_type: function(type) {
-        new_line(type, this.model);
-        $(this.el).toggle();
-   },
+	new_type: function(type) {
+		new_line(type, this.model);
+		$(this.el).toggle();
+	},
 
-   toggle: function() {
-        $(this.el).toggle();
-   }
+	toggle: function() {
+		$(this.el).toggle();
+	}
 
 });
 
@@ -178,261 +172,258 @@ var InsertionToolbar = Backbone.View.extend({
 // referenced from the Cell object as Cell.view
 var CellView = Backbone.View.extend({
 
-  tagName: 'div',
+	tagName: 'div',
 
-  className: 'cell',
-  insetion_menu: null,
+	className: 'cell',
+	insetion_menu: null,
 
-  initialize: function () {
-      this.insertion_menu = new InsertionToolbar({
-          model: this.model,
-      }).render();
+	initialize: function() {
+		this.insertion_menu = new InsertionToolbar({
+			model: this.model,
+		}).render();
 
-      if(HAS_BROWSER) {
-          this.$('.insertion_toolbar').html(
-              this.insertion_menu.el
-          );
-      }
-  },
+		if (HAS_BROWSER) {
+			this.$('.insertion_toolbar').html(
+			this.insertion_menu.el);
+		}
+	},
 
-  events: {
-    "contextmenu .node-outline": "collapse",
-    "click .hide" : "toggleAssums",
-    "click .add"  : "insertion_menu",
-    "click .del"  : "destroyCell",
-    "click .save" : "saveCell",
-  },
+	events: {
+		"contextmenu .node-outline": "collapse",
+		"click .hide": "toggleAssums",
+		"click .add": "insertion_menu",
+		"click .del": "destroyCell",
+		"click .save": "saveCell",
+	},
 
-  insertion_menu: function() {
-      this.insertion_menu.toggle();
-  },
+	insertion_menu: function() {
+		this.insertion_menu.toggle();
+	},
 
-  destroyCell: function() {
-      this.model.deleteCell();
-  },
+	destroyCell: function() {
+		this.model.deleteCell();
+	},
 
-  render: function () {
-    if(!HAS_BROWSER) {
-        return;
-    }
-    return this;
-  },
+	render: function() {
+		if (!HAS_BROWSER) {
+			return;
+		}
+		return this;
+	},
 
-  set_active: function (state) {
-    // Toggle the css activity indicator on the cell
-    $(this.el).toggleClass('active', state);
-  },
+	set_active: function(state) {
+		// Toggle the css activity indicator on the cell
+		$(this.el).toggleClass('active', state);
+	},
 
+	addExpression: function(expr_view) {
+		this.$('.equations').append(expr_view);
+	},
 
-  addExpression: function (expr_view) {
-    this.$('.equations').append(expr_view);
-  },
+	addAssumption: function(expr_view) {
+		this.$('.assumptions').append(expr_view);
+	},
 
-  addAssumption: function (expr_view) {
-    this.$('.assumptions').append(expr_view);
-  },
+	add: function() {
+		new_line('eq', this.model.cid);
+	},
 
-  add: function () {
-    new_line('eq', this.model.cid);
-  },
+	collapse: function(e) {
+		this.$('.equations').toggle();
+		return false;
+	},
 
-  collapse: function(e) {
-    this.$('.equations').toggle();
-    return false;
-  },
+	toggleAssums: function() {
+		this.$('.assumptions').toggle();
+	},
 
-  toggleAssums: function() {
-    this.$('.assumptions').toggle();
-  },
+	toggleExpressions: function() {
+		this.$('.equations').toggle();
+	},
 
-  toggleExpressions: function() {
-    this.$('.equations').toggle();
-  },
+	saveCell: function() {
+		this.model.saveCell();
+	},
 
-  saveCell: function () {
-    this.model.saveCell();
-  },
-
-  destroy: function () {
-    // Prompt the user before they potentially destroy the cell
-    // and all its subexpressions
-    // If the cell has a correspondance in the database
-    // then destroy it
-    if (this.model.isNew() == false) {
-      this.model.destroy({
-        success: Notifications.raise('COMMIT_SUCCESS'),
-      });
-    }
-    $(this.el).remove();
-  },
+	destroy: function() {
+		// Prompt the user before they potentially destroy the cell
+		// and all its subexpressions
+		// If the cell has a correspondance in the database
+		// then destroy it
+		if (this.model.isNew() == false) {
+			this.model.destroy({
+				success: Notifications.raise('COMMIT_SUCCESS'),
+			});
+		}
+		$(this.el).remove();
+	},
 
 });
 
 // --------------------------
 // Node Related Views
 // --------------------------
-
 var NodeView = Backbone.View.extend({
 
-  events: {
-    "click": "onClick",
-    "mouseover": "onHoverIn",
-    "mouseout": "onHoverOut",
-  },
+	events: {
+		"click": "onClick",
+		"mouseover": "onHoverIn",
+		"mouseout": "onHoverOut",
+	},
 
-  highlightEverything: false,
+	highlightEverything: false,
 
-  initialize: function () {
-    _.bindAll(this, 'render', 'make', 'onClick');
-  },
+	initialize: function() {
+		_.bindAll(this, 'render', 'make', 'onClick');
+	},
 
-  onClick: function (e) {
-    // If the ctrl key is down the container selection mode
-    // is enabled an 'leaf' nodes are ignored
-    if (e.ctrlKey) {
-      if (this.model.hasChildren()) {
-        this.model.toggleSelect();
-        e.stopPropagation();
-      }
-    } else {
-      this.model.toggleSelect();
-      e.stopPropagation();
-    }
-  },
+	onClick: function(e) {
+		// If the ctrl key is down the container selection mode
+		// is enabled an 'leaf' nodes are ignored
+		if (e.ctrlKey) {
+			if (this.model.hasChildren()) {
+				this.model.toggleSelect();
+				e.stopPropagation();
+			}
+		} else {
+			this.model.toggleSelect();
+			e.stopPropagation();
+		}
+	},
 
-  onHoverIn: function (e) {
-    // If the ctrl key is down the container selection mode
-    // is enabled an 'leaf' nodes are ignored
-    if (e.ctrlKey && this.model.hasChildren()) {
-        $(this.el).addClass('preselect');
-        e.stopPropagation();
-    }
+	onHoverIn: function(e) {
+		// If the ctrl key is down the container selection mode
+		// is enabled an 'leaf' nodes are ignored
+		if (e.ctrlKey && this.model.hasChildren()) {
+			$(this.el).addClass('preselect');
+			e.stopPropagation();
+		}
 
-    // If the alt key is down the term selection mode
-    // is enabled an 'branch' nodes are ignored
-    if(e.altKey && !this.model.hasChildren()) {
-        $(this.el).addClass('preselect');
-        e.stopPropagation();
-    }
-  },
+		// If the alt key is down the term selection mode
+		// is enabled an 'branch' nodes are ignored
+		if (e.altKey && ! this.model.hasChildren()) {
+			$(this.el).addClass('preselect');
+			e.stopPropagation();
+		}
+	},
 
-  onHoverOut: function (e) {
-    $(this.el).removeClass('preselect');
-    //e.stopPropagation();
-  },
+	onHoverOut: function(e) {
+		$(this.el).removeClass('preselect');
+		//e.stopPropagation();
+	},
 
 });
 
 // Selection Bar buttons for selection of Nodes
 var NodeSelectionView = Backbone.View.extend({
 
-  tagName: "button",
+	tagName: "button",
 
-  className: "nodeselectbutton",
+	className: "nodeselectbutton",
 
-  events: {
-    "click": "unselectNode",
-    "mouseover": "highlight",
-    "mouseout": "unhighlight",
-  },
+	events: {
+		"click": "unselectNode",
+		"mouseover": "highlight",
+		"mouseout": "unhighlight",
+	},
 
-  css3effect: false,
-  highlighteffect: false,
+	css3effect: false,
+	highlighteffect: false,
 
-  initialize: function () {
-    _.bindAll(this, 'render', 'make', 'unselect');
-    this.model.bind('change:selected', this.unselect);
-    Wise.Selection.getByCid(this.model.cid).selectionview = this;
-  },
+	initialize: function() {
+		_.bindAll(this, 'render', 'make', 'unselect');
+		this.model.bind('change:selected', this.unselect);
+		Wise.Selection.getByCid(this.model.cid).selectionview = this;
+	},
 
-  render: function () {
-    if(!HAS_BROWSER) {
-        return;
-    }
+	render: function() {
+		if (!HAS_BROWSER) {
+			return;
+		}
 
-    $(this.el).button({
-      icons: {
-        primary: "ui-icon-circle-close"
-      },
-      label: this.model.get('type'),
-      text: true
-    });
-    $("#selectionlist").append(this.el);
-    return this;
-  },
+		$(this.el).button({
+			icons: {
+				primary: "ui-icon-circle-close"
+			},
+			label: this.model.get('type'),
+			text: true
+		});
+		$("#selectionlist").append(this.el);
+		return this;
+	},
 
-  unselectNode: function () {
-    this.model.unselect();
-  },
+	unselectNode: function() {
+		this.model.unselect();
+	},
 
-  // If 'selected' is changed on the model then destory self
-  unselect: function (e, val) {
-    if (val === false) {
-      this.remove();
-    }
-  },
+	// If 'selected' is changed on the model then destory self
+	unselect: function(e, val) {
+		if (val === false) {
+			this.remove();
+		}
+	},
 
 });
 
 // --------------------------
 // Command Line Views
 // --------------------------
-
 var CmdLineView = Backbone.View.extend({
-    events: {
-        "submit": "evaluate",
-    },
+	events: {
+		"submit": "evaluate",
+	},
 
-    visible: false,
+	visible: false,
 
-    initialize: function() {
-        _.bindAll(this, 'hide','show');
-    },
+	initialize: function() {
+		_.bindAll(this, 'hide', 'show');
+	},
 
-    error: function(errormsg) {
-        $("#cmderrormsg").text(errormsg);
-        $("#cmderror").fadeIn();
-    },
+	error: function(errormsg) {
+		$("#cmderrormsg").text(errormsg);
+		$("#cmderror").fadeIn();
+	},
 
-    setValue: function(value) {
-        $("#cmdinput").val(value);
-    },
+	setValue: function(value) {
+		$("#cmdinput").val(value);
+	},
 
-    evaluate: function(e) {
-        var input = this.$('#cmdinput');
-        require('tasks').EvalCode( input.val() );
+	evaluate: function(e) {
+		var input = this.$('#cmdinput');
+		require('tasks').EvalCode(input.val());
 
-        // keeps form from being submitted
-        return false;
-    },
+		// keeps form from being submitted
+		return false;
+	},
 
-    hideError: function() {
-        $("#cmderror").fadeOut();
-    },
+	hideError: function() {
+		$("#cmderror").fadeOut();
+	},
 
-    hide: function() {
-        $("#cmderror").hide();
-        this.el.hide();
-        this.$('#cmdinput').blur();
-        this.$('#cmdinput').val("");
-        this.visible = 0;
-    },
+	hide: function() {
+		$("#cmderror").hide();
+		this.el.hide();
+		this.$('#cmdinput').blur();
+		this.$('#cmdinput').val("");
+		this.visible = 0;
+	},
 
-    show: function() {
-        this.el.show();
-        this.$('#cmdinput').focus();
-        this.visible = 1;
-    },
+	show: function() {
+		this.el.show();
+		this.$('#cmdinput').focus();
+		this.visible = 1;
+	},
 
-    toggleVisible: function() {
-        this.visible = this.visible ^ 1;
+	toggleVisible: function() {
+		this.visible = this.visible ^ 1;
 
-        if(!this.visible) {
-            this.hide();
-        } else {
-            this.show();
-        }
+		if (!this.visible) {
+			this.hide();
+		} else {
+			this.show();
+		}
 
-    },
+	},
 
 });
+
