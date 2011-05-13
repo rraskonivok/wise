@@ -52,8 +52,8 @@
       return window.layout = $("#container").layout({
         north__showOverflowOnHover: true,
         fxName: "none",
-        fxSpeed_open: 100,
-        fxSpeed_close: 100,
+        fxSpeed_open: 1,
+        fxSpeed_close: 1,
         east__resizable: false,
         east__slidable: false,
         east__spacing_open: 20,
@@ -161,7 +161,7 @@
           return "You have unsaved changes.";
         }
       };
-      new WorkspaceController();
+      new MenuController();
       Backbone.history.start();
       Wise.Socket = new Connection();
       return progress(100);

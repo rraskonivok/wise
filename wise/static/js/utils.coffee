@@ -28,7 +28,7 @@ module 'utils', (exports) ->
                 return false
         else
             $(this).mousedown () ->
-                return false;
+                return false
 
     createUUID = ->
         s = []
@@ -54,12 +54,12 @@ module 'utils', (exports) ->
     # -------------------
 
     exports.showmath = () ->
-      return Wise.Selection.at(0).sexp();
+      return Wise.Selection.at(0).sexp()
 
     exports.shownode = () ->
         if Wise.Selection.isEmpty()
           console.log('Select something idiot!')
-        return Wise.Selection.at(0);
+        return Wise.Selection.at(0)
 
     exports.rebuild_node = () ->
       # Rrebuild the sexp for the selected node

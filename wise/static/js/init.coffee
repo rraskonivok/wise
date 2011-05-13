@@ -62,8 +62,8 @@ module 'init', (exports) ->
             #applyDefaultStyles         : true
             north__showOverflowOnHover : true
             fxName                     : "none"
-            fxSpeed_open               : 100
-            fxSpeed_close              : 100
+            fxSpeed_open               : 1
+            fxSpeed_close              : 1
 
             east__resizable            : false
             east__slidable             : false
@@ -240,7 +240,7 @@ module 'init', (exports) ->
                 # For Safari
                 return "You have unsaved changes."
 
-        new WorkspaceController()
+        new MenuController()
         Backbone.history.start()
 
         Wise.Socket = new Connection()

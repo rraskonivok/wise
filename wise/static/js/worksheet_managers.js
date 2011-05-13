@@ -36,15 +36,45 @@ var NodeSelectionManager = Backbone.Collection.extend({
     },
 });
 
-// TODO: rename menu controller
-var WorkspaceController = Backbone.Controller.extend({
+var MenuController = Backbone.Controller.extend({
 
     routes: {
-        "save": "save", // #save
+        "save"       : "save",
+        "showsexp"   : "showsexp",
+        "showobj"    : "showobj",
+        "flushqueue" : "flushqueue",
+        "reconnect" : "reconnect",
     },
 
     save: function() {
         Wise.Worksheet.saveAll();
+        notify.info('Saved.');
+        window.location.hash = null;
+    },
+
+    showsexp: function() {
+        var tmp = "<pre>$0<pre>";
+        var sexps = Wise.Selection.sexps();
+        dialog_html(tmp.t(JSON.stringify(sexps,null,'\t')));
+        window.location.hash = null;
+    },
+
+    showobj: function() {
+        var tmp = "<pre>$0<pre>";
+        var objs = Wise.Selection;
+        dialog_html(tmp.t(JSON.stringify(objs,null,'\t')));
+        window.location.hash = null;
+    },
+
+    flushqueue: function() {
+        notify.info('Task Queue flushed.');
+        window.location.hash = null;
+    },
+
+    reconnect: function() {
+        Wise.Socket.disconnect();
+        Wise.Socket.socket.connect();
+
         window.location.hash = null;
     },
 
