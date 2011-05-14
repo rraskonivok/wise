@@ -4,6 +4,8 @@
 	background-color: white;
 	overflow: hidden;
 	z-index: 99999;
+    position: absolute;
+    top: 5;
 }
 
 .ac_results ul {

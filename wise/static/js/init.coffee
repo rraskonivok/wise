@@ -174,12 +174,14 @@ module 'init', (exports) ->
         })
 
         $("#container").show()
-        layout.resizeAll()
 
-        init_autocomplete()
+        if HAS_BROWSER
+            window.layout.resizeAll()
 
         # $(".noselect").disableSelection()
         $("#worksheet").show()
+
+        init_autocomplete()
 
         # Disable right click context menu
         #$(document).bind("contextmenu",function(e){

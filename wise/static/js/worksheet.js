@@ -181,9 +181,6 @@ function apply_transform(transform, operands) {
 					Wise.last_expr = newnode.root;
 					Wise.Selection.clear();
 
-					//if(callback) {
-					//callback(image);
-					//}
 				}
 
 			}
@@ -302,6 +299,46 @@ function new_cell() {
 	});
 }
 
+
+jQuery.fn.liveUpdate = function(list, selector){
+	list = jQuery(list);
+
+	if ( list.length ) {
+		var rows = list.find(selector),
+			cache = rows.map(function(){
+				return this.innerHTML.toLowerCase();
+			});
+			
+		this
+			.keyup(filter).keyup()
+			.parents('form').submit(function(){
+				return false;
+			});
+	}
+		
+	return this;
+		
+	function filter(){
+		var term = jQuery.trim( jQuery(this).val().toLowerCase() ), scores = [];
+		
+		if ( !term ) {
+			rows.show();
+		} else {
+			rows.hide();
+
+			cache.each(function(i){
+				var score = this.score(term);
+				if (score > 0) { scores.push([score, i]); }
+			});
+
+			jQuery.each(scores.sort(function(a, b){return b[0] - a[0];}), function(){
+				jQuery(rows[ this[1] ]).show();
+			});
+		}
+	}
+};
+
+
 ///////////////////////////////////////////////////////////
 // Palette Loading
 ///////////////////////////////////////////////////////////
@@ -329,16 +366,22 @@ function load_rules_palette(callback) {
 			//$('#rulelist *').not(":contains('" + query + "')").hide();
 			//}
 			//});
-			$('#searchform').submit(function() {
-				var query = $("#rulesearch").val();
-				if (!query) {
-					$('#rulelist *').show();
-				} else {
-					$('#rulelist *').show();
-					$('#rulelist *').not(":contains('" + query + "')").hide();
-				}
-				return false;
-			});
+			
+            //$('#searchform').submit(function() {
+				//var query = $("#rulesearch").val();
+				//if (!query) {
+					//$('#rulelist *').show();
+				//} else {
+					//$('#rulelist *').show();
+					//$('#rulelist *').not(":contains('" + query + "')").hide();
+				//}
+				//return false;
+			//});
+
+            // TODO: we'll want to create a single list of all
+            // rules in order for this to work properly, and swap
+            // out the categorized list when we start searching
+            $("#rulesearch").liveUpdate('#rulelist','li');
 
 			// $(".panel_frame", "#rulelist").sortable({
 			//     scroll: false,
@@ -373,8 +416,9 @@ function load_math_palette(callback) {
 		dataType: "html",
 		success: function(data) {
 
-            // invoke the next functino in the async.series call
+            // invoke the next function in the async.series call
             callback(null);
+
 			$("#math_palette").replaceWith(data);
 
 			//Make the palette sections collapsable
@@ -416,20 +460,6 @@ function load_math_palette(callback) {
 				$("p#vtip").css("top", this.top + "px").css("left", this.left + "px");
 			});
 
-			//$("td", "#math_palette").sortable({
-			//    scroll: false,
-			//    connectWith: '#quickbar',
-			//    forcePlaceholderSize: true,
-			//    helper: function(e, li) {
-			//        copyHelper = li.clone().insertAfter(li);
-			//        // Append to the body to let it pass between
-			//        // jquery layout panels
-			//        return $(li).clone().appendTo('body').show();
-			//    },
-			//    stop: function() {
-			//        copyHelper && copyHelper.remove();
-			//    }
-			//});
 		}
 	});
 }

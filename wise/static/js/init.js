@@ -135,9 +135,11 @@
         el: "#worksheet"
       });
       $("#container").show();
-      layout.resizeAll();
-      init_autocomplete();
-      return $("#worksheet").show();
+      if (HAS_BROWSER) {
+        window.layout.resizeAll();
+      }
+      $("#worksheet").show();
+      return init_autocomplete();
     };
     init_autocomplete = function() {
       return $.getJSON('/dict/purelist', function(data) {

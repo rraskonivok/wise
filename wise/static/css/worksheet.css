@@ -75,15 +75,10 @@
 }
 
 #worksheet_sidebar {
-    /*float: right;*/
-    /*left: 75%;*/
-    /*width: 25%;*/
-    padding-left: 10px;
-    padding-right: 10px;
 }
 
 #terminal_palette textarea {
-    width: 100%; 
+    width: 100%;
 }
 
 #terminal_palette .history {

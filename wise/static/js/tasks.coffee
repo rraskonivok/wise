@@ -12,9 +12,9 @@ module 'tasks', (exports) ->
 
     # High water mark for ResultQueue, maximum number of queued
     # result callbacks
-    ResultQueue_HWM = 5
-    ResultQueue = []
-    ResultCallback = {}
+    window.ResultQueue_HWM = 5
+    window.ResultQueue = []
+    window.ResultCallback = {}
 
     # ---------------------------
     # Rule Application          |

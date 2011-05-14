@@ -1,13 +1,13 @@
 module 'utils', (exports) ->
 
     # jQuery extensions
-    jQuery.fx.off = false;
+    jQuery.fx.off = false
 
     $.fn.exists = () ->
       return $(this).length > 0
 
     $.fn.replace = (htmlstr) ->
-      return $(this).replaceWith(htmlstr);
+      return $(this).replaceWith(htmlstr)
 
     $.fn.id = () ->
       return $(this).attr('id')

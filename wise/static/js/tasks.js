@@ -2,10 +2,10 @@
   var Task;
   Task = require('messages').Task;
   module('tasks', function(exports) {
-    var ApplyRule, EvalCode, ResultCallback, ResultFlush, ResultQueue, ResultQueue_HWM;
-    ResultQueue_HWM = 5;
-    ResultQueue = [];
-    ResultCallback = {};
+    var ApplyRule, EvalCode, ResultFlush;
+    window.ResultQueue_HWM = 5;
+    window.ResultQueue = [];
+    window.ResultCallback = {};
     ApplyRule = function(rule, operands, callback) {
       var image, task, uid, _operands;
       if (!operands) {

@@ -34,6 +34,65 @@ var toplevel_types = [{
 },
 ]
 
+String.prototype.score = function(abbreviation,offset) {
+  offset = offset || 0 // TODO: I think this is unused... remove
+ 
+  if(abbreviation.length == 0) return 0.9
+  if(abbreviation.length > this.length) return 0.0
+
+  for (var i = abbreviation.length; i > 0; i--) {
+    var sub_abbreviation = abbreviation.substring(0,i)
+    var index = this.indexOf(sub_abbreviation)
+
+
+    if(index < 0) continue;
+    if(index + abbreviation.length > this.length + offset) continue;
+
+    var next_string       = this.substring(index+sub_abbreviation.length)
+    var next_abbreviation = null
+
+    if(i >= abbreviation.length)
+      next_abbreviation = ''
+    else
+      next_abbreviation = abbreviation.substring(i)
+ 
+    var remaining_score   = next_string.score(next_abbreviation,offset+index)
+ 
+    if (remaining_score > 0) {
+      var score = this.length-next_string.length;
+
+      if(index != 0) {
+        var j = 0;
+
+        var c = this.charCodeAt(index-1)
+        if(c==32 || c == 9) {
+          for(var j=(index-2); j >= 0; j--) {
+            c = this.charCodeAt(j)
+            score -= ((c == 32 || c == 9) ? 1 : 0.15)
+          }
+
+          // XXX maybe not port this heuristic
+          // 
+          //          } else if ([[NSCharacterSet uppercaseLetterCharacterSet] characterIsMember:[self characterAtIndex:matchedRange.location]]) {
+          //            for (j = matchedRange.location-1; j >= (int) searchRange.location; j--) {
+          //              if ([[NSCharacterSet uppercaseLetterCharacterSet] characterIsMember:[self characterAtIndex:j]])
+          //                score--;
+          //              else
+          //                score -= 0.15;
+          //            }
+        } else {
+          score -= index
+        }
+      }
+   
+      score += remaining_score * next_string.length
+      score /= this.length;
+      return score
+    }
+  }
+  return 0.0
+}
+
 // --------------------------
 // Worksheet View
 // --------------------------
@@ -66,12 +125,10 @@ var WorksheetView = Backbone.View.extend({
 var SidebarView = Backbone.View.extend({
 
 	events: {
-		"click .math": "toggleMath",
-		"dblclick .math": "expandAllMath",
-
-		"click .rules": "toggleRules",
-		"click .settings": "toggleSettings",
-		"click .keys": "toggleKeys"
+		"click    .math"           : "toggleMath",
+		"dblclick .math"           : "expandAllMath",
+		"dblclick .rules"          : "expandAllRules",
+        //"click    .uniform_button" : "buttonPress",
 	},
 
 	initialize: function() {
@@ -79,6 +136,10 @@ var SidebarView = Backbone.View.extend({
 		_.bindAll(this, 'toggleMath', 'onDisableMath');
 		Wise.Settings.bind('change:DISABLE_MATH', this.onDisableMath);
 	},
+
+    buttonPress: function() {
+        notify.info('Button clicked');
+    },
 
 	onDisableMath: function(model, state) {
 		// If the server is unavailble to perform operations then
@@ -88,11 +149,20 @@ var SidebarView = Backbone.View.extend({
 	},
 
 	expandAllMath: function() {
-		//if (this.toggleState) {
-		//this.$('#math_palette .panel_frame').hide();
-		//} else {
-		//this.$('#math_palette .panel_frame').show();
-		//}
+        if (this.toggleState) {
+            this.$('#math_palette .panel_frame').hide();
+        } else {
+            this.$('#math_palette .panel_frame').show();
+        }
+		this.toggleState ^= 1;
+	},
+
+	expandAllRules: function() {
+        if (this.toggleState) {
+            this.$('#rules_palette .panel_frame').hide();
+        } else {
+            this.$('#rules_palette .panel_frame').show();
+        }
 		this.toggleState ^= 1;
 	},
 
