@@ -218,11 +218,11 @@
       if (HAS_BROWSER) {
         init_layout();
         async.series([
-          function() {
-            return load_rules_palette();
-          }, function() {
-            return load_math_palette();
-          }, function() {
+          function(callback) {
+            return load_math_palette(callback);
+          }, function(callback) {
+            return load_rules_palette(callback);
+          }, function(callback) {
             return $("#worksheet_sidebar").tabs();
           }
         ]);

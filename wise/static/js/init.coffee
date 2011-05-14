@@ -290,15 +290,10 @@ module 'init', (exports) ->
             #window.layout.resetOverflow()
 
             async.series([
-                () -> load_rules_palette()
-                () -> load_math_palette()
-                () -> $("#worksheet_sidebar").tabs()
+                (callback) -> load_math_palette(callback)
+                (callback) -> load_rules_palette(callback)
+                (callback) -> $("#worksheet_sidebar").tabs()
             ])
-
-            # Load sidebar palettes via AJAX
-            #load_math_palette()
-            #load_rules_palette()
-            #$("#worksheet_sidebar").tabs()
 
             # Test for MathML support, if not then prompt the user
             if test_mathml()

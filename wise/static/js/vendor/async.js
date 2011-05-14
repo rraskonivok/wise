@@ -79,14 +79,14 @@
     //// exported async module functions ////
 
     //// nextTick implementation with browser-compatible fallback ////
-    async.nextTick = function (fn) {
-        if (typeof process === 'undefined' || !(process.nextTick)) {
+    if (typeof process === 'undefined' || !(process.nextTick)) {
+        async.nextTick = function (fn) {
             setTimeout(fn, 0);
-        }
-        else {
-            process.nextTick(fn);
-        }
-    };
+        };
+    }
+    else {
+        async.nextTick = process.nextTick;
+    }
 
     async.forEach = function (arr, iterator, callback) {
         if (!arr.length) {
@@ -423,7 +423,7 @@
                         if (args.length <= 1) {
                             args = args[0];
                         }
-                        callback.call(null, err, args || null);
+                        callback.call(null, err, args);
                     });
                 }
             }, callback);
@@ -455,7 +455,7 @@
                         if (args.length <= 1) {
                             args = args[0];
                         }
-                        callback.call(null, err, args || null);
+                        callback.call(null, err, args);
                     });
                 }
             }, callback);
@@ -549,25 +549,34 @@
         var tasks = [];
         var q = {
             concurrency: concurrency,
+            saturated: null,
+            empty: null,
+            drain: null,
             push: function (data, callback) {
                 tasks.push({data: data, callback: callback});
+                if(q.saturated && tasks.length == concurrency) q.saturated();
                 async.nextTick(q.process);
             },
             process: function () {
                 if (workers < q.concurrency && tasks.length) {
                     var task = tasks.splice(0, 1)[0];
+                    if(q.empty && tasks.length == 0) q.empty();
                     workers += 1;
                     worker(task.data, function () {
                         workers -= 1;
                         if (task.callback) {
                             task.callback.apply(task, arguments);
                         }
+                        if(q.drain && tasks.length + workers == 0) q.drain();
                         q.process();
                     });
                 }
             },
             length: function () {
                 return tasks.length;
+            },
+            running: function () {
+                return workers;
             }
         };
         return q;

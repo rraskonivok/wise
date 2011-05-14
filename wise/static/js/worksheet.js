@@ -305,11 +305,15 @@ function new_cell() {
 ///////////////////////////////////////////////////////////
 // Palette Loading
 ///////////////////////////////////////////////////////////
-function load_rules_palette() {
+function load_rules_palette(callback) {
 	$.ajax({
 		url: '/rule_request/',
 		dataType: "html",
 		success: function(data) {
+
+            // invoke the next functino in the async.series call
+            callback(null);
+
 			$("#rules").replaceWith(data);
 
 			$(".panel_category", "#rules_palette").bind('click', function() {
@@ -363,12 +367,14 @@ function load_rules_palette() {
     return true;
 }
 
-function load_math_palette() {
+function load_math_palette(callback) {
 	$.ajax({
 		url: '/palette/',
 		dataType: "html",
 		success: function(data) {
 
+            // invoke the next functino in the async.series call
+            callback(null);
 			$("#math_palette").replaceWith(data);
 
 			//Make the palette sections collapsable
@@ -426,6 +432,5 @@ function load_math_palette() {
 			//});
 		}
 	});
-    return true;
 }
 
