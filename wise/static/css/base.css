@@ -4,7 +4,8 @@ html {
 
 body {
     /* Arial is Ugly , but then again so are most MS fonts */
-    font-family: Helvetica, Arial, Bitstream-Vera, sans-serif;
+    /*font-family: Helvetica, Arial, Bitstream-Vera, sans-serif;*/
+    font-size: 10px;
 }
 
 .noselect {
@@ -23,10 +24,10 @@ body {
 .clear { clear: both; height: 0; }
 
 .wat-cf:after {
-     content: "."; 
-     display: block; 
-     height: 0; 
-     clear: both; 
+     content: ".";
+     display: block;
+     height: 0;
+     clear: both;
      visibility: hidden;
 }
 
@@ -45,11 +46,6 @@ hr {height: 1px; border: 0; }
 -->
 p { margin: 15px 0;}
 a img { border: none; }
-
-body {
-  font-size: 12px;
-  font-family: sans-serif;  
-}
 
 /* Float Classes */
 .floatright { float: right }
