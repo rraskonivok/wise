@@ -89,11 +89,10 @@ var SidebarView = Backbone.View.extend({
 
 	expandAllMath: function() {
 		//if (this.toggleState) {
-			//this.$('#math_palette .panel_frame').hide();
+		//this.$('#math_palette .panel_frame').hide();
 		//} else {
-			//this.$('#math_palette .panel_frame').show();
+		//this.$('#math_palette .panel_frame').show();
 		//}
-
 		this.toggleState ^= 1;
 	},
 
@@ -375,6 +374,9 @@ var CmdLineView = Backbone.View.extend({
 
 	initialize: function() {
 		_.bindAll(this, 'hide', 'show');
+		this.el.keypress(function(e) {
+			console.log(e);
+		});
 	},
 
 	error: function(errormsg) {
@@ -400,14 +402,15 @@ var CmdLineView = Backbone.View.extend({
 
 	hide: function() {
 		$("#cmderror").hide();
-		this.el.hide();
-		this.$('#cmdinput').blur();
-		this.$('#cmdinput').val("");
+        this.$('#cmdinput').blur();
+        this.$('#cmdinput').val("");
 		this.visible = 0;
+		window.innerlayout.close('south');
 	},
 
 	show: function() {
-		this.el.show();
+		window.innerlayout.open('south');
+        this.el.show();
 		this.$('#cmdinput').focus();
 		this.visible = 1;
 	},

@@ -49,7 +49,7 @@
       });
     };
     init_layout = function() {
-      return window.layout = $("#container").layout({
+      window.layout = $("#container").layout({
         north__showOverflowOnHover: true,
         fxName: "none",
         fxSpeed_open: 1,
@@ -72,6 +72,17 @@
         north__closable: false,
         north__size: 30,
         west__minSize: 100
+      });
+      return window.innerlayout = $('#center').layout({
+        fxName: "none",
+        fxSpeed_open: 1,
+        fxSpeed_close: 1,
+        center__paneSelector: "#inner-center",
+        south__paneSelector: "#inner-south",
+        south__resizable: true,
+        south__size: 60,
+        south__minSize: 60,
+        south__initClosed: true
       });
     };
     init_keyboard_shortcuts = function() {
@@ -124,6 +135,7 @@
         el: "#worksheet"
       });
       $("#container").show();
+      layout.resizeAll();
       init_autocomplete();
       return $("#worksheet").show();
     };
@@ -201,12 +213,10 @@
       }
     };
     init = function() {
-      var layout;
       Wise.debug = window.DEBUG;
       init_logger();
       if (HAS_BROWSER) {
-        layout = init_layout();
-        layout.resetOverflow();
+        init_layout();
         async.series([
           function() {
             return load_rules_palette();

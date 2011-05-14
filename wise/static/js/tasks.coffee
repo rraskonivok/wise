@@ -173,8 +173,8 @@ module 'tasks', (exports) ->
             ResultCallback[msg.uid].call(null, JSON.parse(msg.result))
 
     ResultFlush = () ->
-        ResultQueue = []
-        ResultCallback = {}
+        window.ResultQueue = []
+        window.ResultCallback = {}
 
     window.apply_rule = ApplyRule
     window.use_infix = EvalCode

@@ -130,8 +130,8 @@
       }
     });
     ResultFlush = function() {
-      ResultQueue = [];
-      return ResultCallback = {};
+      window.ResultQueue = [];
+      return window.ResultCallback = {};
     };
     window.apply_rule = ApplyRule;
     window.use_infix = EvalCode;

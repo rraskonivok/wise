@@ -3,7 +3,7 @@
 
 
 _infix = (code) -> () ->
-    require('tasks').EvalCode(code);
+    require('tasks').EvalCode(code)
 
 _rule = (rule) -> () ->
     require('tasks').ApplyRule(rule)

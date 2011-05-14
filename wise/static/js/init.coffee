@@ -88,6 +88,19 @@ module 'init', (exports) ->
 
             west__minSize              : 100
 
+
+        window.innerlayout = $('#center').layout
+            fxName                     : "none"
+            fxSpeed_open               : 1
+            fxSpeed_close              : 1
+            center__paneSelector       : "#inner-center"
+            south__paneSelector        : "#inner-south"
+            south__resizable           : true
+            south__size                : 60
+            south__minSize             : 60
+            south__initClosed          : true
+
+
     # ---------------------------------
     # Initalize Keyboard Bindings
     # ---------------------------------
@@ -161,6 +174,7 @@ module 'init', (exports) ->
         })
 
         $("#container").show()
+        layout.resizeAll()
 
         init_autocomplete()
 
@@ -272,8 +286,8 @@ module 'init', (exports) ->
         init_logger()
 
         if HAS_BROWSER
-            layout = init_layout()
-            layout.resetOverflow()
+            init_layout()
+            #window.layout.resetOverflow()
 
             async.series([
                 () -> load_rules_palette()

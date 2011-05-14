@@ -68,6 +68,7 @@ var MenuController = Backbone.Controller.extend({
 
     flushqueue: function() {
         notify.info('Task Queue flushed.');
+        window.ResultFlush();
         window.location.hash = null;
     },
 

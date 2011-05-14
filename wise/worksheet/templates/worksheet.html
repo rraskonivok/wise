@@ -96,11 +96,31 @@ Init Function + Global Vars
     <!-- Center -->
     <div id="center" class="ui-layout-center">
 
+        <div id="inner-center">
+            <div id="worksheet" class="hidden">
+                {% for cell in cells %}
+                    {{cell|safe}}
+                {% endfor %}
+            </div>
+        </div>
 
-        <div id="worksheet" class="hidden">
-            {% for cell in cells %}
-                {{cell|safe}}
-            {% endfor %}
+        <div id="inner-south" class="ui-layout-south">
+
+            <div id="cmd" class="cmd">
+                <div id="cmderror" class="hidden">
+                    <div class="ui-state-error ui-corner-all" style="padding: 0 .7em;"> 
+                        <p>
+                        <span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span> 
+                        <strong>Error:</strong>
+                            <span id="cmderrormsg">Sample ui-state-error style.</span>
+                        </p>
+                    </div>
+                </div>
+                <form id="cmdline" action="#">
+                    <input id="cmdinput" type="text"></input>
+                </form>
+            </div>
+
         </div>
 
     </div>
@@ -272,20 +292,6 @@ Init Function + Global Vars
     </div>
 
     <!-- Command Line (Absolutely Positioned) -->
-    <div id="cmd" class="cmd hidden">
-        <div id="cmderror" class="hidden">
-            <div class="ui-state-error ui-corner-all" style="padding: 0 .7em;"> 
-                <p>
-                <span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span> 
-                <strong>Error:</strong>
-                    <span id="cmderrormsg">Sample ui-state-error style.</span>
-                </p>
-            </div>
-        </div>
-        <form id="cmdline" action="#">
-            <input id="cmdinput" type="text"></input>
-        </form>
-    </div>
 
 
 
