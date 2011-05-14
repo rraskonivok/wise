@@ -373,10 +373,7 @@ var CmdLineView = Backbone.View.extend({
 	visible: false,
 
 	initialize: function() {
-		_.bindAll(this, 'hide', 'show');
-		this.el.keypress(function(e) {
-			console.log(e);
-		});
+		_.bindAll(this, 'hide', 'show', 'evaluate');
 	},
 
 	error: function(errormsg) {
@@ -388,12 +385,24 @@ var CmdLineView = Backbone.View.extend({
 		$("#cmdinput").val(value);
 	},
 
+    keylisten: function(e) {
+        console.log(e);
+        return true;
+    },
+
 	evaluate: function(e) {
 		var input = this.$('#cmdinput');
+
+        if(!input.val()) {
+            this.hide();
+            return;
+        }
+
 		require('tasks').EvalCode(input.val());
 
 		// keeps form from being submitted
-		return false;
+		//return false;
+        e.preventDefault();
 	},
 
 	hideError: function() {
@@ -411,7 +420,12 @@ var CmdLineView = Backbone.View.extend({
 	show: function() {
 		window.innerlayout.open('south');
         this.el.show();
+
+        // This command depends on the fact that there is no fx
+        // on showing the south pane, otherwise we get a nasty
+        // race condition with the focus
 		this.$('#cmdinput').focus();
+
 		this.visible = 1;
 	},
 
