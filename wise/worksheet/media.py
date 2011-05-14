@@ -104,6 +104,7 @@ MEDIA_BUNDLES = (
         'globals.js',
 
          # Generated coffeescript
+        'sexp.js',
         'base.js',
         'utils.js',
         'accel.js',

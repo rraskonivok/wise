@@ -158,32 +158,17 @@ var SidebarView = Backbone.View.extend({
 	},
 
 	expandAllRules: function() {
+        $("#rulesearch").val('');
+
+        // Force jQuery.liveUpdate to update
+        $("#rulesearch").trigger('keyup');
+
         if (this.toggleState) {
             this.$('#rules_palette .panel_frame').hide();
         } else {
             this.$('#rules_palette .panel_frame').show();
         }
 		this.toggleState ^= 1;
-	},
-
-	toggleMath: function() {
-		//this.$('.palette').hide();
-		//this.$('#math_palette').show();
-	},
-
-	toggleRules: function() {
-		//this.$('.palette').hide();
-		//this.$('#rules_palette').show();
-	},
-
-	toggleSettings: function() {
-		//this.$('.palette').hide();
-		//this.$('#settings_palette').show();
-	},
-
-	toggleKeys: function() {
-		//this.$('.palette').hide();
-		//this.$('#keys_palette').show();
 	},
 
 });
